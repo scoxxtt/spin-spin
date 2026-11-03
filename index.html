@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.31</title>
+<title>SPIN! SPIN! v0.32</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -123,6 +123,9 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .row canvas{width:3.2em;height:3.2em}
 .vsrow .side.r .face{clip-path:polygon(0 0,100% 0,100% 100%,20% 100%,0 80%)}
 .screen{padding-bottom:3.4em !important}
+#final{background:radial-gradient(rgba(255,255,255,.06) 1.1px,transparent 1.6px) 0 0/10px 10px,rgba(4,6,10,.9)}
+#final .big{font-size:3em;font-style:italic;letter-spacing:.04em;transform:skew(-6deg);text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px 0 #05060a,2px 2px 0 #05060a,0 3px 0 #05060a,0 6px 0 #05060a,0 9px 0 #05060a,0 0 1.2em currentColor !important;background:linear-gradient(90deg,transparent,rgba(0,0,0,.55) 20%,rgba(0,0,0,.55) 80%,transparent);padding:.1em 1.2em}
+#final .fsc{font-style:italic;font-weight:900;font-size:1.15em;text-shadow:2px 2px 0 #05060a}
 .sub,.benchHd,.invTab,.shopBtn,.slot .nm,.slot .mini,.tile .tn,.tile .tst,.eqTag,.matTag,.newTag,.tag,.snum,#exBtn,#menuBtn,#gearBtn,.seg button,.tog,.vs,.vsrow .t,.score,.opt span,.spanel h2,.ipHead .t,.ipHead .s,.ipRow .n,.suN,.coin,.coinGot,#teamSub,.pbar span,.mergeBtn,.selHint,#tutStep,.link{font-style:italic;font-weight:900}
 .benchHd,.sub,#teamSub,.vsrow .t,.score,.spanel h2,.ipRow .n,.ipHead .t,.slot .nm,.tile .tn{text-shadow:2px 2px 0 #05060a}
 .vs{font-size:1.6em;color:#fcee0a;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a,4px 4px 0 #ff2a55}
@@ -251,7 +254,7 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
   </div>
 
   <div id="team" class="screen show">
-    <h1>旋刃對決</h1>
+    <h1>SPIN! SPIN!</h1>
     <div class="sub" id="teamSub"></div>
     <div id="shop"></div>
     <div class="hint"><b>點頭像再點另一個</b>交換順序（也可拖曳）・<b>點出戰格的零件，再點零件庫</b>即可換裝・<b>長按</b>看詳情</div>
@@ -314,7 +317,7 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
   <button class="btn" data-gm="pyel">下一次付費抽必出黃色</button>
   <button class="btn ghost" data-gm="close">關閉</button></div></div>
 <script>
-/* 旋刃對決 — version history (one step per update in the design chat)
+/* SPIN! SPIN! (formerly 旋刃對決) — version history (one step per update in the design chat)
  v0.01 first prototype: arena, aura ring, 12 o'clock launch, hell gate, 3 rounds, 6 builds, EX, AI
  v0.02 synthesized sound effects + mute
  v0.03 raised step in front of the hell gate (only knocked tops fall in)
@@ -346,11 +349,12 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
  v0.29 hidden class mech-cat (paid draws only, 2% with pity at 40, +10% base), EX midnight zoomies (3 s zigzag dash, faster after each wall bounce, +30% damage), gold hidden-class reveal
  v0.30 comic-book look everywhere: cel-shaded arena with halftone dots and ink outlines, hatched walls, inked rails / rim / core, inked tops, 45-degree tops in tutorial / pack / lineup, comic HUD score, halftone screens, inked buttons and titles
  v0.31 WORMHOLE painted on the back wall, BLOOD +2 / DEAD +3 painted on the floor at the exits, brighter cel-shaded floor (trial), comic italic type across the UI and canvas labels, hidden GM panel (tap the version 7 times)
+ v0.32 renamed SPIN! SPIN!; arena signage as sign plates (WORMHOLE tunnel sign, BLOOD / DEAD floor plates with chevrons, CORE plate); simultaneous hidden launch with 3-2-1 SPIN! SPIN! call; English comic arena HUD; readable result screen; stage guide tutorial page
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.31';
-document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
+const GAME_VERSION = 'v0.32';
+document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
   const vf = document.getElementById('verFoot'); vf.style.pointerEvents = 'auto'; vf.style.left = '30%'; vf.style.right = '30%'; vf.style.padding = '.6em 0';
@@ -1198,9 +1202,9 @@ function drawPackBody(g, cx, cy, time, tear, lidOff, lidRot, alpha) {
   g.strokeStyle = '#fcee0a'; g.lineWidth = 3; g.beginPath(); g.arc(cx, my, 64, 0, TAU); g.stroke();
   g.save(); g.translate(cx, my); g.scale(1.6, 1.6); drawTop(g, PK.emblem, time * 3, { spin: 0.7 }); g.restore();
   g.font = '900 38px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.9)'; g.strokeText('旋刃對決', cx, y + 318);
+  g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.9)'; g.strokeText('SPIN! SPIN!', cx, y + 318);
   const tg = g.createLinearGradient(0, y + 300, 0, y + 336); tg.addColorStop(0, '#fffbd0'); tg.addColorStop(1, '#fcee0a');
-  g.fillStyle = tg; g.fillText('旋刃對決', cx, y + 318);
+  g.fillStyle = tg; g.fillText('SPIN! SPIN!', cx, y + 318);
   g.font = '700 17px Rajdhani, sans-serif'; g.fillStyle = '#00f0ff'; g.fillText(`陀螺卡包 ・ ${PK.cards.length} 張`, cx, y + 356);
   g.restore();
   roundRectP(g, x, y + 46, w, h - 46, 18); g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.stroke();
@@ -1413,7 +1417,7 @@ const TUT = [
       if (swapped) tLabel(g, '武器互換！', 200, 300, '#fcee0a', 24);
       tLabel(g, '武器　鎧甲　職業', 200, 360, 'rgba(255,255,255,.55)', 15);
   } },
-  { title: '選落點・彈射開場', text: '在場上<b>按下的位置就是落點</b>，往後拉決定方向和力道，放開發射。電腦的落點會先顯示，瞄準它開場一擊！', draw(g, t) {
+  { title: '選落點・彈射開場', text: '在場上<b>按下的位置就是落點</b>，往後拉決定方向和力道，放開發射。電腦的落點是秘密，放開後會喊「3、2、1、SPIN! SPIN!」，雙方同時發射！', draw(g, t) {
       tutArenaBg(g);
       const P = { x: CX - 130, y: CY + 30 }, E = { x: CX + 80, y: CY - 30 }, d = norm(E.x - P.x, E.y - P.y), dist = len(E.x - P.x, E.y - P.y) - 54;
       const ph = t % 3.4;
@@ -1427,7 +1431,8 @@ const TUT = [
         if (ph > 1.75) { const m = easeOut(clamp((ph - 1.75) / 0.8, 0, 1)); ex = E.x + d.x * 85 * m; ey = E.y + d.y * 85 * m; tWave(g, (px + E.x) / 2 + d.x * 27, (py + E.y) / 2 + d.y * 27, (ph - 1.75) / 0.5, '252,238,10'); if (ph < 2.6) tLabel(g, '開場一擊！', CX, CY + 130, '#fcee0a', 30); }
         tTop(g, TA, px, py, t * 20);
       }
-      tTop(g, TB, ex, ey, -t * 4); tLabel(g, '電腦', ex, ey + 50, '#ff3b5c', 16);
+      if (ph > 1.3) { tTop(g, TB, ex, ey, -t * 4); tLabel(g, 'CPU', ex, ey + 50, '#ff3b5c', 16); } else tLabel(g, '?', E.x, E.y, '#ff3b5c', 40);
+      if (ph > 1.0 && ph < 1.4) tLabel(g, 'SPIN! SPIN!', CX, CY - 120, '#fcee0a', 36);
   } },
   { title: '拖曳移動', text: '對戰中<b>按住畫面任何地方拖曳</b>，陀螺就會往那個方向衝。場地中間是往下凹的碗，陀螺會自然滑回中心；中央的<b>戰心圈</b>裡 EX 累積更快、撞擊更痛，記得去搶！', draw(g, t) {
       tutArenaBg(g);
@@ -1457,6 +1462,14 @@ const TUT = [
       g.strokeStyle = '#fcee0a'; g.lineWidth = 6; g.beginPath(); g.arc(bx, by, 40, -Math.PI / 2, -Math.PI / 2 + TAU * e); g.stroke();
       tLabel(g, `${Math.round(e * 100)}%`, bx, by - 4, '#fcee0a', 18); g.fillStyle = '#fcee0a'; g.font = '700 10px Rajdhani, sans-serif'; g.fillText('EX', bx, by + 15);
       tFinger(g, bx + 8, by + 6, (t * 6) % 1 < 0.5);
+  } },
+  { title: '場地說明 STAGE', text: '<b style="color:#fcee0a">WORMHOLE</b>：上方兩段加速軌道，衝上去高速前進並累積 EX，出口直衝中心。<b style="color:#fcee0a">CORE</b>：中央圈，待在裡面 EX 累積更快、撞擊 +20%。<b style="color:#ff4fd8">BLOOD +2</b>：左右兩個窄出口。<b style="color:#ff2a55">DEAD +3</b>：正下方的寬出口。出口前有台階，被撞飛才會掉進去！', draw(g, t) {
+      tutArenaBg(g); drawArena(g, t);
+      const Z = [['WORMHOLE', CX, CY - BY + 40, 120, '#fcee0a'], ['CORE', CX, CY, AX * CORE_Q + 10, '#fcee0a'], ['BLOOD +2', GATES[1].x, GATES[1].y - 10, 46, '#ff4fd8'], ['DEAD +3', GATES[0].x, GATES[0].y - 16, 62, '#ff2a55']];
+      const i = Math.floor(t / 1.6) % Z.length, [txt, x, y, r, col] = Z[i], k = (t % 1.6) / 1.6;
+      g.save(); g.strokeStyle = col; g.lineWidth = 5; g.setLineDash([12, 8]); g.lineDashOffset = -t * 40; g.globalAlpha = 0.5 + 0.5 * Math.sin(k * Math.PI);
+      g.beginPath(); g.arc(x, y, r * (0.9 + 0.1 * Math.sin(t * 6)), 0, TAU); g.stroke(); g.restore();
+      tLabel(g, txt, x, y + (i === 3 ? -80 : i === 2 ? -70 : i === 0 ? 70 : 0), col, 34);
   } },
   { title: '武器三系與相剋', text: '<b style="color:#ff2a55">近戰系</b>傷害高、會連擊；<b style="color:#00f0ff">射擊系</b>衝越快打越痛；<b style="color:#fcee0a">爆裂系</b>擊退最強，適合把人炸出場。鎧甲分<b>輕裝・重裝・能量護盾</b>：近戰剋能量、射擊剋輕裝、爆裂剋重裝（+30%），被剋則 −20%。排陣容前先看對手！', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
@@ -1822,11 +1835,11 @@ function startRound() {
   const idx = G.sudden ? 0 : G.round - 1;
   G.pb = G.lineup[idx]; G.ab = G.aiLineup[idx];
   G.tops = [makeTop(G.pb, 0), makeTop(G.ab, 1)];
-  const ap = randomDrop(G.tops[0]); G.tops[1].x = ap.x; G.tops[1].y = ap.y;
+  const ap = randomDrop(G.tops[0]); G.tops[1].x = ap.x; G.tops[1].y = ap.y; G.countT = 0;
   G.placed = false;
   G.phase = 'launch'; G.drag = null; G.joy = null; G.particles = []; G.texts = []; G.waves = []; G.comics = []; G.halftones = []; G.focus = null; G.comicCD = 0;
   G.launchT = 0;
-  showBanner(G.sudden ? '加賽！先得分者勝' : `第 ${G.round} 場`, 1.6);
+  showBanner(G.sudden ? 'SUDDEN DEATH!' : `ROUND ${G.round}`, 1.6);
   SFX.round();
   updateExBtn();
 }
@@ -1968,13 +1981,12 @@ cv.addEventListener('pointerdown', e => {
   if (!G) return;
   const p = toLogical(e);
   cv.setPointerCapture(e.pointerId);
-  if (G.phase === 'launch' && G.banner && G.banner.t > 0.4 && G.banner.text.startsWith('第')) G.banner.t = 0.4;
+  if (G.phase === 'launch' && G.banner && G.banner.t > 0.4 && /^(ROUND|SUDDEN)/.test(G.banner.text)) G.banner.t = 0.4;
   if (G.phase === 'launch') {
     // press = drop point (top jumps there), pull back = aim, release = launch (all measured on the tilted floor)
     const me = G.tops[0], foe = G.tops[1], wp = toWorld(p);
     let q = clampDrop(wp.x, wp.y);
     const dd = len(q.x - foe.x, q.y - foe.y);
-    if (dd < TR * 2 + 12) { const n = norm(q.x - foe.x, q.y - foe.y); q = clampDrop(foe.x + n.x * (TR * 2 + 12), foe.y + n.y * (TR * 2 + 12)); }
     me.x = q.x; me.y = q.y; G.placed = true;
     G.drag = { sx: wp.x, sy: wp.y, x: wp.x, y: wp.y, id: e.pointerId };
   }
@@ -2000,7 +2012,7 @@ function endPointer(e) {
   if (!G) return;
   if (G.drag && G.drag.id === e.pointerId && G.phase === 'launch') {
     const dx = G.drag.sx - G.drag.x, dy = G.drag.sy - G.drag.y, l = len(dx, dy);
-    if (l > 18) doLaunch(dx, dy, clamp(l / 170, 0.15, 1));
+    if (l > 18) startCount(dx, dy, clamp(l / 170, 0.15, 1));
     G.drag = null;
   }
   if (G.joy && G.joy.id === e.pointerId) {
@@ -2015,7 +2027,7 @@ window.addEventListener('keydown', e => {
   SFX.init();
   if (!G) return;
   G.keys[e.key.toLowerCase()] = true;
-  if (e.key === ' ') { e.preventDefault(); if (G.phase === 'launch') doLaunch(CX - G.tops[0].x, CY - G.tops[0].y - 40, 0.8); else pressEx(); }
+  if (e.key === ' ') { e.preventDefault(); if (G.phase === 'launch') startCount(CX - G.tops[0].x, CY - G.tops[0].y - 40, 0.8); else if (G.phase === 'battle') pressEx(); }
 });
 window.addEventListener('keyup', e => { if (G) G.keys[e.key.toLowerCase()] = false; });
 exBtn.addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); pressEx(); });
@@ -2042,6 +2054,25 @@ function pressEx(chargeOnly) {
 }
 menuBtn.addEventListener('click', () => openTeam());
 
+// both tops launch together: the player's aim locks, the call plays, then the CPU's (hidden) drop is revealed
+function startCount(dx, dy, power) {
+  G.phase = 'count'; G.countT = 0; G.countN = -1; G.pendingLaunch = { dx, dy, power }; G.banner = null;
+}
+function updateCount(dt) {
+  G.countT += dt;
+  const step = Math.floor(G.countT / 0.36);
+  if (step !== G.countN && step <= 3) {
+    G.countN = step;
+    if (step < 3) { comicPop(CX, CY - 30, ['3', '2', '1'][step], 64, '#ffffff', ['#00f0ff', '#fcee0a', '#ff2a55'][step], 0.36); SFX.round(); }
+    else {
+      const me = G.tops[0], a = G.tops[1]; // CPU never lands on top of you
+      for (let k = 0; k < 20 && len(a.x - me.x, a.y - me.y) < TR * 2 + 14; k++) { const q = randomDrop(me); a.x = q.x; a.y = q.y; }
+      const L = G.pendingLaunch; doLaunch(L.dx, L.dy, L.power);
+      comicPop(CX, CY - 40, 'SPIN! SPIN!', 50, '#fcee0a', '#ff2a55', 1.1); focusLines(CX, CY, 'rgba(255,255,255,.75)', 0.45);
+    }
+  }
+  for (const t of G.tops) t.angle += t.s.w.dir * 6 * dt;
+}
 function doLaunch(dx, dy, power) {
   const [p, a] = G.tops;
   launch(p, dx, dy, power);
@@ -2050,7 +2081,6 @@ function doLaunch(dx, dy, power) {
   const rot = Math.random() < 0.5 ? rnd(-0.35, 0.35) : rnd(-1.2, 1.2);
   launch(a, aim.x * Math.cos(rot) - aim.y * Math.sin(rot), aim.x * Math.sin(rot) + aim.y * Math.cos(rot), rnd(0.5, 1));
   G.phase = 'battle'; G.banner = null;
-  addText(CX, CY - 40, '發射！', '#00f0ff', 34);
   sparks(p.x, p.y, 14, '#00f0ff'); sparks(a.x, a.y, 14, '#ff3b5c');
   SFX.launch();
 }
@@ -2259,7 +2289,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
       G.hitStop = 0.16; G.flash = 0.35; camPunch('ko', def.x, def.y); G.slowT = CAM.slowT;
       G.shake = 14; SFX.burst();
       comicPop(def.x, def.y - 30, 'BREAK!!', 52, '#fcee0a', '#ff2a55', 1.2); focusLines(def.x, def.y, 'rgba(255,255,255,.9)', 0.5);
-      endRound(att.side, 1, '爆甲');
+      endRound(att.side, 1, 'BREAK');
     }
   }
 }
@@ -2424,10 +2454,10 @@ function endRound(winner, pts, reason) {
   if (G.phase !== 'battle') return;
   G.phase = 'roundEnd'; G.joy = null;
   if (winner !== null) G.score[winner] += pts;
-  const who = winner === 0 ? '你' : '電腦';
+  const who = winner === 0 ? 'YOU' : 'CPU';
   let text, color;
-  if (winner === null) { text = '陀螺停轉・平局'; color = '#cfd5e0'; }
-  else { text = `${reason}！${who} +${pts}`; color = winner === 0 ? '#00f0ff' : '#ff3b5c'; }
+  if (winner === null) { text = 'STOP! DRAW'; color = '#cfd5e0'; }
+  else { text = `${reason}! ${who} +${pts}`; color = winner === 0 ? '#00f0ff' : '#ff3b5c'; }
   showBanner(text, 2.4, color);
   if (winner === null) SFX.draw();
   G.pending = winner;
@@ -2448,12 +2478,12 @@ function afterRound() {
 function finish() {
   G.phase = 'final';
   const win = G.score[0] > G.score[1];
-  document.getElementById('finalText').textContent = win ? '勝利！' : '敗北';
+  document.getElementById('finalText').textContent = win ? 'VICTORY!' : 'DEFEAT...';
   document.getElementById('finalText').style.color = win ? '#fcee0a' : '#ff2a55';
   const today = new Date().toDateString(), daily = win && INV.day !== today;
   const got = (win ? WIN_COIN : LOSE_COIN) + (daily ? DAILY_COIN : 0);
   INV.coins += got; if (daily) INV.day = today; if (win) wins++; save();
-  document.getElementById('finalScore').innerHTML = `你 ${G.score[0]} : ${G.score[1]} 電腦<br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
   const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   document.getElementById('retryBtn').style.display = win ? 'none' : '';
   document.getElementById('toTeamBtn').style.display = '';
@@ -2492,7 +2522,7 @@ function update(dt) {
     if (G.endT <= 0) afterRound();
   } else if (G.phase === 'launch') {
     for (const t of G.tops) t.angle += t.s.w.dir * 4 * dt;
-  }
+  } else if (G.phase === 'count') updateCount(dt);
   for (const t of G.tops) {
     const fast = t.onRing || len(t.vx, t.vy) > 380;
     if (fast && !t.dead && !t.falling) { t.trail.push({ x: t.x, y: t.y }); if (t.trail.length > 16) t.trail.shift(); }
@@ -2597,6 +2627,22 @@ function drawArenaStatic(g, noWall) {
     g.fillStyle = pit; g.fill();
   }
 }
+// arena sign plate: dark slanted plate, coloured frame, hazard-striped ends, bold italic label (drawn in floor space)
+function signPlate(g, x, y, rot, txt, col, size, alpha) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.globalAlpha = alpha == null ? 1 : alpha;
+  g.font = `italic 900 ${size}px Rajdhani, "Arial Black", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  const tw = g.measureText(txt).width, w = tw + size * 2.2, h = size * 1.45, sk = h * 0.35;
+  const plate = () => { g.beginPath(); g.moveTo(-w / 2 + sk, -h / 2); g.lineTo(w / 2 + sk, -h / 2); g.lineTo(w / 2 - sk, h / 2); g.lineTo(-w / 2 - sk, h / 2); g.closePath(); };
+  g.fillStyle = 'rgba(0,0,0,.45)'; g.save(); g.translate(3, 4); plate(); g.fill(); g.restore();
+  plate(); g.fillStyle = '#0b0d12'; g.fill();
+  g.save(); plate(); g.clip(); // hazard stripes on both ends
+  for (const side of [-1, 1]) { const ex = side * (w / 2 - size * 0.55); g.fillStyle = col; g.fillRect(ex - size * 0.45, -h / 2, size * 0.9, h);
+    g.fillStyle = '#05060a'; for (let k = -3; k <= 3; k++) { g.beginPath(); g.moveTo(ex + k * 7 - 2, -h / 2); g.lineTo(ex + k * 7 + 2, -h / 2); g.lineTo(ex + k * 7 - 6, h / 2); g.lineTo(ex + k * 7 - 10, h / 2); g.closePath(); g.fill(); } }
+  g.restore();
+  plate(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = col; g.lineWidth = 2; g.stroke();
+  g.lineWidth = size * 0.2; g.strokeStyle = '#05060a'; g.strokeText(txt, 1, 1); g.fillStyle = col; g.fillText(txt, 0, 0);
+  g.restore();
+}
 // text painted flat on the floor along an arc (reads left to right for the viewer)
 function paintArc(g, txt, a, r, size, col, alpha) {
   g.save(); g.font = `italic 900 ${size}px Rajdhani, "Arial Black", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
@@ -2644,7 +2690,14 @@ function drawArena(g, time) {
     g.lineWidth = 4; g.strokeStyle = shade(gt.txt, 0.2); g.beginPath(); ell(-4, gt.a - 0.6, gt.a + 0.6); g.stroke();
     g.restore();
     // label painted on the floor step, following the curve of the exit like a road marking
-    paintArc(g, `${gt.name} +${gt.pts}`, gt.a, AX * (gt.pts === 3 ? 0.83 : 0.86), gt.pts === 3 ? 30 : 21, gt.txt, 0.55 + 0.25 * pulse);
+    // floor sign plate in front of the exit + chevrons pointing into it
+    { const r0 = AX * (gt.pts === 3 ? 0.72 : 0.7), px = CX + Math.cos(gt.a) * r0, py = CY + Math.sin(gt.a) * r0;
+      signPlate(g, px, py, (gt.a - Math.PI / 2) * 0.35, `${gt.name} +${gt.pts}`, gt.txt, gt.pts === 3 ? 19 : 14, 0.92);
+      for (let k = 0; k < 3; k++) {
+        const ph = (time * 1.6 + k / 3) % 1, rr = r0 + 22 + ph * 30, cx2 = CX + Math.cos(gt.a) * rr, cy2 = CY + Math.sin(gt.a) * rr;
+        g.save(); g.translate(cx2, cy2); g.rotate(gt.a - Math.PI / 2); g.globalAlpha = Math.sin(ph * Math.PI) * 0.9;
+        g.fillStyle = gt.txt; g.strokeStyle = '#05060a'; g.lineWidth = 2; g.beginPath(); g.moveTo(-8, -4); g.lineTo(0, 3); g.lineTo(8, -4); g.lineTo(8, 0); g.lineTo(0, 7); g.lineTo(-8, 0); g.closePath(); g.stroke(); g.fill(); g.restore();
+      } }
   }
   // battle heart (core ring)
   {
@@ -2659,7 +2712,7 @@ function drawArena(g, time) {
     g.restore();
     g.fillStyle = `rgba(${col},${0.04 + (holders.length ? 0.07 : 0)})`; g.beginPath(); g.ellipse(CX, CY, AX * CORE_Q, BY * CORE_Q, 0, 0, TAU); g.fill();
     g.fillStyle = `rgba(${col},.75)`; g.font = '900 11px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    upright(g, CX, CY + BY * CORE_Q - 10, () => g.fillText(holders.length === 2 ? '戰心爭奪中！' : '戰心圈', 0, 0));
+    signPlate(g, CX, CY + BY * CORE_Q + 2, 0, holders.length === 2 ? 'CORE CLASH!' : 'CORE', holders.length === 2 ? '#fcee0a' : `rgb(${col})`, 11, holders.length ? 1 : 0.85);
   }
   // speed rails (two ears with the opening at 12 o'clock): yellow guide rails, cyan track, chevrons
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
@@ -2700,7 +2753,7 @@ function drawHUD(g) {
   g.textAlign = 'center'; g.font = 'italic 900 46px Rajdhani, sans-serif'; g.lineJoin = 'round';
   { const sc = `${G.score[0]}  :  ${G.score[1]}`; g.lineWidth = 8; g.strokeStyle = '#05060a'; g.strokeText(sc, CX + 3, 59); g.strokeText(sc, CX, 56); g.fillStyle = '#ff2a55'; g.fillText(sc, CX + 3, 59); g.fillStyle = '#fcee0a'; g.fillText(sc, CX, 56); }
   g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.65)';
-  g.fillText(G.sudden ? '加賽' : `第 ${G.round} / 3 場`, CX, 22);
+  g.font = 'italic 900 15px Rajdhani, sans-serif'; g.fillText(G.sudden ? 'SUDDEN DEATH' : `ROUND ${G.round} / 3`, CX, 22);
   // panels
   const panel = (t, x0, align, label, col) => {
     // portrait tile on the outer edge, panel shifted inward
@@ -2720,17 +2773,17 @@ function drawHUD(g) {
     if (t.s.c.ex !== 'revive') drawBar(g, x, 160, 124, 5, t.energy / 100, '#ffffff', '#00f0ff');
     g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.5)'; g.textAlign = 'left';
     const tags = [];
-    if (t.poison) tags.push(`毒×${t.poison}`); if (t.markT > 0) tags.push('標記'); if (t.shieldT > 0) tags.push('護盾'); if (t.stunT > 0) tags.push('暈眩'); if (t.revived) tags.push('已復活'); if (t.inCore) tags.push('戰心');
+    if (t.poison) tags.push(`毒×${t.poison}`); if (t.markT > 0) tags.push('標記'); if (t.shieldT > 0) tags.push('護盾'); if (t.stunT > 0) tags.push('暈眩'); if (t.revived) tags.push('已復活'); if (t.inCore) tags.push('CORE');
     if (tags.length) { g.fillStyle = '#fcee0a'; g.textAlign = align; g.fillText(tags.join(' '), align === 'left' ? x : x + 124, 176); }
   };
-  panel(p, 22, 'left', '你', '#00f0ff');
-  panel(a, W - 22 - 58 - 8 - 124, 'right', '電腦', '#ff3b5c');
+  panel(p, 22, 'left', 'YOU', '#00f0ff');
+  panel(a, W - 22 - 58 - 8 - 124, 'right', 'CPU', '#ff3b5c');
   // legend
   g.textAlign = 'left'; g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.35)';
-  g.fillText('黃：血量　青：轉速　白：EX', 22, 194);
+  g.font = 'italic 900 10px Rajdhani, sans-serif'; g.fillText('HP  /  SPIN  /  EX', 22, 194);
   // bottom hints
   g.textAlign = 'center'; g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.5)';
-  if (G.phase === 'launch') { g.fillText('按下的位置就是落點・往後拉決定方向和力道・放開發射', CX, 752); g.fillText('電腦的落點已經出現，瞄準它開場一擊！', CX, 776); }
+  if (G.phase === 'launch') { g.fillText('按下的位置就是落點・往後拉決定方向和力道・放開發射', CX, 752); g.fillText('電腦的落點是秘密！放開後 3、2、1、SPIN! SPIN! 一起發射', CX, 776); }
   else if (G.phase === 'battle') g.fillText('按住拖曳移動・點畫面任何地方充能 EX', CX - 50, 760);
 }
 
@@ -2765,16 +2818,11 @@ function drawFarWall(g) {
     g.restore();
     g.strokeStyle = 'rgba(0,240,255,.75)'; g.lineWidth = 2; g.beginPath(); g.ellipse(CX, CY - 2, AX + 1, AX + 1, 0, a0, a1); g.stroke();
   }
-  // WORMHOLE lettered on the inner wall face above the speed rails
-  { const dz2 = WALL_H / VIEW_K, txt = 'WORMHOLE', fs = dz2 * 0.78, span = 0.95, n = txt.length;
-    g.save(); g.font = `italic 900 ${fs}px Rajdhani, "Arial Black", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
-    for (let i = 0; i < n; i++) {
-      const t = Math.PI * 1.5 + (i - (n - 1) / 2) / (n - 1) * span, x = CX + Math.cos(t) * (AX + 1), y = CY + Math.sin(t) * (AX + 1) - dz2 * 0.12;
-      g.save(); g.translate(x, y); g.scale(Math.max(0.35, Math.abs(Math.sin(t))) * 0.9, 1); g.transform(1, 0, -0.18, 1, 0, 0);
-      g.lineWidth = fs * 0.2; g.strokeStyle = '#05060a'; g.strokeText(txt[i], 0, 0);
-      g.fillStyle = '#fcee0a'; g.fillText(txt[i], 0, 0); g.fillStyle = 'rgba(255,42,85,.9)'; g.fillRect(-fs * 0.3, -fs * 0.08, fs * 0.6, fs * 0.05); g.restore();
-    }
-    g.restore(); }
+  // WORMHOLE: a tunnel sign mounted on the back wall, right above the rail opening (stays upright like a real sign)
+  { const dz2 = WALL_H / VIEW_K; upright(g, CX, CY - AX - dz2 * 0.45, () => {
+      signPlate(g, 0, 0, 0, 'WORMHOLE', '#fcee0a', 13);
+      g.strokeStyle = '#00f0ff'; g.lineWidth = 2; g.beginPath(); for (let k = 0; k < 26; k++) { const an = k * 0.5 + G.time * 4, rr = 1 + k * 0.28; g.lineTo(-62 + Math.cos(an) * rr, Math.sin(an) * rr); } g.stroke();
+    }); }
   drawRim(g, Math.PI, TAU);
 }
 function drawRim(g, A0, A1) {
@@ -2850,6 +2898,7 @@ function drawExAnim(g, kind, t, foe, k) {
 }
 function drawTopWorld(g, t) {
   if (t.dead) return;
+  if (t.side === 1 && G && (G.phase === 'launch' || G.phase === 'count')) return; // the CPU's drop point stays secret until SPIN!
   g.save();
   g.translate(t.x, t.y);
   let sc = 1;
@@ -2894,7 +2943,7 @@ function drawTopWorld(g, t) {
   g.restore();
   // label
   g.fillStyle = t.side === 0 ? '#00f0ff' : '#ff3b5c'; g.font = 'bold 13px Rajdhani, sans-serif'; g.textAlign = 'center';
-  if (!t.falling) upright(g, t.x, t.y + 48, () => g.fillText(t.side === 0 ? '你' : '電腦', 0, 0));
+  if (!t.falling) upright(g, t.x, t.y + 48, () => { g.font = 'italic 900 13px Rajdhani, sans-serif'; g.fillText(t.side === 0 ? 'YOU' : 'CPU', 0, 0); });
   if (SETTINGS.hpPct && !t.falling && t.hp > 0) {
     const pc = Math.max(0, Math.ceil(t.hp / t.s.maxHp * 100)), col = pc > 60 ? '#5dff8f' : pc > 30 ? '#fcee0a' : '#ff2a55';
     upright(g, t.x, t.y - 52, () => { g.font = '900 15px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(pc + '%', 0, 0); g.fillStyle = col; g.fillText(pc + '%', 0, 0); });
