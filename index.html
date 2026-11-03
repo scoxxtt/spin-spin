@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.29</title>
+<title>旋刃對決 v0.30</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -123,6 +123,15 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .row canvas{width:3.2em;height:3.2em}
 .vsrow .side.r .face{clip-path:polygon(0 0,100% 0,100% 100%,20% 100%,0 80%)}
 .screen{padding-bottom:3.4em !important}
+.screen{background:radial-gradient(rgba(0,240,255,.10) 1.1px,transparent 1.6px) 0 0/10px 10px,radial-gradient(ellipse at 50% 12%,rgba(0,240,255,.14) 0%,#07090c 62%)}
+h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a,5px 5px 0 #ff2a55,-3px 0 #00f0ff;transform:skew(-6deg)}
+.btn{box-shadow:inset 0 0 0 3px #05060a;font-style:italic;font-weight:900}
+.btn.ghost{box-shadow:inset 0 0 0 3px #00f0ff}
+.slot,.tile{box-shadow:inset 0 0 0 2px rgba(0,0,0,.55)}
+.slot{background:radial-gradient(rgba(0,240,255,.12) 1px,transparent 1.5px) 0 0/7px 7px,linear-gradient(180deg,rgba(0,240,255,.14),rgba(0,0,0,.4))}
+.chip{border:2px solid #05060a !important;font-style:italic}
+.big{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px 0 #05060a,2px 2px 0 #05060a,6px 6px 0 #ff2a55}
+.ipCard{background:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.5px) 0 0/8px 8px,linear-gradient(#141a24,#0a0d14)}
 #verFoot{position:absolute;left:0;right:0;bottom:.35em;text-align:center;font-size:.55em;color:rgba(255,255,255,.35);letter-spacing:.08em;pointer-events:none;z-index:60;font-family:Rajdhani,sans-serif}
 #gearBtn{position:absolute;right:3%;top:1.2%;font-size:.75em;padding:.35em .8em;border-radius:0;border:1px solid #00f0ff;color:#00f0ff;background:rgba(0,0,0,.55);font-family:Rajdhani,"Noto Sans TC",sans-serif;z-index:65}
 #settings{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);z-index:70}
@@ -317,10 +326,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.27 HP % above each top (settings toggle); duplicates kept as material, merge by dragging onto the part or with the merge button; star-up burst; red / yellow pull reveal (glowing card backs, flash, shake)
  v0.28 motorcycle-style engine note for tops (rev with speed, lumpy idle, backfire pops, rev-up launch), crystal ore currency icon, comic onomatopoeia bursts, halftone rings, manga focus lines, hit bounce
  v0.29 hidden class mech-cat (paid draws only, 2% with pity at 40, +10% base), EX midnight zoomies (3 s zigzag dash, faster after each wall bounce, +30% damage), gold hidden-class reveal
+ v0.30 comic-book look everywhere: cel-shaded arena with halftone dots and ink outlines, hatched walls, inked rails / rim / core, inked tops, 45-degree tops in tutorial / pack / lineup, comic HUD score, halftone screens, inked buttons and titles
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.29';
+const GAME_VERSION = 'v0.30';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -600,6 +610,8 @@ function drawTop(g, build, angle, opts = {}) {
       g.strokeStyle = sw; g.lineWidth = 5; g.beginPath(); g.arc(0, 0, 31, dir > 0 ? a0 - 1.3 : a0, dir > 0 ? a0 : a0 + 1.3); g.stroke();
     }
   }
+  // comic ink: a black backing disc reads as a thick outline around the whole top
+  g.fillStyle = '#05060a'; g.beginPath(); g.arc(0, 0, 33.5, 0, TAU); g.fill();
   // ---- weapon (top layer, outermost) ----
   if (w.shape === 'disc') {
     const dg = g.createRadialGradient(-9, -9, 3, 0, 0, 31);
@@ -792,7 +804,7 @@ function drawPreviews(dt) {
     const z = p.size / 2;
     p.g.setTransform(1, 0, 0, 1, 0, 0); p.g.clearRect(0, 0, p.size, p.size);
     p.g.setTransform(z / 38, 0, 0, z / 38, z, z);
-    drawTop(p.g, p.b, previewAng * WEAPONS[p.b.w].dir, { spin: 0.6 });
+    p.g.translate(0, -5); drawTop45(p.g, p.b, previewAng * WEAPONS[p.b.w].dir, 0.6);
   }
 }
 const statLine = b => { const s = stats(b); return `${FAMILY[s.w.fam].name}系・${ARMOR_CLASS[s.a.cls].name}｜攻${s.w.atk} 退${s.w.kb} 防${s.a.thick} 閃${s.a.facets} 速${s.c.speed}・EX「${s.c.exName}」`; };
@@ -1213,8 +1225,8 @@ function drawCard(g, card, sl, time, appear) {
     g.save(); roundRectP(g, -w / 2 + 8, -h / 2 + 8, w - 16, h * 0.5, 6); g.clip();
     if (!drawPortrait(g, b.c, -w / 2 + 8, -h / 2 + 8, w - 16, h * 0.5)) { g.translate(0, -h / 2 + 8 + h * 0.25); const z = w / 95; g.scale(z, z); drawTop(g, b, time * 6 * WEAPONS[b.w].dir, { spin: 0.9 }); }
     g.restore();
-    g.save(); g.translate(w / 2 - w * 0.17, -h / 2 + 8 + h * 0.5 - w * 0.15); const z2 = w / 210; g.scale(z2, z2);
-    drawTop(g, b, time * 6 * WEAPONS[b.w].dir, { spin: 0.9 }); g.restore();
+    g.save(); g.translate(w / 2 - w * 0.17, -h / 2 + 8 + h * 0.5 - w * 0.17); const z2 = w / 200; g.scale(z2, z2);
+    drawTop45(g, b, time * 6 * WEAPONS[b.w].dir, 0.9); g.restore();
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = '#fff'; g.font = `900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.fillText(nameOf(b), 0, h * 0.13);
     const isz = w * 0.27;
@@ -1337,12 +1349,20 @@ function tutArenaBg(g) {
   g.setTransform(2 * TK, 0, 0, 2 * TK, 2 * (200 - CX * TK), 2 * (200 - CY * TK));
   drawArena(g, performance.now() / 1000);
 }
-function tTop(g, b, x, y, ang, sc) { g.save(); g.translate(x, y); g.scale(sc || 1.3, sc || 1.3); drawTop(g, b, ang, { spin: 1 }); g.restore(); }
+// a top seen from 45 degrees (ground shadow, side drum, squashed face) for menus, tutorial and cards
+function drawTop45(g, b, ang, spin) {
+  g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(4, 20, 32, 11, 0, 0, TAU); g.fill();
+  g.fillStyle = '#0b0e13'; g.beginPath(); g.ellipse(0, 7, 32, 25, 0, 0, TAU); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 3; g.stroke();
+  g.fillStyle = shade(ATTR_COLOR[WEAPONS[b.w].attr], -0.45); g.fillRect(-31, 0, 62, 7);
+  g.fillStyle = '#c9d2dc'; g.beginPath(); g.ellipse(0, 19, 4.5, 3, 0, 0, TAU); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();
+  g.save(); g.scale(1, 0.8); drawTop(g, b, ang, { spin: spin == null ? 1 : spin }); g.restore();
+}
+function tTop(g, b, x, y, ang, sc) { g.save(); g.translate(x, y); g.scale(sc || 1.3, sc || 1.3); drawTop45(g, b, ang); g.restore(); }
 function tLabel(g, txt, x, y, col, size) { g.font = `900 ${size || 22}px Rajdhani, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 5; g.strokeStyle = 'rgba(0,0,0,.8)'; g.strokeText(txt, x, y); g.fillStyle = col || '#fff'; g.fillText(txt, x, y); }
 function tFinger(g, x, y, press) { g.fillStyle = `rgba(255,255,255,${press ? 0.55 : 0.3})`; g.beginPath(); g.arc(x, y, press ? 15 : 18, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2.5; g.stroke(); }
 function tWave(g, x, y, k, col) { if (k < 0 || k > 1) return; g.strokeStyle = `rgba(${col},${1 - k})`; g.lineWidth = 8 * (1 - k) + 1; g.beginPath(); g.arc(x, y, 10 + k * 80, 0, TAU); g.stroke(); }
 const TUT = [
-  { title: '抽陀螺・組隊伍', text: '開局打開卡包抽 3 顆陀螺。陀螺分三層：<b>武器・鎧甲・職業</b>，可以在陀螺之間互換，再排好 1・2・3 的出場順序。', draw(g, t) {
+  { title: '抽陀螺・組隊伍', text: '開局打開卡包抽 3 顆陀螺，零件會收進<b>零件庫</b>。陀螺分三層：<b>武器・鎧甲・職業</b>，每個出戰格各裝一組，再排好 1・2・3 的出場順序。打贏拿金幣再抽！', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       const ph = (t % 3.4) / 3.4, swapped = ph > 0.55;
       const A = { ...TA, w: swapped ? TB.w : TA.w }, B = { ...TB, w: swapped ? TA.w : TB.w };
@@ -2469,6 +2489,11 @@ function drawArenaStatic(g, noWall) {
   for (let y = 0; y <= H; y += 30) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
   let seed = 7; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < 40; i++) { g.fillStyle = rr() < 0.5 ? `rgba(0,240,255,${0.1 + rr() * 0.25})` : `rgba(252,238,10,${0.08 + rr() * 0.2})`; g.fillRect(Math.floor(rr() * 18) * 30 + 1, Math.floor(rr() * 32) * 30 + 1, 28 * (0.2 + rr() * 0.8), 2); }
+  // comic halftone backdrop: dots grow toward the corners
+  for (let y = 7; y < H; y += 14) for (let x = (y / 14 % 2) * 7 + 7; x < W; x += 14) {
+    const q = clamp((Math.hypot(x - CX, y - CY) - 270) / 380, 0, 1); if (q <= 0) continue;
+    g.fillStyle = `rgba(0,240,255,${0.07 + 0.08 * q})`; g.beginPath(); g.arc(x, y, 1 + 4 * q, 0, TAU); g.fill();
+  }
   const ell = (m, a0, a1, ccw) => g.ellipse(CX, CY, AX + m, BY + m, 0, a0 === undefined ? 0 : a0, a1 === undefined ? TAU : a1, !!ccw);
   if (!noWall) {
   // outer stadium wall: brushed metal band with bolts
@@ -2500,9 +2525,17 @@ function drawArenaStatic(g, noWall) {
     g.strokeStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.arc(0, 0, r + 1, 0, TAU); g.stroke();
     g.strokeStyle = 'rgba(0,240,255,.1)'; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
   }
+  // cel shading: a hard-edged shadow crescent, halftone toward the edge, a highlight arc
+  g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.arc(0, 0, AX + 2, 0, TAU); g.arc(-22, -30, AX - 4, 0, TAU, true); g.fill('evenodd');
+  for (let y = -AX; y <= AX; y += 10) for (let x = -AX + ((y / 10) % 2 ? 5 : 0); x <= AX; x += 10) {
+    const r = Math.hypot(x, y) / AX, q = clamp((r - 0.6) / 0.4, 0, 1); if (q <= 0 || r > 1) continue;
+    g.fillStyle = 'rgba(0,0,0,.42)'; g.beginPath(); g.arc(x, y, 0.6 + 2.6 * q, 0, TAU); g.fill();
+  }
+  g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = 5; g.beginPath(); g.arc(0, 0, AX - 12, Math.PI * 1.08, Math.PI * 1.42); g.stroke();
   const lip = g.createRadialGradient(0, 0, AX - 30, 0, 0, AX + 2);
   lip.addColorStop(0, 'rgba(0,0,0,0)'); lip.addColorStop(1, 'rgba(0,0,0,.55)');
   g.fillStyle = lip; g.beginPath(); g.arc(0, 0, AX + 2, 0, TAU); g.fill();
+  g.strokeStyle = '#030405'; g.lineWidth = 6; g.beginPath(); g.arc(0, 0, AX + 1, 0, TAU); g.stroke();
   g.restore();
   g.strokeStyle = 'rgba(0,240,255,.07)'; g.lineWidth = 1;
   for (let i = 0; i < 24; i++) { const t = i / 24 * TAU; g.beginPath(); g.moveTo(CX + Math.cos(t) * 30, CY + Math.sin(t) * 20); g.lineTo(CX + Math.cos(t) * (AX - 4), CY + Math.sin(t) * (BY - 4)); g.stroke(); }
@@ -2511,6 +2544,8 @@ function drawArenaStatic(g, noWall) {
   const bs = g.createRadialGradient(0, 0, 4, 0, 0, AX * 0.62);
   bs.addColorStop(0, 'rgba(0,0,0,.42)'); bs.addColorStop(0.6, 'rgba(0,0,0,.18)'); bs.addColorStop(1, 'rgba(0,0,0,0)');
   g.fillStyle = bs; g.beginPath(); g.arc(0, 0, AX * 0.62, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, AX * 0.62, 0, TAU); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,.14)'; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, AX * 0.62 - 4, Math.PI * 1.1, Math.PI * 1.45); g.stroke();
   g.lineWidth = 1.2 * AX / BY;
   for (const k of [0.5, 0.58]) { g.strokeStyle = 'rgba(255,255,255,.06)'; g.beginPath(); g.arc(0, 0, AX * k, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); g.strokeStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.arc(0, 0, AX * k + 2, 0, Math.PI); g.stroke(); }
   g.restore();
@@ -2525,9 +2560,11 @@ function drawArenaStatic(g, noWall) {
 function drawArena(g, time) {
   const ell = (m, a0, a1, ccw) => g.ellipse(CX, CY, AX + m, BY + m, 0, a0 === undefined ? 0 : a0, a1 === undefined ? TAU : a1, !!ccw);
   // rim glow (skips the exits)
-  g.lineWidth = 2; g.strokeStyle = 'rgba(0,240,255,.9)';
   const cuts = GATES.map(gt => [gt.a - gt.half, gt.a + gt.half]).sort((a, b) => a[0] - b[0]);
-  for (let i = 0; i < cuts.length; i++) { const from = cuts[i][1], to = i + 1 < cuts.length ? cuts[i + 1][0] : cuts[0][0] + TAU; g.beginPath(); ell(1, from, to); g.stroke(); }
+  for (const [lw, col] of [[5, '#030405'], [2, 'rgba(0,240,255,.9)']]) {
+    g.lineWidth = lw; g.strokeStyle = col;
+    for (let i = 0; i < cuts.length; i++) { const from = cuts[i][1], to = i + 1 < cuts.length ? cuts[i + 1][0] : cuts[0][0] + TAU; g.beginPath(); ell(1, from, to); g.stroke(); }
+  }
   const pulse = 0.6 + 0.4 * Math.sin(time * 4);
   for (const gt of GATES) {
     // exit glow + embers
@@ -2562,6 +2599,7 @@ function drawArena(g, time) {
     const holders = G && G.tops ? G.tops.filter(t => t.inCore && !t.dead) : [];
     const col = holders.length === 2 ? '252,238,10' : holders.length ? (holders[0].side === 0 ? '0,240,255' : '255,59,92') : '252,238,10';
     const k = holders.length ? 0.75 + 0.25 * Math.sin(time * 10) : 0.35 + 0.15 * Math.sin(time * 2);
+    g.strokeStyle = 'rgba(0,0,0,.8)'; g.lineWidth = holders.length ? 8 : 6; g.beginPath(); g.ellipse(CX, CY, AX * CORE_Q, BY * CORE_Q, 0, 0, TAU); g.stroke();
     g.save(); g.shadowColor = `rgb(${col})`; g.shadowBlur = holders.length ? 22 : 8;
     g.strokeStyle = `rgba(${col},${k})`; g.lineWidth = holders.length ? 4 : 2.5;
     g.setLineDash([6, 8]); g.lineDashOffset = time * 30;
@@ -2574,8 +2612,10 @@ function drawArena(g, time) {
   // speed rails (two ears with the opening at 12 o'clock): yellow guide rails, cyan track, chevrons
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
   for (const r of RAILS) {
-    railPath(g, r); g.strokeStyle = 'rgba(0,240,255,.14)'; g.lineWidth = 22; g.stroke();
-    g.strokeStyle = 'rgba(252,238,10,.85)'; g.lineWidth = 1.6;
+    railPath(g, r); g.strokeStyle = '#030405'; g.lineWidth = 27; g.stroke();
+    railPath(g, r); g.strokeStyle = '#0f3d47'; g.lineWidth = 21; g.stroke();
+    railPath(g, r, -4); g.strokeStyle = 'rgba(255,255,255,.08)'; g.lineWidth = 5; g.stroke();
+    g.strokeStyle = '#fcee0a'; g.lineWidth = 2.6;
     railPath(g, r, -10); g.stroke(); railPath(g, r, 10); g.stroke();
     g.shadowColor = '#00f0ff'; g.shadowBlur = 12;
     const n = Math.round(r.L / 22);
@@ -2606,8 +2646,8 @@ function drawHUD(g) {
   const [p, a] = G.tops;
   g.textBaseline = 'middle';
   // score
-  g.textAlign = 'center'; g.fillStyle = '#fcee0a'; g.font = 'bold 40px Rajdhani, sans-serif';
-  g.fillText(`${G.score[0]}  :  ${G.score[1]}`, CX, 56);
+  g.textAlign = 'center'; g.font = 'italic 900 46px Rajdhani, sans-serif'; g.lineJoin = 'round';
+  { const sc = `${G.score[0]}  :  ${G.score[1]}`; g.lineWidth = 8; g.strokeStyle = '#05060a'; g.strokeText(sc, CX + 3, 59); g.strokeText(sc, CX, 56); g.fillStyle = '#ff2a55'; g.fillText(sc, CX + 3, 59); g.fillStyle = '#fcee0a'; g.fillText(sc, CX, 56); }
   g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.65)';
   g.fillText(G.sudden ? '加賽' : `第 ${G.round} / 3 場`, CX, 22);
   // panels
@@ -2616,7 +2656,8 @@ function drawHUD(g) {
     const px = align === 'left' ? 22 : W - 22 - 58;
     g.save(); g.beginPath(); g.moveTo(px, 88); g.lineTo(px + 58, 88); g.lineTo(px + 58, 136); g.lineTo(px + 48, 146); g.lineTo(px, 146); g.closePath();
     g.fillStyle = '#000'; g.fill(); g.clip(); drawPortrait(g, t.build.c, px, 88, 58, 58); g.restore();
-    g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.moveTo(px, 88); g.lineTo(px + 58, 88); g.lineTo(px + 58, 136); g.lineTo(px + 48, 146); g.lineTo(px, 146); g.closePath(); g.stroke();
+    g.beginPath(); g.moveTo(px, 88); g.lineTo(px + 58, 88); g.lineTo(px + 58, 136); g.lineTo(px + 48, 146); g.lineTo(px, 146); g.closePath();
+    g.strokeStyle = '#05060a'; g.lineWidth = 6; g.stroke(); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke();
     if (t.dead || t.falling) { g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(px, 88, 58, 58); }
     const x = align === 'left' ? x0 + 66 : x0;
     g.textAlign = align; g.fillStyle = col; g.font = 'bold 16px Rajdhani, sans-serif';
@@ -2665,10 +2706,12 @@ function drawFarWall(g) {
     for (let i = 40; i >= 0; i--) { const t = a0 + (a1 - a0) * i / 40; g.lineTo(CX + Math.cos(t) * (AX + 1), CY + Math.sin(t) * (AX + 1) - dz); }
     g.closePath();
     const fg = g.createLinearGradient(0, CY - AX - dz, 0, CY - AX * 0.2);
-    fg.addColorStop(0, '#2a3238'); fg.addColorStop(1, '#0c1114'); g.fillStyle = fg; g.fill();
-    // panel seams + a cyan light strip along the base
-    g.strokeStyle = 'rgba(0,240,255,.12)'; g.lineWidth = 1;
-    for (let k = 0; k < 18; k++) { const t = a0 + (a1 - a0) * k / 18, x = CX + Math.cos(t) * (AX + 1), y = CY + Math.sin(t) * (AX + 1); g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - dz); g.stroke(); }
+    fg.addColorStop(0, '#2c363d'); fg.addColorStop(0.5, '#2c363d'); fg.addColorStop(0.51, '#1a2126'); fg.addColorStop(1, '#1a2126'); g.fillStyle = fg; g.fill();
+    g.strokeStyle = '#030405'; g.lineWidth = 3; g.stroke();
+    // ink hatching: denser toward the ends of the wall, like a pen-shaded cylinder
+    g.save(); g.clip(); g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 1.4;
+    for (let k = 0; k <= 60; k++) { const u = k / 60, t = a0 + (a1 - a0) * u, edge = Math.abs(u - 0.5) * 2; if (edge < 0.45 && k % 3) continue; const x = CX + Math.cos(t) * (AX + 1), y = CY + Math.sin(t) * (AX + 1); g.beginPath(); g.moveTo(x, y); g.lineTo(x - 5, y - dz); g.stroke(); }
+    g.restore();
     g.strokeStyle = 'rgba(0,240,255,.75)'; g.lineWidth = 2; g.beginPath(); g.ellipse(CX, CY - 2, AX + 1, AX + 1, 0, a0, a1); g.stroke();
   }
   drawRim(g, Math.PI, TAU);
@@ -2676,14 +2719,14 @@ function drawFarWall(g) {
 function drawRim(g, A0, A1) {
   const dz = WALL_H / VIEW_K;
   for (const [a0, a1] of gateCuts(A0, A1)) {
-    wallRange(g, a0, a1, AX + 1, AX + 26, dz); g.fillStyle = '#14181c'; g.fill();
+    wallRange(g, a0, a1, AX + 1, AX + 26, dz); g.fillStyle = '#14181c'; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = 4; g.stroke();
     // hazard stripes on the rim top
     g.save(); wallRange(g, a0, a1, AX + 18, AX + 25, dz); g.clip();
     g.fillStyle = '#fcee0a'; g.fillRect(0, CY - AX - dz - 40, W, AX * 2 + 80);
     g.fillStyle = '#0b0b0b'; for (let i = -40; i < 60; i++) { g.beginPath(); g.moveTo(i * 18, 0); g.lineTo(i * 18 + 9, 0); g.lineTo(i * 18 + 9 - H * 0.6, H); g.lineTo(i * 18 - H * 0.6, H); g.closePath(); g.fill(); }
     g.restore();
     g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(CX, CY - dz, AX + 2, AX + 2, 0, a0, a1); g.stroke();
-    g.strokeStyle = 'rgba(255,255,255,.15)'; g.lineWidth = 1; g.beginPath(); g.ellipse(CX, CY - dz, AX + 26, AX + 26, 0, a0, a1); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(CX, CY - dz, AX + 15, AX + 15, 0, a0, a1); g.stroke();
   }
 }
 function drawNearWall(g) {
@@ -2695,7 +2738,11 @@ function drawNearWall(g) {
     for (let i = 40; i >= 0; i--) { const t = a0 + (a1 - a0) * i / 40; g.lineTo(CX + Math.cos(t) * (AX + 26), CY + Math.sin(t) * (AX + 26)); }
     g.closePath();
     const fg = g.createLinearGradient(0, CY + AX * 0.5, 0, CY + AX + 26);
-    fg.addColorStop(0, '#1d2328'); fg.addColorStop(1, '#07090b'); g.fillStyle = fg; g.fill();
+    fg.addColorStop(0, '#222a30'); fg.addColorStop(1, '#0d1013'); g.fillStyle = fg; g.fill();
+    g.strokeStyle = '#030405'; g.lineWidth = 4; g.stroke();
+    g.save(); g.clip(); g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 1.5;
+    for (let x = -40; x < W + 40; x += 7) { g.beginPath(); g.moveTo(x, CY + AX * 0.4); g.lineTo(x - 26, CY + AX + 40); g.stroke(); }
+    g.restore();
     g.strokeStyle = 'rgba(252,238,10,.5)'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(CX, CY - dz * 0.35, AX + 26, AX + 26, 0, a0, a1); g.stroke();
     // inner lip: the near rim hides the floor edge right behind it
     g.beginPath();
@@ -2762,7 +2809,7 @@ function drawTopWorld(g, t) {
     g.beginPath(); g.ellipse(0, side * 0.5, 30 * sc, 30 * sc, 0, 0, Math.PI); g.ellipse(0, -side * 0.5, 30 * sc, 30 * sc, 0, Math.PI, 0, true); g.closePath(); g.fill();
     g.beginPath(); g.arc(0, side, 30 * sc, 0, Math.PI); g.lineTo(-30 * sc, 0); g.arc(0, 0, 30 * sc, Math.PI, 0, true); g.closePath();
     const sg2 = g.createLinearGradient(-30, 0, 30, 0); sg2.addColorStop(0, '#05070a'); sg2.addColorStop(0.5, shade(ATTR_COLOR[t.s.w.attr], -0.4)); sg2.addColorStop(1, '#05070a');
-    g.fillStyle = sg2; g.fill();
+    g.fillStyle = sg2; g.fill(); g.strokeStyle = '#000'; g.lineWidth = 3; g.stroke();
     // spinning tip under the body
     g.fillStyle = '#c9d2dc'; g.beginPath(); g.ellipse(0, side + 3 / viewK, 5, 5, 0, 0, TAU); g.fill();
   }
