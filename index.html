@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.16</title>
+<title>旋刃對決 v0.17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -32,7 +32,7 @@ h1{font-size:1.9em;margin:.3em 0 .1em;letter-spacing:.08em;background:linear-gra
 #exBtn{position:absolute;right:4%;bottom:3.5%;width:22%;aspect-ratio:1;border-radius:50%;border:3px solid rgba(252,238,10,.35);background:radial-gradient(circle,#3a2b10,#1a1408);color:#fcee0a;font-weight:900;font-size:1.25em;display:none;font-family:inherit;line-height:1.1}
 #exBtn.ready{border-color:#fcee0a;background:radial-gradient(circle,#ffcf4d,#b37400);color:#1a1000;box-shadow:0 0 1.2em #ffcf4d;animation:pulse 1s infinite}
 #exBtn small{display:block;font-size:.45em;font-weight:600}
-#exBtn.tap{transform:scale(.92)}
+#exBtn.tap{transform:scale(1.14);filter:brightness(1.8);transition:transform .05s}
 @keyframes pulse{50%{transform:scale(1.06)}}
 #menuBtn{position:absolute;left:3%;top:1.2%;font-size:.75em;padding:.35em .8em;border-radius:1em;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.35);color:#cfd3ff;display:none;font-family:inherit}
 #muteBtn{position:absolute;right:3%;top:1.2%;font-size:.75em;padding:.35em .8em;border-radius:1em;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.35);color:#cfd3ff;display:none;font-family:inherit}
@@ -207,10 +207,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.14 mobile sound fix (iOS unlock, silent switch, resume), version label
  v0.15 version shown as a small footer at the bottom of every screen
  v0.16 round arena again, settings menu (music / sfx / EX button side), two synthesized Cyberpunk music loops
+ v0.17 city-pop / retro-racing battle music, bigger portraits on tops, clearer EX tap-charge feedback
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.16';
+const GAME_VERSION = 'v0.17';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -464,10 +465,10 @@ function drawTop(g, build, angle, opts = {}) {
   // facet ridges (light/dark pairs)
   for (let i = 0; i < a.facets; i++) {
     const t = i / a.facets * TAU, cx = Math.cos(t), cy = Math.sin(t), px = -cy * 0.9, py = cx * 0.9;
-    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1;
-    g.beginPath(); g.moveTo(cx * 12.5, cy * 12.5); g.lineTo(cx * 20.5, cy * 20.5); g.stroke();
-    g.strokeStyle = 'rgba(0,0,0,.3)';
-    g.beginPath(); g.moveTo(cx * 12.5 + px, cy * 12.5 + py); g.lineTo(cx * 20.5 + px, cy * 20.5 + py); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(cx * 16.5, cy * 16.5); g.lineTo(cx * 21, cy * 21); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.35)';
+    g.beginPath(); g.moveTo(cx * 16.5 + px, cy * 16.5 + py); g.lineTo(cx * 21 + px, cy * 21 + py); g.stroke();
   }
   g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, 13, 0, TAU); g.stroke();
   // ---- class core (bottom layer, a gem seen through the centre) ----
@@ -480,8 +481,10 @@ function drawTop(g, build, angle, opts = {}) {
   g.lineWidth = 1.6; g.strokeStyle = 'rgba(255,255,255,.75)'; g.beginPath(); g.arc(0, 0, 10.5, 0, TAU); g.stroke();
   g.restore();
   // class core shows the character's face (kept upright); falls back to the glyph until the image loads
-  if (drawFace(g, build.c, 0, 0, 9.5)) {
-    g.lineWidth = 1.8; g.strokeStyle = c.color; g.beginPath(); g.arc(0, 0, 10, 0, TAU); g.stroke();
+  // the portrait fills the whole armor area; the armor becomes the lobed frame around it
+  if (drawFace(g, build.c, 0, 0, 16)) {
+    g.lineWidth = 2.2; g.strokeStyle = c.color; g.beginPath(); g.arc(0, 0, 16.2, 0, TAU); g.stroke();
+    g.lineWidth = 0.8; g.strokeStyle = 'rgba(0,0,0,.6)'; g.beginPath(); g.arc(0, 0, 17.4, 0, TAU); g.stroke();
   } else {
     g.font = '900 12px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = 'rgba(0,0,0,.45)'; g.fillText(c.ch, 0.6, 1.2);
@@ -928,15 +931,23 @@ const SFX = (() => {
   // ---------- background music: two step-sequenced Cyberpunk loops, synthesized live ----------
   let musicGain = null, delayIn = null, musicOn = true, track = null, want = 'menu', nextStep = 0, stepIdx = 0, fadeT = null;
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  // 4-bar lead line for the battle track: step -> [midi note, length in 16ths]
+  const MELODY = {
+    0: [72, 2], 2: [76, 2], 4: [79, 4], 8: [77, 2], 10: [76, 2], 12: [72, 4],
+    16: [71, 2], 18: [74, 2], 20: [76, 4], 24: [80, 4], 28: [76, 4],
+    32: [72, 2], 34: [76, 2], 36: [79, 2], 38: [81, 6], 44: [79, 2], 46: [76, 2],
+    48: [74, 4], 52: [77, 4], 56: [76, 4], 60: [72, 4],
+  };
   // each bar: [bass root, chord] — menu in A minor (Am F C G), battle in E minor (Em C G D)
   const TRACKS = {
     menu: { bpm: 90, vol: 0.5, prog: [[45, [57, 60, 64]], [41, [57, 60, 65]], [48, [55, 60, 64]], [43, [55, 59, 62]]] },
-    battle: { bpm: 140, vol: 0.55, prog: [[40, [55, 59, 64]], [36, [55, 60, 64]], [43, [55, 59, 62]], [38, [54, 57, 62]]] },
+    // night-drive city pop: Fmaj7 - E7 - Am7 - Gm7/C7
+    battle: { bpm: 125, vol: 0.5, prog: [[41, [57, 60, 64, 65]], [40, [56, 59, 62, 64]], [45, [55, 60, 64, 67]], [43, [58, 62, 65, 67], 36, [58, 60, 64, 67]]] },
   };
-  function mNote(t, f, dur, type, vol, cutoff, echo) {
+  function mNote(t, f, dur, type, vol, cutoff, echo, att) {
     const o = ac.createOscillator(), fl = ac.createBiquadFilter(), g = ac.createGain();
     o.type = type; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = cutoff;
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(fl); fl.connect(g); g.connect(musicGain); if (echo) g.connect(delayIn);
     o.start(t); o.stop(t + dur + 0.05);
   }
@@ -963,13 +974,21 @@ const SFX = (() => {
       if (s === 0 || s === 6 || s === 8 || s === 14) mNote(t, mtof(root), spb * 1.8, 'sawtooth', 0.1, 500);
       if (s % 2 === 0) mNote(t, mtof(chord[(s / 2) % 3] + 12 + (s >= 8 ? 12 : 0)), spb * 1.6, 'triangle', 0.03, 2600, true);
     } else {
-      if (s % 4 === 0) mKick(t, 0.55);
-      if (s === 4 || s === 12) { mNoise(t, 0.22, 'bandpass', 1800, 0.14); mNote(t, 190, 0.08, 'triangle', 0.08, 2000); }
-      if (s % 2 === 0 && s % 4 !== 0) mNoise(t, 0.07, 'highpass', 6500, 0.09); else if (s % 2) mNoise(t, 0.03, 'highpass', 8000, 0.03);
-      mNote(t, mtof(root + (s % 4 === 2 ? 12 : 0)), spb * 0.9, 'sawtooth', 0.09, 700);
-      const seq = [0, 1, 2, 1, 2, 0, 1, 2];
-      mNote(t, mtof(chord[seq[s % 8]] + 12 + (s >= 8 ? 12 : 0)), spb * 0.7, 'square', 0.022, 3200, true);
-      if (s === 0) mPad(t, chord, spb * 16, 0.025);
+      // city pop / retro racing groove
+      const second = s >= 8 && T.prog[Math.floor(i / 16) % 4][2];
+      const r0 = second ? T.prog[Math.floor(i / 16) % 4][2] : root, ch = second ? T.prog[Math.floor(i / 16) % 4][3] : chord;
+      if (s === 0 || s === 7 || s === 8) mKick(t, 0.5);
+      if (s === 4 || s === 12) { mNoise(t, 0.26, 'bandpass', 1600, 0.22); mNote(t, 185, 0.09, 'triangle', 0.08, 2000); } // gated 80s snare
+      mNoise(t, s % 2 ? 0.025 : 0.05, 'highpass', 8000, s === 14 ? 0.16 : 0.035);
+      // funky octave bass
+      const bp = { 0: 0, 3: 12, 4: 0, 6: 0, 7: 12, 10: 0, 11: 12, 14: 7 };
+      if (s in bp) mNote(t, mtof(r0 + bp[s]), spb * 0.85, 'square', 0.085, 900);
+      // electric-piano stabs (sine + octave sine for a bell-ish Rhodes)
+      if (s === 2 || s === 7 || s === 10 || (s === 0 && second)) for (const n of ch) { mNote(t, mtof(n), spb * 3, 'sine', 0.035, 4000); mNote(t, mtof(n + 12), spb * 1.2, 'sine', 0.012, 5000); }
+      // synth-brass lead with soft attack and echo
+      const L = MELODY[i % 64];
+      if (L) mNote(t, mtof(L[0]), spb * L[1] * 0.95, 'sawtooth', 0.045, 2200, true, 0.04);
+      if (s === 0) mPad(t, ch, spb * 16, 0.02);
     }
   }
   function schedule() {
@@ -1244,18 +1263,22 @@ exBtn.addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); pr
 // EX button: fires EX when full, otherwise each tap charges it (ring charging still works too)
 const TAP_GAIN = 4, TAP_GAP = 0.09;
 let lastTap = 0;
+let lastNoCharge = 0;
+function noCharge(p, why) { const n = performance.now(); if (n - lastNoCharge > 900) { lastNoCharge = n; addText(p.x, p.y - 42, why, '#ff9f1a', 15); } }
 function pressEx(chargeOnly) {
   if (!G || G.phase !== 'battle') return;
   const p = G.tops[0];
   if (canEx(p)) { if (!chargeOnly) useEx(p); return; }
-  if (p.s.c.ex === 'revive' || p.dead || p.falling || p.ex) return;
-  if (p.markT > 0) { addText(p.x, p.y - 40, '被標記・無法充能', '#ffa53d', 14); return; }
+  if (p.dead || p.falling || p.ex) return;
+  if (p.s.c.ex === 'revive') { noCharge(p, '被動技能・不需充能'); return; }
+  if (p.markT > 0) { noCharge(p, '被標記・無法充能'); return; }
   const now = performance.now() / 1000;
   if (now - lastTap < TAP_GAP) return;
   lastTap = now;
   p.energy = Math.min(100, p.energy + TAP_GAIN);
+  addText(p.x + rnd(-12, 12), p.y - 40, `+${TAP_GAIN}%`, '#fcee0a', 17);
   SFX.charge(p.energy);
-  exBtn.classList.add('tap'); setTimeout(() => exBtn.classList.remove('tap'), 70);
+  exBtn.classList.remove('tap'); void exBtn.offsetWidth; exBtn.classList.add('tap'); setTimeout(() => exBtn.classList.remove('tap'), 160);
   updateExBtn();
 }
 menuBtn.addEventListener('click', () => openTeam());
@@ -1957,7 +1980,7 @@ function render() {
   g.setTransform(scale, 0, 0, scale, 0, 0);
   if (G.flash > 0) { g.fillStyle = `rgba(${G.flashCol || '255,255,255'},${Math.min(0.55, G.flash * 2)})`; g.fillRect(0, 0, W, H); if (G.flash <= 0.02) G.flashCol = null; }
   drawHUD(g);
-  if (G.taps) for (const k of G.taps) { g.strokeStyle = `rgba(252,238,10,${k.t * 3})`; g.lineWidth = 3; g.beginPath(); g.arc(k.x, k.y, 14 + (0.3 - k.t) * 90, 0, TAU); g.stroke(); }
+  if (G.taps) for (const k of G.taps) { g.strokeStyle = `rgba(252,238,10,${k.t * 3})`; g.lineWidth = 5; g.beginPath(); g.arc(k.x, k.y, 14 + (0.3 - k.t) * 90, 0, TAU); g.stroke(); }
   // joystick
   if (G.joy && G.phase === 'battle') {
     g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = 2; g.beginPath(); g.arc(G.joy.sx, G.joy.sy, 70, 0, TAU); g.stroke();
