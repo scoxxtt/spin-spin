@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.18</title>
+<title>旋刃對決 v0.19</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -133,6 +133,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
       <h2>設定</h2>
       <div class="opt"><span>背景音樂</span><button class="tog" data-k="music"></button></div>
       <div class="opt"><span>音效</span><button class="tog" data-k="sfx"></button></div>
+      <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
       <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
       <button class="btn" id="setClose">關閉</button>
     </div>
@@ -209,10 +210,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.16 round arena again, settings menu (music / sfx / EX button side), two synthesized Cyberpunk music loops
  v0.17 city-pop / retro-racing battle music, bigger portraits on tops, clearer EX tap-charge feedback
  v0.18 2.5D 45-degree view: tilted arena with wall faces, tops with body thickness, upright labels, input mapped onto the tilted floor
+ v0.19 speed feel back (flatter tilt, faster tops, looser basin, faster rail, trails/sparks/speed lines, rotating portrait + blade swooshes), auto camera, EX 0.5s freeze with per-class mini animation, fall-into-pit animation, camera toggle
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.18';
+const GAME_VERSION = 'v0.19';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -221,7 +223,14 @@ const AX = 228, BY = 228, R = AX; // round arena (AX = BY)
 const GW = 60; // hell gate half-width (px) at the bottom of the ellipse
 // 2.5D view: the floor is squashed vertically by VIEW_K (≈ looking down at 45°), walls are WALL_H screen px tall,
 // tops float TOP_LIFT px above their shadow and show a TOP_SIDE px thick body
-const VIEW_K = 0.72, WALL_H = 26, TOP_LIFT = 7, TOP_SIDE = 7;
+const VIEW_K = 0.78, WALL_H = 26, TOP_LIFT = 7, TOP_SIDE = 7;
+// auto camera: push-in amounts and timing (seconds). Tune here.
+const CAM = {
+  hit: { z: 1.15, inT: 0.08, hold: 0.05, outT: 0.4, prio: 1 },
+  ex: { z: 1.28, inT: 0.12, hold: 0.45, outT: 0.4, prio: 2 },
+  ko: { z: 1.3, inT: 0.12, hold: 0.7, outT: 0.5, prio: 3 },
+  cooldown: 1.5, slowRate: 0.45, slowT: 0.9, exFreeze: 0.5,
+};
 let viewK = 1; // the squash currently applied while drawing (1 for flat views like the tutorial)
 // draw text (or anything) un-squashed at a world point
 function upright(g, x, y, fn) { g.save(); g.translate(x, y); g.scale(1, 1 / viewK); fn(); g.restore(); }
@@ -238,9 +247,9 @@ const GATE_SPEED = 320, GATE_SLOPE = 300; // step height: outward speed needed t
 const TAU = Math.PI * 2;
 const AI_TAP_RATE = 14, RAIL_REF = 128;
 // centre: a basin that pulls tops back in, and a 'battle heart' ring worth fighting over
-const BASIN_PULL = 1.75, CORE_Q = 0.36, CORE_GAIN = 11, CORE_DMG = 1.2;
+const BASIN_PULL = 1.35, CORE_Q = 0.36, CORE_GAIN = 11, CORE_DMG = 1.2;
 const inCoreAt = (x, y) => qOf(x, y) < CORE_Q;
-const RAIL_TOP = 1300, RAIL_ACCEL = 7, RAIL_EXIT = 820, RAIL_GAIN = 0.36; // aura ring acts like a rail: top speed (px/s), how fast it gets there, launch speed at 12 o'clock, EX per radian (×class gain) // EX energy per second the AI gains in place of tapping
+const RAIL_TOP = 1500, RAIL_ACCEL = 7, RAIL_EXIT = 820, RAIL_GAIN = 0.36; // aura ring acts like a rail: top speed (px/s), how fast it gets there, launch speed at 12 o'clock, EX per radian (×class gain) // EX energy per second the AI gains in place of tapping
 
 // ---------- data (parts are data-driven so the full 20+20 roster can be dropped in later) ----------
 const WEAPONS = {
@@ -281,10 +290,11 @@ const PORTRAITS = {};
 for (const k in PORTRAIT_SRC) { const im = new Image(); im.src = PORTRAIT_SRC[k]; PORTRAITS[k] = im; }
 const portraitOk = c => PORTRAITS[c] && PORTRAITS[c].complete && PORTRAITS[c].naturalWidth > 0;
 // draw a class face into a circle of radius r centred on (x, y)
-function drawFace(g, c, x, y, r) {
+function drawFace(g, c, x, y, r, rot) {
   if (!portraitOk(c)) return false;
   const [fx, fy, fr] = FACE[c];
   g.save(); g.beginPath(); g.arc(x, y, r, 0, TAU); g.clip();
+  if (rot) { g.translate(x, y); g.rotate(rot); g.translate(-x, -y); }
   g.drawImage(PORTRAITS[c], fx - fr, fy - fr, fr * 2, fr * 2, x - r, y - r, r * 2, r * 2);
   g.restore();
   return true;
@@ -365,8 +375,8 @@ function stats(build) {
     w, a, c, mass,
     maxHp: 100 * (0.8 + a.thick * 0.08) * c.hp,
     evade: a.facets * 0.035,
-    accel: 1050 * c.speed * (a.special === 'gale' ? 1.15 : 1) / Math.sqrt(mass),
-    maxSpeed: 370 * c.speed * (a.special === 'gale' ? 1.12 : 1),
+    accel: 1200 * c.speed * (a.special === 'gale' ? 1.15 : 1) / Math.sqrt(mass),
+    maxSpeed: 420 * c.speed * (a.special === 'gale' ? 1.12 : 1),
     decay: (1 / 42) * (0.8 + mass * 0.2) * c.decay,
     gain: 17 * c.gain * (a.special === 'magnet' ? 1.2 : 1),
   };
@@ -425,6 +435,16 @@ function drawTop(g, build, angle, opts = {}) {
     for (let r = 18; r <= 34; r += 8) { g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); }
   }
   g.rotate(angle);
+  if (spin > 0.15 && opts.faceRot) {
+    // blade swooshes: motion-blur arcs trailing each blade
+    const n = w.shape === 'disc' ? 3 : w.blades, dir = w.dir;
+    for (let i = 0; i < n; i++) {
+      const a0 = i / n * TAU;
+      const sw = g.createLinearGradient(Math.cos(a0) * 32, Math.sin(a0) * 32, Math.cos(a0 - dir * 1.3) * 32, Math.sin(a0 - dir * 1.3) * 32);
+      sw.addColorStop(0, `rgba(255,255,255,${0.45 * spin})`); sw.addColorStop(1, 'rgba(255,255,255,0)');
+      g.strokeStyle = sw; g.lineWidth = 5; g.beginPath(); g.arc(0, 0, 31, dir > 0 ? a0 - 1.3 : a0, dir > 0 ? a0 : a0 + 1.3); g.stroke();
+    }
+  }
   // ---- weapon (top layer, outermost) ----
   if (w.shape === 'disc') {
     const dg = g.createRadialGradient(-9, -9, 3, 0, 0, 31);
@@ -489,7 +509,7 @@ function drawTop(g, build, angle, opts = {}) {
   g.restore();
   // class core shows the character's face (kept upright); falls back to the glyph until the image loads
   // the portrait fills the whole armor area; the armor becomes the lobed frame around it
-  if (drawFace(g, build.c, 0, 0, 16)) {
+  if (drawFace(g, build.c, 0, 0, 16, opts.faceRot ? angle / 8 : 0)) {
     g.lineWidth = 2.2; g.strokeStyle = c.color; g.beginPath(); g.arc(0, 0, 16.2, 0, TAU); g.stroke();
     g.lineWidth = 0.8; g.strokeStyle = 'rgba(0,0,0,.6)'; g.beginPath(); g.arc(0, 0, 17.4, 0, TAU); g.stroke();
   } else {
@@ -1105,7 +1125,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, exSide: 'right' }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, exSide: 'right' }, loadJSON('topSettings', {}));
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
 function applySettings() {
@@ -1151,6 +1171,7 @@ function newMatch(lineup, aiTeam) {
 }
 
 function startRound() {
+  if (G) { G.cam = null; G.exFreeze = null; G.slowT = 0; }
   const idx = G.sudden ? 0 : G.round - 1;
   G.pb = G.lineup[idx]; G.ab = G.aiLineup[idx];
   G.tops = [makeTop(G.pb, 0), makeTop(G.ab, 1)];
@@ -1178,7 +1199,31 @@ function shards(x, y, color, n) {
     G.particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: rnd(0.6, 1.1), color, r: rnd(3, 7), shard: true, rot: rnd(0, TAU), vr: rnd(-14, 14) });
   }
 }
+// camera: push toward a point, then ease back. Both tops are kept on screen.
+function camPunch(kind, x, y) {
+  if (!G || !SETTINGS.camera) return;
+  const k = CAM[kind], c = G.cam;
+  if (c && c.t < c.end && c.prio > k.prio) return;
+  if (c && kind === 'hit' && G.time - (c.at || -9) < CAM.cooldown) return;
+  G.cam = { kind, x, y, z: k.z, inT: k.inT, hold: k.hold, outT: k.outT, prio: k.prio, t: 0, end: k.inT + k.hold + k.outT, at: G.time };
+}
+function camNow() {
+  const c = G && G.cam;
+  if (!c || c.t >= c.end) return { x: CX, y: CY, z: 1 };
+  let e;
+  if (c.t < c.inT) e = 1 - Math.pow(1 - c.t / c.inT, 3);
+  else if (c.t < c.inT + c.hold) e = 1;
+  else { const u = (c.t - c.inT - c.hold) / c.outT; e = 1 - u * u * (3 - 2 * u); }
+  // never zoom so far that a top leaves the screen
+  const a = G.tops[0], b = G.tops[1];
+  let zMax = 2;
+  if (a && b && !a.dead && !b.dead) zMax = Math.max(1, Math.min(460 / (Math.abs(a.x - b.x) + 140), 500 / (Math.abs(a.y - b.y) * VIEW_K + 160)));
+  const z = 1 + (Math.min(c.z, zMax) - 1) * e;
+  const fx = c.x * 0.6 + CX * 0.4, fy = c.y * 0.6 + CY * 0.4;
+  return { x: CX + (fx - CX) * e, y: CY + (fy - CY) * e, z };
+}
 function impact(big, x, y) {
+  if (big) camPunch('hit', x, y);
   G.hitStop = Math.max(G.hitStop || 0, big ? 0.085 : 0.03);
   if (big) G.flash = Math.max(G.flash || 0, 0.16);
 }
@@ -1212,7 +1257,7 @@ function toLogical(e) {
   return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H };
 }
 // screen point -> point on the tilted floor
-const toWorld = p => ({ x: p.x, y: CY + (p.y - CY) / VIEW_K });
+const toWorld = p => { const c = camNow(); return { x: c.x + (p.x - CX) / c.z, y: c.y + (p.y - CY) / (c.z * VIEW_K) }; };
 cv.addEventListener('pointerdown', e => {
   SFX.init();
   if (!G) return;
@@ -1366,6 +1411,8 @@ function useEx(t) {
   const name = t.s.c.exName;
   addText(t.x, t.y - 40, name, '#fcee0a', 22);
   G.cutin = { c: t.s.c, cls: t.build.c, side: t.side, t: 0.95, max: 0.95 };
+  G.exFreeze = { t: CAM.exFreeze, max: CAM.exFreeze, top: t, foe, kind: t.s.c.ex };
+  camPunch('ex', t.x, t.y);
   SFX.ex();
   G.shake = Math.max(G.shake, 6);
   detach(t, 0.8);
@@ -1467,6 +1514,8 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   if (def.hp <= 0) {
     if (def.s.c.ex === 'revive' && !def.revived) {
       def.revived = true; def.hp = def.s.maxHp * 0.3;
+      G.exFreeze = { t: CAM.exFreeze, max: CAM.exFreeze, top: def, foe: att, kind: 'revive' }; camPunch('ex', def.x, def.y);
+      G.cutin = { c: def.s.c, cls: def.build.c, side: def.side, t: 0.95, max: 0.95 };
       addText(def.x, def.y - 46, '亡者回魂！', '#d0d6dd', 24); SFX.revive(); sparks(def.x, def.y, 30, '#d0d6dd', 260);
       updateExBtn();
     } else {
@@ -1474,7 +1523,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
       sparks(def.x, def.y, 50, def.s.a.color, 380, true); sparks(def.x, def.y, 30, '#ffffff', 300);
       shards(def.x, def.y, def.s.a.color, 16); shards(def.x, def.y, ATTR_COLOR[def.s.w.attr], 8);
       wave(def.x, def.y, '255,255,255', 170, 12, 0.55); wave(def.x, def.y, '255,180,90', 110, 6, 0.45);
-      G.hitStop = 0.16; G.flash = 0.35;
+      G.hitStop = 0.16; G.flash = 0.35; camPunch('ko', def.x, def.y); G.slowT = CAM.slowT;
       G.shake = 14; SFX.burst();
       endRound(att.side, 1, '爆甲');
     }
@@ -1576,7 +1625,7 @@ function stepTop(t, foe, h) {
         if (t.hitT > 0 && vn > GATE_SPEED) {
           t.falling = 0.7; t.onRing = false; t.fellIn = gz;
           addText(t.x, t.y - 50, `${gz.name}！+${gz.pts}`, gz.txt, 32); SFX.gate(); sparks(t.x, t.y, 40, `rgb(${gz.col})`, 300, true); G.shake = 14;
-          wave(t.x, t.y, gz.col, 160, 10, 0.6); G.hitStop = 0.12; G.flash = 0.25; G.flashCol = gz.col;
+          wave(t.x, t.y, gz.col, 160, 10, 0.6); G.hitStop = 0.12; G.flash = 0.25; G.flashCol = gz.col; camPunch('ko', t.x, t.y); G.slowT = CAM.slowT;
         } else {
           const c = eClamp(t.x, t.y, m); t.x = c.x; t.y = c.y;
           if (vn > 0) {
@@ -1667,11 +1716,14 @@ function finish() {
 
 // ---------- update ----------
 function update(dt) {
+  if (G.cam) G.cam.t += dt;
+  if (G.slowT > 0) { G.slowT -= dt; dt *= CAM.slowRate; } // finishing-blow slow motion
   G.time += dt;
   if (G.banner) { G.banner.t -= dt; if (G.banner.t <= 0) G.banner = null; }
   if (G.flash > 0) G.flash -= dt;
   for (const w of G.waves) w.t -= dt; G.waves = G.waves.filter(w => w.t > 0);
   if (G.hitStop > 0) { G.hitStop -= dt; for (const s of G.texts) s.age += dt; return; } // freeze-frame on big hits
+  if (G.exFreeze && G.exFreeze.t > 0) { G.exFreeze.t -= dt; if (G.exFreeze.t <= 0) G.exFreeze = null; if (G.cutin) G.cutin.t -= dt; for (const s2 of G.texts) s2.age += dt; return; } // EX freeze
   if (G.phase === 'battle') {
     const steps = 4, h = dt / steps;
     for (let i = 0; i < steps && G.phase === 'battle'; i++) {
@@ -1693,9 +1745,14 @@ function update(dt) {
     for (const t of G.tops) t.angle += t.s.w.dir * 4 * dt;
   }
   for (const t of G.tops) {
-    const fast = t.onRing || len(t.vx, t.vy) > 620;
+    const fast = t.onRing || len(t.vx, t.vy) > 380;
     if (fast && !t.dead && !t.falling) { t.trail.push({ x: t.x, y: t.y }); if (t.trail.length > 16) t.trail.shift(); }
     else if (t.trail.length) t.trail.splice(0, 2);
+    const sp = len(t.vx, t.vy);
+    if (G.phase === 'battle' && !t.dead && !t.falling && sp > 480 && Math.random() < dt * 40) {
+      const b = norm(-t.vx, -t.vy);
+      G.particles.push({ x: t.x + b.x * 14 + rnd(-4, 4), y: t.y + b.y * 14 + rnd(-4, 4), vx: b.x * rnd(60, 160) + rnd(-40, 40), vy: b.y * rnd(60, 160) + rnd(-40, 40), t: rnd(0.15, 0.35), color: Math.random() < 0.5 ? '#fcee0a' : '#ffffff', r: rnd(1, 2), streak: true });
+    }
   }
   for (const p of G.particles) { p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 1 - 3 * dt; p.vy *= 1 - 3 * dt; if (p.shard) p.rot += p.vr * dt; }
   G.particles = G.particles.filter(p => p.t > 0);
@@ -1955,18 +2012,45 @@ function drawNearWall(g) {
   }
   drawRim(g, 0, Math.PI);
 }
+// short per-class animation played during the EX freeze (k: 0 -> 1)
+function drawExAnim(g, kind, t, foe, k) {
+  const e = 1 - Math.pow(1 - k, 3);
+  g.save(); g.translate(t.x, t.y); g.lineCap = 'round';
+  if (kind === 'dash') { // berserker: red flame burst collapsing into three charge lines
+    for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + k; g.strokeStyle = `rgba(255,${80 + i * 8},60,${1 - k})`; g.lineWidth = 4; g.beginPath(); g.moveTo(Math.cos(a) * 30, Math.sin(a) * 30); g.lineTo(Math.cos(a) * (40 + 60 * e), Math.sin(a) * (40 + 60 * e)); g.stroke(); }
+    if (foe) { const d = norm(foe.x - t.x, foe.y - t.y); for (let i = -1; i <= 1; i++) { g.strokeStyle = `rgba(255,59,92,${e})`; g.lineWidth = 3; g.beginPath(); g.moveTo(-d.y * i * 12, d.x * i * 12); g.lineTo(d.x * 120 * e - d.y * i * 12, d.y * 120 * e + d.x * i * 12); g.stroke(); } }
+  } else if (kind === 'shield') { // guardian: hex panels assembling
+    for (let i = 0; i < 6; i++) { const on = Math.min(1, Math.max(0, k * 7 - i)); if (!on) continue; const a = i / 6 * TAU; g.save(); g.rotate(a); g.globalAlpha = on; g.fillStyle = 'rgba(0,200,255,.25)'; g.strokeStyle = '#7fdcff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(30, -18); g.lineTo(48, -11); g.lineTo(48, 11); g.lineTo(30, 18); g.closePath(); g.fill(); g.stroke(); g.restore(); }
+  } else if (kind === 'shadow') { // assassin: purple slash with afterimages
+    for (let i = 0; i < 4; i++) { g.fillStyle = `rgba(176,102,255,${0.25 * (1 - i / 4) * (1 - k)})`; g.beginPath(); g.arc(-i * 14, i * 6, 30, 0, TAU); g.fill(); }
+    g.strokeStyle = `rgba(214,170,255,${1 - k * 0.5})`; g.lineWidth = 5; g.beginPath(); g.arc(0, 0, 50, -2.4, -2.4 + 3 * e); g.stroke();
+  } else if (kind === 'warp') { // mage: rune circle unfolding on the floor
+    g.rotate(k * 2); g.strokeStyle = `rgba(41,224,208,${0.9})`; g.lineWidth = 2;
+    g.beginPath(); g.arc(0, 0, 60 * e, 0, TAU); g.stroke(); g.beginPath(); g.arc(0, 0, 44 * e, 0, TAU); g.stroke();
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; g.beginPath(); g.moveTo(Math.cos(a) * 46 * e, Math.sin(a) * 46 * e); g.lineTo(Math.cos(a) * 58 * e, Math.sin(a) * 58 * e); g.stroke(); }
+  } else if (kind === 'mark') { // hunter: crosshair shrinking onto the target
+    g.restore(); g.save(); if (foe) g.translate(foe.x, foe.y);
+    const r = 90 - 50 * e; g.strokeStyle = '#ffa53d'; g.lineWidth = 3;
+    g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; g.beginPath(); g.moveTo(Math.cos(a) * (r - 12), Math.sin(a) * (r - 12)); g.lineTo(Math.cos(a) * (r + 12), Math.sin(a) * (r + 12)); g.stroke(); }
+  } else if (kind === 'revive') { // undead: pale skull halo flash
+    g.strokeStyle = `rgba(220,226,232,${1 - k})`; g.lineWidth = 6; g.beginPath(); g.arc(0, 0, 30 + 50 * e, 0, TAU); g.stroke();
+    g.fillStyle = `rgba(220,226,232,${0.35 * (1 - k)})`; g.beginPath(); g.arc(0, 0, 36, 0, TAU); g.fill();
+  }
+  g.restore();
+}
 function drawTopWorld(g, t) {
   if (t.dead) return;
   g.save();
   g.translate(t.x, t.y);
   let sc = 1;
-  if (t.falling > 0) { sc = clamp(t.falling / 0.7, 0, 1); g.globalAlpha = sc; }
+  if (t.falling > 0) { sc = clamp(t.falling / 0.7, 0, 1); g.globalAlpha = Math.sqrt(sc); }
   // shadow + owner ring lie on the floor
   g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(3, 8, 31 * sc, 29 * sc, 0, 0, TAU); g.fill();
   g.strokeStyle = t.side === 0 ? 'rgba(0,240,255,.7)' : 'rgba(255,59,92,.7)'; g.lineWidth = 2.5;
   g.beginPath(); g.arc(0, 0, 38 * sc, 0, TAU); g.stroke();
   // lift the top off the floor; tilt & bob a little as it loses spin
-  const lift = (TOP_LIFT + (t.falling ? -20 * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
+  const lift = (TOP_LIFT + (t.falling ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
   g.translate(0, -lift);
   if (viewK < 1) {
     const wob = (1 - t.spin) * 0.25;
@@ -1985,7 +2069,7 @@ function drawTopWorld(g, t) {
     g.beginPath(); g.arc(0, 0, 34 * sc, 0, TAU); g.stroke(); g.restore();
   }
   g.scale(sc, sc);
-  drawTop(g, t.build, t.angle, { spin: t.spin });
+  drawTop(g, t.build, t.angle, { spin: t.spin, faceRot: true });
   if (t.flash > 0) { g.fillStyle = `rgba(255,255,255,${t.flash * 3})`; g.beginPath(); g.arc(0, 0, 32, 0, TAU); g.fill(); }
   if (t.poison) { g.strokeStyle = 'rgba(134,255,143,.6)'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 33, 0, TAU * t.poison / 3); g.stroke(); }
   if (t.shieldT > 0) {
@@ -2015,9 +2099,10 @@ function render() {
   }
   // the floor layer and everything on it is drawn squashed about CY
   viewK = VIEW_K;
-  const oy = (CY * (1 - VIEW_K) + sy) * scale;
-  g.setTransform(1, 0, 0, VIEW_K, sx * scale, CY * scale * (1 - VIEW_K) + sy * scale); g.drawImage(arenaCache, 0, 0);
-  g.setTransform(scale, 0, 0, scale * VIEW_K, sx * scale, oy);
+  const cam = camNow(), z = cam.z;
+  const ex = scale * (CX - cam.x * z) + sx * scale, ey = scale * (CY - cam.y * z * VIEW_K) + sy * scale;
+  g.setTransform(z, 0, 0, z * VIEW_K, ex, ey); g.drawImage(arenaCache, 0, 0);
+  g.setTransform(scale * z, 0, 0, scale * z * VIEW_K, ex, ey);
   drawArena(g, G.time);
   drawFarWall(g);
   if (G.rimFlash) {
@@ -2069,8 +2154,24 @@ function render() {
     upright(g, s.x, s.y, () => { g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeText(s.text, 0, 0); g.fillStyle = s.color; g.fillText(s.text, 0, 0); });
   }
   g.globalAlpha = 1;
+  if (G.exFreeze) {
+    const F = G.exFreeze, k = 1 - F.t / F.max, tp = F.top;
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = `rgba(0,0,0,${0.5 * Math.min(1, k * 6)})`; g.fillRect(0, 0, cv.width, cv.height); g.restore();
+    drawTopWorld(g, tp);
+    drawExAnim(g, F.kind, tp, F.foe, k);
+  }
   viewK = 1;
   g.setTransform(scale, 0, 0, scale, 0, 0);
+  // speed lines at the screen edges while your top is really flying
+  const pt0 = G.tops[0], spd0 = pt0 ? len(pt0.vx, pt0.vy) : 0;
+  if (G.phase === 'battle' && spd0 > 650 && !pt0.dead) {
+    const a = Math.min(0.35, (spd0 - 650) / 1500);
+    g.strokeStyle = `rgba(0,240,255,${a})`; g.lineWidth = 2;
+    for (let i = 0; i < 14; i++) {
+      const ang = (i / 14) * TAU + G.time * 0.7, r0 = 330 + ((G.time * 900 + i * 53) % 120);
+      g.beginPath(); g.moveTo(CX + Math.cos(ang) * r0, CY + Math.sin(ang) * r0 * 1.5); g.lineTo(CX + Math.cos(ang) * (r0 + 70), CY + Math.sin(ang) * (r0 + 70) * 1.5); g.stroke();
+    }
+  }
   if (G.flash > 0) { g.fillStyle = `rgba(${G.flashCol || '255,255,255'},${Math.min(0.55, G.flash * 2)})`; g.fillRect(0, 0, W, H); if (G.flash <= 0.02) G.flashCol = null; }
   drawHUD(g);
   if (G.taps) for (const k of G.taps) { g.strokeStyle = `rgba(252,238,10,${k.t * 3})`; g.lineWidth = 5; g.beginPath(); g.arc(k.x, k.y, 14 + (0.3 - k.t) * 90, 0, TAU); g.stroke(); }
