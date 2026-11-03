@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.26</title>
+<title>旋刃對決 v0.27</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -162,6 +162,29 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .tile .tp.a{color:#fcee0a}
 .newTag{position:absolute;top:.2em;right:.2em;background:#ff2a55;color:#fff;font-size:.5em;padding:.05em .35em;font-family:Rajdhani,sans-serif}
 .coin{color:#fcee0a;font-weight:900}
+.pbar{position:relative;height:.95em;margin:.2em .15em 0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
+.pbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#00f0ff,#fcee0a)}
+.pbar span{position:relative;display:block;text-align:center;font-size:.55em;line-height:1.7em;font-weight:700;text-shadow:0 0 2px #000,0 0 2px #000}
+.pbar.max{background:rgba(252,238,10,.25)}
+.tile.ready{animation:rdy 1s infinite}
+@keyframes rdy{50%{box-shadow:0 0 1em rgba(252,238,10,.9)}}
+.mergeBtn{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-family:inherit;font-weight:900;font-size:.8em;padding:.3em .8em;background:#ff2a55;color:#fff;border:2px solid #fff;cursor:pointer;box-shadow:0 0 .8em rgba(255,42,85,.9);animation:mgp 1s infinite}
+@keyframes mgp{50%{box-shadow:0 0 1.6em #ff2a55;background:#ff5577}}
+.tile.mat{opacity:.85;background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 6px,rgba(0,0,0,0) 6px 12px);border-style:dashed;cursor:grab}
+.tile.mat img,.tile.mat .bigIco{filter:saturate(.6) brightness(.8)}
+.matTag{position:absolute;top:.2em;left:.2em;background:#00f0ff;color:#10101c;font-size:.55em;padding:.05em .35em}
+.tst.mh{font-size:.55em;color:#9fb0c0}
+.matGhost{position:fixed;z-index:70;pointer-events:none;opacity:.9;transform:scale(1.08) rotate(-4deg);box-shadow:0 0 1.5em rgba(0,240,255,.8)}
+.tile.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
+.starUp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,5,10,.75);animation:popIn .2s ease-out}
+.starUp.out{opacity:0;transition:opacity .3s}
+.suIn{display:flex;flex-direction:column;align-items:center;gap:.2em;animation:suPop .5s cubic-bezier(.2,1.6,.4,1)}
+.suIn img,.suIn .ico{width:7em;height:7em;object-fit:cover;border:3px solid var(--rc);box-shadow:0 0 2em var(--rc)}
+.suT{font-size:2.4em;font-weight:900;color:#fcee0a;text-shadow:3px 3px 0 #ff2a55,-2px -2px 0 #00f0ff;font-style:italic}
+.suN{font-size:1em;font-weight:700}
+.suS{font-size:2em;letter-spacing:.15em}.suS i{font-style:normal;color:#3a4250}.suS i.on{color:var(--rc);animation:suStar .4s backwards}
+@keyframes suPop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes suStar{from{transform:scale(3);opacity:0}to{transform:none;opacity:1}}
 #shop{display:flex;gap:.5em;justify-content:center;margin:.2em 0 .4em}
 .shopBtn{font-size:.85em;padding:.45em 1em;display:flex;flex-direction:column;align-items:center;line-height:1.15}
 .shopBtn small{font-size:.62em;font-weight:700;opacity:.8}
@@ -200,6 +223,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
       <div class="opt"><span>背景音樂</span><button class="tog" data-k="music"></button></div>
       <div class="opt"><span>音效</span><button class="tog" data-k="sfx"></button></div>
       <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
+      <div class="opt"><span>頭上血量 %</span><button class="tog" data-k="hpPct"></button></div>
       <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
       <button class="btn" id="setClose">關閉</button>
     </div>
@@ -215,7 +239,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
     <div class="rules">
       <b>玩法</b><br>
       ・職業、武器、鎧甲分開收藏在零件庫，每個出戰格各裝 1 職業＋1 武器＋1 鎧甲，再排好上場順序<br>
-      ・稀有度 白＜紫＜紅＜黃，抽到同名零件會升星（最多 3 星），星越多能力越強；滿星後重複的會變成萬用碎片<br>
+      ・稀有度 白＜紫＜紅＜黃。抽到同名零件會變成「素材」，把素材拖到本體上（或按「合成」）就能升星，最多 3 星，星越多能力越強；滿星後重複的會變成萬用碎片<br>
       ・對戰共三場，你的第 1、2、3 顆依序對上對手的第 1、2、3 顆；總分高者勝，同分由雙方第 1 顆加賽<br>
       ・打贏 +100 金幣（每日首勝再 +50），打輸 +20；單抽 100、十連 1000 多送 1 抽且保底紅色以上<br>
       ・開場：在場地上按下的位置就是落點，往後拉決定方向和力道，放開發射。電腦落點隨機<br>
@@ -287,10 +311,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.24 cuter mech-cat art, clean armor icons, part detail card (long-press in lineup, tap on pack cards), dark rim + vignette on top faces
  v0.25 EX cut-in portrait comes alive (punch-in zoom, shake, flash, chromatic ghosts, speed lines, cat sparkles); first-visit long-press tip; weapon icons re-cropped
  v0.26 parts inventory (classes / weapons / armors owned separately, lineup equips from it), coins (win +100, daily first win +50, loss +20), single / 10+1 draws, rarity white / purple / red / yellow, star breakthrough 0-3 via duplicates, wildcard shards, pity, AI scales with team power
+ v0.27 HP % above each top (settings toggle); duplicates kept as material, merge by dragging onto the part or with the merge button; star-up burst; red / yellow pull reveal (glowing card backs, flash, shake)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.26';
+const GAME_VERSION = 'v0.27';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -669,13 +694,12 @@ const starStr = n => '★'.repeat(n) + '☆'.repeat(3 - n);
 let INV = loadJSON('topInv', null);
 function addPart(k, id, r, st) {
   const e = INV[k][id];
-  if (!e) { INV[k][id] = { r, s: st, p: 0, isNew: 1 }; return 'new'; }
+  if (!e) { INV[k][id] = { r, s: st, n: 0, isNew: 1 }; return 'new'; }
   let res = '+1';
   if (r > e.r) { e.r = r; res = 'up'; }
-  if (st > e.s) { e.s = st; e.p = 0; return 'star'; }
+  if (st > e.s) { e.s = st; return 'star'; }
   if (e.s >= 3) { INV.shards++; return 'shard'; }
-  e.p++; if (e.p >= NEED[e.s]) { e.s++; e.p = 0; return 'star'; }
-  return res;
+  e.n++; return res;
 }
 const partBonus = (k, id) => { const e = INV[k][id]; return e ? R_BASE[e.r] + e.s * R_STEP[e.r] : 0; };
 const withBonus = b => ({ c: b.c, w: b.w, a: b.a, bc: partBonus('c', b.c), bw: partBonus('w', b.w), ba: partBonus('a', b.a) });
@@ -704,7 +728,29 @@ if (!INV) { // first run of v0.26: turn the old top collection into parts
   INV.team = old.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a }));
   if (old.length) INV.coins = 100; // a welcome draw for existing players
 }
-for (const k of 'cwa') for (const id in INV[k]) if (!KIND[k][id]) delete INV[k][id];
+for (const k of 'cwa') for (const id in INV[k]) {
+  const e = INV[k][id]; if (!KIND[k][id]) { delete INV[k][id]; continue; }
+  if ('p' in e) { e.n = e.p; delete e.p; } e.n = e.n || 0;   // v0.26 progress -> material count
+  if (e.s >= 3 && e.n) { INV.shards += e.n; e.n = 0; }
+}
+const canMerge = e => e.s < 3 && e.n >= NEED[e.s];
+function doMerge(k, id) {
+  const e = INV[k][id]; if (!e || e.s >= 3) return;
+  if (e.n < NEED[e.s]) { toast(`還差 ${NEED[e.s] - e.n} 個素材才能升星`); return; }
+  e.n -= NEED[e.s]; e.s++; save(); starUpFx(k, id); renderTeam();
+}
+function toast(msg) {
+  const t = document.createElement('div'); t.className = 'tipBubble'; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 1500);
+}
+function starUpFx(k, id) {
+  const e = INV[k][id], P = KIND[k][id], d = document.createElement('div'); d.className = 'starUp';
+  const pic = k === 'c' ? `<img src="${PORTRAIT_SRC[id]}">` : iconHTML(k, id, 'xl');
+  d.innerHTML = `<div class="suIn" style="--rc:${RARITY[e.r].col}">${pic}<div class="suT">升星！</div><div class="suN">${P.name}</div>
+    <div class="suS">${[0, 1, 2].map(i => `<i style="animation-delay:${0.25 + i * 0.15}s" class="${i < e.s ? 'on' : ''}">★</i>`).join('')}</div></div>`;
+  document.body.appendChild(d); SFX.init(); SFX.reveal(); SFX.ex(); if (navigator.vibrate) navigator.vibrate([20, 40, 30]);
+  const bye = () => { d.classList.add('out'); setTimeout(() => d.remove(), 300); }; d.onclick = bye; setTimeout(bye, 1800);
+}
 collection = (INV.team || []).filter(b => b && CLASSES[b.c] && WEAPONS[b.w] && ARMORS[b.a]);
 if (collection.length === 3) fixTeam(); else collection = [];
 let wins = loadJSON('topWins', 0) || 0;
@@ -747,7 +793,7 @@ function showPart(k, id) {
   else if (k === 'w') { const f = FAMILY[P.fam]; body = `${f.name}系・${P.desc}。${f.desc}<br>攻擊 ${P.atk}・擊退 ${P.kb}・重量 ${P.wt}｜剋 ${ARMOR_CLASS[f.beats].name}，怕 ${ARMOR_CLASS[f.weak].name}`; }
   else body = `${ARMOR_CLASS[P.cls].name}・${P.desc}<br>防禦 ${P.thick}・閃避 ${P.facets}`;
   const eff = k === 'w' ? '撞擊傷害' : k === 'a' ? '血量' : '血量與 EX 累積';
-  const need = e.s < 3 ? NEED[e.s] - e.p : 0;
+  const need = e.s < 3 ? Math.max(0, NEED[e.s] - e.n) : 0;
   infoPop.innerHTML = `<div class="ipCard" style="border-color:${RARITY[e.r].col}">
     <div class="ipRow" style="border:0">${k === 'c' ? `<img src="${PORTRAIT_SRC[id]}" style="width:5em;height:5em;object-fit:cover;border-radius:4px">` : iconHTML(k, id, 'xl')}
       <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}</div>
@@ -755,12 +801,15 @@ function showPart(k, id) {
       <div class="k">${KIND_NAME[k]}${slot >= 0 ? `・出戰第 ${slot + 1} 格` : '・未裝備'}</div></div></div>
     <div class="ipRow"><div><div class="d">${body}</div>
       <div class="k" style="color:#fcee0a">目前加成：${eff} +${Math.round(b0 * 100)}%${e.s < 3 ? `　下一星 +${Math.round((b0 + R_STEP[e.r]) * 100)}%` : '（已滿星）'}</div>
-      <div class="k">升星進度：${e.s < 3 ? `${e.p} / ${NEED[e.s]}（再抽到 ${need} 個同名就升星）` : '已滿星，之後抽到同名會變成萬用碎片'}</div></div></div>
-    ${e.s < 3 ? `<button class="btn ipBtn" id="useShard" ${INV.shards >= need ? '' : 'disabled'}>用萬用碎片升星（需 ${need}，持有 ${INV.shards}）</button>` : ''}
+      <div class="k">素材：${e.s < 3 ? `${e.n} / ${NEED[e.s]}（抽到同名零件就是素材${need ? `，還差 ${need} 個` : '，可以升星了！'}）` : '已滿星，之後抽到同名會變成萬用碎片'}</div></div></div>
+    ${e.s < 3 ? `<button class="btn ipBtn" id="doMergeBtn" ${need ? 'disabled' : ''}>${need ? `合成升星（還差 ${need} 個素材）` : '合成升星！'}</button>
+      ${need ? `<button class="btn ipBtn ghost" id="useShard" ${INV.shards >= need ? '' : 'disabled'}>用萬用碎片補足並升星（需 ${need}，持有 ${INV.shards}）</button>` : ''}` : ''}
     <div class="ipClose">點其他地方關閉</div></div>`;
   infoPop.classList.add('show'); SFX.init(); SFX.flip();
   const ub = document.getElementById('useShard');
-  if (ub) ub.onclick = ev => { ev.stopPropagation(); if (INV.shards < need) return; INV.shards -= need; e.s++; e.p = 0; save(); SFX.reveal(); showPart(k, id); renderTeam(); };
+  if (ub) ub.onclick = ev => { ev.stopPropagation(); if (INV.shards < need) return; INV.shards -= need; e.n += need; infoPop.classList.remove('show'); doMerge(k, id); };
+  const mb = document.getElementById('doMergeBtn');
+  if (mb) mb.onclick = ev => { ev.stopPropagation(); infoPop.classList.remove('show'); doMerge(k, id); };
 }
 // part detail card: whole top, with one part highlighted (k = 'w' / 'a' / 'c')
 const infoPop = document.getElementById('infoPop');
@@ -848,7 +897,7 @@ function renderTeam() {
   const tabs = document.createElement('div'); tabs.className = 'invTabs';
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
-    const nNew = own(k).filter(id => INV[k][id].isNew).length;
+    const nNew = own(k).filter(id => INV[k][id].isNew || canMerge(INV[k][id])).length;
     tb.innerHTML = `${KIND_NAME[k]} ${own(k).length}/${Object.keys(KIND[k]).length}${nNew ? '<b class="dot"></b>' : ''}`;
     tb.onclick = () => { invTab = k; renderTeam(); }; tabs.appendChild(tb);
   }
@@ -860,9 +909,12 @@ function renderTeam() {
     t.className = 'tile r' + e.r + (invSel && invSel.k === k && invSel.id === id ? ' picked' : '') + (swapSel && swapSel.k === k ? ' target' : '');
     t.dataset.ik = k; t.dataset.iid = id; t.style.borderColor = RARITY[e.r].col;
     const pic = k === 'c' ? `<img draggable="false" src="${PORTRAIT_SRC[id]}">` : `<div class="bigIco">${iconHTML(k, id)}</div>`;
-    const prog = e.s < 3 ? `<span class="pg">${e.p}/${NEED[e.s]}</span>` : '<span class="pg">MAX</span>';
+    const ready = canMerge(e); if (ready) t.classList.add('ready');
+    const bar = e.s < 3 ? `<div class="pbar"><i style="width:${Math.min(100, e.n / NEED[e.s] * 100)}%"></i><span>${e.n}/${NEED[e.s]}</span></div>` : '<div class="pbar max"><span>MAX</span></div>';
     t.innerHTML = `${pic}${e.isNew ? '<b class="newTag">NEW</b>' : ''}${slot >= 0 ? `<b class="eqTag">出戰${slot + 1}</b>` : ''}
-      <div class="tn">${KIND[k][id].name}</div><div class="tst" style="color:${RARITY[e.r].col}">${starStr(e.s)}${prog}</div>`;
+      <div class="tn">${KIND[k][id].name}</div><div class="tst" style="color:${RARITY[e.r].col}">${starStr(e.s)}</div>${bar}
+      ${ready ? '<button class="mergeBtn">合成</button>' : ''}`;
+    if (ready) t.querySelector('.mergeBtn').onclick = ev => { ev.stopPropagation(); doMerge(k, id); };
     t.onclick = () => {
       if (lpFired) return;
       if (e.isNew) { e.isNew = 0; save(); }
@@ -871,11 +923,44 @@ function renderTeam() {
       renderTeam();
     };
     grid.appendChild(t);
+    if (e.n > 0 && e.s < 3) { // duplicates sit next to the part as material: drag them onto it to merge
+      const m = document.createElement('div'); m.className = 'tile mat'; m.dataset.mk = k; m.dataset.mid = id; m.style.borderColor = RARITY[e.r].col;
+      m.innerHTML = `${pic}<b class="matTag">素材 ×${e.n}</b><div class="tn">${KIND[k][id].name}</div><div class="tst mh">${ready ? '拖到本體合成' : `還差 ${NEED[e.s] - e.n} 個`}</div>`;
+      grid.appendChild(m);
+    }
   });
   list.appendChild(grid);
   if (invSel) list.insertAdjacentHTML('beforeend', `<div class="mini selHint">已選「${KIND[invSel.k][invSel.id].name}」，點上面出戰格裡的${KIND_NAME[invSel.k]}完成換裝</div>`);
   else if (swapSel) list.insertAdjacentHTML('beforeend', `<div class="mini selHint">點下方零件庫的${KIND_NAME[swapSel.k]}換裝，或點另一格的${KIND_NAME[swapSel.k]}互換</div>`);
 }
+(() => {
+  const list = document.getElementById('teamList'); let md = null;
+  const mainOf = (k, id) => list.querySelector(`.tile[data-ik="${k}"][data-iid="${id}"]`);
+  list.addEventListener('pointerdown', e => {
+    const m = e.target.closest('.tile.mat'); if (!m) return;
+    md = { el: m, k: m.dataset.mk, id: m.dataset.mid, x0: e.clientX, y0: e.clientY, pid: e.pointerId, ghost: null };
+  });
+  window.addEventListener('pointermove', e => {
+    if (!md || e.pointerId !== md.pid) return;
+    if (!md.ghost) {
+      if (len(e.clientX - md.x0, e.clientY - md.y0) < 8) return;
+      const r = md.el.getBoundingClientRect(), gh = md.el.cloneNode(true); gh.classList.add('matGhost'); gh.style.width = r.width + 'px';
+      document.body.appendChild(gh); md.ghost = gh; md.w = r.width; md.el.style.opacity = 0.35;
+      const tgt = mainOf(md.k, md.id); if (tgt) tgt.classList.add('dropTarget'); SFX.init(); SFX.flip();
+    }
+    e.preventDefault(); md.ghost.style.left = (e.clientX - md.w / 2) + 'px'; md.ghost.style.top = (e.clientY - md.w / 2) + 'px';
+  }, { passive: false });
+  const end = e => {
+    if (!md || e.pointerId !== md.pid) return;
+    const d = md; md = null; d.el.style.opacity = '';
+    const tgt = mainOf(d.k, d.id); if (tgt) tgt.classList.remove('dropTarget');
+    if (!d.ghost) { const e2 = INV[d.k][d.id]; toast(canMerge(e2) ? '把素材拖到旁邊的本體上，或按「合成」升星' : `素材 ${e2.n}/${NEED[e2.s]}，還差 ${NEED[e2.s] - e2.n} 個`); return; }
+    d.ghost.style.display = 'none'; const over = document.elementFromPoint(e.clientX, e.clientY); d.ghost.remove();
+    const hit = over && over.closest('.tile:not(.mat)');
+    if (hit && hit.dataset.ik === d.k && hit.dataset.iid === d.id) doMerge(d.k, d.id);
+  };
+  window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+})();
 function renderShop() {
   const sh = document.getElementById('shop');
   sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>🪙${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>十連＋1<small>🪙${PRICE10}・保底紅</small></button>`;
@@ -955,7 +1040,7 @@ function renderVersus() {
 const PW = 540, PH = 860;
 const packCv = document.getElementById('packCv'), pg = packCv.getContext('2d');
 const okBtn = document.getElementById('gachaOk');
-const PK = { st: 'idle', t: 0, taps: 0, shake: 0, cards: [], title: '', done: null, fx: [], emblem: null };
+const PK = { st: 'idle', t: 0, taps: 0, shake: 0, cards: [], title: '', done: null, fx: [], emblem: null, flash: 0, flashCol: '255,255,255' };
 function rollTop(base, opt) {
   const b = base || randomTop(); b.r = {}; b.s = {};
   for (const k of 'cwa') { b.r[k] = rollFrom(R_RATE); b.s[k] = rollFrom(STAR_RATE); }
@@ -983,7 +1068,7 @@ function startGacha(n, title, done, opt) {
   for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
   if (collection.length < 3) { collection = builds.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a })); fixTeam(); }
   save();
-  Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, title, done, fx: [], emblem: randomTop(),
+  Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, title, done, fx: [], emblem: randomTop(),
     cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })) });
   okBtn.style.display = 'none';
   show('gacha');
@@ -1092,7 +1177,10 @@ function drawCard(g, card, sl, time, appear) {
   roundRectP(g, -w / 2, -h / 2, w, h, 14);
   if (!face) {
     const bg = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); bg.addColorStop(0, '#0b0d10'); bg.addColorStop(1, '#0e3640');
-    g.fillStyle = bg; g.fill(); g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.stroke();
+    g.fillStyle = bg; g.fill();
+    const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0;
+    if (hr >= 2) { g.save(); g.shadowColor = RARITY[hr].col; g.shadowBlur = 18 + 12 * Math.sin(time * (hr === 3 ? 9 : 6)); g.strokeStyle = RARITY[hr].col; g.lineWidth = 6; g.stroke(); g.restore(); }
+    else { g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.stroke(); }
     g.save(); g.clip();
     for (let i = -8; i < 10; i++) { g.strokeStyle = 'rgba(0,240,255,.09)'; g.lineWidth = 6; g.beginPath(); g.moveTo(-w / 2 + i * 22, -h / 2); g.lineTo(-w / 2 + i * 22 + 160, h / 2); g.stroke(); }
     g.restore();
@@ -1173,7 +1261,15 @@ function drawPack(dt) {
     PK.cards.forEach((c, i) => {
       if (c.flipping) {
         c.flip = Math.min(1, c.flip + dt / 0.5);
-        if (c.flip >= 1) { c.flipping = false; c.glow = 1; const sl = cardSlot(i, PK.cards.length); packFx(sl.x, sl.y, 40, null, 480); SFX.reveal(); }
+        if (c.flip >= 1) {
+          c.flipping = false; c.glow = 1; const sl = cardSlot(i, PK.cards.length); packFx(sl.x, sl.y, 40, null, 480); SFX.reveal();
+          const tr = c.b.r ? Math.max(c.b.r.c, c.b.r.w, c.b.r.a) : 0;
+          if (tr >= 2) { // red / yellow: flash, shake, a shower in the rarity colour
+            PK.flash = tr === 3 ? 1 : 0.6; PK.flashCol = tr === 3 ? '252,238,10' : '255,42,85'; PK.shake = tr === 3 ? 0.6 : 0.35;
+            packFx(sl.x, sl.y, tr === 3 ? 140 : 70, RARITY[tr].col, tr === 3 ? 900 : 650); SFX.ex(); if (tr === 3) SFX.burst();
+            if (navigator.vibrate) navigator.vibrate(tr === 3 ? [40, 60, 80] : 30);
+          }
+        }
       }
       if (c.glow > 0) c.glow = Math.max(0, c.glow - dt * 0.6);
       if (c.flip < 1) flippedAll = false;
@@ -1187,6 +1283,8 @@ function drawPack(dt) {
     }
     if (PK.st === 'done') { const sl = cardSlot(PK.cards.length - 1, PK.cards.length); g.fillStyle = 'rgba(255,255,255,.7)'; g.font = '15px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・零件已放進零件庫', PW / 2, sl.y + sl.h / 2 + 34); }
   }
+  if ((PK.st === 'cards' || PK.st === 'done') && PK.shake > 0) { PK.shake -= dt; packCv.style.transform = `translate(${rnd(-8, 8) * PK.shake}px,${rnd(-5, 5) * PK.shake}px)`; } else if (packCv.style.transform) packCv.style.transform = '';
+  if (PK.flash > 0) { g.fillStyle = `rgba(${PK.flashCol},${PK.flash * 0.55})`; g.fillRect(0, 0, PW, PH); PK.flash = Math.max(0, PK.flash - dt * 1.8); }
   // confetti / sparkles
   for (const f of PK.fx) {
     f.t -= dt; f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 380 * dt; f.vx *= 1 - dt; f.rot += dt * 8;
@@ -1540,7 +1638,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, exSide: 'right' }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, hpPct: true, exSide: 'right' }, loadJSON('topSettings', {}));
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
 function applySettings() {
@@ -2518,6 +2616,10 @@ function drawTopWorld(g, t) {
   // label
   g.fillStyle = t.side === 0 ? '#00f0ff' : '#ff3b5c'; g.font = 'bold 13px Rajdhani, sans-serif'; g.textAlign = 'center';
   if (!t.falling) upright(g, t.x, t.y + 48, () => g.fillText(t.side === 0 ? '你' : '電腦', 0, 0));
+  if (SETTINGS.hpPct && !t.falling && t.hp > 0) {
+    const pc = Math.max(0, Math.ceil(t.hp / t.s.maxHp * 100)), col = pc > 60 ? '#5dff8f' : pc > 30 ? '#fcee0a' : '#ff2a55';
+    upright(g, t.x, t.y - 52, () => { g.font = '900 15px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(pc + '%', 0, 0); g.fillStyle = col; g.fillText(pc + '%', 0, 0); });
+  }
 }
 
 function render() {
@@ -2681,7 +2783,7 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { get INV() { return INV; }, buy, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { get INV() { return INV; }, buy, PK, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openTeam();
 })();
 </script>
