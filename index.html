@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.28</title>
+<title>旋刃對決 v0.29</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -243,6 +243,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
       ・職業、武器、鎧甲分開收藏在零件庫，每個出戰格各裝 1 職業＋1 武器＋1 鎧甲，再排好上場順序<br>
       ・稀有度 白＜紫＜紅＜黃。抽到同名零件會變成「素材」，把素材拖到本體上（或按「合成」）就能升星，最多 3 星，星越多能力越強；滿星後重複的會變成萬用碎片<br>
       ・對戰共三場，你的第 1、2、3 顆依序對上對手的第 1、2、3 顆；總分高者勝，同分由雙方第 1 顆加賽<br>
+      ・付費抽卡有機會抽到<b>隱藏職業</b>（每抽 2%，40 抽保底），基礎能力比一般職業高約 10%<br>
       ・打贏 +100 金幣（每日首勝再 +50），打輸 +20；單抽 100、十連 1000 多送 1 抽且保底紅色以上<br>
       ・開場：在場地上按下的位置就是落點，往後拉決定方向和力道，放開發射。電腦落點隨機<br>
       ・對戰：按住拖曳移動（電腦可用 WASD / 方向鍵，空白鍵放 EX）<br>
@@ -315,10 +316,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.26 parts inventory (classes / weapons / armors owned separately, lineup equips from it), coins (win +100, daily first win +50, loss +20), single / 10+1 draws, rarity white / purple / red / yellow, star breakthrough 0-3 via duplicates, wildcard shards, pity, AI scales with team power
  v0.27 HP % above each top (settings toggle); duplicates kept as material, merge by dragging onto the part or with the merge button; star-up burst; red / yellow pull reveal (glowing card backs, flash, shake)
  v0.28 motorcycle-style engine note for tops (rev with speed, lumpy idle, backfire pops, rev-up launch), crystal ore currency icon, comic onomatopoeia bursts, halftone rings, manga focus lines, hit bounce
+ v0.29 hidden class mech-cat (paid draws only, 2% with pity at 40, +10% base), EX midnight zoomies (3 s zigzag dash, faster after each wall bounce, +30% damage), gold hidden-class reveal
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.28';
+const GAME_VERSION = 'v0.29';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -421,6 +423,7 @@ const CLASSES = {
   assassin:  { name: '刺客', ch: '刺', color: '#b066ff', speed: 1.15, decay: 1.0, hp: 0.85, gain: 1, ex: 'shadow', exName: '影襲', exDesc: '瞬移背後往地獄門撞' },
   mage:      { name: '術士', ch: '術', color: '#29e0d0', speed: 1.0, decay: 1.0, hp: 0.95, gain: 1.5, ex: 'warp', exName: '環域扭曲', exDesc: '把對手強制彈開並暈眩' },
   hunter:    { name: '獵人', ch: '獵', color: '#ffa53d', speed: 1.05, decay: 1.0, hp: 1.0, gain: 1, ex: 'mark', exName: '鎖定標記', exDesc: '5 秒增傷且封鎖對手 EX', homing: true },
+  mechcat:   { name: '機甲貓咪', ch: '貓', color: '#ff9f1a', speed: 1.2, decay: 0.9, hp: 1.1, gain: 1.1, ex: 'zoomies', exName: '半夜暴衝', exDesc: '3 秒隨機折線暴衝，撞牆越撞越快，撞擊傷害 +30%', hidden: true },
   undead:    { name: '不死者', ch: '死', color: '#9aa3ad', speed: 0.95, decay: 0.75, hp: 1.0, gain: 1, ex: 'revive', exName: '亡者回魂', exDesc: '被動：首次爆甲以三成血復活' },
 };
 // class portraits (256x256), with the face box used for small circular crops
@@ -681,7 +684,8 @@ function drawTop(g, build, angle, opts = {}) {
 // ---------- collection, lineup, gacha ----------
 const nameOf = b => `${CLASSES[b.c].name}・${WEAPONS[b.w].name}`;
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-const randomTop = () => ({ w: pick(Object.keys(WEAPONS)), a: pick(Object.keys(ARMORS)), c: pick(Object.keys(CLASSES)) });
+const BASIC_CLASSES = Object.keys(CLASSES).filter(k => !CLASSES[k].hidden);
+const randomTop = () => ({ w: pick(Object.keys(WEAPONS)), a: pick(Object.keys(ARMORS)), c: pick(BASIC_CLASSES) });
 function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
 function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 // ===== parts inventory =====
@@ -805,7 +809,7 @@ function showPart(k, id) {
   const need = e.s < 3 ? Math.max(0, NEED[e.s] - e.n) : 0;
   infoPop.innerHTML = `<div class="ipCard" style="border-color:${RARITY[e.r].col}">
     <div class="ipRow" style="border:0">${k === 'c' ? `<img src="${PORTRAIT_SRC[id]}" style="width:5em;height:5em;object-fit:cover;border-radius:4px">` : iconHTML(k, id, 'xl')}
-      <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}</div>
+      <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}${P.hidden ? '<span class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏職業</span>' : ''}</div>
       <div style="color:${RARITY[e.r].col};font-size:1.1em;letter-spacing:.1em">${starStr(e.s)}</div>
       <div class="k">${KIND_NAME[k]}${slot >= 0 ? `・出戰第 ${slot + 1} 格` : '・未裝備'}</div></div></div>
     <div class="ipRow"><div><div class="d">${body}</div>
@@ -907,7 +911,7 @@ function renderTeam() {
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
     const nNew = own(k).filter(id => INV[k][id].isNew || canMerge(INV[k][id])).length;
-    tb.innerHTML = `${KIND_NAME[k]} ${own(k).length}/${Object.keys(KIND[k]).length}${nNew ? '<b class="dot"></b>' : ''}`;
+    tb.innerHTML = `${KIND_NAME[k]} ${own(k).length}/${Object.keys(KIND[k]).filter(id => !KIND[k][id].hidden || INV[k][id]).length}${nNew ? '<b class="dot"></b>' : ''}`;
     tb.onclick = () => { invTab = k; renderTeam(); }; tabs.appendChild(tb);
   }
   list.appendChild(tabs);
@@ -1058,6 +1062,8 @@ function rollTop(base, opt) {
     if (INV.pity.y >= 60) b.r[pick(['c', 'w', 'a'])] = 3;
     else if (INV.pity.r >= 10 && Math.max(b.r.c, b.r.w, b.r.a) < 2) b.r[pick(['c', 'w', 'a'])] = 2;
     const top = Math.max(b.r.c, b.r.w, b.r.a); if (top >= 2) INV.pity.r = 0; if (top >= 3) INV.pity.y = 0;
+    INV.pity.cat = (INV.pity.cat || 0) + 1;
+    if (Math.random() < 0.02 || INV.pity.cat >= 40) { b.c = 'mechcat'; INV.pity.cat = 0; }
   }
   return b;
 }
@@ -1066,7 +1072,7 @@ function startGacha(n, title, done, opt) {
   if (!(opt && opt.paid)) {
     // the starting draw: no two share a weapon, armor or class, so swapping parts matters; at least one purple
     const sh = o => Object.keys(o).sort(() => Math.random() - 0.5);
-    const W2 = sh(WEAPONS), A2 = sh(ARMORS), C2 = sh(CLASSES);
+    const W2 = sh(WEAPONS), A2 = sh(ARMORS), C2 = BASIC_CLASSES.slice().sort(() => Math.random() - 0.5);
     builds = Array.from({ length: n }, (_, i) => rollTop({ w: W2[i % W2.length], a: A2[i % A2.length], c: C2[i % C2.length] }));
     if (!builds.some(b => Math.max(b.r.c, b.r.w, b.r.a) >= 1)) builds[0].r[pick(['c', 'w', 'a'])] = 1;
   } else {
@@ -1077,7 +1083,7 @@ function startGacha(n, title, done, opt) {
   for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
   if (collection.length < 3) { collection = builds.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a })); fixTeam(); }
   save();
-  Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, title, done, fx: [], emblem: randomTop(),
+  Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, banner: null, title, done, fx: [], emblem: randomTop(),
     cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })) });
   okBtn.style.display = 'none';
   show('gacha');
@@ -1187,7 +1193,8 @@ function drawCard(g, card, sl, time, appear) {
   if (!face) {
     const bg = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); bg.addColorStop(0, '#0b0d10'); bg.addColorStop(1, '#0e3640');
     g.fillStyle = bg; g.fill();
-    const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0;
+    const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0, hid = CLASSES[card.b.c].hidden;
+    if (hid) { g.save(); g.shadowColor = `hsl(${(time * 220) % 360},100%,60%)`; g.shadowBlur = 30; g.strokeStyle = '#ffd75a'; g.lineWidth = 8; g.stroke(); g.restore(); } else
     if (hr >= 2) { g.save(); g.shadowColor = RARITY[hr].col; g.shadowBlur = 18 + 12 * Math.sin(time * (hr === 3 ? 9 : 6)); g.strokeStyle = RARITY[hr].col; g.lineWidth = 6; g.stroke(); g.restore(); }
     else { g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.stroke(); }
     g.save(); g.clip();
@@ -1273,7 +1280,11 @@ function drawPack(dt) {
         if (c.flip >= 1) {
           c.flipping = false; c.glow = 1; const sl = cardSlot(i, PK.cards.length); packFx(sl.x, sl.y, 40, null, 480); SFX.reveal();
           const tr = c.b.r ? Math.max(c.b.r.c, c.b.r.w, c.b.r.a) : 0;
-          if (tr >= 2) { // red / yellow: flash, shake, a shower in the rarity colour
+          if (CLASSES[c.b.c].hidden) { // hidden class: gold flash, long shake, big banner
+            PK.flash = 1.4; PK.flashCol = '255,215,90'; PK.shake = 0.9; PK.banner = { t: 2.4, max: 2.4, text: `隱藏職業出現！${CLASSES[c.b.c].name}` };
+            packFx(sl.x, sl.y, 220, '#ffd75a', 1000); packFx(sl.x, sl.y, 60, '#ffffff', 700); SFX.burst(); SFX.ex(); SFX.reveal();
+            if (navigator.vibrate) navigator.vibrate([60, 60, 120, 60, 200]);
+          } else if (tr >= 2) { // red / yellow: flash, shake, a shower in the rarity colour
             PK.flash = tr === 3 ? 1 : 0.6; PK.flashCol = tr === 3 ? '252,238,10' : '255,42,85'; PK.shake = tr === 3 ? 0.6 : 0.35;
             packFx(sl.x, sl.y, tr === 3 ? 140 : 70, RARITY[tr].col, tr === 3 ? 900 : 650); SFX.ex(); if (tr === 3) SFX.burst();
             if (navigator.vibrate) navigator.vibrate(tr === 3 ? [40, 60, 80] : 30);
@@ -1291,6 +1302,14 @@ function drawPack(dt) {
       okBtn.style.display = 'block';
     }
     if (PK.st === 'done') { const sl = cardSlot(PK.cards.length - 1, PK.cards.length); g.fillStyle = 'rgba(255,255,255,.7)'; g.font = '15px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・零件已放進零件庫', PW / 2, sl.y + sl.h / 2 + 34); }
+  }
+  if (PK.banner) {
+    const b = PK.banner, e = b.max - b.t, a = Math.min(1, b.t / 0.4), sl2 = Math.min(1, e / 0.2);
+    g.save(); g.globalAlpha = a; g.translate(PW / 2 + (1 - sl2) * -PW, 150); g.rotate(-0.06);
+    g.fillStyle = '#10101c'; g.fillRect(-PW, -38, PW * 2, 76); g.fillStyle = '#ffd75a'; g.fillRect(-PW, -32, PW * 2, 64);
+    g.font = 'italic 900 34px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = 8; g.strokeStyle = '#10101c'; g.strokeText(b.text, 0, 2); g.fillStyle = '#ff2a55'; g.fillText(b.text, 3, 4); g.fillStyle = '#ffffff'; g.fillText(b.text, 0, 2);
+    g.restore(); b.t -= dt; if (b.t <= 0) PK.banner = null;
   }
   if ((PK.st === 'cards' || PK.st === 'done') && PK.shake > 0) { PK.shake -= dt; packCv.style.transform = `translate(${rnd(-8, 8) * PK.shake}px,${rnd(-5, 5) * PK.shake}px)`; } else if (packCv.style.transform) packCv.style.transform = '';
   if (PK.flash > 0) { g.fillStyle = `rgba(${PK.flashCol},${PK.flash * 0.55})`; g.fillRect(0, 0, PW, PH); PK.flash = Math.max(0, PK.flash - dt * 1.8); }
@@ -2063,6 +2082,7 @@ function useEx(t) {
       sparks(foe.x, foe.y, 22, '#29e0d0', 300);
       break;
     }
+    case 'zoomies': t.ex = { type: 'zoomies', t: 3, seg: 0, boost: 1 }; comicPop(t.x, t.y - 60, 'NYAAA!!', 40, '#fcee0a', '#ff9f1a', 1); break;
     case 'mark': foe.markT = 5; addText(foe.x, foe.y - 30, '已標記', '#ffa53d', 18); break;
   }
   updateExBtn();
@@ -2222,6 +2242,17 @@ function stepTop(t, foe, h) {
     u = { x: 0, y: 0 };
   }
 
+  // EX zoomies: random zigzag sprints, a fresh direction every ~0.3 s, often aimed at the foe
+  if (t.ex && t.ex.type === 'zoomies') {
+    t.ex.t -= h; t.ex.seg -= h; t.dashMult = 1.3; t.kbMult = 1.15;
+    if (t.ex.seg <= 0) {
+      const a = rnd(0, TAU), d = Math.random() < 0.45 ? norm(foe.x - t.x, foe.y - t.y) : { x: Math.cos(a), y: Math.sin(a) }, sp = 560 * t.ex.boost;
+      t.vx = d.x * sp; t.vy = d.y * sp; t.ex.seg = rnd(0.22, 0.38); sparks(t.x, t.y, 8, '#ff9f1a', 180);
+    }
+    if (t.ex.t <= 0) { t.ex = null; t.dashMult = 1; t.kbMult = 1; updateExBtn(); }
+    u = { x: 0, y: 0 };
+  }
+
   if (t.onRing) {
     // rail ride: speed ramps up hard toward RAIL_TOP (several times normal movement)
     const top = RAIL_TOP * Math.sqrt(t.s.c.speed);
@@ -2298,6 +2329,7 @@ function stepTop(t, foe, h) {
         t.vx -= 1.95 * vn * nx; t.vy -= 1.95 * vn * ny; t.spin -= vn / 40000;
         // tangential kick from the spin, so tops ricochet along the rim instead of just stopping
         t.vx += -ny * t.s.w.dir * vn * 0.25; t.vy += nx * t.s.w.dir * vn * 0.25;
+        if (t.ex && t.ex.type === 'zoomies' && vn > 60) { t.ex.boost = Math.min(1.9, t.ex.boost + 0.15); t.vx *= 1.15; t.vy *= 1.15; t.ex.seg = Math.min(t.ex.seg, 0.12); if (G.comicCD <= 0) { comicPop(t.x, t.y - 40, pick(['NYA!', 'MEOW!', 'ZOOM!']), 26, '#fcee0a', '#ff9f1a', 0.55); G.comicCD = 0.25; } }
         if (vn > 80) { sparks(t.x + nx * TR, t.y + ny * TR, Math.min(22, 4 + vn / 25), '#a8fbff', 120 + vn * 0.5); SFX.wall(vn); if (vn > 420 && G.comicCD <= 0) { comicPop(t.x + nx * TR * 0.5, t.y + ny * TR * 0.5 - 20, pick(['CLANG!', 'KLANG!', 'BONK!']), 24, '#ffffff', '#00b8d4', 0.6); G.comicCD = 0.35; } G.shake = Math.max(G.shake, Math.min(9, vn / 55)); G.rimFlash = { a: pAng(t.x, t.y), t: 0.25 }; if (vn > 250) wave(t.x + nx * TR, t.y + ny * TR, '190,200,255', 45, 4, 0.25); }
       }
     }
@@ -2694,6 +2726,14 @@ function drawExAnim(g, kind, t, foe, k) {
     const r = 90 - 50 * e; g.strokeStyle = '#ffa53d'; g.lineWidth = 3;
     g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
     for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; g.beginPath(); g.moveTo(Math.cos(a) * (r - 12), Math.sin(a) * (r - 12)); g.lineTo(Math.cos(a) * (r + 12), Math.sin(a) * (r + 12)); g.stroke(); }
+  } else if (kind === 'zoomies') { // mech-cat: glowing cat eyes snap open, zigzag streaks
+    for (const sx2 of [-1, 1]) {
+      g.save(); g.translate(sx2 * 22, -46 * e); g.fillStyle = `rgba(252,238,10,${e})`; g.shadowColor = '#fcee0a'; g.shadowBlur = 16;
+      g.beginPath(); g.ellipse(0, 0, 12, 12 * Math.min(1, k * 4), sx2 * 0.15, 0, TAU); g.fill();
+      g.fillStyle = '#10101c'; g.shadowBlur = 0; g.beginPath(); g.ellipse(0, 0, 2.5, 10 * Math.min(1, k * 4), 0, 0, TAU); g.fill(); g.restore();
+    }
+    g.strokeStyle = `rgba(255,159,26,${1 - k * 0.6})`; g.lineWidth = 4;
+    for (let i = 0; i < 3; i++) { g.beginPath(); let x = -70, y = 30 + i * 14; g.moveTo(x, y); for (let j = 0; j < 6; j++) { x += 24 * e; y += (j % 2 ? -14 : 14); g.lineTo(x, y); } g.stroke(); }
   } else if (kind === 'revive') { // undead: pale skull halo flash
     g.strokeStyle = `rgba(220,226,232,${1 - k})`; g.lineWidth = 6; g.beginPath(); g.arc(0, 0, 30 + 50 * e, 0, TAU); g.stroke();
     g.fillStyle = `rgba(220,226,232,${0.35 * (1 - k)})`; g.beginPath(); g.arc(0, 0, 36, 0, TAU); g.fill();
@@ -2792,7 +2832,7 @@ function render() {
   }
   for (const t of G.tops) {
     if (t.trail.length < 2) continue;
-    const col = t.onRing ? '0,240,255' : (t.side === 0 ? '0,240,255' : '255,59,92');
+    const col = t.ex && t.ex.type === 'zoomies' ? '255,159,26' : t.onRing ? '0,240,255' : (t.side === 0 ? '0,240,255' : '255,59,92');
     g.save(); g.lineCap = 'round'; g.shadowColor = `rgb(${col})`; g.shadowBlur = 16;
     for (let i = 1; i < t.trail.length; i++) {
       const k = i / t.trail.length;
