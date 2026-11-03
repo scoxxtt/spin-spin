@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.35</title>
+<title>SPIN! SPIN! v0.36</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -184,7 +184,7 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
 .depot .tile{padding:.15em .15em .2em;min-height:3.2em}
 .depot .tile .tst{font-size:.48em}.depot .pbar{height:.8em}.depot .pbar span{font-size:.5em;line-height:1.6em}
 .depot .eqTag,.depot .matTag,.depot .newTag{font-size:.42em}
-.depot .mergeBtn{font-size:.62em;padding:.25em .5em}
+.depot .mergeBtn{font-size:.58em;padding:.25em .45em;white-space:nowrap}
 .tile .tp{font-size:.52em;text-align:center;color:#00f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .tp.a{color:#fcee0a}
 .newTag{position:absolute;top:.2em;right:.2em;background:#ff2a55;color:#fff;font-size:.5em;padding:.05em .35em;font-family:Rajdhani,sans-serif}
@@ -208,6 +208,39 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
 .slot.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
 .slot.equipFlash{animation:eqf .5s}
 @keyframes eqf{0%{filter:brightness(2.2)}100%{filter:none}}
+#team.screen{overflow:hidden;padding:.4em .6em 2.4em !important;justify-content:flex-start}
+#team .topBar{width:100%;display:flex;flex-direction:column;align-items:center;flex:none;padding-right:3.5em;box-sizing:border-box}
+#team h1{font-size:1.45em;margin:.05em 0 0}
+#team .sub{font-size:.78em;margin:.1em 0 .3em}
+#teamList{flex:1;min-height:0;width:100%;display:flex;flex-direction:column}
+#team .slots{flex:none}
+#team .slot .sface{aspect-ratio:1.3;object-position:50% 20%}
+#team .slot .nm{margin:.2em 0 .1em;font-size:.68em}
+#team .slot .mini{margin-top:.1em}
+#team .slot .stop{width:2.2em;height:2.2em}
+.invPanel{flex:1;min-height:0;display:flex;flex-direction:column;margin-top:.35em}
+.invPanel .benchHd{display:flex;align-items:baseline;gap:.5em;margin:.1em 0 .05em}
+.invHint{margin-left:auto;font-size:.72em;font-style:normal;color:#9fb0c0;letter-spacing:0}
+.invHint.on{color:#fcee0a}
+.invPanel .invTabs{margin:.2em 0 .3em}
+.invPages{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.invPages::-webkit-scrollbar{display:none}
+.invPage{flex:0 0 100%;scroll-snap-align:start;align-content:start;grid-auto-rows:min-content}
+.invPage .tile{touch-action:pan-x}
+.cntTag{position:absolute;right:.25em;top:42%;background:#00f0ff;color:#10101c;font-size:.5em;padding:.05em .35em;box-shadow:0 0 0 1.5px #05060a}
+.pdots{display:flex;justify-content:center;gap:.45em;height:.9em;align-items:center;flex:none}
+.pdot{width:.5em;height:.5em;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer}
+.pdot.on{background:#fcee0a;box-shadow:0 0 .4em #fcee0a}
+.bottomBar{display:flex;gap:.6em;width:100%;flex:none;margin-top:.35em}
+.bottomBar .btn{flex:1;margin:0;padding:.55em 0;font-size:1.1em;position:relative}
+.bottomBar .dot{position:absolute;top:.35em;right:.6em;width:.55em;height:.55em;border-radius:50%;background:#ff2a55}
+#shopPop{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.72);padding:1em}
+#shopPop.show{display:flex;animation:popIn .18s ease-out}
+.shopCard #shop{display:flex;gap:.5em;justify-content:center;margin:.6em 0}
+.shopCard .shopBtn{flex:1;font-size:1em;padding:.6em 0}
+.shopNote{line-height:1.6}
+.setLinks{justify-content:center;gap:1.2em}
+.tutRules{text-align:left;font-size:.82em;line-height:1.55}
 .tile.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
 .starUp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,5,10,.75);animation:popIn .2s ease-out}
 .starUp.out{opacity:0;transition:opacity .3s}
@@ -258,32 +291,15 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
       <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
       <div class="opt"><span>頭上血量 %</span><button class="tog" data-k="hpPct"></button></div>
       <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
+      <div class="opt setLinks"><button class="link" id="tutBtn">玩法教學</button><button class="link" id="resetBtn">重置全部進度</button></div>
       <button class="btn" id="setClose">關閉</button>
     </div>
   </div>
 
   <div id="team" class="screen show">
-    <h1>SPIN! SPIN!</h1>
-    <div class="sub" id="teamSub"></div>
-    <div id="shop"></div>
-    <div class="hint"><b>點頭像再點另一個</b>交換順序（也可拖曳）・<b>把零件庫的角色或零件拖到出戰格</b>（或點出戰格零件再點零件庫）即可換裝・<b>長按</b>看詳情</div>
+    <div class="topBar"><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
     <div id="teamList"></div>
-    <button class="btn" id="startBtn">確定陣容，查看對手</button>
-    <div class="rules">
-      <b>玩法</b><br>
-      ・職業、武器、鎧甲分開收藏在零件庫，每個出戰格各裝 1 職業＋1 武器＋1 鎧甲，再排好上場順序<br>
-      ・稀有度 白＜紫＜紅＜黃。抽到同名零件會變成「素材」，把素材拖到本體上（或按「合成」）就能升星，最多 3 星，星越多能力越強；滿星後重複的會變成萬用碎片<br>
-      ・對戰共三場，你的第 1、2、3 顆依序對上對手的第 1、2、3 顆；總分高者勝，同分由雙方第 1 顆加賽<br>
-      ・付費抽卡有機會抽到<b>隱藏職業</b>（每抽 2%，40 抽保底），基礎能力比一般職業高約 10%<br>
-      ・打贏 +100 金幣（每日首勝再 +50），打輸 +20；單抽 100、十連 1000 多送 1 抽且保底紅色以上<br>
-      ・開場：在場地上按下的位置就是落點，往後拉決定方向和力道，放開發射。電腦落點隨機<br>
-      ・對戰：按住拖曳移動（電腦可用 WASD / 方向鍵，空白鍵放 EX）<br>
-      ・EX：點畫面任何地方充能（拖曳移動時用另一隻手指點也可以），或貼著上半圈牆邊衝上貓耳形加速軌道 WORMHOLE累積；衝到 12 點鐘的開口會直衝場地中心<br>
-      ・場地中間往下凹，陀螺會滑回中心；待在中央戰心圈裡 EX 累積更快、撞擊傷害 +20%<br>
-      ・下方三個出口前都有台階，只有被撞飛才會掉進去：左右 BLOOD 出口 +2、中間 DEAD 出口 +3；爆甲 +1；停轉平局
-    </div>
-    <button class="link" id="tutBtn">玩法教學</button>
-    <button class="link" id="resetBtn">重置全部進度</button>
+    <div class="bottomBar"><button class="btn ghost" id="drawOpen">抽卡<b class="dot" id="drawDot"></b></button><button class="btn" id="startBtn">開戰！</button></div>
   </div>
 
   <div id="versus" class="screen">
@@ -317,6 +333,10 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
 </div>
 
 <div id="infoPop"></div>
+<div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
+  <div id="shop"></div>
+  <div class="k shopNote">每個零件各自抽稀有度：白 70%・紫 22%・紅 6.5%・黃 1.5%<br>十連保底紅色以上・每 60 抽保底黃色<br>付費抽卡每抽 2% 出現隱藏職業（40 抽保底）</div>
+  <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <button class="btn" data-gm="coin">金幣 +10000</button>
   <button class="btn" data-gm="cat">取得機甲貓咪</button>
@@ -362,10 +382,11 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
  v0.33 BLOOD plates follow the rim; italics only for titles / scores / show text (buttons, settings, options, parts upright); hype launch call (announcer voice + drums, air horn, crowd)
  v0.34 drag a class / weapon / armor from the parts inventory onto a lineup slot to equip it
  v0.35 announcer speaks each beat in English (Three / Two / One / SPIN! SPIN!), faster and brighter, synced to the countdown; smaller inventory tiles (5 per row)
+ v0.36 one-screen lineup (no scrolling): compact slots, fixed inventory panel with swipe pages (5x2) and page dots, bottom bar with Draw / Fight, draw window popup, rules moved into the tutorial, tutorial + reset moved into settings, duplicate count badge on parts
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.35';
+const GAME_VERSION = 'v0.36';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -974,7 +995,9 @@ function renderTeam() {
   list.appendChild(slots);
   // parts inventory: tabs for classes / weapons / armors
   const own = k => Object.keys(INV[k]);
-  list.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>萬用碎片 ${INV.shards}</span></div>`);
+  const panel = document.createElement('div'); panel.className = 'invPanel';
+  const hintTxt = invSel ? `已選「${KIND[invSel.k][invSel.id].name}」，點出戰格裡的${KIND_NAME[invSel.k]}換裝` : swapSel ? `點下方的${KIND_NAME[swapSel.k]}換裝，或點另一格互換` : '拖到出戰格換裝・長按看詳情';
+  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>碎片 ${INV.shards}</span><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
   const tabs = document.createElement('div'); tabs.className = 'invTabs';
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
@@ -982,9 +1005,9 @@ function renderTeam() {
     tb.innerHTML = `${KIND_NAME[k]} ${own(k).length}/${Object.keys(KIND[k]).filter(id => !KIND[k][id].hidden || INV[k][id]).length}${nNew ? '<b class="dot"></b>' : ''}`;
     tb.onclick = () => { invTab = k; renderTeam(); }; tabs.appendChild(tb);
   }
-  list.appendChild(tabs);
-  const grid = document.createElement('div'); grid.className = 'depot';
-  const k = invTab;
+  panel.appendChild(tabs);
+  const pagesEl = document.createElement('div'); pagesEl.className = 'invPages';
+  const k = invTab, PER = invCols * invRows; let grid = null, count = 0;
   own(k).sort((x, y) => INV[k][y].r - INV[k][x].r || INV[k][y].s - INV[k][x].s).forEach(id => {
     const e = INV[k][id], slot = collection.findIndex(b => b[k] === id), t = document.createElement('div');
     t.className = 'tile r' + e.r + (invSel && invSel.k === k && invSel.id === id ? ' picked' : '') + (swapSel && swapSel.k === k ? ' target' : '');
@@ -992,7 +1015,7 @@ function renderTeam() {
     const pic = k === 'c' ? `<img draggable="false" src="${PORTRAIT_SRC[id]}">` : `<div class="bigIco">${iconHTML(k, id)}</div>`;
     const ready = canMerge(e); if (ready) t.classList.add('ready');
     const bar = e.s < 3 ? `<div class="pbar"><i style="width:${Math.min(100, e.n / NEED[e.s] * 100)}%"></i><span>${e.n}/${NEED[e.s]}</span></div>` : '<div class="pbar max"><span>MAX</span></div>';
-    t.innerHTML = `${pic}${e.isNew ? '<b class="newTag">NEW</b>' : ''}${slot >= 0 ? `<b class="eqTag">出戰${slot + 1}</b>` : ''}
+    t.innerHTML = `${pic}${e.isNew ? '<b class="newTag">NEW</b>' : ''}${slot >= 0 ? `<b class="eqTag">出戰${slot + 1}</b>` : ''}${e.n && e.s < 3 ? `<b class="cntTag">×${e.n}</b>` : ''}
       <div class="tn">${KIND[k][id].name}</div><div class="tst" style="color:${RARITY[e.r].col}">${starStr(e.s)}</div>${bar}
       ${ready ? '<button class="mergeBtn">合成</button>' : ''}`;
     if (ready) t.querySelector('.mergeBtn').onclick = ev => { ev.stopPropagation(); doMerge(k, id); };
@@ -1003,17 +1026,28 @@ function renderTeam() {
       else invSel = invSel && invSel.k === k && invSel.id === id ? null : { k, id };
       renderTeam();
     };
-    grid.appendChild(t);
-    if (e.n > 0 && e.s < 3) { // duplicates sit next to the part as material: drag them onto it to merge
-      const m = document.createElement('div'); m.className = 'tile mat'; m.dataset.mk = k; m.dataset.mid = id; m.style.borderColor = RARITY[e.r].col;
-      m.innerHTML = `${pic}<b class="matTag">素材 ×${e.n}</b><div class="tn">${KIND[k][id].name}</div><div class="tst mh">${ready ? '拖到本體合成' : `還差 ${NEED[e.s] - e.n} 個`}</div>`;
-      grid.appendChild(m);
-    }
+    if (count % PER === 0) { grid = document.createElement('div'); grid.className = 'invPage depot'; grid.style.gridTemplateColumns = `repeat(${invCols},1fr)`; pagesEl.appendChild(grid); }
+    grid.appendChild(t); count++;
   });
-  list.appendChild(grid);
-  if (invSel) list.insertAdjacentHTML('beforeend', `<div class="mini selHint">已選「${KIND[invSel.k][invSel.id].name}」，點上面出戰格裡的${KIND_NAME[invSel.k]}完成換裝</div>`);
-  else if (swapSel) list.insertAdjacentHTML('beforeend', `<div class="mini selHint">點下方零件庫的${KIND_NAME[swapSel.k]}換裝，或點另一格的${KIND_NAME[swapSel.k]}互換</div>`);
+  panel.appendChild(pagesEl);
+  const nP = Math.max(1, Math.ceil(count / PER)), dots = document.createElement('div'); dots.className = 'pdots';
+  for (let i = 0; i < nP; i++) { const d = document.createElement('b'); d.className = 'pdot'; d.onclick = () => pagesEl.scrollTo({ left: i * pagesEl.clientWidth, behavior: 'smooth' }); dots.appendChild(d); }
+  panel.appendChild(dots);
+  list.appendChild(panel);
+  const cur = Math.min(invPage[k] || 0, nP - 1), mark = p2 => [...dots.children].forEach((d, i) => d.classList.toggle('on', i === p2));
+  pagesEl.scrollLeft = cur * pagesEl.clientWidth; mark(cur);
+  // fit as many rows of tiles as the panel height allows (re-render once if that changed)
+  const ft = pagesEl.querySelector('.tile');
+  if (ft) { // pick 5 or 6 columns, whichever fits more tiles per page (tile height scales with its width)
+    const gap = 4, ph = pagesEl.clientHeight, h5 = ft.offsetHeight * invCols / 5;
+    let best = null;
+    for (const c of [5, 6]) { const r = Math.max(1, Math.min(4, Math.floor((ph + gap) / (h5 * 5 / c + gap)))); if (!best || c * r > best.c * best.r) best = { c, r }; }
+    if (best.c !== invCols || best.r !== invRows) { invCols = best.c; invRows = best.r; return renderTeam(); }
+  }
+  pagesEl.onscroll = () => { const p2 = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth)); invPage[k] = p2; mark(p2); };
+  document.getElementById('drawDot').style.display = INV.coins >= PRICE1 ? '' : 'none';
 }
+const invPage = { c: 0, w: 0, a: 0 }; let invRows = 2, invCols = 5;
 (() => {
   const list = document.getElementById('teamList'); let md = null;
   const mainOf = (k, id) => list.querySelector(`.tile[data-ik="${k}"][data-iid="${id}"]`);
@@ -1085,8 +1119,13 @@ function renderShop() {
   sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>${ORE}${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>十連＋1<small>${ORE}${PRICE10}・保底紅</small></button>`;
   document.getElementById('buy1').onclick = () => buy(1); document.getElementById('buy10').onclick = () => buy(10);
 }
+const shopPop = document.getElementById('shopPop');
+function openShop() { renderShop(); document.getElementById('shopCoins').innerHTML = `持有 ${ORE} ${INV.coins}`; shopPop.classList.add('show'); SFX.init(); SFX.flip(); }
+shopPop.addEventListener('click', e => { if (!e.target.closest('.shopBtn')) shopPop.classList.remove('show'); });
+document.getElementById('drawOpen').onclick = openShop;
 function buy(n) {
   const price = n === 10 ? PRICE10 : PRICE1; if (INV.coins < price) return;
+  shopPop.classList.remove('show');
   INV.coins -= price; SFX.init();
   startGacha(n === 10 ? 11 : 1, n === 10 ? '十連卡包' : '標準卡包', openTeam, { paid: true, ten: n === 10 });
 }
@@ -1543,6 +1582,11 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：職業、武器、鎧甲分開收藏，拖到出戰格就能換裝，再排好 1・2・3 出場順序<br>・<b>升星</b>：抽到同名零件會累積素材，夠了按「合成」升星（最多 3 星）；滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜黃；付費抽卡有機會抽到<b>隱藏職業</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20；單抽 100、十連 1000 多送 1 抽<br>・<b>三場制</b>：依序對上對手的 1・2・3，總分高者勝，同分加賽<br>・<b>開場</b>：按下位置＝落點，往後拉瞄準，放開後 3、2、1、SPIN! SPIN! 一起發射<br>・<b>對戰</b>：按住拖曳移動，點畫面充能 EX；WORMHOLE 加速、CORE 增傷<br>・<b>得分</b>：BLOOD +2、DEAD +3、爆甲 +1，停轉平局</div>', draw(g, t) {
+      g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
+      tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
+      tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
+  } },
   { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>。下方有三個出口：左右兩個窄的 <b>BLOOD 出口 +2 分</b>，正中間寬的 <b>DEAD 出口 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了就能再開一包卡包！', draw(g, t) {
       tutArenaBg(g);
       const ph = t % 3.6, Ax = CX, B0 = { x: CX + 6, y: CY + 92 };
@@ -1568,7 +1612,7 @@ function drawTutorial(dt) { tutT += dt; TUT[tutIdx].draw(tg2, tutT); }
 function endTutorial() { saveJSON('topTutSeen', true); const d = tutDone; tutDone = null; d && d(); }
 document.getElementById('tutNext').onclick = () => { SFX.init(); if (tutIdx < TUT.length - 1) { tutIdx++; renderTutStep(); } else endTutorial(); };
 document.getElementById('tutSkip').onclick = () => { SFX.init(); endTutorial(); };
-document.getElementById('tutBtn').onclick = () => showTutorial(openTeam);
+document.getElementById('tutBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); showTutorial(openTeam); };
 
 function openTeam() {
   G = null; swapSel = null;
@@ -1594,7 +1638,7 @@ document.getElementById('fightBtn').onclick = () => {
   SFX.init(); const pw = teamPower();
   newMatch(collection.map(withBonus), aiLineup.map(b => { const x = pw * rnd(0.85, 1.05); return { ...b, bc: x, bw: x, ba: x }; }));
 };
-document.getElementById('resetBtn').onclick = () => { if (!confirm('確定要清空零件庫、金幣和勝場，重新開始嗎？')) return; INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [] }; collection = []; wins = 0; save(); openTeam(); };
+document.getElementById('resetBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); if (!confirm('確定要清空零件庫、金幣和勝場，重新開始嗎？')) return; INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [] }; collection = []; wins = 0; save(); openTeam(); };
 document.getElementById('drawBtn').onclick = () => buy(1);
 document.getElementById('retryBtn').onclick = () => { aiLineup = [randomTop(), randomTop(), randomTop()]; renderVersus(); show('versus'); };
 document.getElementById('toTeamBtn').onclick = openTeam;
