@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.34</title>
+<title>SPIN! SPIN! v0.35</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -177,10 +177,14 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
 .dragGhost{position:fixed;z-index:999;pointer-events:none;object-fit:cover;border:2px solid #fcee0a;box-shadow:0 0 1.2em #fcee0a;opacity:.9}
 .slot.picked,.tile.picked{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1em rgba(252,238,10,.6)}
 .benchHd span{color:#fcee0a;letter-spacing:.05em}
-.depot{display:grid;grid-template-columns:repeat(4,1fr);gap:.35em;width:100%}
+.depot{display:grid;grid-template-columns:repeat(5,1fr);gap:.3em;width:100%}
 .tile{position:relative;background:rgba(0,240,255,.07);border:1px solid rgba(0,240,255,.35);padding:.2em .2em .3em;touch-action:none;cursor:pointer;user-select:none;clip-path:polygon(0 0,100% 0,100% 90%,86% 100%,0 100%)}
 .tile img{width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none}
-.tile .tn{font-size:.62em;font-weight:700;text-align:center;margin-top:.15em}
+.tile .tn{font-size:.52em;font-weight:700;text-align:center;margin-top:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.depot .tile{padding:.15em .15em .2em;min-height:3.2em}
+.depot .tile .tst{font-size:.48em}.depot .pbar{height:.8em}.depot .pbar span{font-size:.5em;line-height:1.6em}
+.depot .eqTag,.depot .matTag,.depot .newTag{font-size:.42em}
+.depot .mergeBtn{font-size:.62em;padding:.25em .5em}
 .tile .tp{font-size:.52em;text-align:center;color:#00f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .tp.a{color:#fcee0a}
 .newTag{position:absolute;top:.2em;right:.2em;background:#ff2a55;color:#fff;font-size:.5em;padding:.05em .35em;font-family:Rajdhani,sans-serif}
@@ -357,10 +361,11 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
  v0.32 renamed SPIN! SPIN!; arena signage as sign plates (WORMHOLE tunnel sign, BLOOD / DEAD floor plates with chevrons, CORE plate); simultaneous hidden launch with 3-2-1 SPIN! SPIN! call; English comic arena HUD; readable result screen; stage guide tutorial page
  v0.33 BLOOD plates follow the rim; italics only for titles / scores / show text (buttons, settings, options, parts upright); hype launch call (announcer voice + drums, air horn, crowd)
  v0.34 drag a class / weapon / armor from the parts inventory onto a lineup slot to equip it
+ v0.35 announcer speaks each beat in English (Three / Two / One / SPIN! SPIN!), faster and brighter, synced to the countdown; smaller inventory tiles (5 per row)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.34';
+const GAME_VERSION = 'v0.35';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1595,6 +1600,8 @@ document.getElementById('retryBtn').onclick = () => { aiLineup = [randomTop(), r
 document.getElementById('toTeamBtn').onclick = openTeam;
 
 // ---------- sound (synthesised with Web Audio, no files) ----------
+// voices load late on some phones: ask early so an English voice is ready by the first match
+try { if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } } catch (e) {}
 const SFX = (() => {
   let ac = null, master = null, muted = false, hum = null, lastHit = 0, noiseBuf = null; const engines = [];
   try { muted = localStorage.getItem('topMute') === '1'; } catch (e) {}
@@ -1791,14 +1798,14 @@ const SFX = (() => {
       tone(120, 35, 0.6, 'sine', 0.6); noise(0.5, 0.45, 'lowpass', 3000, 150);
       noise(1.6, 0.22, 'bandpass', 900, 2600, 0.1); noise(1.2, 0.12, 'bandpass', 2400, 1200, 0.3);
       rev(0.8, 70, 300, 0.16, 0.05);
-      this.announce('SPIN! SPIN!', 1.15);
     },
     // a synthesized announcer voice through the browser's built-in speech (free, works offline on most phones)
-    announce(text, rate) {
+    announce(text, rate, pitch) {
       if (muted || !('speechSynthesis' in window)) return;
       try {
-        const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = rate || 1.1; u.pitch = 0.55; u.volume = 1;
-        const vs = speechSynthesis.getVoices(), v = vs.find(x => /en(-|_)US/i.test(x.lang) && /male|david|alex|daniel|fred|guy/i.test(x.name)) || vs.find(x => /^en/i.test(x.lang));
+        const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = rate || 1.5; u.pitch = pitch || 1.2; u.volume = 1;
+        const vs = speechSynthesis.getVoices(), en = vs.filter(x => /^en/i.test(x.lang));
+        const v = en.find(x => /en(-|_)US/i.test(x.lang) && /male|david|alex|daniel|fred|guy|aaron|arthur/i.test(x.name)) || en.find(x => /en(-|_)US/i.test(x.lang)) || en[0];
         if (v) u.voice = v;
         speechSynthesis.speak(u);
       } catch (e) {}
@@ -2126,12 +2133,15 @@ menuBtn.addEventListener('click', () => openTeam());
 // both tops launch together: the player's aim locks, the call plays, then the CPU's (hidden) drop is revealed
 function startCount(dx, dy, power) {
   try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
-  SFX.announce('3! 2! 1!', 1.35);
-  G.phase = 'count'; G.countT = 0; G.countN = -1; G.pendingLaunch = { dx, dy, power }; G.banner = null;
+  G.phase = 'count'; G.countT = 0; G.countN = -1; G.saidN = -1; G.pendingLaunch = { dx, dy, power }; G.banner = null;
 }
+const COUNT_BEAT = 0.42, COUNT_LEAD = 0.16; // speech starts COUNT_LEAD ahead of the picture
 function updateCount(dt) {
   G.countT += dt;
-  const step = Math.floor(G.countT / 0.42);
+  const said = Math.floor(G.countT / COUNT_BEAT);
+  if (said !== G.saidN && said <= 3) { G.saidN = said; SFX.announce(['Three!', 'Two!', 'One!', 'Spin! Spin!'][said], said === 3 ? 1.35 : 1.6, said === 3 ? 1.35 : 1.2); }
+  if (G.countT < COUNT_LEAD) return;
+  const step = Math.floor((G.countT - COUNT_LEAD) / COUNT_BEAT);
   if (step !== G.countN && step <= 3) {
     G.countN = step;
     if (step < 3) { comicPop(CX, CY - 30, ['3', '2', '1'][step], 64 + step * 8, '#ffffff', ['#00f0ff', '#fcee0a', '#ff2a55'][step], 0.42); SFX.countHit(step); G.shake = Math.max(G.shake, 3 + step * 2); }
