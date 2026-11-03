@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.20</title>
+<title>旋刃對決 v0.21</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -133,6 +133,17 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .dragging{opacity:.35}
 .dropTarget{outline:3px dashed #fcee0a;outline-offset:-3px}
 .dragGhost{position:fixed;z-index:999;pointer-events:none;object-fit:cover;border:2px solid #fcee0a;box-shadow:0 0 1.2em #fcee0a;opacity:.9}
+.slot.picked,.tile.picked{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1em rgba(252,238,10,.6)}
+.benchHd span{color:#fcee0a;letter-spacing:.05em}
+.depot{display:grid;grid-template-columns:repeat(4,1fr);gap:.35em;width:100%}
+.tile{position:relative;background:rgba(0,240,255,.07);border:1px solid rgba(0,240,255,.35);padding:.2em .2em .3em;touch-action:none;cursor:pointer;user-select:none;clip-path:polygon(0 0,100% 0,100% 90%,86% 100%,0 100%)}
+.tile img{width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none}
+.tile .tn{font-size:.62em;font-weight:700;text-align:center;margin-top:.15em}
+.tile .tp{font-size:.52em;text-align:center;color:#00f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .tp.a{color:#fcee0a}
+.newTag{position:absolute;top:.2em;right:.2em;background:#ff2a55;color:#fff;font-size:.5em;padding:.05em .35em;font-family:Rajdhani,sans-serif}
+.selbar{width:100%;margin-top:.5em;padding:.5em;border:1px solid #fcee0a;background:rgba(252,238,10,.06)}
+.selbar .nm{font-size:.8em;font-weight:700}
 </style>
 </head>
 <body>
@@ -156,7 +167,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
   <div id="team" class="screen show">
     <h1>旋刃對決</h1>
     <div class="sub" id="teamSub"></div>
-    <div class="hint"><b>拖曳頭像</b>交換出場順序或換上待命陀螺・點一個零件，再點<b>另一顆的同類零件</b>即可互換</div>
+    <div class="hint"><b>點一下頭像，再點另一個</b>即可交換（也可拖曳）・點零件，再點<b>另一顆的同類零件</b>即可互換</div>
     <div id="teamList"></div>
     <button class="btn" id="startBtn">確定陣容，查看對手</button>
     <div class="rules">
@@ -226,10 +237,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.18 2.5D 45-degree view: tilted arena with wall faces, tops with body thickness, upright labels, input mapped onto the tilted floor
  v0.19 speed feel back (flatter tilt, faster tops, looser basin, faster rail, trails/sparks/speed lines, rotating portrait + blade swooshes), auto camera, EX 0.5s freeze with per-class mini animation, fall-into-pit animation, camera toggle
  v0.20 drag-and-drop lineup: three big portrait slots + bench
+ v0.21 tap-to-swap lineup, reserve depot grid (portrait tiles, NEW tag, selected-top part bar)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.20';
+const GAME_VERSION = 'v0.21';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -548,6 +560,7 @@ let collection = loadJSON('topCollection', []).filter(b => b && WEAPONS[b.w] && 
 let wins = loadJSON('topWins', 0) || 0;
 let aiLineup = null;
 let swapSel = null; // {i, k}
+let teamSel = null; // index of the top picked by tapping (tap another to swap)
 const save = () => { saveJSON('topCollection', collection); saveJSON('topWins', wins); };
 
 const screens = ['team', 'versus', 'gacha', 'final', 'tutorial'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
@@ -595,7 +608,7 @@ function renderTeam() {
   // three big portrait slots for the lineup
   const slots = document.createElement('div'); slots.className = 'slots';
   collection.slice(0, 3).forEach((b, i) => {
-    const el = document.createElement('div'); el.className = 'slot'; el.dataset.idx = i;
+    const el = document.createElement('div'); el.className = 'slot' + (teamSel === i ? ' picked' : ''); el.dataset.idx = i;
     el.insertAdjacentHTML('beforeend', `<div class="snum">${i + 1}</div><img class="sface" draggable="false" src="${PORTRAIT_SRC[b.c]}">`);
     const pv = previewCanvas(b, 120); pv.className = 'stop'; el.appendChild(pv);
     el.insertAdjacentHTML('beforeend', `<div class="nm">${nameOf(b)}</div>`);
@@ -604,19 +617,34 @@ function renderTeam() {
     slots.appendChild(el);
   });
   list.appendChild(slots);
-  if (collection.length > 3) list.insertAdjacentHTML('beforeend', '<div class="benchHd">待命</div>');
-  collection.slice(3).forEach((b, k) => {
-    const i = k + 3;
-    const row = document.createElement('div'); row.className = 'row bench'; row.dataset.idx = i;
-    row.insertAdjacentHTML('beforeend', `<img class="face" draggable="false" src="${PORTRAIT_SRC[b.c]}">`);
-    row.appendChild(previewCanvas(b, 120));
-    const info = document.createElement('div'); info.className = 'info';
-    info.innerHTML = `<div class="nm">${nameOf(b)}</div>`;
-    info.appendChild(partChips(b, i));
-    info.insertAdjacentHTML('beforeend', `<div class="mini">${statLine(b)}</div>`);
-    row.appendChild(info);
-    list.appendChild(row);
-  });
+  // reserve depot: a grid of portrait tiles; weapon / armor as text for now (icons later)
+  if (collection.length > 3) {
+    list.insertAdjacentHTML('beforeend', `<div class="benchHd">備戰倉庫 <span>${collection.length - 3} 顆</span></div>`);
+    const grid = document.createElement('div'); grid.className = 'depot';
+    collection.slice(3).forEach((b, k) => {
+      const i = k + 3, t = document.createElement('div');
+      t.className = 'tile' + (teamSel === i ? ' picked' : ''); t.dataset.idx = i;
+      t.innerHTML = `<img draggable="false" src="${PORTRAIT_SRC[b.c]}">${b.isNew ? '<b class="newTag">NEW</b>' : ''}
+        <div class="tn">${CLASSES[b.c].name}</div><div class="tp">${WEAPONS[b.w].name}</div><div class="tp a">${ARMORS[b.a].name}</div>`;
+      grid.appendChild(t);
+    });
+    list.appendChild(grid);
+  }
+  // bar for the picked depot top: its parts can be swapped with the lineup's
+  if (teamSel !== null && teamSel >= 3 && collection[teamSel]) {
+    const b = collection[teamSel], bar = document.createElement('div'); bar.className = 'selbar';
+    bar.innerHTML = `<div class="nm">已選：${nameOf(b)}<span class="mini">　點出戰格完成交換</span></div>`;
+    bar.appendChild(partChips(b, teamSel));
+    bar.insertAdjacentHTML('beforeend', `<div class="mini">${statLine(b)}</div>`);
+    list.appendChild(bar);
+  }
+}
+function teamTap(idx) {
+  const b = collection[idx]; if (b && b.isNew) { delete b.isNew; save(); }
+  if (teamSel === null) teamSel = idx;
+  else if (teamSel === idx) teamSel = null;
+  else { [collection[teamSel], collection[idx]] = [collection[idx], collection[teamSel]]; teamSel = null; swapSel = null; save(); SFX.init(); SFX.attach(); }
+  renderTeam();
 }
 // drag a slot or bench row onto another to swap them (works with finger or mouse)
 (() => {
@@ -648,13 +676,14 @@ function renderTeam() {
   const end = e => {
     if (!drag || e.pointerId !== drag.id) return;
     const d = drag; drag = null;
-    if (d.ghost) d.ghost.remove();
+    if (!d.ghost) { teamTap(d.from); return; } // no drag happened: treat as a tap
+    d.ghost.remove();
     d.item.classList.remove('dragging');
     if (d.over) {
       d.over.classList.remove('dropTarget');
       const to = +d.over.dataset.idx;
       [collection[d.from], collection[to]] = [collection[to], collection[d.from]];
-      swapSel = null; save(); SFX.attach(); renderTeam();
+      swapSel = null; teamSel = null; save(); SFX.attach(); renderTeam();
     }
   };
   window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
@@ -717,7 +746,7 @@ packCv.addEventListener('pointerdown', e => {
   }
 });
 okBtn.onclick = () => {
-  for (const c of PK.cards) collection.push(c.b);
+  for (const c of PK.cards) { c.b.isNew = true; collection.push(c.b); }
   save(); PK.st = 'idle'; okBtn.style.display = 'none';
   PK.done && PK.done();
 };
