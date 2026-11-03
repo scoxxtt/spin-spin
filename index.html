@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.17</title>
+<title>旋刃對決 v0.18</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -208,16 +208,23 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.15 version shown as a small footer at the bottom of every screen
  v0.16 round arena again, settings menu (music / sfx / EX button side), two synthesized Cyberpunk music loops
  v0.17 city-pop / retro-racing battle music, bigger portraits on tops, clearer EX tap-charge feedback
+ v0.18 2.5D 45-degree view: tilted arena with wall faces, tops with body thickness, upright labels, input mapped onto the tilted floor
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.17';
+const GAME_VERSION = 'v0.18';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
 // arena: 3:2 ellipse (wider than tall). R is kept as the long radius for sizing
 const AX = 228, BY = 228, R = AX; // round arena (AX = BY)
 const GW = 60; // hell gate half-width (px) at the bottom of the ellipse
+// 2.5D view: the floor is squashed vertically by VIEW_K (≈ looking down at 45°), walls are WALL_H screen px tall,
+// tops float TOP_LIFT px above their shadow and show a TOP_SIDE px thick body
+const VIEW_K = 0.72, WALL_H = 26, TOP_LIFT = 7, TOP_SIDE = 7;
+let viewK = 1; // the squash currently applied while drawing (1 for flat views like the tutorial)
+// draw text (or anything) un-squashed at a world point
+function upright(g, x, y, fn) { g.save(); g.translate(x, y); g.scale(1, 1 / viewK); fn(); g.restore(); }
 // three exits on the lower wall: the wide hell gate (+3) at 6 o'clock and two narrow abyss mouths (+2) at the lower corners
 const GATES = [
   { a: Math.PI / 2, half: Math.asin(GW / AX), pts: 3, name: '地獄門', col: '255,0,60', txt: '#ff2a55' },
@@ -1204,6 +1211,8 @@ function toLogical(e) {
   const r = cv.getBoundingClientRect();
   return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H };
 }
+// screen point -> point on the tilted floor
+const toWorld = p => ({ x: p.x, y: CY + (p.y - CY) / VIEW_K });
 cv.addEventListener('pointerdown', e => {
   SFX.init();
   if (!G) return;
@@ -1211,13 +1220,13 @@ cv.addEventListener('pointerdown', e => {
   cv.setPointerCapture(e.pointerId);
   if (G.phase === 'launch' && G.banner && G.banner.t > 0.4 && G.banner.text.startsWith('第')) G.banner.t = 0.4;
   if (G.phase === 'launch') {
-    // press = drop point (top jumps there), pull back = aim, release = launch
-    const me = G.tops[0], foe = G.tops[1];
-    let q = clampDrop(p.x, p.y);
+    // press = drop point (top jumps there), pull back = aim, release = launch (all measured on the tilted floor)
+    const me = G.tops[0], foe = G.tops[1], wp = toWorld(p);
+    let q = clampDrop(wp.x, wp.y);
     const dd = len(q.x - foe.x, q.y - foe.y);
     if (dd < TR * 2 + 12) { const n = norm(q.x - foe.x, q.y - foe.y); q = clampDrop(foe.x + n.x * (TR * 2 + 12), foe.y + n.y * (TR * 2 + 12)); }
     me.x = q.x; me.y = q.y; G.placed = true;
-    G.drag = { sx: p.x, sy: p.y, x: p.x, y: p.y, id: e.pointerId };
+    G.drag = { sx: wp.x, sy: wp.y, x: wp.x, y: wp.y, id: e.pointerId };
   }
   else if (G.phase === 'battle') {
     // a second finger tapping anywhere charges EX; a first finger is the joystick (a quick tap also charges)
@@ -1228,7 +1237,7 @@ cv.addEventListener('pointerdown', e => {
 cv.addEventListener('pointermove', e => {
   if (!G) return;
   const p = toLogical(e);
-  if (G.drag && G.drag.id === e.pointerId) { G.drag.x = p.x; G.drag.y = p.y; }
+  if (G.drag && G.drag.id === e.pointerId) { const wp = toWorld(p); G.drag.x = wp.x; G.drag.y = wp.y; }
   if (G.joy && G.joy.id === e.pointerId) {
     G.joy.x = p.x; G.joy.y = p.y;
     if (!G.joy.moved && len(p.x - G.joy.sx, p.y - G.joy.sy) > 14) G.joy.moved = true;
@@ -1299,7 +1308,7 @@ function doLaunch(dx, dy, power) {
 function playerInput(top) {
   let ux = 0, uy = 0;
   if (G.joy) {
-    const dx = G.joy.x - G.joy.sx, dy = G.joy.y - G.joy.sy, l = len(dx, dy);
+    const dx = G.joy.x - G.joy.sx, dy = (G.joy.y - G.joy.sy) / VIEW_K, l = len(dx, dy); // screen drag -> floor direction
     if (l > 6) { const m = clamp(l / 70, 0, 1); ux = dx / l * m; uy = dy / l * m; }
   }
   const k = G.keys;
@@ -1700,7 +1709,7 @@ function update(dt) {
 }
 
 // ---------- render ----------
-function drawArenaStatic(g) {
+function drawArenaStatic(g, noWall) {
   // backdrop: deep vignette + star dust
   const bg = g.createRadialGradient(CX, CY, 60, CX, CY, 640);
   bg.addColorStop(0, '#0f2026'); bg.addColorStop(0.55, '#0a1014'); bg.addColorStop(1, '#050607');
@@ -1711,6 +1720,7 @@ function drawArenaStatic(g) {
   let seed = 7; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < 40; i++) { g.fillStyle = rr() < 0.5 ? `rgba(0,240,255,${0.1 + rr() * 0.25})` : `rgba(252,238,10,${0.08 + rr() * 0.2})`; g.fillRect(Math.floor(rr() * 18) * 30 + 1, Math.floor(rr() * 32) * 30 + 1, 28 * (0.2 + rr() * 0.8), 2); }
   const ell = (m, a0, a1, ccw) => g.ellipse(CX, CY, AX + m, BY + m, 0, a0 === undefined ? 0 : a0, a1 === undefined ? TAU : a1, !!ccw);
+  if (!noWall) {
   // outer stadium wall: brushed metal band with bolts
   const band = g.createLinearGradient(0, CY - BY - 30, 0, CY + BY + 30);
   band.addColorStop(0, '#3a4148'); band.addColorStop(0.5, '#15191d'); band.addColorStop(1, '#2a3036');
@@ -1728,6 +1738,7 @@ function drawArenaStatic(g) {
     g.fillStyle = 'rgba(0,0,0,.5)'; g.beginPath(); g.arc(x + 0.6, y + 0.6, 2.4, 0, TAU); g.fill();
     g.fillStyle = i % 2 ? '#00f0ff' : '#fcee0a'; g.beginPath(); g.arc(x, y, 2, 0, TAU); g.fill();
     g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(x - 0.6, y - 0.6, 0.8, 0, TAU); g.fill();
+  }
   }
   // bowl floor (radial gradients squashed into the ellipse)
   g.save(); g.translate(CX, CY); g.scale(1, BY / AX);
@@ -1794,8 +1805,7 @@ function drawArena(g, time) {
     // label outside the wall
     const lx = CX + Math.cos(gt.a) * (AX + 26), ly = CY + Math.sin(gt.a) * (BY + 24);
     g.fillStyle = gt.txt; g.font = '900 14px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.9)'; g.strokeText(`${gt.name} +${gt.pts}`, lx, ly);
-    g.fillText(`${gt.name} +${gt.pts}`, lx, ly);
+    upright(g, lx, ly, () => { g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.9)'; g.strokeText(`${gt.name} +${gt.pts}`, 0, 0); g.fillText(`${gt.name} +${gt.pts}`, 0, 0); });
   }
   // battle heart (core ring)
   {
@@ -1809,7 +1819,7 @@ function drawArena(g, time) {
     g.restore();
     g.fillStyle = `rgba(${col},${0.04 + (holders.length ? 0.07 : 0)})`; g.beginPath(); g.ellipse(CX, CY, AX * CORE_Q, BY * CORE_Q, 0, 0, TAU); g.fill();
     g.fillStyle = `rgba(${col},.75)`; g.font = '900 11px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(holders.length === 2 ? '戰心爭奪中！' : '戰心圈', CX, CY + BY * CORE_Q - 10);
+    upright(g, CX, CY + BY * CORE_Q - 10, () => g.fillText(holders.length === 2 ? '戰心爭奪中！' : '戰心圈', 0, 0));
   }
   // speed rails (two ears with the opening at 12 o'clock): yellow guide rails, cyan track, chevrons
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
@@ -1833,7 +1843,7 @@ function drawArena(g, time) {
   for (let i = 0; i < 2; i++) { const y = tipY + 10 + i * 12 + pu * 4; g.beginPath(); g.moveTo(CX - 9, y); g.lineTo(CX, y + 8); g.lineTo(CX + 9, y); g.lineTo(CX, y + 3); g.closePath(); g.fill(); }
   g.restore();
   g.fillStyle = '#fcee0a'; g.font = '700 12px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('加速軌道', CX, CY - BY + 36);
+  upright(g, CX, CY - BY + 40, () => g.fillText('加速軌道', 0, 0));
 }
 
 function drawBar(g, x, y, w, h, v, c1, c2) {
@@ -1882,17 +1892,94 @@ function drawHUD(g) {
   else if (G.phase === 'battle') g.fillText('按住拖曳移動・點畫面任何地方充能 EX', CX - 50, 760);
 }
 
+// wall pieces in world coords under the squashed transform; dz = WALL_H / VIEW_K lifts things to the rim height
+function wallRange(g, a0, a1, rIn, rOut, lift) {
+  g.beginPath(); g.ellipse(CX, CY - lift, rOut, rOut, 0, a0, a1); g.ellipse(CX, CY - lift, rIn, rIn, 0, a1, a0, true); g.closePath();
+}
+function gateCuts(a0, a1) {
+  // split [a0,a1] around the exits
+  let segs = [[a0, a1]];
+  for (const gt of GATES) {
+    const c0 = gt.a - gt.half, c1 = gt.a + gt.half, out = [];
+    for (const [s0, s1] of segs) { if (c1 <= s0 || c0 >= s1) out.push([s0, s1]); else { if (c0 > s0) out.push([s0, c0]); if (c1 < s1) out.push([c1, s1]); } }
+    segs = out;
+  }
+  return segs;
+}
+function drawFarWall(g) {
+  const dz = WALL_H / VIEW_K;
+  // inner wall face of the back half: from the floor edge up to the rim
+  for (const [a0, a1] of gateCuts(Math.PI, TAU)) {
+    g.beginPath();
+    for (let i = 0; i <= 40; i++) { const t = a0 + (a1 - a0) * i / 40; const x = CX + Math.cos(t) * (AX + 1), y = CY + Math.sin(t) * (AX + 1); i ? g.lineTo(x, y) : g.moveTo(x, y); }
+    for (let i = 40; i >= 0; i--) { const t = a0 + (a1 - a0) * i / 40; g.lineTo(CX + Math.cos(t) * (AX + 1), CY + Math.sin(t) * (AX + 1) - dz); }
+    g.closePath();
+    const fg = g.createLinearGradient(0, CY - AX - dz, 0, CY - AX * 0.2);
+    fg.addColorStop(0, '#2a3238'); fg.addColorStop(1, '#0c1114'); g.fillStyle = fg; g.fill();
+    // panel seams + a cyan light strip along the base
+    g.strokeStyle = 'rgba(0,240,255,.12)'; g.lineWidth = 1;
+    for (let k = 0; k < 18; k++) { const t = a0 + (a1 - a0) * k / 18, x = CX + Math.cos(t) * (AX + 1), y = CY + Math.sin(t) * (AX + 1); g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - dz); g.stroke(); }
+    g.strokeStyle = 'rgba(0,240,255,.75)'; g.lineWidth = 2; g.beginPath(); g.ellipse(CX, CY - 2, AX + 1, AX + 1, 0, a0, a1); g.stroke();
+  }
+  drawRim(g, Math.PI, TAU);
+}
+function drawRim(g, A0, A1) {
+  const dz = WALL_H / VIEW_K;
+  for (const [a0, a1] of gateCuts(A0, A1)) {
+    wallRange(g, a0, a1, AX + 1, AX + 26, dz); g.fillStyle = '#14181c'; g.fill();
+    // hazard stripes on the rim top
+    g.save(); wallRange(g, a0, a1, AX + 18, AX + 25, dz); g.clip();
+    g.fillStyle = '#fcee0a'; g.fillRect(0, CY - AX - dz - 40, W, AX * 2 + 80);
+    g.fillStyle = '#0b0b0b'; for (let i = -40; i < 60; i++) { g.beginPath(); g.moveTo(i * 18, 0); g.lineTo(i * 18 + 9, 0); g.lineTo(i * 18 + 9 - H * 0.6, H); g.lineTo(i * 18 - H * 0.6, H); g.closePath(); g.fill(); }
+    g.restore();
+    g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(CX, CY - dz, AX + 2, AX + 2, 0, a0, a1); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.15)'; g.lineWidth = 1; g.beginPath(); g.ellipse(CX, CY - dz, AX + 26, AX + 26, 0, a0, a1); g.stroke();
+  }
+}
+function drawNearWall(g) {
+  const dz = WALL_H / VIEW_K;
+  for (const [a0, a1] of gateCuts(0, Math.PI)) {
+    // outer front face below the rim
+    g.beginPath();
+    for (let i = 0; i <= 40; i++) { const t = a0 + (a1 - a0) * i / 40; g.lineTo(CX + Math.cos(t) * (AX + 26), CY + Math.sin(t) * (AX + 26) - dz); }
+    for (let i = 40; i >= 0; i--) { const t = a0 + (a1 - a0) * i / 40; g.lineTo(CX + Math.cos(t) * (AX + 26), CY + Math.sin(t) * (AX + 26)); }
+    g.closePath();
+    const fg = g.createLinearGradient(0, CY + AX * 0.5, 0, CY + AX + 26);
+    fg.addColorStop(0, '#1d2328'); fg.addColorStop(1, '#07090b'); g.fillStyle = fg; g.fill();
+    g.strokeStyle = 'rgba(252,238,10,.5)'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(CX, CY - dz * 0.35, AX + 26, AX + 26, 0, a0, a1); g.stroke();
+    // inner lip: the near rim hides the floor edge right behind it
+    g.beginPath();
+    for (let i = 0; i <= 40; i++) { const t = a0 + (a1 - a0) * i / 40; g.lineTo(CX + Math.cos(t) * (AX + 1), CY + Math.sin(t) * (AX + 1)); }
+    for (let i = 40; i >= 0; i--) { const t = a0 + (a1 - a0) * i / 40; g.lineTo(CX + Math.cos(t) * (AX + 1), CY + Math.sin(t) * (AX + 1) - dz); }
+    g.closePath(); g.fillStyle = '#0f1417'; g.fill();
+  }
+  drawRim(g, 0, Math.PI);
+}
 function drawTopWorld(g, t) {
   if (t.dead) return;
   g.save();
   g.translate(t.x, t.y);
   let sc = 1;
   if (t.falling > 0) { sc = clamp(t.falling / 0.7, 0, 1); g.globalAlpha = sc; }
-  // shadow
-  g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(4, 6, 30 * sc, 26 * sc, 0, 0, TAU); g.fill();
-  // owner ring
+  // shadow + owner ring lie on the floor
+  g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(3, 8, 31 * sc, 29 * sc, 0, 0, TAU); g.fill();
   g.strokeStyle = t.side === 0 ? 'rgba(0,240,255,.7)' : 'rgba(255,59,92,.7)'; g.lineWidth = 2.5;
   g.beginPath(); g.arc(0, 0, 38 * sc, 0, TAU); g.stroke();
+  // lift the top off the floor; tilt & bob a little as it loses spin
+  const lift = (TOP_LIFT + (t.falling ? -20 * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
+  g.translate(0, -lift);
+  if (viewK < 1) {
+    const wob = (1 - t.spin) * 0.25;
+    if (wob > 0.01) g.rotate(Math.sin(G.time * (8 + 10 * t.spin)) * wob * 0.3);
+    // body side: a darker drum under the face
+    g.fillStyle = shade(ATTR_COLOR[t.s.w.attr], -0.65);
+    g.beginPath(); g.ellipse(0, side * 0.5, 30 * sc, 30 * sc, 0, 0, Math.PI); g.ellipse(0, -side * 0.5, 30 * sc, 30 * sc, 0, Math.PI, 0, true); g.closePath(); g.fill();
+    g.beginPath(); g.arc(0, side, 30 * sc, 0, Math.PI); g.lineTo(-30 * sc, 0); g.arc(0, 0, 30 * sc, Math.PI, 0, true); g.closePath();
+    const sg2 = g.createLinearGradient(-30, 0, 30, 0); sg2.addColorStop(0, '#05070a'); sg2.addColorStop(0.5, shade(ATTR_COLOR[t.s.w.attr], -0.4)); sg2.addColorStop(1, '#05070a');
+    g.fillStyle = sg2; g.fill();
+    // spinning tip under the body
+    g.fillStyle = '#c9d2dc'; g.beginPath(); g.ellipse(0, side + 3 / viewK, 5, 5, 0, 0, TAU); g.fill();
+  }
   if (t.launchedT > 0 || t.boostT > 0 || (t.ex && t.ex.type === 'dash')) {
     g.save(); g.shadowColor = t.s.c.color; g.shadowBlur = 25; g.strokeStyle = t.s.c.color; g.lineWidth = 3;
     g.beginPath(); g.arc(0, 0, 34 * sc, 0, TAU); g.stroke(); g.restore();
@@ -1909,11 +1996,11 @@ function drawTopWorld(g, t) {
     g.strokeStyle = '#ffa53d'; g.lineWidth = 2; const r = 46, s = G.time * 2;
     for (let i = 0; i < 4; i++) { const a0 = s + i * TAU / 4; g.beginPath(); g.arc(0, 0, r, a0, a0 + 0.6); g.stroke(); }
   }
-  if (t.stunT > 0) { g.fillStyle = '#29e0d0'; g.font = 'bold 16px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillText('✦ ✦', 0, -46); }
+  if (t.stunT > 0) upright(g, 0, -46, () => { g.fillStyle = '#29e0d0'; g.font = 'bold 16px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillText('✦ ✦', 0, 0); });
   g.restore();
   // label
   g.fillStyle = t.side === 0 ? '#00f0ff' : '#ff3b5c'; g.font = 'bold 13px Rajdhani, sans-serif'; g.textAlign = 'center';
-  if (!t.falling) g.fillText(t.side === 0 ? '你' : '電腦', t.x, t.y + 52);
+  if (!t.falling) upright(g, t.x, t.y + 48, () => g.fillText(t.side === 0 ? '你' : '電腦', 0, 0));
 }
 
 function render() {
@@ -1924,11 +2011,15 @@ function render() {
   const sx = G.shake ? rnd(-G.shake, G.shake) : 0, sy = G.shake ? rnd(-G.shake, G.shake) : 0;
   if (!arenaCache) {
     arenaCache = document.createElement('canvas'); arenaCache.width = cv.width; arenaCache.height = cv.height;
-    const ac = arenaCache.getContext('2d'); ac.setTransform(scale, 0, 0, scale, 0, 0); drawArenaStatic(ac);
+    const ac = arenaCache.getContext('2d'); ac.setTransform(scale, 0, 0, scale, 0, 0); drawArenaStatic(ac, true); // walls are drawn live in 2.5D
   }
-  g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(arenaCache, sx * scale, sy * scale);
-  g.setTransform(scale, 0, 0, scale, sx * scale, sy * scale);
+  // the floor layer and everything on it is drawn squashed about CY
+  viewK = VIEW_K;
+  const oy = (CY * (1 - VIEW_K) + sy) * scale;
+  g.setTransform(1, 0, 0, VIEW_K, sx * scale, CY * scale * (1 - VIEW_K) + sy * scale); g.drawImage(arenaCache, 0, 0);
+  g.setTransform(scale, 0, 0, scale * VIEW_K, sx * scale, oy);
   drawArena(g, G.time);
+  drawFarWall(g);
   if (G.rimFlash) {
     const f = G.rimFlash; g.save(); g.shadowColor = '#cfd8ff'; g.shadowBlur = 20;
     g.strokeStyle = `rgba(0,240,255,${f.t * 4})`; g.lineWidth = 8;
@@ -1945,7 +2036,7 @@ function render() {
       g.fillStyle = '#00f0ff'; g.beginPath();
       g.moveTo(p.x + d.x * (L + 14), p.y + d.y * (L + 14));
       g.lineTo(p.x + d.x * L - d.y * 9, p.y + d.y * L + d.x * 9); g.lineTo(p.x + d.x * L + d.y * 9, p.y + d.y * L - d.x * 9); g.fill();
-      g.font = 'bold 16px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillText(`力道 ${Math.round(pw * 100)}%`, p.x, p.y - 50);
+      upright(g, p.x, p.y - 60, () => { g.font = 'bold 16px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillText(`力道 ${Math.round(pw * 100)}%`, 0, 0); });
     }
   }
   for (const t of G.tops) {
@@ -1959,7 +2050,8 @@ function render() {
     }
     g.restore();
   }
-  for (const t of G.tops) drawTopWorld(g, t);
+  for (const t of [...G.tops].sort((a, b) => a.y - b.y)) drawTopWorld(g, t); // farther first
+  drawNearWall(g);
   for (const w of G.waves) {
     const k = w.t / w.max, r = 8 + (1 - k) * w.R1;
     g.strokeStyle = `rgba(${w.col},${k})`; g.lineWidth = w.w * k + 1; g.beginPath(); g.arc(w.x, w.y, r, 0, TAU); g.stroke();
@@ -1974,9 +2066,10 @@ function render() {
   g.globalAlpha = 1;
   for (const s of G.texts) {
     g.globalAlpha = clamp(s.t * 2, 0, 1); g.font = `900 ${Math.round(s.size * (1 + 0.7 * Math.max(0, 1 - s.age * 7)))}px Rajdhani, sans-serif`; g.textAlign = 'center';
-    g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeText(s.text, s.x, s.y); g.fillStyle = s.color; g.fillText(s.text, s.x, s.y);
+    upright(g, s.x, s.y, () => { g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeText(s.text, 0, 0); g.fillStyle = s.color; g.fillText(s.text, 0, 0); });
   }
   g.globalAlpha = 1;
+  viewK = 1;
   g.setTransform(scale, 0, 0, scale, 0, 0);
   if (G.flash > 0) { g.fillStyle = `rgba(${G.flashCol || '255,255,255'},${Math.min(0.55, G.flash * 2)})`; g.fillRect(0, 0, W, H); if (G.flash <= 0.02) G.flashCol = null; }
   drawHUD(g);
