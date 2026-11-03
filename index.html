@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.32</title>
+<title>SPIN! SPIN! v0.33</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -126,7 +126,8 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 #final{background:radial-gradient(rgba(255,255,255,.06) 1.1px,transparent 1.6px) 0 0/10px 10px,rgba(4,6,10,.9)}
 #final .big{font-size:3em;font-style:italic;letter-spacing:.04em;transform:skew(-6deg);text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px 0 #05060a,2px 2px 0 #05060a,0 3px 0 #05060a,0 6px 0 #05060a,0 9px 0 #05060a,0 0 1.2em currentColor !important;background:linear-gradient(90deg,transparent,rgba(0,0,0,.55) 20%,rgba(0,0,0,.55) 80%,transparent);padding:.1em 1.2em}
 #final .fsc{font-style:italic;font-weight:900;font-size:1.15em;text-shadow:2px 2px 0 #05060a}
-.sub,.benchHd,.invTab,.shopBtn,.slot .nm,.slot .mini,.tile .tn,.tile .tst,.eqTag,.matTag,.newTag,.tag,.snum,#exBtn,#menuBtn,#gearBtn,.seg button,.tog,.vs,.vsrow .t,.score,.opt span,.spanel h2,.ipHead .t,.ipHead .s,.ipRow .n,.suN,.coin,.coinGot,#teamSub,.pbar span,.mergeBtn,.selHint,#tutStep,.link{font-style:italic;font-weight:900}
+.sub,.invTab,.shopBtn,.slot .nm,.slot .mini,.tile .tn,.tile .tst,.eqTag,.matTag,.newTag,.tag,.snum,#exBtn,#menuBtn,#gearBtn,.seg button,.tog,.vsrow .t,.opt span,.ipHead .t,.ipHead .s,.ipRow .n,.suN,.coin,#teamSub,.pbar span,.mergeBtn,.selHint,#tutStep,.link{font-weight:900;font-style:normal}
+.benchHd,.vs,.score,.spanel h2,.coinGot{font-style:italic;font-weight:900}
 .benchHd,.sub,#teamSub,.vsrow .t,.score,.spanel h2,.ipRow .n,.ipHead .t,.slot .nm,.tile .tn{text-shadow:2px 2px 0 #05060a}
 .vs{font-size:1.6em;color:#fcee0a;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a,4px 4px 0 #ff2a55}
 #exBtn{text-shadow:2px 2px 0 #05060a}
@@ -138,11 +139,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 #gmPanel .btn{margin:0;font-size:.85em;padding:.5em 1em}
 .screen{background:radial-gradient(rgba(0,240,255,.10) 1.1px,transparent 1.6px) 0 0/10px 10px,radial-gradient(ellipse at 50% 12%,rgba(0,240,255,.14) 0%,#07090c 62%)}
 h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a,5px 5px 0 #ff2a55,-3px 0 #00f0ff;transform:skew(-6deg)}
-.btn{box-shadow:inset 0 0 0 3px #05060a;font-style:italic;font-weight:900}
+.btn{box-shadow:inset 0 0 0 3px #05060a;font-style:normal;font-weight:900}
 .btn.ghost{box-shadow:inset 0 0 0 3px #00f0ff}
 .slot,.tile{box-shadow:inset 0 0 0 2px rgba(0,0,0,.55)}
 .slot{background:radial-gradient(rgba(0,240,255,.12) 1px,transparent 1.5px) 0 0/7px 7px,linear-gradient(180deg,rgba(0,240,255,.14),rgba(0,0,0,.4))}
-.chip{border:2px solid #05060a !important;font-style:italic}
+.chip{border:2px solid #05060a !important;font-style:normal}
 .big{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px 0 #05060a,2px 2px 0 #05060a,6px 6px 0 #ff2a55}
 .ipCard{background:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.5px) 0 0/8px 8px,linear-gradient(#141a24,#0a0d14)}
 #verFoot{position:absolute;left:0;right:0;bottom:.35em;text-align:center;font-size:.55em;color:rgba(255,255,255,.35);letter-spacing:.08em;pointer-events:none;z-index:60;font-family:Rajdhani,sans-serif}
@@ -350,10 +351,11 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
  v0.30 comic-book look everywhere: cel-shaded arena with halftone dots and ink outlines, hatched walls, inked rails / rim / core, inked tops, 45-degree tops in tutorial / pack / lineup, comic HUD score, halftone screens, inked buttons and titles
  v0.31 WORMHOLE painted on the back wall, BLOOD +2 / DEAD +3 painted on the floor at the exits, brighter cel-shaded floor (trial), comic italic type across the UI and canvas labels, hidden GM panel (tap the version 7 times)
  v0.32 renamed SPIN! SPIN!; arena signage as sign plates (WORMHOLE tunnel sign, BLOOD / DEAD floor plates with chevrons, CORE plate); simultaneous hidden launch with 3-2-1 SPIN! SPIN! call; English comic arena HUD; readable result screen; stage guide tutorial page
+ v0.33 BLOOD plates follow the rim; italics only for titles / scores / show text (buttons, settings, options, parts upright); hype launch call (announcer voice + drums, air horn, crowd)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.32';
+const GAME_VERSION = 'v0.33';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1272,7 +1274,7 @@ function drawCard(g, card, sl, time, appear) {
     g.save(); g.translate(w / 2 - w * 0.17, -h / 2 + 8 + h * 0.5 - w * 0.17); const z2 = w / 200; g.scale(z2, z2);
     drawTop45(g, b, time * 6 * WEAPONS[b.w].dir, 0.9); g.restore();
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.font = `italic 900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.lineJoin = 'round'; g.lineWidth = w * 0.03; g.strokeStyle = '#05060a'; g.strokeText(nameOf(b), 0, h * 0.13); g.fillStyle = '#fff'; g.fillText(nameOf(b), 0, h * 0.13);
+    g.font = `900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.lineJoin = 'round'; g.lineWidth = w * 0.03; g.strokeStyle = '#05060a'; g.strokeText(nameOf(b), 0, h * 0.13); g.fillStyle = '#fff'; g.fillText(nameOf(b), 0, h * 0.13);
     const isz = w * 0.27;
     [['w', b.w, FAMILY[WEAPONS[b.w].fam].col], ['a', b.a, ARMOR_CLASS[ARMORS[b.a].cls].col]].forEach(([k, id, col], i) => {
       const ix = (i - 0.5) * (isz + w * 0.08) - isz / 2, iy = h * 0.185;
@@ -1308,7 +1310,7 @@ function drawPack(dt) {
   g.restore();
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.font = 'italic 900 34px Rajdhani, sans-serif'; g.lineJoin = 'round'; g.lineWidth = 7; g.strokeStyle = '#05060a'; g.strokeText(PK.title, PW / 2 + 3, 73); g.strokeText(PK.title, PW / 2, 70); g.fillStyle = '#ff2a55'; g.fillText(PK.title, PW / 2 + 3, 73); g.fillStyle = '#fff'; g.fillText(PK.title, PW / 2, 70);
-  const prompt = (txt) => { g.globalAlpha = 0.65 + 0.35 * Math.sin(time * 5); g.fillStyle = '#fcee0a'; g.font = 'italic 900 21px Rajdhani, sans-serif'; g.fillText(txt, PW / 2, 700); g.globalAlpha = 1; };
+  const prompt = (txt) => { g.globalAlpha = 0.65 + 0.35 * Math.sin(time * 5); g.fillStyle = '#fcee0a'; g.font = '900 21px Rajdhani, sans-serif'; g.fillText(txt, PW / 2, 700); g.globalAlpha = 1; };
   if (PK.st === 'drop' || PK.st === 'pack') {
     let cy = 410;
     if (PK.st === 'drop') { const k = Math.min(1, PK.t / 0.7); cy = -300 + (410 + 300) * easeBack(k); if (k >= 1) { PK.st = 'pack'; PK.t = 0; } }
@@ -1734,6 +1736,30 @@ const SFX = (() => {
     gate() { tone(420, 50, 0.9, 'sawtooth', 0.25); noise(0.9, 0.3, 'lowpass', 1200, 100); },
     burst() { noise(0.6, 0.6, 'lowpass', 4000, 200); tone(120, 40, 0.5, 'sine', 0.5); tone(1800, 300, 0.3, 'square', 0.1); },
     round() { tone(660, 660, 0.1, 'square', 0.1); tone(990, 990, 0.18, 'square', 0.1, 0.12); },
+    // countdown: kick + snare + rising stab, each beat higher
+    countHit(n) {
+      tone(160, 42, 0.28, 'sine', 0.55); noise(0.12, 0.35, 'highpass', 1800, 6000);
+      const f = [392, 494, 587][n] || 587; tone(f, f, 0.16, 'sawtooth', 0.12); tone(f * 1.5, f * 1.5, 0.16, 'square', 0.06);
+    },
+    // SPIN! SPIN!: air-horn chord, big boom, crowd roar, and the announcer
+    spinCall() {
+      if (!ac) return;
+      [233, 294, 349, 466].forEach((f, i) => { tone(f, f * 0.98, 0.32, 'sawtooth', 0.09); tone(f, f * 0.97, 0.5, 'sawtooth', 0.08, 0.38); });
+      tone(120, 35, 0.6, 'sine', 0.6); noise(0.5, 0.45, 'lowpass', 3000, 150);
+      noise(1.6, 0.22, 'bandpass', 900, 2600, 0.1); noise(1.2, 0.12, 'bandpass', 2400, 1200, 0.3);
+      rev(0.8, 70, 300, 0.16, 0.05);
+      this.announce('SPIN! SPIN!', 1.15);
+    },
+    // a synthesized announcer voice through the browser's built-in speech (free, works offline on most phones)
+    announce(text, rate) {
+      if (muted || !('speechSynthesis' in window)) return;
+      try {
+        const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = rate || 1.1; u.pitch = 0.55; u.volume = 1;
+        const vs = speechSynthesis.getVoices(), v = vs.find(x => /en(-|_)US/i.test(x.lang) && /male|david|alex|daniel|fred|guy/i.test(x.name)) || vs.find(x => /^en/i.test(x.lang));
+        if (v) u.voice = v;
+        speechSynthesis.speak(u);
+      } catch (e) {}
+    },
     draw() { tone(440, 330, 0.35, 'triangle', 0.15); },
     win() { [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, f, 0.3, 'square', 0.1, i * 0.1)); },
     lose() { [392, 349, 311, 262].forEach((f, i) => tone(f, f * 0.98, 0.35, 'triangle', 0.15, i * 0.16)); },
@@ -2056,19 +2082,21 @@ menuBtn.addEventListener('click', () => openTeam());
 
 // both tops launch together: the player's aim locks, the call plays, then the CPU's (hidden) drop is revealed
 function startCount(dx, dy, power) {
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  SFX.announce('3! 2! 1!', 1.35);
   G.phase = 'count'; G.countT = 0; G.countN = -1; G.pendingLaunch = { dx, dy, power }; G.banner = null;
 }
 function updateCount(dt) {
   G.countT += dt;
-  const step = Math.floor(G.countT / 0.36);
+  const step = Math.floor(G.countT / 0.42);
   if (step !== G.countN && step <= 3) {
     G.countN = step;
-    if (step < 3) { comicPop(CX, CY - 30, ['3', '2', '1'][step], 64, '#ffffff', ['#00f0ff', '#fcee0a', '#ff2a55'][step], 0.36); SFX.round(); }
+    if (step < 3) { comicPop(CX, CY - 30, ['3', '2', '1'][step], 64 + step * 8, '#ffffff', ['#00f0ff', '#fcee0a', '#ff2a55'][step], 0.42); SFX.countHit(step); G.shake = Math.max(G.shake, 3 + step * 2); }
     else {
       const me = G.tops[0], a = G.tops[1]; // CPU never lands on top of you
       for (let k = 0; k < 20 && len(a.x - me.x, a.y - me.y) < TR * 2 + 14; k++) { const q = randomDrop(me); a.x = q.x; a.y = q.y; }
       const L = G.pendingLaunch; doLaunch(L.dx, L.dy, L.power);
-      comicPop(CX, CY - 40, 'SPIN! SPIN!', 50, '#fcee0a', '#ff2a55', 1.1); focusLines(CX, CY, 'rgba(255,255,255,.75)', 0.45);
+      comicPop(CX, CY - 40, 'SPIN! SPIN!', 54, '#fcee0a', '#ff2a55', 1.2); focusLines(CX, CY, 'rgba(255,255,255,.75)', 0.5); SFX.spinCall(); G.shake = Math.max(G.shake, 10);
     }
   }
   for (const t of G.tops) t.angle += t.s.w.dir * 6 * dt;
@@ -2691,8 +2719,8 @@ function drawArena(g, time) {
     g.restore();
     // label painted on the floor step, following the curve of the exit like a road marking
     // floor sign plate in front of the exit + chevrons pointing into it
-    { const r0 = AX * (gt.pts === 3 ? 0.72 : 0.7), px = CX + Math.cos(gt.a) * r0, py = CY + Math.sin(gt.a) * r0;
-      signPlate(g, px, py, (gt.a - Math.PI / 2) * 0.35, `${gt.name} +${gt.pts}`, gt.txt, gt.pts === 3 ? 19 : 14, 0.92);
+    { const r0 = AX * (gt.pts === 3 ? 0.72 : 0.8), px = CX + Math.cos(gt.a) * r0, py = CY + Math.sin(gt.a) * r0;
+      signPlate(g, px, py, gt.a - Math.PI / 2, `${gt.name} +${gt.pts}`, gt.txt, gt.pts === 3 ? 19 : 14, 0.92);
       for (let k = 0; k < 3; k++) {
         const ph = (time * 1.6 + k / 3) % 1, rr = r0 + 22 + ph * 30, cx2 = CX + Math.cos(gt.a) * rr, cy2 = CY + Math.sin(gt.a) * rr;
         g.save(); g.translate(cx2, cy2); g.rotate(gt.a - Math.PI / 2); g.globalAlpha = Math.sin(ph * Math.PI) * 0.9;
