@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.25</title>
+<title>旋刃對決 v0.26</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -161,6 +161,28 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .tile .tp{font-size:.52em;text-align:center;color:#00f0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .tp.a{color:#fcee0a}
 .newTag{position:absolute;top:.2em;right:.2em;background:#ff2a55;color:#fff;font-size:.5em;padding:.05em .35em;font-family:Rajdhani,sans-serif}
+.coin{color:#fcee0a;font-weight:900}
+#shop{display:flex;gap:.5em;justify-content:center;margin:.2em 0 .4em}
+.shopBtn{font-size:.85em;padding:.45em 1em;display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.shopBtn small{font-size:.62em;font-weight:700;opacity:.8}
+.shopBtn.ten{background:#00f0ff}
+.shopBtn:disabled{filter:grayscale(1) brightness(.55);cursor:not-allowed}
+.invTabs{display:flex;gap:.3em;margin:.3em 0 .4em}
+.invTab{flex:1;font-family:inherit;font-weight:700;font-size:.75em;padding:.35em 0;background:rgba(0,240,255,.08);color:#9fdfff;border:1px solid rgba(0,240,255,.35);position:relative;cursor:pointer}
+.invTab.on{background:#00f0ff;color:#10101c}
+.invTab .dot{position:absolute;top:.25em;right:.35em;width:.5em;height:.5em;border-radius:50%;background:#ff2a55}
+.tile{border-width:2px}
+.tile.target{animation:tgt 1s infinite}
+@keyframes tgt{50%{box-shadow:0 0 .8em rgba(252,238,10,.8)}}
+.tile .bigIco{aspect-ratio:1;display:flex}.tile .bigIco .ico{width:100%;height:100%;border-radius:2px}
+.tile .tst{font-size:.6em;text-align:center;letter-spacing:.05em}
+.tile .pg{font-size:.85em;color:#9fb0c0;margin-left:.3em;letter-spacing:0}
+.eqTag{position:absolute;top:.2em;left:.2em;background:#fcee0a;color:#10101c;font-size:.5em;padding:.05em .35em}
+.chip .st{font-style:normal;font-size:.9em;margin-left:.15em;text-shadow:0 0 2px #000,0 0 2px #000}
+.selHint{color:#fcee0a;text-align:center;margin-top:.4em;font-size:.68em}
+.coinGot{color:#fcee0a;font-size:.8em;font-weight:900}
+.ipBtn{width:100%;font-size:.8em;margin-top:.5em}.ipBtn:disabled{filter:grayscale(1) brightness(.5)}
+.ico.xl{width:5em;height:5em}
 .selbar{width:100%;margin-top:.5em;padding:.5em;border:1px solid #fcee0a;background:rgba(252,238,10,.06)}
 .selbar .nm{font-size:.8em;font-weight:700}
 </style>
@@ -186,14 +208,16 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
   <div id="team" class="screen show">
     <h1>旋刃對決</h1>
     <div class="sub" id="teamSub"></div>
-    <div class="hint"><b>點一下頭像，再點另一個</b>即可交換（也可拖曳）・點零件，再點<b>另一顆的同類零件</b>即可互換・<b>長按</b>看零件詳情</div>
+    <div id="shop"></div>
+    <div class="hint"><b>點頭像再點另一個</b>交換順序（也可拖曳）・<b>點出戰格的零件，再點零件庫</b>即可換裝・<b>長按</b>看詳情</div>
     <div id="teamList"></div>
     <button class="btn" id="startBtn">確定陣容，查看對手</button>
     <div class="rules">
       <b>玩法</b><br>
-      ・一開始抽 3 顆陀螺。武器、鎧甲、職業可以在陀螺之間互換，再排好上場順序<br>
+      ・職業、武器、鎧甲分開收藏在零件庫，每個出戰格各裝 1 職業＋1 武器＋1 鎧甲，再排好上場順序<br>
+      ・稀有度 白＜紫＜紅＜黃，抽到同名零件會升星（最多 3 星），星越多能力越強；滿星後重複的會變成萬用碎片<br>
       ・對戰共三場，你的第 1、2、3 顆依序對上對手的第 1、2、3 顆；總分高者勝，同分由雙方第 1 顆加賽<br>
-      ・贏得對戰可以再抽一顆新陀螺<br>
+      ・打贏 +100 金幣（每日首勝再 +50），打輸 +20；單抽 100、十連 1000 多送 1 抽且保底紅色以上<br>
       ・開場：在場地上按下的位置就是落點，往後拉決定方向和力道，放開發射。電腦落點隨機<br>
       ・對戰：按住拖曳移動（電腦可用 WASD / 方向鍵，空白鍵放 EX）<br>
       ・EX：點畫面任何地方充能（拖曳移動時用另一隻手指點也可以），或貼著上半圈牆邊衝上貓耳形加速軌道累積；衝到 12 點鐘的開口會直衝場地中心<br>
@@ -201,7 +225,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
       ・下方三個出口前都有台階，只有被撞飛才會掉進去：左右深淵口 +2、中間地獄門 +3；爆甲 +1；停轉平局
     </div>
     <button class="link" id="tutBtn">玩法教學</button>
-    <button class="link" id="resetBtn">重置收藏（重新抽 3 顆）</button>
+    <button class="link" id="resetBtn">重置全部進度</button>
   </div>
 
   <div id="versus" class="screen">
@@ -262,10 +286,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.23 new TRIGGER-style comic portraits (incl. hidden mech-cat art), weapon / armor icons on lineup chips, depot tiles and pack cards
  v0.24 cuter mech-cat art, clean armor icons, part detail card (long-press in lineup, tap on pack cards), dark rim + vignette on top faces
  v0.25 EX cut-in portrait comes alive (punch-in zoom, shake, flash, chromatic ghosts, speed lines, cat sparkles); first-visit long-press tip; weapon icons re-cropped
+ v0.26 parts inventory (classes / weapons / armors owned separately, lineup equips from it), coins (win +100, daily first win +50, loss +20), single / 10+1 draws, rarity white / purple / red / yellow, star breakthrough 0-3 via duplicates, wildcard shards, pity, AI scales with team power
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.25';
+const GAME_VERSION = 'v0.26';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -471,12 +496,13 @@ function stats(build) {
   const mass = 1 + (w.wt + a.thick) * 0.12;
   return {
     w, a, c, mass,
-    maxHp: 100 * (0.8 + a.thick * 0.08) * c.hp,
+    bw: build.bw || 0,
+    maxHp: 100 * (0.8 + a.thick * 0.08) * c.hp * (1 + (build.ba || 0) * 0.6 + (build.bc || 0) * 0.4),
     evade: a.facets * 0.035,
     accel: 1200 * c.speed * (a.special === 'gale' ? 1.15 : 1) / Math.sqrt(mass),
     maxSpeed: 420 * c.speed * (a.special === 'gale' ? 1.12 : 1),
     decay: (1 / 42) * (0.8 + mass * 0.2) * c.decay,
-    gain: 17 * c.gain * (a.special === 'magnet' ? 1.2 : 1),
+    gain: 17 * c.gain * (a.special === 'magnet' ? 1.2 : 1) * (1 + (build.bc || 0) * 0.5),
   };
 }
 
@@ -630,12 +656,64 @@ const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const randomTop = () => ({ w: pick(Object.keys(WEAPONS)), a: pick(Object.keys(ARMORS)), c: pick(Object.keys(CLASSES)) });
 function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
 function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-let collection = loadJSON('topCollection', []).map(b => b && Object.assign(b, { w: OLD_W[b.w] || b.w, a: OLD_A[b.a] || b.a })).filter(b => b && WEAPONS[b.w] && ARMORS[b.a] && CLASSES[b.c]);
+// ===== parts inventory =====
+// Classes, weapons and armors are owned separately: INV[k][id] = { r: rarity 0-3, s: stars 0-3, p: copies toward next star, isNew }.
+// The lineup (collection) is 3 builds {c, w, a} that point into the inventory; a part can sit in only one slot.
+const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '職業', w: '武器', a: '鎧甲' };
+const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '黃', col: '#fcee0a' }];
+const R_RATE = [0.70, 0.22, 0.065, 0.015], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
+const R_BASE = [0, 0.05, 0.10, 0.15], R_STEP = [0.10, 0.12, 0.15, 0.20], NEED = [1, 2, 3];
+const PRICE1 = 100, PRICE10 = 1000, WIN_COIN = 100, LOSE_COIN = 20, DAILY_COIN = 50;
+const rollFrom = rates => { let x = Math.random(); for (let i = 0; i < rates.length; i++) { x -= rates[i]; if (x < 0) return i; } return 0; };
+const starStr = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+let INV = loadJSON('topInv', null);
+function addPart(k, id, r, st) {
+  const e = INV[k][id];
+  if (!e) { INV[k][id] = { r, s: st, p: 0, isNew: 1 }; return 'new'; }
+  let res = '+1';
+  if (r > e.r) { e.r = r; res = 'up'; }
+  if (st > e.s) { e.s = st; e.p = 0; return 'star'; }
+  if (e.s >= 3) { INV.shards++; return 'shard'; }
+  e.p++; if (e.p >= NEED[e.s]) { e.s++; e.p = 0; return 'star'; }
+  return res;
+}
+const partBonus = (k, id) => { const e = INV[k][id]; return e ? R_BASE[e.r] + e.s * R_STEP[e.r] : 0; };
+const withBonus = b => ({ c: b.c, w: b.w, a: b.a, bc: partBonus('c', b.c), bw: partBonus('w', b.w), ba: partBonus('a', b.a) });
+const teamPower = () => collection.length ? collection.reduce((t, b) => t + partBonus('c', b.c) + partBonus('w', b.w) + partBonus('a', b.a), 0) / (collection.length * 3) : 0;
+// no part in two slots: replace repeats with an owned part that is free
+function fixTeam() {
+  for (const k of 'cwa') {
+    const used = new Set();
+    for (const b of collection) {
+      if (!INV[k][b[k]] || used.has(b[k])) { const free = Object.keys(INV[k]).find(id => !used.has(id) && !collection.some(o => o !== b && o[k] === id)); if (free) b[k] = free; }
+      used.add(b[k]);
+    }
+  }
+}
+function equip(i, k, id) {
+  const j = collection.findIndex(b => b[k] === id);
+  if (j >= 0 && j !== i) collection[j][k] = collection[i][k];
+  collection[i][k] = id;
+}
+let collection;
+if (!INV) { // first run of v0.26: turn the old top collection into parts
+  INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [] };
+  const old = loadJSON('topCollection', []).map(b => b && Object.assign(b, { w: OLD_W[b.w] || b.w, a: OLD_A[b.a] || b.a })).filter(b => b && WEAPONS[b.w] && ARMORS[b.a] && CLASSES[b.c]);
+  for (const b of old) for (const k of 'cwa') addPart(k, b[k], 0, 0);
+  for (const k of 'cwa') for (const id in INV[k]) INV[k][id].isNew = 0;
+  INV.team = old.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a }));
+  if (old.length) INV.coins = 100; // a welcome draw for existing players
+}
+for (const k of 'cwa') for (const id in INV[k]) if (!KIND[k][id]) delete INV[k][id];
+collection = (INV.team || []).filter(b => b && CLASSES[b.c] && WEAPONS[b.w] && ARMORS[b.a]);
+if (collection.length === 3) fixTeam(); else collection = [];
 let wins = loadJSON('topWins', 0) || 0;
 let aiLineup = null;
-let swapSel = null; // {i, k}
-let teamSel = null; // index of the top picked by tapping (tap another to swap)
-const save = () => { saveJSON('topCollection', collection); saveJSON('topWins', wins); };
+let swapSel = null; // {i, k} chip picked in a lineup slot
+let teamSel = null; // lineup slot picked by tapping (tap another to swap order)
+let invSel = null;  // {k, id} part picked in the inventory
+let invTab = 'c';
+const save = () => { INV.team = collection; saveJSON('topInv', INV); saveJSON('topWins', wins); };
 
 const screens = ['team', 'versus', 'gacha', 'final', 'tutorial'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
 function show(id) { if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
@@ -660,21 +738,46 @@ function drawPreviews(dt) {
 }
 const statLine = b => { const s = stats(b); return `${FAMILY[s.w.fam].name}系・${ARMOR_CLASS[s.a.cls].name}｜攻${s.w.atk} 退${s.w.kb} 防${s.a.thick} 閃${s.a.facets} 速${s.c.speed}・EX「${s.c.exName}」`; };
 
+function rarityTag(r, st) { return `<span class="tag" style="background:${RARITY[r].col}">${RARITY[r].n}${st ? ' ' + '★'.repeat(st) : ''}</span>`; }
+function showPart(k, id) {
+  const e = INV[k][id]; if (!e) return;
+  const P = KIND[k][id], b0 = partBonus(k, id), slot = collection.findIndex(b => b[k] === id);
+  let body;
+  if (k === 'c') body = `EX「${P.exName}」：${P.exDesc || ''}<br>速度 ${P.speed}`;
+  else if (k === 'w') { const f = FAMILY[P.fam]; body = `${f.name}系・${P.desc}。${f.desc}<br>攻擊 ${P.atk}・擊退 ${P.kb}・重量 ${P.wt}｜剋 ${ARMOR_CLASS[f.beats].name}，怕 ${ARMOR_CLASS[f.weak].name}`; }
+  else body = `${ARMOR_CLASS[P.cls].name}・${P.desc}<br>防禦 ${P.thick}・閃避 ${P.facets}`;
+  const eff = k === 'w' ? '撞擊傷害' : k === 'a' ? '血量' : '血量與 EX 累積';
+  const need = e.s < 3 ? NEED[e.s] - e.p : 0;
+  infoPop.innerHTML = `<div class="ipCard" style="border-color:${RARITY[e.r].col}">
+    <div class="ipRow" style="border:0">${k === 'c' ? `<img src="${PORTRAIT_SRC[id]}" style="width:5em;height:5em;object-fit:cover;border-radius:4px">` : iconHTML(k, id, 'xl')}
+      <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}</div>
+      <div style="color:${RARITY[e.r].col};font-size:1.1em;letter-spacing:.1em">${starStr(e.s)}</div>
+      <div class="k">${KIND_NAME[k]}${slot >= 0 ? `・出戰第 ${slot + 1} 格` : '・未裝備'}</div></div></div>
+    <div class="ipRow"><div><div class="d">${body}</div>
+      <div class="k" style="color:#fcee0a">目前加成：${eff} +${Math.round(b0 * 100)}%${e.s < 3 ? `　下一星 +${Math.round((b0 + R_STEP[e.r]) * 100)}%` : '（已滿星）'}</div>
+      <div class="k">升星進度：${e.s < 3 ? `${e.p} / ${NEED[e.s]}（再抽到 ${need} 個同名就升星）` : '已滿星，之後抽到同名會變成萬用碎片'}</div></div></div>
+    ${e.s < 3 ? `<button class="btn ipBtn" id="useShard" ${INV.shards >= need ? '' : 'disabled'}>用萬用碎片升星（需 ${need}，持有 ${INV.shards}）</button>` : ''}
+    <div class="ipClose">點其他地方關閉</div></div>`;
+  infoPop.classList.add('show'); SFX.init(); SFX.flip();
+  const ub = document.getElementById('useShard');
+  if (ub) ub.onclick = ev => { ev.stopPropagation(); if (INV.shards < need) return; INV.shards -= need; e.s++; e.p = 0; save(); SFX.reveal(); showPart(k, id); renderTeam(); };
+}
 // part detail card: whole top, with one part highlighted (k = 'w' / 'a' / 'c')
 const infoPop = document.getElementById('infoPop');
-infoPop.addEventListener('click', () => { infoPop.classList.remove('show'); });
+infoPop.addEventListener('click', e => { if (e.target.closest('.ipBtn')) return; infoPop.classList.remove('show'); });
 function showInfo(b, focus) {
+  const rs = k => { const r = b.r ? b.r[k] : INV[k][b[k]] ? INV[k][b[k]].r : 0, st = b.s ? b.s[k] : INV[k][b[k]] ? INV[k][b[k]].s : 0; return rarityTag(r, st); };
   const w = WEAPONS[b.w], a = ARMORS[b.a], c = CLASSES[b.c], f = FAMILY[w.fam], ac = ARMOR_CLASS[a.cls];
   const beatsW = Object.keys(FAMILY).filter(k => FAMILY[k].weak === a.cls).map(k => FAMILY[k].name + '系');
   const weakW = Object.keys(FAMILY).filter(k => FAMILY[k].beats === a.cls).map(k => FAMILY[k].name + '系');
   const tag = (txt, col) => `<span class="tag" style="background:${col}">${txt}</span>`;
   infoPop.innerHTML = `<div class="ipCard">
     <div class="ipHead"><img src="${PORTRAIT_SRC[b.c]}"><div><div class="t">${nameOf(b)}</div><div class="s">${statLine(b).split('｜')[1]}</div></div></div>
-    <div class="ipRow ${focus === 'w' ? 'focus' : ''}">${iconHTML('w', b.w)}<div><div class="n">${w.name}${tag(f.name + '系', f.col)}</div>
+    <div class="ipRow ${focus === 'w' ? 'focus' : ''}">${iconHTML('w', b.w)}<div><div class="n">${w.name}${tag(f.name + '系', f.col)}${rs('w')}</div>
       <div class="d">${w.desc}。${f.desc}</div><div class="k">攻擊 ${w.atk}・擊退 ${w.kb}・重量 ${w.wt}｜剋 ${ARMOR_CLASS[f.beats].name}，怕 ${ARMOR_CLASS[f.weak].name}</div></div></div>
-    <div class="ipRow ${focus === 'a' ? 'focus' : ''}">${iconHTML('a', b.a)}<div><div class="n">${a.name}${tag(ac.name, ac.col)}</div>
+    <div class="ipRow ${focus === 'a' ? 'focus' : ''}">${iconHTML('a', b.a)}<div><div class="n">${a.name}${tag(ac.name, ac.col)}${rs('a')}</div>
       <div class="d">${a.desc}</div><div class="k">防禦 ${a.thick}・閃避 ${a.facets}｜怕 ${weakW.join('、') || '—'}，不怕 ${beatsW.join('、') || '—'}</div></div></div>
-    <div class="ipRow ${focus === 'c' ? 'focus' : ''}"><img src="${PORTRAIT_SRC[b.c]}" style="width:4.2em;height:4.2em;object-fit:cover;border-radius:4px"><div><div class="n">${c.name}${tag('職業', '#ffffff')}</div>
+    <div class="ipRow ${focus === 'c' ? 'focus' : ''}"><img src="${PORTRAIT_SRC[b.c]}" style="width:4.2em;height:4.2em;object-fit:cover;border-radius:4px"><div><div class="n">${c.name}${tag('職業', '#ffffff')}${rs('c')}</div>
       <div class="d">EX「${c.exName}」${c.exDesc ? '：' + c.exDesc : ''}</div><div class="k">速度 ${c.speed}</div></div></div>
     <div class="ipClose">點任何地方關閉</div></div>`;
   infoPop.classList.add('show'); SFX.init(); SFX.flip();
@@ -684,6 +787,8 @@ let lpFired = false;
 (() => {
   const list = document.getElementById('teamList'); let lp = null;
   list.addEventListener('pointerdown', e => {
+    const tile = e.target.closest('[data-iid]');
+    if (tile) { lpFired = false; lp = { x: e.clientX, y: e.clientY, id: e.pointerId, timer: setTimeout(() => { lp = null; lpFired = true; if (navigator.vibrate) navigator.vibrate(15); showPart(tile.dataset.ik, tile.dataset.iid); }, 450) }; return; }
     const chip = e.target.closest('[data-pk]'), item = e.target.closest('[data-idx]');
     const idx = chip ? +chip.dataset.pi : item ? +item.dataset.idx : -1; if (idx < 0 || !collection[idx]) return;
     lpFired = false;
@@ -701,13 +806,17 @@ let lpFired = false;
 function partChips(b, i) {
   const chips = document.createElement('div'); chips.className = 'chips';
   [['w', WEAPONS[b.w].name], ['a', ARMORS[b.a].name], ['c', CLASSES[b.c].name]].forEach(([k, label]) => {
-    const ch = document.createElement('button'); ch.className = 'chip ' + k; ch.innerHTML = (k === 'c' ? '' : iconHTML(k, b[k])) + `<span>${label}</span>`;
+    const e = INV[k][b[k]], stTxt = e ? `<em class="st" style="color:${RARITY[e.r].col}">${'★'.repeat(e.s)}</em>` : '';
+    const ch = document.createElement('button'); ch.className = 'chip ' + k; ch.innerHTML = (k === 'c' ? '' : iconHTML(k, b[k])) + `<span>${label}</span>${stTxt}`;
     if (k === 'w') ch.style.background = FAMILY[WEAPONS[b.w].fam].col; else if (k === 'a') ch.style.background = ARMOR_CLASS[ARMORS[b.a].cls].col;
     if (k === 'w' && WEAPONS[b.w].fam === 'melee') ch.style.color = '#fff';
     ch.dataset.pi = i; ch.dataset.pk = k;
     if (swapSel && swapSel.i === i && swapSel.k === k) ch.classList.add('on');
     if (swapSel && swapSel.i !== i && swapSel.k === k) ch.classList.add('target');
+    if (invSel && invSel.k === k) ch.classList.add('target');
     ch.onclick = () => {
+      if (invSel && invSel.k === k) { equip(i, k, invSel.id); invSel = null; swapSel = null; save(); SFX.init(); SFX.attach(); renderTeam(); return; }
+      invTab = k;
       if (swapSel && swapSel.k === k && swapSel.i !== i) {
         const a = collection[swapSel.i], tmp = a[k]; a[k] = b[k]; b[k] = tmp; swapSel = null; save(); SFX.init(); SFX.attach();
       } else swapSel = (swapSel && swapSel.i === i && swapSel.k === k) ? null : { i, k };
@@ -718,7 +827,8 @@ function partChips(b, i) {
   return chips;
 }
 function renderTeam() {
-  document.getElementById('teamSub').textContent = `收藏 ${collection.length} 顆・累積勝場 ${wins}`;
+  document.getElementById('teamSub').innerHTML = `<span class="coin">🪙 ${INV.coins}</span>　隊伍戰力 <b>+${Math.round(teamPower() * 100)}%</b>　勝場 ${wins}`;
+  renderShop();
   const list = document.getElementById('teamList'); list.innerHTML = '';
   // three big portrait slots for the lineup
   const slots = document.createElement('div'); slots.className = 'slots';
@@ -732,30 +842,52 @@ function renderTeam() {
     slots.appendChild(el);
   });
   list.appendChild(slots);
-  // reserve depot: a grid of portrait tiles; weapon / armor as text for now (icons later)
-  if (collection.length > 3) {
-    list.insertAdjacentHTML('beforeend', `<div class="benchHd">備戰倉庫 <span>${collection.length - 3} 顆</span></div>`);
-    const grid = document.createElement('div'); grid.className = 'depot';
-    collection.slice(3).forEach((b, k) => {
-      const i = k + 3, t = document.createElement('div');
-      t.className = 'tile' + (teamSel === i ? ' picked' : ''); t.dataset.idx = i;
-      t.innerHTML = `<img draggable="false" src="${PORTRAIT_SRC[b.c]}">${b.isNew ? '<b class="newTag">NEW</b>' : ''}
-        <div class="tn">${CLASSES[b.c].name}</div><div class="tp">${iconHTML('w', b.w)}${WEAPONS[b.w].name}</div><div class="tp a">${iconHTML('a', b.a)}${ARMORS[b.a].name}</div>`;
-      grid.appendChild(t);
-    });
-    list.appendChild(grid);
+  // parts inventory: tabs for classes / weapons / armors
+  const own = k => Object.keys(INV[k]);
+  list.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>萬用碎片 ${INV.shards}</span></div>`);
+  const tabs = document.createElement('div'); tabs.className = 'invTabs';
+  for (const k of 'cwa') {
+    const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
+    const nNew = own(k).filter(id => INV[k][id].isNew).length;
+    tb.innerHTML = `${KIND_NAME[k]} ${own(k).length}/${Object.keys(KIND[k]).length}${nNew ? '<b class="dot"></b>' : ''}`;
+    tb.onclick = () => { invTab = k; renderTeam(); }; tabs.appendChild(tb);
   }
-  // bar for the picked depot top: its parts can be swapped with the lineup's
-  if (teamSel !== null && teamSel >= 3 && collection[teamSel]) {
-    const b = collection[teamSel], bar = document.createElement('div'); bar.className = 'selbar';
-    bar.innerHTML = `<div class="nm">已選：${nameOf(b)}<span class="mini">　點出戰格完成交換</span></div>`;
-    bar.appendChild(partChips(b, teamSel));
-    bar.insertAdjacentHTML('beforeend', `<div class="mini">${statLine(b)}</div>`);
-    list.appendChild(bar);
-  }
+  list.appendChild(tabs);
+  const grid = document.createElement('div'); grid.className = 'depot';
+  const k = invTab;
+  own(k).sort((x, y) => INV[k][y].r - INV[k][x].r || INV[k][y].s - INV[k][x].s).forEach(id => {
+    const e = INV[k][id], slot = collection.findIndex(b => b[k] === id), t = document.createElement('div');
+    t.className = 'tile r' + e.r + (invSel && invSel.k === k && invSel.id === id ? ' picked' : '') + (swapSel && swapSel.k === k ? ' target' : '');
+    t.dataset.ik = k; t.dataset.iid = id; t.style.borderColor = RARITY[e.r].col;
+    const pic = k === 'c' ? `<img draggable="false" src="${PORTRAIT_SRC[id]}">` : `<div class="bigIco">${iconHTML(k, id)}</div>`;
+    const prog = e.s < 3 ? `<span class="pg">${e.p}/${NEED[e.s]}</span>` : '<span class="pg">MAX</span>';
+    t.innerHTML = `${pic}${e.isNew ? '<b class="newTag">NEW</b>' : ''}${slot >= 0 ? `<b class="eqTag">出戰${slot + 1}</b>` : ''}
+      <div class="tn">${KIND[k][id].name}</div><div class="tst" style="color:${RARITY[e.r].col}">${starStr(e.s)}${prog}</div>`;
+    t.onclick = () => {
+      if (lpFired) return;
+      if (e.isNew) { e.isNew = 0; save(); }
+      if (swapSel && swapSel.k === k) { equip(swapSel.i, k, id); swapSel = null; invSel = null; save(); SFX.init(); SFX.attach(); }
+      else invSel = invSel && invSel.k === k && invSel.id === id ? null : { k, id };
+      renderTeam();
+    };
+    grid.appendChild(t);
+  });
+  list.appendChild(grid);
+  if (invSel) list.insertAdjacentHTML('beforeend', `<div class="mini selHint">已選「${KIND[invSel.k][invSel.id].name}」，點上面出戰格裡的${KIND_NAME[invSel.k]}完成換裝</div>`);
+  else if (swapSel) list.insertAdjacentHTML('beforeend', `<div class="mini selHint">點下方零件庫的${KIND_NAME[swapSel.k]}換裝，或點另一格的${KIND_NAME[swapSel.k]}互換</div>`);
+}
+function renderShop() {
+  const sh = document.getElementById('shop');
+  sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>🪙${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>十連＋1<small>🪙${PRICE10}・保底紅</small></button>`;
+  document.getElementById('buy1').onclick = () => buy(1); document.getElementById('buy10').onclick = () => buy(10);
+}
+function buy(n) {
+  const price = n === 10 ? PRICE10 : PRICE1; if (INV.coins < price) return;
+  INV.coins -= price; SFX.init();
+  startGacha(n === 10 ? 11 : 1, n === 10 ? '十連卡包' : '標準卡包', openTeam, { paid: true, ten: n === 10 });
 }
 function teamTap(idx) {
-  const b = collection[idx]; if (b && b.isNew) { delete b.isNew; save(); }
+  invSel = null;
   if (teamSel === null) teamSel = idx;
   else if (teamSel === idx) teamSel = null;
   else { [collection[teamSel], collection[idx]] = [collection[idx], collection[teamSel]]; teamSel = null; swapSel = null; save(); SFX.init(); SFX.attach(); }
@@ -824,14 +956,33 @@ const PW = 540, PH = 860;
 const packCv = document.getElementById('packCv'), pg = packCv.getContext('2d');
 const okBtn = document.getElementById('gachaOk');
 const PK = { st: 'idle', t: 0, taps: 0, shake: 0, cards: [], title: '', done: null, fx: [], emblem: null };
-function startGacha(n, title, done) {
+function rollTop(base, opt) {
+  const b = base || randomTop(); b.r = {}; b.s = {};
+  for (const k of 'cwa') { b.r[k] = rollFrom(R_RATE); b.s[k] = rollFrom(STAR_RATE); }
+  if (opt && opt.paid) { // pity: a red+ at least every 10 draws, a yellow every 60
+    INV.pity.r++; INV.pity.y++;
+    if (INV.pity.y >= 60) b.r[pick(['c', 'w', 'a'])] = 3;
+    else if (INV.pity.r >= 10 && Math.max(b.r.c, b.r.w, b.r.a) < 2) b.r[pick(['c', 'w', 'a'])] = 2;
+    const top = Math.max(b.r.c, b.r.w, b.r.a); if (top >= 2) INV.pity.r = 0; if (top >= 3) INV.pity.y = 0;
+  }
+  return b;
+}
+function startGacha(n, title, done, opt) {
   let builds;
-  if (n > 1) {
-    // the starting draw: no two share a weapon, armor or class, so swapping parts matters
+  if (!(opt && opt.paid)) {
+    // the starting draw: no two share a weapon, armor or class, so swapping parts matters; at least one purple
     const sh = o => Object.keys(o).sort(() => Math.random() - 0.5);
     const W2 = sh(WEAPONS), A2 = sh(ARMORS), C2 = sh(CLASSES);
-    builds = Array.from({ length: n }, (_, i) => ({ w: W2[i % W2.length], a: A2[i % A2.length], c: C2[i % C2.length] }));
-  } else builds = [randomTop()];
+    builds = Array.from({ length: n }, (_, i) => rollTop({ w: W2[i % W2.length], a: A2[i % A2.length], c: C2[i % C2.length] }));
+    if (!builds.some(b => Math.max(b.r.c, b.r.w, b.r.a) >= 1)) builds[0].r[pick(['c', 'w', 'a'])] = 1;
+  } else {
+    builds = Array.from({ length: n }, () => rollTop(null, opt));
+    if (opt.ten && !builds.some(b => Math.max(b.r.c, b.r.w, b.r.a) >= 2)) builds[n - 1].r[pick(['c', 'w', 'a'])] = 2;
+  }
+  // parts go into the inventory right away (coins are already spent); the cards show what each one became
+  for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
+  if (collection.length < 3) { collection = builds.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a })); fixTeam(); }
+  save();
   Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, title, done, fx: [], emblem: randomTop(),
     cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })) });
   okBtn.style.display = 'none';
@@ -840,6 +991,7 @@ function startGacha(n, title, done) {
 const easeOut = k => 1 - Math.pow(1 - k, 3);
 const easeBack = k => { const c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
 function cardSlot(i, n) {
+  if (n > 3) { const col = i % 4, row = Math.floor(i / 4), inRow = Math.min(4, n - row * 4); return { x: PW / 2 + (col - (inRow - 1) / 2) * 128, y: 240 + row * 186, w: 120, h: 176 }; }
   if (n === 1) return { x: PW / 2, y: 410, w: 230, h: 330 };
   return { x: PW / 2 + (i - (n - 1) / 2) * 170, y: 410, w: 156, h: 226 };
 }
@@ -855,6 +1007,8 @@ packCv.addEventListener('pointerdown', e => {
     SFX.tear(PK.taps);
     if (PK.taps >= 3) { PK.st = 'burst'; PK.t = 0; SFX.burst(); SFX.ex(); packFx(PW / 2, 330, 70, null, 620); }
   } else if (PK.st === 'cards') {
+    const onCard = PK.cards.some((c, i) => { const sl = cardSlot(i, PK.cards.length); return Math.abs(x - sl.x) < sl.w / 2 && Math.abs(y - sl.y) < sl.h / 2; });
+    if (!onCard) { let d = 0; PK.cards.forEach(c => { if (!c.flipping && c.flip === 0) { setTimeout(() => { c.flipping = true; SFX.flip(); }, d); d += 90; } }); return; }
     PK.cards.forEach((c, i) => {
       const sl = cardSlot(i, PK.cards.length);
       if (!c.flipping && c.flip === 0 && Math.abs(x - sl.x) < sl.w / 2 && Math.abs(y - sl.y) < sl.h / 2) { c.flipping = true; SFX.flip(); }
@@ -865,7 +1019,6 @@ packCv.addEventListener('pointerdown', e => {
   }
 });
 okBtn.onclick = () => {
-  for (const c of PK.cards) { c.b.isNew = true; collection.push(c.b); }
   save(); PK.st = 'idle'; okBtn.style.display = 'none';
   PK.done && PK.done();
 };
@@ -920,6 +1073,13 @@ function drawPackBody(g, cx, cy, time, tear, lidOff, lidRot, alpha) {
   }
   g.restore();
 }
+// small result tag on a pack card part: NEW / star up / +1 / shard
+function resTag(g, res, x, y, w) {
+  const T = { new: ['NEW', '#ff2a55', '#fff'], star: ['★UP', '#fcee0a', '#10101c'], up: ['稀有度↑', '#b066ff', '#fff'], '+1': ['+1', '#2a3340', '#fff'], shard: ['碎片', '#00f0ff', '#10101c'] }[res];
+  if (!T) return;
+  g.save(); g.font = `900 ${Math.round(w * 0.07)}px Rajdhani, sans-serif`; g.textAlign = 'right'; g.textBaseline = 'top';
+  const tw = g.measureText(T[0]).width + 6; g.fillStyle = T[1]; g.fillRect(x - tw, y, tw, w * 0.09); g.fillStyle = T[2]; g.fillText(T[0], x - 3, y + 1); g.restore();
+}
 function drawCard(g, card, sl, time, appear) {
   const k = card.flip, sxk = Math.max(0.02, Math.abs(Math.cos(Math.PI * k))), face = k > 0.5;
   const { w, h } = sl;
@@ -943,7 +1103,8 @@ function drawCard(g, card, sl, time, appear) {
     const b = card.b, c = CLASSES[b.c];
     const fg = g.createLinearGradient(0, -h / 2, 0, h / 2); fg.addColorStop(0, shade(c.color, -0.35)); fg.addColorStop(1, '#0d0c1e');
     g.fillStyle = fg; g.fill();
-    g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.stroke();
+    const topR = b.r ? Math.max(b.r.c, b.r.w, b.r.a) : 0;
+    g.strokeStyle = RARITY[topR].col; g.lineWidth = topR >= 2 ? 6 : 4; g.stroke();
     roundRectP(g, -w / 2 + 8, -h / 2 + 8, w - 16, h * 0.5, 6); g.fillStyle = 'rgba(0,0,0,.35)'; g.fill();
     g.save(); roundRectP(g, -w / 2 + 8, -h / 2 + 8, w - 16, h * 0.5, 6); g.clip();
     if (!drawPortrait(g, b.c, -w / 2 + 8, -h / 2 + 8, w - 16, h * 0.5)) { g.translate(0, -h / 2 + 8 + h * 0.25); const z = w / 95; g.scale(z, z); drawTop(g, b, time * 6 * WEAPONS[b.w].dir, { spin: 0.9 }); }
@@ -956,10 +1117,20 @@ function drawCard(g, card, sl, time, appear) {
     [['w', b.w, FAMILY[WEAPONS[b.w].fam].col], ['a', b.a, ARMOR_CLASS[ARMORS[b.a].cls].col]].forEach(([k, id, col], i) => {
       const ix = (i - 0.5) * (isz + w * 0.08) - isz / 2, iy = h * 0.185;
       g.save(); roundRectP(g, ix, iy, isz, isz, 5); g.fillStyle = '#111'; g.fill(); g.clip(); drawIcon(g, k, id, ix, iy, isz); g.restore();
-      g.strokeStyle = col; g.lineWidth = 3; roundRectP(g, ix, iy, isz, isz, 5); g.stroke();
+      const rc = b.r ? RARITY[b.r[k]].col : col;
+      g.strokeStyle = rc; g.lineWidth = 3; roundRectP(g, ix, iy, isz, isz, 5); g.stroke();
+      if (b.s) { g.fillStyle = rc; g.font = `900 ${Math.round(w * 0.075)}px Rajdhani, sans-serif`; g.fillText(b.s[k] ? '★'.repeat(b.s[k]) : RARITY[b.r[k]].n, ix + isz / 2, iy + isz + w * 0.06); }
+      if (b.res) resTag(g, b.res[k], ix + isz - 2, iy + 2, w);
     });
+    if (b.r) { // class rarity badge on the portrait
+      const bx = -w / 2 + 12, by = -h / 2 + 12, bw2 = w * 0.3, bh2 = w * 0.12;
+      g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(bx, by, bw2, bh2); g.fillStyle = RARITY[b.r.c].col;
+      g.font = `900 ${Math.round(w * 0.075)}px Rajdhani, sans-serif`; g.textAlign = 'left'; g.fillText(RARITY[b.r.c].n + (b.s.c ? '★'.repeat(b.s.c) : ''), bx + 4, by + bh2 / 2 + 1);
+      if (b.res) resTag(g, b.res.c, -w / 2 + 8 + (w - 16) - 4, -h / 2 + 12, w);
+      g.textAlign = 'center';
+    }
     g.fillStyle = '#fcee0a'; g.font = `700 ${Math.round(w * 0.068)}px Rajdhani, sans-serif`;
-    g.fillText(`EX「${c.exName}」`, 0, h * 0.43);
+    if (!b.r) g.fillText(`EX「${c.exName}」`, 0, h * 0.43);
   }
   g.restore();
 }
@@ -1008,13 +1179,13 @@ function drawPack(dt) {
       if (c.flip < 1) flippedAll = false;
       drawCard(g, c, cardSlot(i, PK.cards.length), time, 1);
     });
-    if (PK.st === 'cards' && !flippedAll) prompt(PK.cards.length > 1 ? `點擊卡片翻開（還有 ${PK.cards.filter(c => c.flip < 1 && !c.flipping).length} 張）` : '點擊卡片翻開');
+    if (PK.st === 'cards' && !flippedAll) prompt(PK.cards.length > 1 ? `點擊卡片翻開（還有 ${PK.cards.filter(c => c.flip < 1 && !c.flipping).length} 張${PK.cards.length > 3 ? '・點空白處全部翻開' : ''}）` : '點擊卡片翻開');
     if (PK.st === 'cards' && flippedAll) {
       PK.st = 'done';
-      okBtn.textContent = PK.cards.length > 1 ? `收下這 ${PK.cards.length} 顆陀螺` : '收下';
+      okBtn.textContent = '收進零件庫';
       okBtn.style.display = 'block';
     }
-    if (PK.st === 'done') { const sl = cardSlot(0, PK.cards.length); g.fillStyle = 'rgba(255,255,255,.7)'; g.font = '15px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・之後可以在陀螺之間互換零件', PW / 2, sl.y + sl.h / 2 + 40); }
+    if (PK.st === 'done') { const sl = cardSlot(PK.cards.length - 1, PK.cards.length); g.fillStyle = 'rgba(255,255,255,.7)'; g.font = '15px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・零件已放進零件庫', PW / 2, sl.y + sl.h / 2 + 34); }
   }
   // confetti / sparkles
   for (const f of PK.fx) {
@@ -1155,7 +1326,7 @@ function openTeam() {
   exBtn.style.display = 'none'; menuBtn.style.display = 'none';
   SFX.music('menu');
   if (!loadJSON('topTutSeen', false)) return showTutorial(openTeam);
-  if (collection.length < 3) return startGacha(3 - collection.length, '初始卡包', openTeam);
+  if (collection.length < 3) return startGacha(3, '初始卡包', openTeam);
   renderTeam(); show('team');
   if (!loadJSON('topLpTip', false)) setTimeout(() => {
     const tip = document.createElement('div'); tip.className = 'tipBubble'; tip.innerHTML = '💡 小提示：<b>長按</b>頭像或零件，可以看詳情與相剋';
@@ -1170,9 +1341,12 @@ document.getElementById('startBtn').onclick = () => {
   renderVersus(); show('versus');
 };
 document.getElementById('backBtn').onclick = () => { renderTeam(); show('team'); };
-document.getElementById('fightBtn').onclick = () => { SFX.init(); newMatch(collection.slice(0, 3), aiLineup); };
-document.getElementById('resetBtn').onclick = () => { collection = []; wins = 0; save(); openTeam(); };
-document.getElementById('drawBtn').onclick = () => startGacha(1, '勝利獎勵卡包', openTeam);
+document.getElementById('fightBtn').onclick = () => {
+  SFX.init(); const pw = teamPower();
+  newMatch(collection.map(withBonus), aiLineup.map(b => { const x = pw * rnd(0.85, 1.05); return { ...b, bc: x, bw: x, ba: x }; }));
+};
+document.getElementById('resetBtn').onclick = () => { if (!confirm('確定要清空零件庫、金幣和勝場，重新開始嗎？')) return; INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [] }; collection = []; wins = 0; save(); openTeam(); };
+document.getElementById('drawBtn').onclick = () => buy(1);
 document.getElementById('retryBtn').onclick = () => { aiLineup = [randomTop(), randomTop(), randomTop()]; renderVersus(); show('versus'); };
 document.getElementById('toTeamBtn').onclick = openTeam;
 
@@ -1725,7 +1899,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   const spd = Math.min(650, Math.max(0, attN) * 0.85 + vrel * 0.25 + 70 * att.spin);
   let mult = att.dashMult * (att.inCore ? CORE_DMG : 1);
   const fam = att.s.w.fam, cm = counterMult(att, def);
-  mult *= cm;
+  mult *= cm * (1 + att.s.bw);
   if (fam === 'melee') { // combo: consecutive hits within 1s stack +10% each (max 3)
     att.combo = att.comboT > 0 ? Math.min(3, (att.combo || 0) + 1) : 0; att.comboT = 1;
     mult *= 1 + 0.1 * att.combo;
@@ -1960,11 +2134,13 @@ function finish() {
   const win = G.score[0] > G.score[1];
   document.getElementById('finalText').textContent = win ? '勝利！' : '敗北';
   document.getElementById('finalText').style.color = win ? '#fcee0a' : '#ff2a55';
-  document.getElementById('finalScore').innerHTML = `你 ${G.score[0]} : ${G.score[1]} 電腦<br><span style="font-size:.6em;opacity:.7">${win ? '贏得對戰！可以抽一顆新陀螺' : '調整零件和順序再試試'}</span>`;
-  if (win) { wins++; save(); }
-  document.getElementById('drawBtn').style.display = win ? '' : 'none';
+  const today = new Date().toDateString(), daily = win && INV.day !== today;
+  const got = (win ? WIN_COIN : LOSE_COIN) + (daily ? DAILY_COIN : 0);
+  INV.coins += got; if (daily) INV.day = today; if (win) wins++; save();
+  document.getElementById('finalScore').innerHTML = `你 ${G.score[0]} : ${G.score[1]} 電腦<br><span class="coinGot">🪙 +${got}${daily ? '（含每日首勝 +50）' : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 🪙${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  const db = document.getElementById('drawBtn'); db.textContent = `立即單抽（🪙${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   document.getElementById('retryBtn').style.display = win ? 'none' : '';
-  document.getElementById('toTeamBtn').style.display = win ? 'none' : '';
+  document.getElementById('toTeamBtn').style.display = '';
   show('final');
   win ? SFX.win() : SFX.lose();
   exBtn.style.display = 'none'; menuBtn.style.display = 'none';
@@ -2505,7 +2681,7 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { get INV() { return INV; }, buy, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openTeam();
 })();
 </script>
