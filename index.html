@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.21</title>
+<title>旋刃對決 v0.22</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -238,10 +238,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.19 speed feel back (flatter tilt, faster tops, looser basin, faster rail, trails/sparks/speed lines, rotating portrait + blade swooshes), auto camera, EX 0.5s freeze with per-class mini animation, fall-into-pit animation, camera toggle
  v0.20 drag-and-drop lineup: three big portrait slots + bench
  v0.21 tap-to-swap lineup, reserve depot grid (portrait tiles, NEW tag, selected-top part bar)
+ v0.22 three weapon families (melee combo / gun charge bonus / blast knock), armor classes (light / heavy / energy), counters, 12 weapons + 12 armors, counter tutorial page
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.21';
+const GAME_VERSION = 'v0.22';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -279,22 +280,53 @@ const inCoreAt = (x, y) => qOf(x, y) < CORE_Q;
 const RAIL_TOP = 1500, RAIL_ACCEL = 7, RAIL_EXIT = 820, RAIL_GAIN = 0.36; // aura ring acts like a rail: top speed (px/s), how fast it gets there, launch speed at 12 o'clock, EX per radian (×class gain) // EX energy per second the AI gains in place of tapping
 
 // ---------- data (parts are data-driven so the full 20+20 roster can be dropped in later) ----------
+// weapon families: melee (red) / gun (cyan) / blast (yellow). Guns do not shoot: they hit harder the faster they charge in.
+const FAMILY = {
+  melee: { name: '近戰', col: '#ff2a55', desc: '傷害高、擊退低；連擊：1 秒內連續命中每下 +10%（最多 3 層）', beats: 'energy', weak: 'heavy' },
+  gun:   { name: '射擊', col: '#00f0ff', desc: '傷害擊退均衡；衝鋒加成：撞擊速度越快傷害越高', beats: 'light', weak: 'energy' },
+  blast: { name: '爆裂', col: '#fcee0a', desc: '傷害低、擊退最強；爆震：命中爆炸大幅擊飛，自己也會被反衝', beats: 'heavy', weak: 'light' },
+};
+const ARMOR_CLASS = {
+  light:  { name: '輕裝', col: '#00f0ff' },
+  heavy:  { name: '重裝', col: '#fcee0a' },
+  energy: { name: '能量護盾', col: '#b066ff' },
+};
+const COUNTER_UP = 1.3, COUNTER_DOWN = 0.8;
 const WEAPONS = {
-  greatsword: { name: '巨劍', dir: 1, atk: 5, kb: 3, wt: 4, attr: 'none', shape: 'blade', blades: 2, half: 0.36, hit: 1.35, gap: 0.55, desc: '單擊最重，刃間空隙大' },
-  towershield:{ name: '塔盾', dir: -1, atk: 1, kb: 1, wt: 4, attr: 'none', shape: 'disc', blades: 1, half: 9, hit: 0.95, gap: 0.95, special: 'deflect', desc: '滑開三成力道' },
-  waraxe:     { name: '戰斧', dir: 1, atk: 4, kb: 5, wt: 4, attr: 'none', shape: 'axe', blades: 3, half: 0.55, hit: 1.15, gap: 0.7, desc: '擊退最強' },
-  starburst:  { name: '星芒', dir: 1, atk: 3, kb: 3, wt: 3, attr: 'light', shape: 'star', blades: 4, half: 0.42, hit: 1.1, gap: 0.8, special: 'launch', desc: '彈射傷害 +30%' },
-  venomfang:  { name: '毒牙', dir: -1, atk: 2, kb: 2, wt: 2, attr: 'poison', shape: 'fang', blades: 2, half: 0.32, hit: 1.15, gap: 0.75, special: 'poison', desc: '命中降防，可疊 3 層' },
-  warhammer:  { name: '巨鎚', dir: 1, atk: 3, kb: 4, wt: 5, attr: 'none', shape: 'knob', blades: 4, half: 0.42, hit: 1.15, gap: 0.75, special: 'drain', desc: '命中削對手轉速' },
+  vibrosword:  { name: '高周波巨劍', fam: 'melee', dir: 1, atk: 5, kb: 2, wt: 4, attr: 'melee', shape: 'blade', blades: 2, half: 0.36, hit: 1.35, gap: 0.55, desc: '單擊最重，刃間空隙大' },
+  chainaxe:    { name: '電鋸戰斧', fam: 'melee', dir: 1, atk: 4, kb: 3, wt: 4, attr: 'melee', shape: 'axe', blades: 3, half: 0.55, hit: 1.15, gap: 0.7, special: 'drain', desc: '鋸齒命中削對手轉速' },
+  plasmascythe:{ name: '等離子鐮刀', fam: 'melee', dir: -1, atk: 4, kb: 2, wt: 3, attr: 'melee', shape: 'fang', blades: 2, half: 0.34, hit: 1.2, gap: 0.7, special: 'poison', desc: '燒蝕降防，可疊 3 層' },
+  hydrohammer: { name: '液壓重鎚', fam: 'melee', dir: 1, atk: 4, kb: 3, wt: 5, attr: 'melee', shape: 'knob', blades: 4, half: 0.42, hit: 1.15, gap: 0.75, desc: '沉重穩定，連擊收益高' },
+  gatling:     { name: '旋轉機砲', fam: 'gun', dir: 1, atk: 3, kb: 3, wt: 3, attr: 'gun', shape: 'star', blades: 6, half: 0.3, hit: 1.05, gap: 0.85, desc: '刃點密集，很少打空' },
+  shotgun:     { name: '霰彈轟擊輪', fam: 'gun', dir: -1, atk: 4, kb: 3, wt: 4, attr: 'gun', shape: 'knob', blades: 6, half: 0.3, hit: 1.15, gap: 0.8, desc: '近距離衝撞爆發' },
+  railgun:     { name: '磁軌砲', fam: 'gun', dir: 1, atk: 5, kb: 3, wt: 3, attr: 'gun', shape: 'blade', blades: 1, half: 0.4, hit: 1.5, gap: 0.6, special: 'launch', desc: '單點貫穿，軌道彈射 +30%' },
+  smartpistol: { name: '雙聯智慧槍', fam: 'gun', dir: -1, atk: 3, kb: 2, wt: 2, attr: 'gun', shape: 'fang', blades: 2, half: 0.34, hit: 1.15, gap: 0.8, special: 'homing', desc: '自動微調方向追擊對手' },
+  missilepod:  { name: '微型飛彈艙', fam: 'blast', dir: 1, atk: 2, kb: 5, wt: 3, attr: 'blast', shape: 'knob', blades: 4, half: 0.42, hit: 1.1, gap: 0.8, desc: '擊退最強' },
+  grenade:     { name: '榴彈旋盤', fam: 'blast', dir: -1, atk: 2, kb: 4, wt: 4, attr: 'blast', shape: 'disc', blades: 1, half: 9, hit: 1, gap: 1, special: 'deflect', desc: '圓盤滑開三成力道' },
+  flamer:      { name: '火焰噴射器', fam: 'blast', dir: 1, atk: 2, kb: 4, wt: 3, attr: 'blast', shape: 'star', blades: 3, half: 0.45, hit: 1.1, gap: 0.8, special: 'poison', desc: '灼燒降防，可疊 3 層' },
+  emp:         { name: 'EMP 脈衝環', fam: 'blast', dir: -1, atk: 1, kb: 4, wt: 3, attr: 'blast', shape: 'disc', blades: 1, half: 9, hit: 1, gap: 1, special: 'emp', desc: '命中削減對手 EX 能量' },
 };
 const ARMORS = {
-  shell:   { name: '龜殼甲', facets: 3, thick: 5, color: '#5f8f57', special: 'shell', desc: '被撞距離減半' },
-  feather: { name: '羽衣', facets: 9, thick: 1, color: '#e9e4ff', desc: '最輕、閃避最高' },
-  gale:    { name: '疾風甲', facets: 8, thick: 1, color: '#8fe3c9', special: 'gale', desc: '移動速度提升' },
-  magnet:  { name: '磁力甲', facets: 4, thick: 3, color: '#c25b5b', special: 'magnet', desc: 'EX 累積 +20%' },
-  scale:   { name: '鱗甲', facets: 7, thick: 3, color: '#4d7fbf', desc: '攻守均衡' },
-  bone:    { name: '骸骨甲', facets: 3, thick: 3, color: '#d8d2bf', special: 'bone', desc: '血越低防越高' },
+  opticamo:    { name: '光學迷彩', cls: 'light', facets: 9, thick: 1, color: '#7fe7ff', desc: '閃避最高' },
+  carbonvest:  { name: '碳纖維輕甲', cls: 'light', facets: 7, thick: 2, color: '#4d7fbf', desc: '輕巧均衡' },
+  hover:       { name: '磁浮推進器', cls: 'light', facets: 8, thick: 1, color: '#8fe3c9', special: 'gale', desc: '移動速度提升' },
+  afterimage:  { name: '殘像投影器', cls: 'light', facets: 9, thick: 2, color: '#e9e4ff', desc: '殘像干擾，閃避高' },
+  exoskeleton: { name: '重型外骨骼', cls: 'heavy', facets: 3, thick: 5, color: '#5f8f57', special: 'shell', desc: '被撞距離減半' },
+  powerarmor:  { name: '動力裝甲', cls: 'heavy', facets: 4, thick: 4, color: '#c9a227', special: 'bone', desc: '血越低防越高' },
+  reactive:    { name: '反應裝甲', cls: 'heavy', facets: 3, thick: 4, color: '#c25b5b', special: 'thorns', desc: '被撞時反炸對手 15% 傷害' },
+  titanium:    { name: '鈦合金骨架', cls: 'heavy', facets: 2, thick: 5, color: '#a9b4bf', desc: '防禦最高' },
+  forcefield:  { name: '力場產生器', cls: 'energy', facets: 6, thick: 3, color: '#b066ff', special: 'magnet', desc: 'EX 累積 +20%' },
+  deflector:   { name: '偏折護盾', cls: 'energy', facets: 5, thick: 3, color: '#7a6cff', special: 'deflectA', desc: '被擊退距離 -30%' },
+  plasmaplate: { name: '電漿反射板', cls: 'energy', facets: 5, thick: 3, color: '#ff6bd6', special: 'thorns', desc: '被撞時反射 15% 傷害' },
+  nanorepair:  { name: '奈米修復膜', cls: 'energy', facets: 6, thick: 2, color: '#2fe0a8', special: 'regen', desc: '每秒回復 1.2% 血量' },
 };
+// old save files -> new part ids
+const OLD_W = { greatsword: 'vibrosword', towershield: 'grenade', waraxe: 'chainaxe', starburst: 'gatling', venomfang: 'plasmascythe', warhammer: 'hydrohammer' };
+const OLD_A = { shell: 'exoskeleton', feather: 'opticamo', gale: 'hover', magnet: 'forcefield', scale: 'carbonvest', bone: 'powerarmor' };
+function counterMult(att, def) {
+  const f = FAMILY[att.s.w.fam], c = def.s.a.cls;
+  return c === f.beats ? COUNTER_UP : c === f.weak ? COUNTER_DOWN : 1;
+}
 const CLASSES = {
   berserker: { name: '狂戰士', ch: '狂', color: '#ff4d5e', speed: 1.25, decay: 1.3, hp: 0.95, gain: 1, ex: 'dash', exName: '狂暴衝鋒', exDesc: '連撞三次，傷害遞增' },
   guardian:  { name: '守護者', ch: '守', color: '#4da3ff', speed: 0.8, decay: 0.9, hp: 1.15, gain: 1, ex: 'shield', exName: '聖域壁壘', exDesc: '3 秒護盾反彈撞擊', pull: 1.7 },
@@ -334,14 +366,14 @@ function drawPortrait(g, c, x, y, w, h) {
   return true;
 }
 const BUILDS = [
-  { name: '爆裂方陣', w: 'greatsword', a: 'feather', c: 'berserker' },
-  { name: '不動城',   w: 'towershield', a: 'shell', c: 'guardian' },
-  { name: '地獄使者', w: 'waraxe', a: 'gale', c: 'assassin' },
-  { name: '星軌術師', w: 'starburst', a: 'magnet', c: 'mage' },
-  { name: '毒獵手',   w: 'venomfang', a: 'scale', c: 'hunter' },
-  { name: '不滅骸王', w: 'warhammer', a: 'bone', c: 'undead' },
+  { name: '爆裂方陣', w: 'vibrosword', a: 'opticamo', c: 'berserker' },
+  { name: '不動城',   w: 'grenade', a: 'exoskeleton', c: 'guardian' },
+  { name: '地獄使者', w: 'chainaxe', a: 'hover', c: 'assassin' },
+  { name: '星軌術師', w: 'gatling', a: 'forcefield', c: 'mage' },
+  { name: '毒獵手',   w: 'plasmascythe', a: 'carbonvest', c: 'hunter' },
+  { name: '不滅骸王', w: 'hydrohammer', a: 'powerarmor', c: 'undead' },
 ];
-const ATTR_COLOR = { none: '#cfd5e0', light: '#ffd966', poison: '#86ff8f' };
+const ATTR_COLOR = { none: '#cfd5e0', light: '#ffd966', poison: '#86ff8f', melee: '#ffc2cc', gun: '#b8f8ff', blast: '#fff2a0' };
 
 // ---------- helpers ----------
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -556,7 +588,7 @@ const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const randomTop = () => ({ w: pick(Object.keys(WEAPONS)), a: pick(Object.keys(ARMORS)), c: pick(Object.keys(CLASSES)) });
 function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
 function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-let collection = loadJSON('topCollection', []).filter(b => b && WEAPONS[b.w] && ARMORS[b.a] && CLASSES[b.c]);
+let collection = loadJSON('topCollection', []).map(b => b && Object.assign(b, { w: OLD_W[b.w] || b.w, a: OLD_A[b.a] || b.a })).filter(b => b && WEAPONS[b.w] && ARMORS[b.a] && CLASSES[b.c]);
 let wins = loadJSON('topWins', 0) || 0;
 let aiLineup = null;
 let swapSel = null; // {i, k}
@@ -584,12 +616,14 @@ function drawPreviews(dt) {
     drawTop(p.g, p.b, previewAng * WEAPONS[p.b.w].dir, { spin: 0.6 });
   }
 }
-const statLine = b => { const s = stats(b); return `攻${s.w.atk} 退${s.w.kb} 防${s.a.thick} 閃${s.a.facets} 速${s.c.speed}・EX「${s.c.exName}」`; };
+const statLine = b => { const s = stats(b); return `${FAMILY[s.w.fam].name}系・${ARMOR_CLASS[s.a.cls].name}｜攻${s.w.atk} 退${s.w.kb} 防${s.a.thick} 閃${s.a.facets} 速${s.c.speed}・EX「${s.c.exName}」`; };
 
 function partChips(b, i) {
   const chips = document.createElement('div'); chips.className = 'chips';
   [['w', WEAPONS[b.w].name], ['a', ARMORS[b.a].name], ['c', CLASSES[b.c].name]].forEach(([k, label]) => {
     const ch = document.createElement('button'); ch.className = 'chip ' + k; ch.textContent = label;
+    if (k === 'w') ch.style.background = FAMILY[WEAPONS[b.w].fam].col; else if (k === 'a') ch.style.background = ARMOR_CLASS[ARMORS[b.a].cls].col;
+    if (k === 'w' && WEAPONS[b.w].fam === 'melee') ch.style.color = '#fff';
     if (swapSel && swapSel.i === i && swapSel.k === k) ch.classList.add('on');
     if (swapSel && swapSel.i !== i && swapSel.k === k) ch.classList.add('target');
     ch.onclick = () => {
@@ -833,12 +867,13 @@ function drawCard(g, card, sl, time, appear) {
     drawTop(g, b, time * 6 * WEAPONS[b.w].dir, { spin: 0.9 }); g.restore();
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = '#fff'; g.font = `900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.fillText(nameOf(b), 0, h * 0.13);
-    const chips = [[WEAPONS[b.w].name, '#00f0ff'], [ARMORS[b.a].name, '#fcee0a'], [CLASSES[b.c].name, '#ffffff']];
-    const fs = Math.round(w * 0.075), cw = w * 0.28;
+    const chips = [[WEAPONS[b.w].name, FAMILY[WEAPONS[b.w].fam].col], [ARMORS[b.a].name, ARMOR_CLASS[ARMORS[b.a].cls].col]];
+    const cw = w * 0.44;
     chips.forEach(([t, col], i) => {
-      const cx2 = (i - 1) * (cw + 4);
-      roundRectP(g, cx2 - cw / 2, h * 0.21, cw, fs * 1.7, fs * 0.85); g.fillStyle = col; g.fill();
-      g.fillStyle = '#10101c'; g.font = `700 ${fs}px Rajdhani, sans-serif`; g.fillText(t, cx2, h * 0.21 + fs * 0.88);
+      const cx2 = (i - 0.5) * (cw + 5); let fs = Math.round(w * 0.075);
+      g.font = `700 ${fs}px Rajdhani, sans-serif`; const tw = g.measureText(t).width; if (tw > cw - 8) fs = Math.floor(fs * (cw - 8) / tw);
+      roundRectP(g, cx2 - cw / 2, h * 0.21, cw, w * 0.075 * 1.7, w * 0.06); g.fillStyle = col; g.fill();
+      g.fillStyle = col === '#ff2a55' ? '#fff' : '#10101c'; g.font = `700 ${fs}px Rajdhani, sans-serif`; g.fillText(t, cx2, h * 0.21 + w * 0.075 * 0.88);
     });
     g.fillStyle = '#fcee0a'; g.font = `700 ${Math.round(w * 0.068)}px Rajdhani, sans-serif`;
     g.fillText(`EX「${c.exName}」`, 0, h * 0.375);
@@ -911,7 +946,7 @@ function drawPack(dt) {
 // ---------- how-to-play tutorial ----------
 const tutCv = document.getElementById('tutCv'), tg2 = tutCv.getContext('2d');
 let tutArena = null, tutIdx = 0, tutT = 0, tutDone = null;
-const TA = { w: 'waraxe', a: 'gale', c: 'assassin' }, TB = { w: 'towershield', a: 'shell', c: 'guardian' }, TC = { w: 'starburst', a: 'magnet', c: 'mage' };
+const TA = { w: 'chainaxe', a: 'hover', c: 'assassin' }, TB = { w: 'grenade', a: 'exoskeleton', c: 'guardian' }, TC = { w: 'gatling', a: 'forcefield', c: 'mage' };
 const TK = 400 / (2 * (AX + 34));
 function tutArenaBg(g) {
   if (!tutArena) {
@@ -982,6 +1017,28 @@ const TUT = [
       g.strokeStyle = '#fcee0a'; g.lineWidth = 6; g.beginPath(); g.arc(bx, by, 40, -Math.PI / 2, -Math.PI / 2 + TAU * e); g.stroke();
       tLabel(g, `${Math.round(e * 100)}%`, bx, by - 4, '#fcee0a', 18); g.fillStyle = '#fcee0a'; g.font = '700 10px Rajdhani, sans-serif'; g.fillText('EX', bx, by + 15);
       tFinger(g, bx + 8, by + 6, (t * 6) % 1 < 0.5);
+  } },
+  { title: '武器三系與相剋', text: '<b style="color:#ff2a55">近戰系</b>傷害高、會連擊；<b style="color:#00f0ff">射擊系</b>衝越快打越痛；<b style="color:#fcee0a">爆裂系</b>擊退最強，適合把人炸出場。鎧甲分<b>輕裝・重裝・能量護盾</b>：近戰剋能量、射擊剋輕裝、爆裂剋重裝（+30%），被剋則 −20%。排陣容前先看對手！', draw(g, t) {
+      g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
+      const W3 = [['melee', 200, 70], ['gun', 330, 290], ['blast', 70, 290]];
+      const A3 = { energy: [265, 180], light: [200, 320], heavy: [135, 180] };
+      // arrows weapon -> armor it beats
+      const pulse = 0.5 + 0.5 * Math.sin(t * 4);
+      for (const [f, x, y] of W3) {
+        const tgt = A3[FAMILY[f].beats]; g.strokeStyle = FAMILY[f].col; g.globalAlpha = 0.5 + 0.5 * pulse; g.lineWidth = 4;
+        g.beginPath(); g.moveTo(x, y); g.lineTo(tgt[0], tgt[1]); g.stroke(); g.globalAlpha = 1;
+        const d = norm(tgt[0] - x, tgt[1] - y), ax = tgt[0] - d.x * 26, ay = tgt[1] - d.y * 26;
+        g.fillStyle = FAMILY[f].col; g.beginPath(); g.moveTo(ax + d.x * 12, ay + d.y * 12); g.lineTo(ax - d.y * 8, ay + d.x * 8); g.lineTo(ax + d.y * 8, ay - d.x * 8); g.fill();
+      }
+      for (const [f, x, y] of W3) {
+        g.fillStyle = '#0b0f12'; g.strokeStyle = FAMILY[f].col; g.lineWidth = 4; g.beginPath(); g.arc(x, y, 40, 0, TAU); g.fill(); g.stroke();
+        tLabel(g, FAMILY[f].name, x, y - 4, FAMILY[f].col, 22); g.font = '700 11px Rajdhani, sans-serif'; g.fillStyle = '#cfd8dc'; g.fillText('武器', x, y + 18);
+      }
+      for (const k in A3) {
+        const [x, y] = A3[k]; g.fillStyle = 'rgba(0,0,0,.6)'; g.strokeStyle = ARMOR_CLASS[k].col; g.lineWidth = 2; g.beginPath(); g.rect(x - 34, y - 16, 68, 32); g.fill(); g.stroke();
+        tLabel(g, ARMOR_CLASS[k].name, x, y, ARMOR_CLASS[k].col, 13);
+      }
+      tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
   { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>。下方有三個出口：左右兩個窄的<b>深淵口 +2 分</b>，正中間寬的<b>地獄門 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了就能再開一包卡包！', draw(g, t) {
       tutArenaBg(g);
@@ -1578,6 +1635,12 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   const bf = bladeFactor(att, Math.atan2(ny, nx));
   const spd = Math.min(650, Math.max(0, attN) * 0.85 + vrel * 0.25 + 70 * att.spin);
   let mult = att.dashMult * (att.inCore ? CORE_DMG : 1);
+  const fam = att.s.w.fam, cm = counterMult(att, def);
+  mult *= cm;
+  if (fam === 'melee') { // combo: consecutive hits within 1s stack +10% each (max 3)
+    att.combo = att.comboT > 0 ? Math.min(3, (att.combo || 0) + 1) : 0; att.comboT = 1;
+    mult *= 1 + 0.1 * att.combo;
+  } else if (fam === 'gun') mult *= clamp(0.75 + Math.max(0, attN) / 650, 0.75, 1.6); // charge bonus: faster impact, harder hit
   if (att.launchedT > 0) mult *= 1.3 * (att.s.w.special === 'launch' ? 1.3 : 1);
   if (def.markT > 0) mult *= 1.5;
   let dmg = spd * 0.03 * (0.6 + att.s.w.atk * 0.25) * bf * mult / defense(def);
@@ -1588,6 +1651,8 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   def.hp -= dmg; def.flash = 0.15; def.hitT = 0.7;
   const mx = (att.x + def.x) / 2, my = (att.y + def.y) / 2;
   if (evaded) SFX.evade(); else SFX.hit(dmg, bf >= 1.1);
+  if (!evaded && cm > 1) addText(def.x, def.y - 50, '剋制！', '#fcee0a', 15); else if (!evaded && cm < 1) addText(def.x, def.y - 50, '被剋制', '#8fa0b0', 13);
+  if (!evaded && att.combo > 0 && fam === 'melee') addText(att.x, att.y - 46, `連擊 x${att.combo + 1}`, '#ff2a55', 14);
   if (evaded) addText(def.x, def.y - 32, '閃避', '#c7f5ff', 16);
   else addText(def.x + rnd(-10, 10), def.y - 30, Math.round(dmg).toString(), bf >= 1.1 ? '#fcee0a' : '#ffffff', bf >= 1.1 ? 22 : 16);
   const big = !evaded && (dmg > def.s.maxHp * 0.1 || bf >= 1.1);
@@ -1598,11 +1663,18 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   // knockback
   let kb = (0.5 + att.s.w.kb * 0.22) * bf * (sameDir ? 1 : 1.2) * att.kbMult * (40 + Math.min(900, vrel) * 0.25 + Math.min(900, Math.max(0, attN)) * 0.35) * (att.launchedT > 0 ? 1.35 : 1);
   if (def.s.a.special === 'shell') kb *= 0.5;
+  if (def.s.a.special === 'deflectA') kb *= 0.7;
+  if (fam === 'blast' && !evaded) { // blast: big knock on the target, recoil on yourself
+    kb *= 1.35; att.vx -= nx * 160 / att.s.mass; att.vy -= ny * 160 / att.s.mass;
+    wave(mx, my, '252,238,10', 120, 9, 0.35); sparks(mx, my, 16, '#ffb000', 320, true);
+  }
   if (def.s.w.special === 'deflect') kb *= 0.7;
   def.vx += nx * kb / def.s.mass; def.vy += ny * kb / def.s.mass;
   // specials
   if (att.s.w.special === 'poison' && !evaded) { def.poison = Math.min(3, def.poison + 1); def.poisonT = 5; }
   if (att.s.w.special === 'drain' && !evaded) def.spin -= 0.035;
+  if (att.s.w.special === 'emp' && !evaded) { def.energy = Math.max(0, def.energy - 12); addText(def.x, def.y - 64, 'EX -12%', '#00f0ff', 13); }
+  if (def.s.a.special === 'thorns' && !evaded && dmg > 2) { const back = dmg * 0.15; att.hp -= back; att.flash = 0.1; }
   if (att.markT <= 0) att.energy = Math.min(100, att.energy + 4);
   if (def.markT <= 0) def.energy = Math.min(100, def.energy + 2);
   G.shake = Math.max(G.shake, Math.min(10, dmg * 0.4));
@@ -1634,14 +1706,15 @@ function stepTop(t, foe, h) {
     return;
   }
   // timers
-  for (const k of ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'nearT']) if (t[k] > 0) t[k] -= h;
+  if (t.s.a.special === 'regen' && t.hp > 0) t.hp = Math.min(t.s.maxHp, t.hp + t.s.maxHp * 0.012 * h);
+  for (const k of ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'nearT', 'comboT']) if (t[k] > 0) t[k] -= h;
   if (t.poisonT > 0) { t.poisonT -= h; if (t.poisonT <= 0) t.poison = 0; }
   if (t.boostT <= 0 && !t.ex) { t.dashMult = 1; t.kbMult = 1; }
 
   // input
   let u = { x: 0, y: 0 };
   if (t.stunT <= 0) u = t.side === 0 ? playerInput(t) : aiInput(t, foe, h);
-  if (t.s.c.homing && !foe.dead && t.side === 0 && (u.x || u.y)) {
+  if ((t.s.c.homing || t.s.w.special === 'homing') && !foe.dead && t.side === 0 && (u.x || u.y)) {
     const d = norm(foe.x - t.x, foe.y - t.y); u = { x: u.x + d.x * 0.18, y: u.y + d.y * 0.18 };
   }
   const ctrl = 0.35 + 0.65 * t.spin;
