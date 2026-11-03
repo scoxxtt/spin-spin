@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.19</title>
+<title>旋刃對決 v0.20</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -119,6 +119,20 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .seg button.on{background:#00f0ff;color:#000}
 .spanel .btn{align-self:center}
 #exBtn.left{left:4%;right:auto}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:.45em;width:100%}
+.slot{position:relative;display:flex;flex-direction:column;align-items:center;padding:.4em .3em .5em;border:1px solid rgba(0,240,255,.5);background:linear-gradient(180deg,rgba(0,240,255,.12),rgba(0,0,0,.35));clip-path:polygon(0 0,100% 0,100% 92%,88% 100%,0 100%);touch-action:none;cursor:grab;user-select:none}
+.slot .sface{width:100%;aspect-ratio:1;object-fit:cover;border-bottom:2px solid #fcee0a;pointer-events:none}
+.slot .stop{position:absolute;top:calc(100% * 0 + .4em);right:.3em;width:2.6em;height:2.6em;pointer-events:none}
+.slot .snum{position:absolute;left:.3em;top:.3em;z-index:2;background:#fcee0a;color:#000;font-weight:900;padding:.05em .45em;font-family:Rajdhani,sans-serif;clip-path:polygon(0 0,100% 0,100% 70%,70% 100%,0 100%)}
+.slot .nm{font-size:.74em;font-weight:700;margin:.35em 0 .15em;text-align:center}
+.slot .chips{flex-direction:column;align-items:stretch;width:100%;gap:.2em}
+.slot .chip{font-size:.62em;padding:.25em .2em}
+.slot .mini{font-size:.52em;margin-top:.25em;color:#fcee0a;text-align:center}
+.row.bench{touch-action:none;cursor:grab;opacity:.85}
+.benchHd{font-size:.75em;color:#00f0ff;letter-spacing:.2em;margin:.6em 0 .1em;border-bottom:1px solid rgba(0,240,255,.3)}
+.dragging{opacity:.35}
+.dropTarget{outline:3px dashed #fcee0a;outline-offset:-3px}
+.dragGhost{position:fixed;z-index:999;pointer-events:none;object-fit:cover;border:2px solid #fcee0a;box-shadow:0 0 1.2em #fcee0a;opacity:.9}
 </style>
 </head>
 <body>
@@ -142,7 +156,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
   <div id="team" class="screen show">
     <h1>旋刃對決</h1>
     <div class="sub" id="teamSub"></div>
-    <div class="hint">點一個零件，再點<b>另一顆陀螺的同類零件</b>即可互換・▲▼ 調整上場順序（前 3 顆出戰）</div>
+    <div class="hint"><b>拖曳頭像</b>交換出場順序或換上待命陀螺・點一個零件，再點<b>另一顆的同類零件</b>即可互換</div>
     <div id="teamList"></div>
     <button class="btn" id="startBtn">確定陣容，查看對手</button>
     <div class="rules">
@@ -211,10 +225,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.17 city-pop / retro-racing battle music, bigger portraits on tops, clearer EX tap-charge feedback
  v0.18 2.5D 45-degree view: tilted arena with wall faces, tops with body thickness, upright labels, input mapped onto the tilted floor
  v0.19 speed feel back (flatter tilt, faster tops, looser basin, faster rail, trails/sparks/speed lines, rotating portrait + blade swooshes), auto camera, EX 0.5s freeze with per-class mini animation, fall-into-pit animation, camera toggle
+ v0.20 drag-and-drop lineup: three big portrait slots + bench
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.19';
+const GAME_VERSION = 'v0.20';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -558,41 +573,92 @@ function drawPreviews(dt) {
 }
 const statLine = b => { const s = stats(b); return `攻${s.w.atk} 退${s.w.kb} 防${s.a.thick} 閃${s.a.facets} 速${s.c.speed}・EX「${s.c.exName}」`; };
 
+function partChips(b, i) {
+  const chips = document.createElement('div'); chips.className = 'chips';
+  [['w', WEAPONS[b.w].name], ['a', ARMORS[b.a].name], ['c', CLASSES[b.c].name]].forEach(([k, label]) => {
+    const ch = document.createElement('button'); ch.className = 'chip ' + k; ch.textContent = label;
+    if (swapSel && swapSel.i === i && swapSel.k === k) ch.classList.add('on');
+    if (swapSel && swapSel.i !== i && swapSel.k === k) ch.classList.add('target');
+    ch.onclick = () => {
+      if (swapSel && swapSel.k === k && swapSel.i !== i) {
+        const a = collection[swapSel.i], tmp = a[k]; a[k] = b[k]; b[k] = tmp; swapSel = null; save(); SFX.init(); SFX.attach();
+      } else swapSel = (swapSel && swapSel.i === i && swapSel.k === k) ? null : { i, k };
+      renderTeam();
+    };
+    chips.appendChild(ch);
+  });
+  return chips;
+}
 function renderTeam() {
   document.getElementById('teamSub').textContent = `收藏 ${collection.length} 顆・累積勝場 ${wins}`;
   const list = document.getElementById('teamList'); list.innerHTML = '';
-  collection.forEach((b, i) => {
-    const row = document.createElement('div'); row.className = 'row' + (i >= 3 ? ' bench' : '');
-    row.insertAdjacentHTML('beforeend', `<div class="badge">${i < 3 ? i + 1 : '—'}</div>`);
-    row.appendChild((() => { const im = document.createElement('img'); im.className = 'face'; im.src = PORTRAIT_SRC[b.c]; return im; })());
+  // three big portrait slots for the lineup
+  const slots = document.createElement('div'); slots.className = 'slots';
+  collection.slice(0, 3).forEach((b, i) => {
+    const el = document.createElement('div'); el.className = 'slot'; el.dataset.idx = i;
+    el.insertAdjacentHTML('beforeend', `<div class="snum">${i + 1}</div><img class="sface" draggable="false" src="${PORTRAIT_SRC[b.c]}">`);
+    const pv = previewCanvas(b, 120); pv.className = 'stop'; el.appendChild(pv);
+    el.insertAdjacentHTML('beforeend', `<div class="nm">${nameOf(b)}</div>`);
+    el.appendChild(partChips(b, i));
+    el.insertAdjacentHTML('beforeend', `<div class="mini">EX「${CLASSES[b.c].exName}」</div>`);
+    slots.appendChild(el);
+  });
+  list.appendChild(slots);
+  if (collection.length > 3) list.insertAdjacentHTML('beforeend', '<div class="benchHd">待命</div>');
+  collection.slice(3).forEach((b, k) => {
+    const i = k + 3;
+    const row = document.createElement('div'); row.className = 'row bench'; row.dataset.idx = i;
+    row.insertAdjacentHTML('beforeend', `<img class="face" draggable="false" src="${PORTRAIT_SRC[b.c]}">`);
     row.appendChild(previewCanvas(b, 120));
     const info = document.createElement('div'); info.className = 'info';
-    info.innerHTML = `<div class="nm">${nameOf(b)}${i >= 3 ? ' <span class="mini">待命</span>' : ''}</div>`;
-    const chips = document.createElement('div'); chips.className = 'chips';
-    [['w', WEAPONS[b.w].name], ['a', ARMORS[b.a].name], ['c', CLASSES[b.c].name]].forEach(([k, label]) => {
-      const ch = document.createElement('button'); ch.className = 'chip ' + k; ch.textContent = label;
-      if (swapSel && swapSel.i === i && swapSel.k === k) ch.classList.add('on');
-      if (swapSel && swapSel.i !== i && swapSel.k === k) ch.classList.add('target');
-      ch.onclick = () => {
-        if (swapSel && swapSel.k === k && swapSel.i !== i) {
-          const a = collection[swapSel.i], tmp = a[k]; a[k] = b[k]; b[k] = tmp; swapSel = null; save(); SFX.init(); SFX.attach();
-        } else swapSel = (swapSel && swapSel.i === i && swapSel.k === k) ? null : { i, k };
-        renderTeam();
-      };
-      chips.appendChild(ch);
-    });
-    info.appendChild(chips);
+    info.innerHTML = `<div class="nm">${nameOf(b)}</div>`;
+    info.appendChild(partChips(b, i));
     info.insertAdjacentHTML('beforeend', `<div class="mini">${statLine(b)}</div>`);
     row.appendChild(info);
-    const ar = document.createElement('div'); ar.className = 'arrows';
-    const up = document.createElement('button'); up.textContent = '▲'; up.disabled = i === 0;
-    const dn = document.createElement('button'); dn.textContent = '▼'; dn.disabled = i === collection.length - 1;
-    up.onclick = () => { [collection[i - 1], collection[i]] = [collection[i], collection[i - 1]]; swapSel = null; save(); renderTeam(); };
-    dn.onclick = () => { [collection[i + 1], collection[i]] = [collection[i], collection[i + 1]]; swapSel = null; save(); renderTeam(); };
-    ar.append(up, dn); row.appendChild(ar);
     list.appendChild(row);
   });
 }
+// drag a slot or bench row onto another to swap them (works with finger or mouse)
+(() => {
+  const list = document.getElementById('teamList');
+  let drag = null;
+  const itemAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest('[data-idx]'); };
+  list.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return; // chips keep working as taps
+    const item = e.target.closest('[data-idx]'); if (!item) return;
+    drag = { item, from: +item.dataset.idx, x0: e.clientX, y0: e.clientY, ghost: null, over: null, id: e.pointerId };
+  });
+  window.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.ghost) {
+      if (len(e.clientX - drag.x0, e.clientY - drag.y0) < 8) return;
+      const r = drag.item.getBoundingClientRect(), img = drag.item.querySelector('img');
+      const gh = document.createElement('img'); gh.src = img.src; gh.className = 'dragGhost';
+      gh.style.width = gh.style.height = Math.min(r.width, 110) + 'px'; document.body.appendChild(gh);
+      drag.ghost = gh; drag.item.classList.add('dragging'); SFX.init(); SFX.flip();
+    }
+    e.preventDefault();
+    const w = parseFloat(drag.ghost.style.width);
+    drag.ghost.style.left = (e.clientX - w / 2) + 'px'; drag.ghost.style.top = (e.clientY - w / 2) + 'px';
+    drag.ghost.style.display = 'none'; const over = itemAt(e.clientX, e.clientY); drag.ghost.style.display = '';
+    if (drag.over && drag.over !== over) drag.over.classList.remove('dropTarget');
+    drag.over = over && over !== drag.item ? over : null;
+    if (drag.over) drag.over.classList.add('dropTarget');
+  }, { passive: false });
+  const end = e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null;
+    if (d.ghost) d.ghost.remove();
+    d.item.classList.remove('dragging');
+    if (d.over) {
+      d.over.classList.remove('dropTarget');
+      const to = +d.over.dataset.idx;
+      [collection[d.from], collection[to]] = [collection[to], collection[d.from]];
+      swapSel = null; save(); SFX.attach(); renderTeam();
+    }
+  };
+  window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+})();
 
 function renderVersus() {
   const list = document.getElementById('vsList'); list.innerHTML = '';
