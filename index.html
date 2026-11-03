@@ -959,7 +959,7 @@ function showPart(k, id) {
 }
 // part detail card: whole top, with one part highlighted (k = 'w' / 'a' / 'c')
 const infoPop = document.getElementById('infoPop');
-infoPop.addEventListener('click', e => { if (e.target.closest('.ipBtn')) return; infoPop.classList.remove('show'); });
+infoPop.addEventListener('click', e => { if (e.target.closest('.ipBtn')) return; infoPop.classList.remove('show'); lpFired = false; });
 function showInfo(b, focus) {
   const rs = k => { const it = INV[k][kk(b, k)], r = b.r ? b.r[k] : it ? it.r : 0, st = b.s ? b.s[k] : it ? it.s : 0; return rarityTag(r, st); };
   const w = WEAPONS[b.w], a = ARMORS[b.a], c = CLASSES[b.c], f = FAMILY[w.fam], ac = ARMOR_CLASS[a.cls];
