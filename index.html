@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.30</title>
+<title>旋刃對決 v0.31</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -123,6 +123,16 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .row canvas{width:3.2em;height:3.2em}
 .vsrow .side.r .face{clip-path:polygon(0 0,100% 0,100% 100%,20% 100%,0 80%)}
 .screen{padding-bottom:3.4em !important}
+.sub,.benchHd,.invTab,.shopBtn,.slot .nm,.slot .mini,.tile .tn,.tile .tst,.eqTag,.matTag,.newTag,.tag,.snum,#exBtn,#menuBtn,#gearBtn,.seg button,.tog,.vs,.vsrow .t,.score,.opt span,.spanel h2,.ipHead .t,.ipHead .s,.ipRow .n,.suN,.coin,.coinGot,#teamSub,.pbar span,.mergeBtn,.selHint,#tutStep,.link{font-style:italic;font-weight:900}
+.benchHd,.sub,#teamSub,.vsrow .t,.score,.spanel h2,.ipRow .n,.ipHead .t,.slot .nm,.tile .tn{text-shadow:2px 2px 0 #05060a}
+.vs{font-size:1.6em;color:#fcee0a;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a,4px 4px 0 #ff2a55}
+#exBtn{text-shadow:2px 2px 0 #05060a}
+.hint,.rules,.tutText,.ipRow .d,.ipRow .k,.ipClose,.tipBubble{font-style:normal}
+#gmPanel{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.8)}
+#gmPanel.show{display:flex}
+#gmPanel .gmIn{width:min(90vw,360px);background:#141a24;border:3px solid #ff2a55;padding:1em;display:flex;flex-direction:column;gap:.45em}
+#gmPanel h3{margin:0 0 .3em;color:#ff2a55;font-style:italic;font-weight:900;text-shadow:2px 2px 0 #05060a}
+#gmPanel .btn{margin:0;font-size:.85em;padding:.5em 1em}
 .screen{background:radial-gradient(rgba(0,240,255,.10) 1.1px,transparent 1.6px) 0 0/10px 10px,radial-gradient(ellipse at 50% 12%,rgba(0,240,255,.14) 0%,#07090c 62%)}
 h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a,5px 5px 0 #ff2a55,-3px 0 #00f0ff;transform:skew(-6deg)}
 .btn{box-shadow:inset 0 0 0 3px #05060a;font-style:italic;font-weight:900}
@@ -256,9 +266,9 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
       ・打贏 +100 金幣（每日首勝再 +50），打輸 +20；單抽 100、十連 1000 多送 1 抽且保底紅色以上<br>
       ・開場：在場地上按下的位置就是落點，往後拉決定方向和力道，放開發射。電腦落點隨機<br>
       ・對戰：按住拖曳移動（電腦可用 WASD / 方向鍵，空白鍵放 EX）<br>
-      ・EX：點畫面任何地方充能（拖曳移動時用另一隻手指點也可以），或貼著上半圈牆邊衝上貓耳形加速軌道累積；衝到 12 點鐘的開口會直衝場地中心<br>
+      ・EX：點畫面任何地方充能（拖曳移動時用另一隻手指點也可以），或貼著上半圈牆邊衝上貓耳形加速軌道 WORMHOLE累積；衝到 12 點鐘的開口會直衝場地中心<br>
       ・場地中間往下凹，陀螺會滑回中心；待在中央戰心圈裡 EX 累積更快、撞擊傷害 +20%<br>
-      ・下方三個出口前都有台階，只有被撞飛才會掉進去：左右深淵口 +2、中間地獄門 +3；爆甲 +1；停轉平局
+      ・下方三個出口前都有台階，只有被撞飛才會掉進去：左右 BLOOD 出口 +2、中間 DEAD 出口 +3；爆甲 +1；停轉平局
     </div>
     <button class="link" id="tutBtn">玩法教學</button>
     <button class="link" id="resetBtn">重置全部進度</button>
@@ -295,6 +305,14 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
 </div>
 
 <div id="infoPop"></div>
+<div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
+  <button class="btn" data-gm="coin">金幣 +10000</button>
+  <button class="btn" data-gm="cat">取得機甲貓咪</button>
+  <button class="btn" data-gm="all">取得全部零件</button>
+  <button class="btn" data-gm="mat">全部零件 +3 素材（測試合成）</button>
+  <button class="btn" data-gm="pcat">下一次付費抽必出貓咪</button>
+  <button class="btn" data-gm="pyel">下一次付費抽必出黃色</button>
+  <button class="btn ghost" data-gm="close">關閉</button></div></div>
 <script>
 /* 旋刃對決 — version history (one step per update in the design chat)
  v0.01 first prototype: arena, aura ring, 12 o'clock launch, hell gate, 3 rounds, 6 builds, EX, AI
@@ -327,11 +345,33 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
  v0.28 motorcycle-style engine note for tops (rev with speed, lumpy idle, backfire pops, rev-up launch), crystal ore currency icon, comic onomatopoeia bursts, halftone rings, manga focus lines, hit bounce
  v0.29 hidden class mech-cat (paid draws only, 2% with pity at 40, +10% base), EX midnight zoomies (3 s zigzag dash, faster after each wall bounce, +30% damage), gold hidden-class reveal
  v0.30 comic-book look everywhere: cel-shaded arena with halftone dots and ink outlines, hatched walls, inked rails / rim / core, inked tops, 45-degree tops in tutorial / pack / lineup, comic HUD score, halftone screens, inked buttons and titles
+ v0.31 WORMHOLE painted on the back wall, BLOOD +2 / DEAD +3 painted on the floor at the exits, brighter cel-shaded floor (trial), comic italic type across the UI and canvas labels, hidden GM panel (tap the version 7 times)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.30';
+const GAME_VERSION = 'v0.31';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
+// hidden GM panel: tap the version text 7 times within 3 seconds
+(() => {
+  const vf = document.getElementById('verFoot'); vf.style.pointerEvents = 'auto'; vf.style.left = '30%'; vf.style.right = '30%'; vf.style.padding = '.6em 0';
+  let taps = [];
+  vf.addEventListener('click', () => {
+    const now = Date.now(); taps = taps.filter(t => now - t < 3000); taps.push(now);
+    if (taps.length >= 7) { taps = []; document.getElementById('gmPanel').classList.add('show'); }
+  });
+  document.getElementById('gmPanel').addEventListener('click', e => {
+    const b = e.target.closest('[data-gm]'); if (!b && e.target.id !== 'gmPanel') return;
+    const k = b ? b.dataset.gm : 'close', msg = m => toast('GM：' + m);
+    if (k === 'coin') { INV.coins += 10000; msg('金幣 +10000'); }
+    else if (k === 'cat') { addPart('c', 'mechcat', 2, 0); msg('已取得機甲貓咪'); }
+    else if (k === 'all') { for (const kk of 'cwa') for (const id in KIND[kk]) if (!INV[kk][id]) addPart(kk, id, 0, 0); msg('已取得全部零件'); }
+    else if (k === 'mat') { for (const kk of 'cwa') for (const id in INV[kk]) if (INV[kk][id].s < 3) INV[kk][id].n += 3; msg('全部零件 +3 素材'); }
+    else if (k === 'pcat') { INV.pity.cat = 39; msg('下一次付費抽必出貓咪'); }
+    else if (k === 'pyel') { INV.pity.y = 59; msg('下一次付費抽必出黃色'); }
+    if (k !== 'close') { save(); if (screens.team.classList.contains('show')) renderTeam(); }
+    else document.getElementById('gmPanel').classList.remove('show');
+  });
+})();
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
 // arena: 3:2 ellipse (wider than tall). R is kept as the long radius for sizing
@@ -352,9 +392,9 @@ let viewK = 1; // the squash currently applied while drawing (1 for flat views l
 function upright(g, x, y, fn) { g.save(); g.translate(x, y); g.scale(1, 1 / viewK); fn(); g.restore(); }
 // three exits on the lower wall: the wide hell gate (+3) at 6 o'clock and two narrow abyss mouths (+2) at the lower corners
 const GATES = [
-  { a: Math.PI / 2, half: Math.asin(GW / AX), pts: 3, name: '地獄門', col: '255,0,60', txt: '#ff2a55' },
-  { a: Math.PI / 2 + 0.98, half: 0.15, pts: 2, name: '深淵口', col: '255,40,200', txt: '#ff4fd8' },
-  { a: Math.PI / 2 - 0.98, half: 0.15, pts: 2, name: '深淵口', col: '255,40,200', txt: '#ff4fd8' },
+  { a: Math.PI / 2, half: Math.asin(GW / AX), pts: 3, name: 'DEAD', col: '255,0,60', txt: '#ff2a55' },
+  { a: Math.PI / 2 + 0.98, half: 0.15, pts: 2, name: 'BLOOD', col: '255,40,200', txt: '#ff4fd8' },
+  { a: Math.PI / 2 - 0.98, half: 0.15, pts: 2, name: 'BLOOD', col: '255,40,200', txt: '#ff4fd8' },
 ];
 for (const gt of GATES) { gt.x = CX + Math.cos(gt.a) * AX; gt.y = CY + Math.sin(gt.a) * BY; }
 const GATE_A = GATES[0].a, GATE_HALF = GATES[0].half, GATE = GATES[0];
@@ -430,7 +470,7 @@ function counterMult(att, def) {
 const CLASSES = {
   berserker: { name: '狂戰士', ch: '狂', color: '#ff4d5e', speed: 1.25, decay: 1.3, hp: 0.95, gain: 1, ex: 'dash', exName: '狂暴衝鋒', exDesc: '連撞三次，傷害遞增' },
   guardian:  { name: '守護者', ch: '守', color: '#4da3ff', speed: 0.8, decay: 0.9, hp: 1.15, gain: 1, ex: 'shield', exName: '聖域壁壘', exDesc: '3 秒護盾反彈撞擊', pull: 1.7 },
-  assassin:  { name: '刺客', ch: '刺', color: '#b066ff', speed: 1.15, decay: 1.0, hp: 0.85, gain: 1, ex: 'shadow', exName: '影襲', exDesc: '瞬移背後往地獄門撞' },
+  assassin:  { name: '刺客', ch: '刺', color: '#b066ff', speed: 1.15, decay: 1.0, hp: 0.85, gain: 1, ex: 'shadow', exName: '影襲', exDesc: '瞬移背後往 DEAD 出口撞' },
   mage:      { name: '術士', ch: '術', color: '#29e0d0', speed: 1.0, decay: 1.0, hp: 0.95, gain: 1.5, ex: 'warp', exName: '環域扭曲', exDesc: '把對手強制彈開並暈眩' },
   hunter:    { name: '獵人', ch: '獵', color: '#ffa53d', speed: 1.05, decay: 1.0, hp: 1.0, gain: 1, ex: 'mark', exName: '鎖定標記', exDesc: '5 秒增傷且封鎖對手 EX', homing: true },
   mechcat:   { name: '機甲貓咪', ch: '貓', color: '#ff9f1a', speed: 1.2, decay: 0.9, hp: 1.1, gain: 1.1, ex: 'zoomies', exName: '半夜暴衝', exDesc: '3 秒隨機折線暴衝，撞牆越撞越快，撞擊傷害 +30%', hidden: true },
@@ -1228,7 +1268,7 @@ function drawCard(g, card, sl, time, appear) {
     g.save(); g.translate(w / 2 - w * 0.17, -h / 2 + 8 + h * 0.5 - w * 0.17); const z2 = w / 200; g.scale(z2, z2);
     drawTop45(g, b, time * 6 * WEAPONS[b.w].dir, 0.9); g.restore();
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillStyle = '#fff'; g.font = `900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.fillText(nameOf(b), 0, h * 0.13);
+    g.font = `italic 900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.lineJoin = 'round'; g.lineWidth = w * 0.03; g.strokeStyle = '#05060a'; g.strokeText(nameOf(b), 0, h * 0.13); g.fillStyle = '#fff'; g.fillText(nameOf(b), 0, h * 0.13);
     const isz = w * 0.27;
     [['w', b.w, FAMILY[WEAPONS[b.w].fam].col], ['a', b.a, ARMOR_CLASS[ARMORS[b.a].cls].col]].forEach(([k, id, col], i) => {
       const ix = (i - 0.5) * (isz + w * 0.08) - isz / 2, iy = h * 0.185;
@@ -1263,8 +1303,8 @@ function drawPack(dt) {
   }
   g.restore();
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = '#fff'; g.font = '900 30px Rajdhani, sans-serif'; g.fillText(PK.title, PW / 2, 70);
-  const prompt = (txt) => { g.globalAlpha = 0.65 + 0.35 * Math.sin(time * 5); g.fillStyle = '#fcee0a'; g.font = '700 20px Rajdhani, sans-serif'; g.fillText(txt, PW / 2, 700); g.globalAlpha = 1; };
+  g.font = 'italic 900 34px Rajdhani, sans-serif'; g.lineJoin = 'round'; g.lineWidth = 7; g.strokeStyle = '#05060a'; g.strokeText(PK.title, PW / 2 + 3, 73); g.strokeText(PK.title, PW / 2, 70); g.fillStyle = '#ff2a55'; g.fillText(PK.title, PW / 2 + 3, 73); g.fillStyle = '#fff'; g.fillText(PK.title, PW / 2, 70);
+  const prompt = (txt) => { g.globalAlpha = 0.65 + 0.35 * Math.sin(time * 5); g.fillStyle = '#fcee0a'; g.font = 'italic 900 21px Rajdhani, sans-serif'; g.fillText(txt, PW / 2, 700); g.globalAlpha = 1; };
   if (PK.st === 'drop' || PK.st === 'pack') {
     let cy = 410;
     if (PK.st === 'drop') { const k = Math.min(1, PK.t / 0.7); cy = -300 + (410 + 300) * easeBack(k); if (k >= 1) { PK.st = 'pack'; PK.t = 0; } }
@@ -1358,7 +1398,7 @@ function drawTop45(g, b, ang, spin) {
   g.save(); g.scale(1, 0.8); drawTop(g, b, ang, { spin: spin == null ? 1 : spin }); g.restore();
 }
 function tTop(g, b, x, y, ang, sc) { g.save(); g.translate(x, y); g.scale(sc || 1.3, sc || 1.3); drawTop45(g, b, ang); g.restore(); }
-function tLabel(g, txt, x, y, col, size) { g.font = `900 ${size || 22}px Rajdhani, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 5; g.strokeStyle = 'rgba(0,0,0,.8)'; g.strokeText(txt, x, y); g.fillStyle = col || '#fff'; g.fillText(txt, x, y); }
+function tLabel(g, txt, x, y, col, size) { g.font = `italic 900 ${size || 22}px Rajdhani, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 5; g.strokeStyle = 'rgba(0,0,0,.8)'; g.strokeText(txt, x, y); g.fillStyle = col || '#fff'; g.fillText(txt, x, y); }
 function tFinger(g, x, y, press) { g.fillStyle = `rgba(255,255,255,${press ? 0.55 : 0.3})`; g.beginPath(); g.arc(x, y, press ? 15 : 18, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2.5; g.stroke(); }
 function tWave(g, x, y, k, col) { if (k < 0 || k > 1) return; g.strokeStyle = `rgba(${col},${1 - k})`; g.lineWidth = 8 * (1 - k) + 1; g.beginPath(); g.arc(x, y, 10 + k * 80, 0, TAU); g.stroke(); }
 const TUT = [
@@ -1399,7 +1439,7 @@ const TUT = [
       g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 2; g.beginPath(); g.arc(jx, jy, 46, 0, TAU); g.stroke();
       tFinger(g, jx + n.x * 32, jy + n.y * 32, true);
   } },
-  { title: '光環軌道・EX', text: '上半圈牆邊有兩段像貓耳的<b>加速軌道</b>：陀螺貼牆滑過去會被吸上去高速衝刺並累積 EX，衝到 12 點鐘的<b>開口會直衝場地中心</b>，在中間的對手會被正面撞上。也可以<b>連點畫面任何地方</b>充能，集滿再按 EX 按鈕發動職業技能。', draw(g, t) {
+  { title: '光環軌道・EX', text: '上半圈牆邊有兩段像貓耳的<b>加速軌道 WORMHOLE</b>：陀螺貼牆滑過去會被吸上去高速衝刺並累積 EX，衝到 12 點鐘的<b>開口會直衝場地中心</b>，在中間的對手會被正面撞上。也可以<b>連點畫面任何地方</b>充能，集滿再按 EX 按鈕發動職業技能。', draw(g, t) {
       tutArenaBg(g);
       const ph = t % 2.6; let x, y;
       const RL = RAILS[0];
@@ -1440,7 +1480,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>。下方有三個出口：左右兩個窄的<b>深淵口 +2 分</b>，正中間寬的<b>地獄門 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了就能再開一包卡包！', draw(g, t) {
+  { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>。下方有三個出口：左右兩個窄的 <b>BLOOD 出口 +2 分</b>，正中間寬的 <b>DEAD 出口 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了就能再開一包卡包！', draw(g, t) {
       tutArenaBg(g);
       const ph = t % 3.6, Ax = CX, B0 = { x: CX + 6, y: CY + 92 };
       let ay = CY - 40, bx = B0.x, by = B0.y, bs = 1;
@@ -1448,7 +1488,7 @@ const TUT = [
       else { ay = B0.y - 54 - 10 * easeOut(clamp((ph - 0.7) / 0.4, 0, 1)); const m = clamp((ph - 0.7) / 0.6, 0, 1); by = B0.y + (BY + 8 - 92) * easeOut(m); bx = B0.x + 4 * m; if (m >= 1) bs = Math.max(0, 1 - (ph - 1.3) / 0.4); tWave(g, CX, B0.y - 27, (ph - 0.7) / 0.5, '252,238,10'); }
       if (bs > 0) tTop(g, TB, bx, by, -t * 6, bs);
       tTop(g, TA, Ax, ay, t * 18);
-      if (ph > 1.3) { tWave(g, GATE.x, GATE.y, (ph - 1.3) / 0.6, '255,90,40'); tLabel(g, '地獄門 +3', CX, CY + 40, '#ff6a4a', 34); }
+      if (ph > 1.3) { tWave(g, GATE.x, GATE.y, (ph - 1.3) / 0.6, '255,90,40'); tLabel(g, 'DEAD +3', CX, CY + 40, '#ff6a4a', 34); }
       if (ph > 2.1) tLabel(g, '爆甲 +1', CX, CY - 40, '#fcee0a', 30);
   } },
 ];
@@ -2518,7 +2558,7 @@ function drawArenaStatic(g, noWall) {
   // bowl floor (radial gradients squashed into the ellipse)
   g.save(); g.translate(CX, CY); g.scale(1, BY / AX);
   const fl = g.createRadialGradient(-30, -60, 10, 0, 0, AX + 6);
-  fl.addColorStop(0, '#16303a'); fl.addColorStop(0.55, '#0d1b22'); fl.addColorStop(1, '#070c0f');
+  fl.addColorStop(0, '#2a7383'); fl.addColorStop(0.55, '#1d5a68'); fl.addColorStop(1, '#123e49');
   g.fillStyle = fl; g.beginPath(); g.arc(0, 0, AX + 2, 0, TAU); g.fill();
   g.lineWidth = 1 * AX / BY;
   for (let r = 40; r < AX; r += 36) {
@@ -2557,6 +2597,20 @@ function drawArenaStatic(g, noWall) {
     g.fillStyle = pit; g.fill();
   }
 }
+// text painted flat on the floor along an arc (reads left to right for the viewer)
+function paintArc(g, txt, a, r, size, col, alpha) {
+  g.save(); g.font = `italic 900 ${size}px Rajdhani, "Arial Black", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  const ws = [...txt].map(ch => g.measureText(ch).width * 1.02), tot = ws.reduce((x, y) => x + y, 0);
+  let ang = a + tot / 2 / r;
+  [...txt].forEach((ch, i) => {
+    const am = ang - ws[i] / 2 / r, x = CX + Math.cos(am) * r, y = CY + Math.sin(am) * r;
+    g.save(); g.translate(x, y); g.rotate(am - Math.PI / 2); g.transform(1, 0, -0.2, 1, 0, 0);
+    g.globalAlpha = alpha * 0.8; g.lineWidth = size * 0.22; g.strokeStyle = '#05060a'; g.strokeText(ch, 0, 0);
+    g.globalAlpha = alpha; g.fillStyle = col; g.fillText(ch, 0, 0); g.restore();
+    ang -= ws[i] / r;
+  });
+  g.restore();
+}
 function drawArena(g, time) {
   const ell = (m, a0, a1, ccw) => g.ellipse(CX, CY, AX + m, BY + m, 0, a0 === undefined ? 0 : a0, a1 === undefined ? TAU : a1, !!ccw);
   // rim glow (skips the exits)
@@ -2589,10 +2643,8 @@ function drawArena(g, time) {
     for (let k = 0.7; k < 0.97; k += 0.08) { g.beginPath(); g.ellipse(CX, CY, AX * k, BY * k, 0, gt.a - 0.6, gt.a + 0.6); g.stroke(); }
     g.lineWidth = 4; g.strokeStyle = shade(gt.txt, 0.2); g.beginPath(); ell(-4, gt.a - 0.6, gt.a + 0.6); g.stroke();
     g.restore();
-    // label outside the wall
-    const lx = CX + Math.cos(gt.a) * (AX + 26), ly = CY + Math.sin(gt.a) * (BY + 24);
-    g.fillStyle = gt.txt; g.font = '900 14px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    upright(g, lx, ly, () => { g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.9)'; g.strokeText(`${gt.name} +${gt.pts}`, 0, 0); g.fillText(`${gt.name} +${gt.pts}`, 0, 0); });
+    // label painted on the floor step, following the curve of the exit like a road marking
+    paintArc(g, `${gt.name} +${gt.pts}`, gt.a, AX * (gt.pts === 3 ? 0.83 : 0.86), gt.pts === 3 ? 30 : 21, gt.txt, 0.55 + 0.25 * pulse);
   }
   // battle heart (core ring)
   {
@@ -2632,8 +2684,7 @@ function drawArena(g, time) {
   g.save(); g.shadowColor = '#fcee0a'; g.shadowBlur = 12; g.fillStyle = `rgba(252,238,10,${0.55 + 0.45 * pu})`;
   for (let i = 0; i < 2; i++) { const y = tipY + 10 + i * 12 + pu * 4; g.beginPath(); g.moveTo(CX - 9, y); g.lineTo(CX, y + 8); g.lineTo(CX + 9, y); g.lineTo(CX, y + 3); g.closePath(); g.fill(); }
   g.restore();
-  g.fillStyle = '#fcee0a'; g.font = '700 12px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  upright(g, CX, CY - BY + 40, () => g.fillText('加速軌道', 0, 0));
+
 }
 
 function drawBar(g, x, y, w, h, v, c1, c2) {
@@ -2660,7 +2711,7 @@ function drawHUD(g) {
     g.strokeStyle = '#05060a'; g.lineWidth = 6; g.stroke(); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke();
     if (t.dead || t.falling) { g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(px, 88, 58, 58); }
     const x = align === 'left' ? x0 + 66 : x0;
-    g.textAlign = align; g.fillStyle = col; g.font = 'bold 16px Rajdhani, sans-serif';
+    g.textAlign = align; g.fillStyle = col; g.font = 'italic 900 17px Rajdhani, sans-serif';
     g.fillText(`${label}・${CLASSES[t.build.c].name}`, align === 'left' ? x : x + 124, 98);
     g.font = '11px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.55)';
     g.fillText(`${t.s.w.name}・${t.s.a.name}・${t.s.c.name}`, align === 'left' ? x : x + 124, 118);
@@ -2714,6 +2765,16 @@ function drawFarWall(g) {
     g.restore();
     g.strokeStyle = 'rgba(0,240,255,.75)'; g.lineWidth = 2; g.beginPath(); g.ellipse(CX, CY - 2, AX + 1, AX + 1, 0, a0, a1); g.stroke();
   }
+  // WORMHOLE lettered on the inner wall face above the speed rails
+  { const dz2 = WALL_H / VIEW_K, txt = 'WORMHOLE', fs = dz2 * 0.78, span = 0.95, n = txt.length;
+    g.save(); g.font = `italic 900 ${fs}px Rajdhani, "Arial Black", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
+    for (let i = 0; i < n; i++) {
+      const t = Math.PI * 1.5 + (i - (n - 1) / 2) / (n - 1) * span, x = CX + Math.cos(t) * (AX + 1), y = CY + Math.sin(t) * (AX + 1) - dz2 * 0.12;
+      g.save(); g.translate(x, y); g.scale(Math.max(0.35, Math.abs(Math.sin(t))) * 0.9, 1); g.transform(1, 0, -0.18, 1, 0, 0);
+      g.lineWidth = fs * 0.2; g.strokeStyle = '#05060a'; g.strokeText(txt[i], 0, 0);
+      g.fillStyle = '#fcee0a'; g.fillText(txt[i], 0, 0); g.fillStyle = 'rgba(255,42,85,.9)'; g.fillRect(-fs * 0.3, -fs * 0.08, fs * 0.6, fs * 0.05); g.restore();
+    }
+    g.restore(); }
   drawRim(g, Math.PI, TAU);
 }
 function drawRim(g, A0, A1) {
@@ -2874,7 +2935,7 @@ function render() {
       g.fillStyle = '#00f0ff'; g.beginPath();
       g.moveTo(p.x + d.x * (L + 14), p.y + d.y * (L + 14));
       g.lineTo(p.x + d.x * L - d.y * 9, p.y + d.y * L + d.x * 9); g.lineTo(p.x + d.x * L + d.y * 9, p.y + d.y * L - d.x * 9); g.fill();
-      upright(g, p.x, p.y - 60, () => { g.font = 'bold 16px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillText(`力道 ${Math.round(pw * 100)}%`, 0, 0); });
+      upright(g, p.x, p.y - 60, () => { g.font = 'italic 900 17px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillText(`力道 ${Math.round(pw * 100)}%`, 0, 0); });
     }
   }
   for (const t of G.tops) {
@@ -2904,8 +2965,8 @@ function render() {
   }
   g.globalAlpha = 1;
   for (const s of G.texts) {
-    g.globalAlpha = clamp(s.t * 2, 0, 1); g.font = `900 ${Math.round(s.size * (1 + 0.7 * Math.max(0, 1 - s.age * 7)))}px Rajdhani, sans-serif`; g.textAlign = 'center';
-    upright(g, s.x, s.y, () => { g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeText(s.text, 0, 0); g.fillStyle = s.color; g.fillText(s.text, 0, 0); });
+    g.globalAlpha = clamp(s.t * 2, 0, 1); g.font = `italic 900 ${Math.round(s.size * (1 + 0.7 * Math.max(0, 1 - s.age * 7)))}px Rajdhani, sans-serif`; g.textAlign = 'center'; g.lineJoin = 'round';
+    upright(g, s.x, s.y, () => { g.lineWidth = 5; g.strokeStyle = '#05060a'; g.strokeText(s.text, 0, 0); g.fillStyle = s.color; g.fillText(s.text, 0, 0); });
   }
   g.globalAlpha = 1;
   drawFocus(g); drawComics(g);
@@ -2981,8 +3042,8 @@ function render() {
     g.fillStyle = 'rgba(0,0,0,.72)'; g.fillRect(0, CY - 45, W, 90);
     g.fillStyle = '#fcee0a'; g.fillRect(0, CY - 47, W, 3); g.fillRect(0, CY + 44, W, 3);
     g.fillStyle = '#00f0ff'; g.fillRect(0, CY - 43, W * 0.18, 2); g.fillRect(W * 0.82, CY + 41, W * 0.18, 2);
-    g.font = '900 38px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.8)'; g.strokeText(b.text, CX, CY); g.fillStyle = b.color; g.fillText(b.text, CX, CY);
+    g.font = 'italic 900 42px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.lineWidth = 9; g.strokeStyle = '#05060a'; g.strokeText(b.text, CX + 4, CY + 4); g.strokeText(b.text, CX, CY); g.fillStyle = '#ff2a55'; g.fillText(b.text, CX + 4, CY + 4); g.fillStyle = b.color; g.fillText(b.text, CX, CY);
     g.globalAlpha = 1;
   }
 }
