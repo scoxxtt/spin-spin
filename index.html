@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.14</title>
+<title>旋刃對決 v0.15</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -105,11 +105,14 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .face.sm{width:3.8em;height:3.8em}
 .row canvas{width:3.2em;height:3.2em}
 .vsrow .side.r .face{clip-path:polygon(0 0,100% 0,100% 100%,20% 100%,0 80%)}
+.screen{padding-bottom:3.4em !important}
+#verFoot{position:absolute;left:0;right:0;bottom:.35em;text-align:center;font-size:.55em;color:rgba(255,255,255,.35);letter-spacing:.08em;pointer-events:none;z-index:60;font-family:Rajdhani,sans-serif}
 </style>
 </head>
 <body>
 <div id="wrap">
   <canvas id="cv"></canvas>
+  <div id="verFoot"></div>
   <button id="exBtn">EX</button>
   <button id="menuBtn">選單</button>
   <button id="muteBtn">音效 開</button>
@@ -181,10 +184,12 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.12 cat-ear rail with an opening toward the centre, Cyberpunk yellow/cyan style
  v0.13 class portraits, EX cut-in
  v0.14 mobile sound fix (iOS unlock, silent switch, resume), version label
+ v0.15 version shown as a small footer at the bottom of every screen
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.14';
+const GAME_VERSION = 'v0.15';
+document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
 // arena: 3:2 ellipse (wider than tall). R is kept as the long radius for sizing
@@ -502,7 +507,7 @@ function drawPreviews(dt) {
 const statLine = b => { const s = stats(b); return `攻${s.w.atk} 退${s.w.kb} 防${s.a.thick} 閃${s.a.facets} 速${s.c.speed}・EX「${s.c.exName}」`; };
 
 function renderTeam() {
-  document.getElementById('teamSub').textContent = `收藏 ${collection.length} 顆・累積勝場 ${wins}・${GAME_VERSION}`;
+  document.getElementById('teamSub').textContent = `收藏 ${collection.length} 顆・累積勝場 ${wins}`;
   const list = document.getElementById('teamList'); list.innerHTML = '';
   collection.forEach((b, i) => {
     const row = document.createElement('div'); row.className = 'row' + (i >= 3 ? ' bench' : '');
@@ -846,7 +851,7 @@ const TUT = [
 function showTutorial(done) { tutIdx = 0; tutT = 0; tutDone = done; renderTutStep(); show('tutorial'); }
 function renderTutStep() {
   const st = TUT[tutIdx];
-  document.getElementById('tutStep').textContent = `玩法教學 ${tutIdx + 1} / ${TUT.length}・${GAME_VERSION}`;
+  document.getElementById('tutStep').textContent = `玩法教學 ${tutIdx + 1} / ${TUT.length}`;
   document.getElementById('tutTitle').textContent = st.title;
   document.getElementById('tutText').innerHTML = st.text;
   document.getElementById('tutNext').textContent = tutIdx === TUT.length - 1 ? '開始！' : '下一步';
@@ -1734,7 +1739,6 @@ function drawHUD(g) {
   // legend
   g.textAlign = 'left'; g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.35)';
   g.fillText('黃：血量　青：轉速　白：EX', 22, 194);
-  g.textAlign = 'right'; g.fillText(GAME_VERSION, W - 22, 194);
   // bottom hints
   g.textAlign = 'center'; g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.5)';
   if (G.phase === 'launch') { g.fillText('按下的位置就是落點・往後拉決定方向和力道・放開發射', CX, 752); g.fillText('電腦的落點已經出現，瞄準它開場一擊！', CX, 776); }
