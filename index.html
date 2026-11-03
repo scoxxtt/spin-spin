@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.33</title>
+<title>SPIN! SPIN! v0.34</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -200,6 +200,10 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
 .matTag{position:absolute;top:.2em;left:.2em;background:#00f0ff;color:#10101c;font-size:.55em;padding:.05em .35em}
 .tst.mh{font-size:.55em;color:#9fb0c0}
 .matGhost{position:fixed;z-index:70;pointer-events:none;opacity:.9;transform:scale(1.08) rotate(-4deg);box-shadow:0 0 1.5em rgba(0,240,255,.8)}
+.slot.dropHint{outline:2px dashed rgba(252,238,10,.6);outline-offset:-4px}
+.slot.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
+.slot.equipFlash{animation:eqf .5s}
+@keyframes eqf{0%{filter:brightness(2.2)}100%{filter:none}}
 .tile.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
 .starUp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,5,10,.75);animation:popIn .2s ease-out}
 .starUp.out{opacity:0;transition:opacity .3s}
@@ -258,7 +262,7 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
     <h1>SPIN! SPIN!</h1>
     <div class="sub" id="teamSub"></div>
     <div id="shop"></div>
-    <div class="hint"><b>點頭像再點另一個</b>交換順序（也可拖曳）・<b>點出戰格的零件，再點零件庫</b>即可換裝・<b>長按</b>看詳情</div>
+    <div class="hint"><b>點頭像再點另一個</b>交換順序（也可拖曳）・<b>把零件庫的角色或零件拖到出戰格</b>（或點出戰格零件再點零件庫）即可換裝・<b>長按</b>看詳情</div>
     <div id="teamList"></div>
     <button class="btn" id="startBtn">確定陣容，查看對手</button>
     <div class="rules">
@@ -352,10 +356,11 @@ h1{font-style:italic;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,
  v0.31 WORMHOLE painted on the back wall, BLOOD +2 / DEAD +3 painted on the floor at the exits, brighter cel-shaded floor (trial), comic italic type across the UI and canvas labels, hidden GM panel (tap the version 7 times)
  v0.32 renamed SPIN! SPIN!; arena signage as sign plates (WORMHOLE tunnel sign, BLOOD / DEAD floor plates with chevrons, CORE plate); simultaneous hidden launch with 3-2-1 SPIN! SPIN! call; English comic arena HUD; readable result screen; stage guide tutorial page
  v0.33 BLOOD plates follow the rim; italics only for titles / scores / show text (buttons, settings, options, parts upright); hype launch call (announcer voice + drums, air horn, crowd)
+ v0.34 drag a class / weapon / armor from the parts inventory onto a lineup slot to equip it
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.33';
+const GAME_VERSION = 'v0.34';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -987,7 +992,7 @@ function renderTeam() {
       ${ready ? '<button class="mergeBtn">合成</button>' : ''}`;
     if (ready) t.querySelector('.mergeBtn').onclick = ev => { ev.stopPropagation(); doMerge(k, id); };
     t.onclick = () => {
-      if (lpFired) return;
+      if (lpFired || invDragged) { invDragged = false; return; }
       if (e.isNew) { e.isNew = 0; save(); }
       if (swapSel && swapSel.k === k) { equip(swapSel.i, k, id); swapSel = null; invSel = null; save(); SFX.init(); SFX.attach(); }
       else invSel = invSel && invSel.k === k && invSel.id === id ? null : { k, id };
@@ -1029,6 +1034,44 @@ function renderTeam() {
     d.ghost.style.display = 'none'; const over = document.elementFromPoint(e.clientX, e.clientY); d.ghost.remove();
     const hit = over && over.closest('.tile:not(.mat)');
     if (hit && hit.dataset.ik === d.k && hit.dataset.iid === d.id) doMerge(d.k, d.id);
+  };
+  window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+})();
+// drag a part tile from the inventory onto a lineup slot to equip it there
+let invDragged = false;
+(() => {
+  const list = document.getElementById('teamList'); let dd = null;
+  const slotAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest('.slot[data-idx]'); };
+  list.addEventListener('pointerdown', e => {
+    const t = e.target.closest('.tile[data-iid]'); if (!t || e.target.closest('.mergeBtn')) return;
+    dd = { el: t, k: t.dataset.ik, id: t.dataset.iid, x0: e.clientX, y0: e.clientY, pid: e.pointerId, ghost: null, over: null };
+  });
+  window.addEventListener('pointermove', e => {
+    if (!dd || e.pointerId !== dd.pid) return;
+    if (!dd.ghost) {
+      if (len(e.clientX - dd.x0, e.clientY - dd.y0) < 10) return;
+      const r = dd.el.getBoundingClientRect(), gh = dd.el.cloneNode(true); gh.classList.add('matGhost'); gh.style.width = r.width + 'px';
+      document.body.appendChild(gh); dd.ghost = gh; dd.w = r.width; dd.el.style.opacity = 0.35; invDragged = true; SFX.init(); SFX.flip();
+      list.querySelectorAll('.slot').forEach(sl => sl.classList.add('dropHint'));
+    }
+    e.preventDefault(); dd.ghost.style.left = (e.clientX - dd.w / 2) + 'px'; dd.ghost.style.top = (e.clientY - dd.w / 2) + 'px';
+    dd.ghost.style.display = 'none'; const over = slotAt(e.clientX, e.clientY); dd.ghost.style.display = '';
+    if (dd.over && dd.over !== over) dd.over.classList.remove('dropTarget');
+    dd.over = over; if (over) over.classList.add('dropTarget');
+  }, { passive: false });
+  const end = e => {
+    if (!dd || e.pointerId !== dd.pid) return;
+    const d = dd; dd = null; d.el.style.opacity = '';
+    list.querySelectorAll('.slot').forEach(sl => sl.classList.remove('dropHint', 'dropTarget'));
+    if (!d.ghost) return;
+    d.ghost.remove();
+    if (d.over) {
+      const i = +d.over.dataset.idx, e2 = INV[d.k][d.id];
+      if (e2 && e2.isNew) e2.isNew = 0;
+      equip(i, d.k, d.id); swapSel = null; invSel = null; save(); SFX.attach();
+      renderTeam(); invDragged = false;
+      const sl2 = document.querySelector(`.slot[data-idx="${i}"]`); if (sl2) { sl2.classList.add('equipFlash'); setTimeout(() => sl2.classList.remove('equipFlash'), 500); }
+    } else setTimeout(() => { invDragged = false; }, 50);
   };
   window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
 })();
