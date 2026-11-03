@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>旋刃對決 v0.27</title>
+<title>旋刃對決 v0.28</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -162,6 +162,8 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .tile .tp.a{color:#fcee0a}
 .newTag{position:absolute;top:.2em;right:.2em;background:#ff2a55;color:#fff;font-size:.5em;padding:.05em .35em;font-family:Rajdhani,sans-serif}
 .coin{color:#fcee0a;font-weight:900}
+.ore{width:1.25em;height:1.25em;vertical-align:-.28em;margin-right:.08em;filter:drop-shadow(0 0 .25em rgba(252,238,10,.7))}
+.shopBtn small .ore{width:1.3em;height:1.3em}
 .pbar{position:relative;height:.95em;margin:.2em .15em 0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
 .pbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#00f0ff,#fcee0a)}
 .pbar span{position:relative;display:block;text-align:center;font-size:.55em;line-height:1.7em;font-weight:700;text-shadow:0 0 2px #000,0 0 2px #000}
@@ -312,10 +314,11 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
  v0.25 EX cut-in portrait comes alive (punch-in zoom, shake, flash, chromatic ghosts, speed lines, cat sparkles); first-visit long-press tip; weapon icons re-cropped
  v0.26 parts inventory (classes / weapons / armors owned separately, lineup equips from it), coins (win +100, daily first win +50, loss +20), single / 10+1 draws, rarity white / purple / red / yellow, star breakthrough 0-3 via duplicates, wildcard shards, pity, AI scales with team power
  v0.27 HP % above each top (settings toggle); duplicates kept as material, merge by dragging onto the part or with the merge button; star-up burst; red / yellow pull reveal (glowing card backs, flash, shake)
+ v0.28 motorcycle-style engine note for tops (rev with speed, lumpy idle, backfire pops, rev-up launch), crystal ore currency icon, comic onomatopoeia bursts, halftone rings, manga focus lines, hit bounce
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.27';
+const GAME_VERSION = 'v0.28';
 document.getElementById('verFoot').textContent = `旋刃對決 ${GAME_VERSION}`;
 // ---------- constants ----------
 const W = 540, H = 960, CX = 270, CY = 470, TR = 27;
@@ -684,6 +687,12 @@ function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 // ===== parts inventory =====
 // Classes, weapons and armors are owned separately: INV[k][id] = { r: rarity 0-3, s: stars 0-3, p: copies toward next star, isNew }.
 // The lineup (collection) is 3 builds {c, w, a} that point into the inventory; a part can sit in only one slot.
+// currency icon: a faceted neon crystal (drawn, so it shows on every phone)
+const ORE = '<svg class="ore" viewBox="0 0 32 32" aria-label="金幣"><g stroke="#10101c" stroke-width="2" stroke-linejoin="round">'
+  + '<path d="M7 20 L4 13 L8 8 L11 14 Z" fill="#00c8e0"/><path d="M25 21 L28 14 L24 9 L21 15 Z" fill="#00c8e0"/>'
+  + '<path d="M16 2 L23 10 L21 26 L16 30 L11 26 L9 10 Z" fill="#fcee0a"/><path d="M16 2 L19 11 L16 30 L13 11 Z" fill="#fff7a8"/>'
+  + '<path d="M9 10 L13 11 L16 30 L11 26 Z" fill="#e0b800"/><path d="M5 24 L27 24 L24 30 L8 30 Z" fill="#3a2a4a"/></g>'
+  + '<circle cx="14" cy="8" r="1.4" fill="#fff"/><path d="M26 4 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1 -2.2 -2.2 -1 2.2 -1z" fill="#00f0ff"/></svg>';
 const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '職業', w: '武器', a: '鎧甲' };
 const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '黃', col: '#fcee0a' }];
 const R_RATE = [0.70, 0.22, 0.065, 0.015], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
@@ -876,7 +885,7 @@ function partChips(b, i) {
   return chips;
 }
 function renderTeam() {
-  document.getElementById('teamSub').innerHTML = `<span class="coin">🪙 ${INV.coins}</span>　隊伍戰力 <b>+${Math.round(teamPower() * 100)}%</b>　勝場 ${wins}`;
+  document.getElementById('teamSub').innerHTML = `<span class="coin">${ORE} ${INV.coins}</span>　隊伍戰力 <b>+${Math.round(teamPower() * 100)}%</b>　勝場 ${wins}`;
   renderShop();
   const list = document.getElementById('teamList'); list.innerHTML = '';
   // three big portrait slots for the lineup
@@ -963,7 +972,7 @@ function renderTeam() {
 })();
 function renderShop() {
   const sh = document.getElementById('shop');
-  sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>🪙${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>十連＋1<small>🪙${PRICE10}・保底紅</small></button>`;
+  sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>${ORE}${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>十連＋1<small>${ORE}${PRICE10}・保底紅</small></button>`;
   document.getElementById('buy1').onclick = () => buy(1); document.getElementById('buy10').onclick = () => buy(10);
 }
 function buy(n) {
@@ -1450,7 +1459,7 @@ document.getElementById('toTeamBtn').onclick = openTeam;
 
 // ---------- sound (synthesised with Web Audio, no files) ----------
 const SFX = (() => {
-  let ac = null, master = null, muted = false, hum = null, lastHit = 0, noiseBuf = null;
+  let ac = null, master = null, muted = false, hum = null, lastHit = 0, noiseBuf = null; const engines = [];
   try { muted = localStorage.getItem('topMute') === '1'; } catch (e) {}
   let htmlKick = false;
   const SILENT_WAV = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
@@ -1574,6 +1583,22 @@ const SFX = (() => {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.03);
   }
+  // a one-shot engine rev: chopped sawtooth sweeping up, then dropping with pops
+  function rev(dur, f0, f1, vol, delay) {
+    if (!ac) return; const t = ac.currentTime + (delay || 0);
+    const o = ac.createOscillator(), o2 = ac.createOscillator(), sh = ac.createWaveShaper(), lp = ac.createBiquadFilter(), amp = ac.createGain(), lfo = ac.createOscillator(), dep = ac.createGain();
+    const c = new Float32Array(512); for (let k = 0; k < 512; k++) { const x = k / 256 - 1; c[k] = Math.tanh(x * 3.5); } sh.curve = c;
+    o.type = 'sawtooth'; o2.type = 'square'; lfo.type = 'square'; lp.type = 'lowpass'; lp.Q.value = 4;
+    const up = dur * 0.55;
+    for (const [osc, m] of [[o, 1], [o2, 0.5], [lfo, 0.5]]) { osc.frequency.setValueAtTime(f0 * m, t); osc.frequency.exponentialRampToValueAtTime(f1 * m, t + up); osc.frequency.exponentialRampToValueAtTime(f1 * 0.45 * m, t + dur); }
+    lp.frequency.setValueAtTime(300, t); lp.frequency.exponentialRampToValueAtTime(3200, t + up); lp.frequency.exponentialRampToValueAtTime(500, t + dur);
+    amp.gain.setValueAtTime(0.0001, t); amp.gain.exponentialRampToValueAtTime(vol, t + 0.05); amp.gain.setValueAtTime(vol, t + up); amp.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    dep.gain.setValueAtTime(vol * 0.6, t);
+    const g2 = ac.createGain(); g2.gain.value = 0.5;
+    o.connect(sh); o2.connect(g2); g2.connect(sh); sh.connect(lp); lp.connect(amp); amp.connect(master); lfo.connect(dep); dep.connect(amp.gain);
+    [o, o2, lfo].forEach(x => { x.start(t); x.stop(t + dur + 0.05); });
+    for (let k = 0; k < 3; k++) { noise(0.05, vol * 1.1, 'lowpass', 1500, 300, (delay || 0) + up + 0.08 + k * 0.08 + Math.random() * 0.03); }
+  }
   function noise(dur, vol, type, f0, f1, delay) {
     if (!ac) return; const t = ac.currentTime + (delay || 0);
     if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
@@ -1603,14 +1628,15 @@ const SFX = (() => {
     evade() { noise(0.15, 0.15, 'bandpass', 3000, 800); },
     shield() { tone(600, 900, 0.25, 'sine', 0.25); tone(900, 1350, 0.25, 'sine', 0.15); },
     wall(v) { const k = Math.min(1, v / 600); tone(170, 70, 0.12, 'triangle', 0.12 + 0.3 * k); tone(900 + 600 * k, 500, 0.08, 'square', 0.05 + 0.08 * k); noise(0.07, 0.1 + 0.25 * k, 'bandpass', 1800); },
-    launch() { noise(0.45, 0.35, 'bandpass', 400, 3000); tone(200, 600, 0.35, 'sawtooth', 0.08); },
+    launch() { rev(0.75, 55, 260, 0.2); noise(0.35, 0.18, 'bandpass', 500, 2500); },
+    rev(d, f0, f1, v) { rev(d, f0, f1, v); },
     attach() { tone(520, 780, 0.12, 'sine', 0.12); },
     tear(n) { noise(0.18, 0.35, 'highpass', 2500 + n * 900, 6000); tone(300 + n * 120, 180, 0.12, 'square', 0.08); },
     flip() { noise(0.12, 0.2, 'bandpass', 1200, 4000); },
     reveal() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, f, 0.35, 'triangle', 0.13, i * 0.07)); noise(0.5, 0.15, 'highpass', 3000, 8000); },
     rail() { tone(300, 1600, 0.45, 'sawtooth', 0.09); noise(0.5, 0.25, 'bandpass', 600, 5000); tone(880, 1320, 0.12, 'square', 0.06); },
     charge(e) { tone(400 + e * 6, 420 + e * 6, 0.05, 'square', 0.05); },
-    boost() { tone(300, 1400, 0.3, 'sawtooth', 0.12); noise(0.3, 0.2, 'bandpass', 800, 4000); },
+    boost() { rev(0.5, 120, 300, 0.16); noise(0.3, 0.15, 'bandpass', 800, 4000); },
     ex() { [523, 659, 784, 1046].forEach((f, i) => tone(f, f, 0.22, 'square', 0.1, i * 0.06)); noise(0.4, 0.2, 'highpass', 1000, 6000); },
     revive() { [392, 330, 523, 784].forEach((f, i) => tone(f, f * 1.01, 0.3, 'triangle', 0.18, i * 0.1)); },
     gate() { tone(420, 50, 0.9, 'sawtooth', 0.25); noise(0.9, 0.3, 'lowpass', 1200, 100); },
@@ -1619,17 +1645,46 @@ const SFX = (() => {
     draw() { tone(440, 330, 0.35, 'triangle', 0.15); },
     win() { [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, f, 0.3, 'square', 0.1, i * 0.1)); },
     lose() { [392, 349, 311, 262].forEach((f, i) => tone(f, f * 0.98, 0.35, 'triangle', 0.15, i * 0.16)); },
-    humUpdate(on, spin, onRing) {
+    // engine note, one voice per top: sawtooth + sub square through a soft-clipper and a lowpass,
+    // amplitude chopped at half the firing rate for that lumpy twin-cylinder "potato" idle
+    humUpdate(list) {
       if (!ac) return;
-      if (!hum) {
-        const o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
-        o.type = 'sawtooth'; f.type = 'lowpass'; f.frequency.value = 500; g.gain.value = 0;
-        o.connect(f); f.connect(g); g.connect(master); o.start(); hum = { o, f, g };
-      }
       const t = ac.currentTime;
-      hum.o.frequency.setTargetAtTime(55 + 110 * spin + (onRing ? 160 : 0), t, 0.1);
-      hum.f.frequency.setTargetAtTime(300 + 700 * spin, t, 0.1);
-      hum.g.gain.setTargetAtTime(on ? 0.05 + 0.04 * spin : 0, t, 0.08);
+      list.forEach((q, i) => {
+        let e = engines[i];
+        if (!e) {
+          const o1 = ac.createOscillator(), o2 = ac.createOscillator(), o3 = ac.createOscillator(), mix = ac.createGain();
+          o1.type = 'sawtooth'; o2.type = 'square'; o3.type = 'sawtooth';
+          const g2 = ac.createGain(); g2.gain.value = 0.55; const g3 = ac.createGain(); g3.gain.value = 0.35;
+          o1.connect(mix); o2.connect(g2); g2.connect(mix); o3.connect(g3); g3.connect(mix);
+          const sh = ac.createWaveShaper(), curve = new Float32Array(1024);
+          for (let k = 0; k < 1024; k++) { const x = k / 512 - 1; curve[k] = Math.tanh(x * 3.2); }
+          sh.curve = curve;
+          const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 3.5;
+          const body = ac.createBiquadFilter(); body.type = 'peaking'; body.frequency.value = 160; body.gain.value = 7; body.Q.value = 1.2;
+          const amp = ac.createGain(); amp.gain.value = 0;
+          const lfo = ac.createOscillator(), dep = ac.createGain(); lfo.type = 'square'; lfo.connect(dep); dep.connect(amp.gain);
+          mix.connect(sh); sh.connect(lp); lp.connect(body); body.connect(amp);
+          let out = amp;
+          if (ac.createStereoPanner) { const pn = ac.createStereoPanner(); pn.pan.value = i ? 0.35 : -0.15; amp.connect(pn); out = pn; }
+          out.connect(master);
+          [o1, o2, o3, lfo].forEach(o => o.start());
+          e = engines[i] = { o1, o2, o3, lfo, dep, amp, lp, last: 0, pop: 0 };
+        }
+        const base = i ? 0.82 : 1, vol = i ? 0.045 : 0.085;
+        const F = (34 + 150 * q.spd + 22 * q.spin + (q.onRing ? 70 : 0)) * base;
+        e.o1.frequency.setTargetAtTime(F, t, 0.06); e.o2.frequency.setTargetAtTime(F / 2, t, 0.06); e.o3.frequency.setTargetAtTime(F * 1.008, t, 0.06);
+        e.lfo.frequency.setTargetAtTime(F / 2, t, 0.06);
+        e.lp.frequency.setTargetAtTime(260 + 2400 * q.spd + 300 * q.spin, t, 0.08);
+        const lv = q.on ? vol * (0.55 + 0.45 * q.spin) : 0;
+        e.amp.gain.setTargetAtTime(lv, t, 0.08); e.dep.gain.setTargetAtTime(lv * (0.75 - 0.4 * q.spd), t, 0.08);
+        // throttle off: a few backfire pops
+        if (q.on && e.last - q.spd > 0.05 && e.last > 0.35 && t - e.pop > 0.12 && Math.random() < 0.6) {
+          e.pop = t; const n = 1 + Math.floor(Math.random() * 3);
+          for (let k = 0; k < n; k++) { noise(0.05, (i ? 0.12 : 0.22), 'lowpass', 1400, 300, k * 0.07 + Math.random() * 0.03); tone(130, 55, 0.06, 'sine', i ? 0.1 : 0.18, k * 0.07); }
+        }
+        e.last = q.spd;
+      });
     },
   };
 })();
@@ -1690,7 +1745,7 @@ function startRound() {
   G.tops = [makeTop(G.pb, 0), makeTop(G.ab, 1)];
   const ap = randomDrop(G.tops[0]); G.tops[1].x = ap.x; G.tops[1].y = ap.y;
   G.placed = false;
-  G.phase = 'launch'; G.drag = null; G.joy = null; G.particles = []; G.texts = []; G.waves = [];
+  G.phase = 'launch'; G.drag = null; G.joy = null; G.particles = []; G.texts = []; G.waves = []; G.comics = []; G.halftones = []; G.focus = null; G.comicCD = 0;
   G.launchT = 0;
   showBanner(G.sudden ? '加賽！先得分者勝' : `第 ${G.round} 場`, 1.6);
   SFX.round();
@@ -1698,6 +1753,64 @@ function startRound() {
 }
 
 function showBanner(text, t, color) { G.banner = { text, t, max: t, color: color || '#ffffff' }; }
+const COMIC = {
+  melee: [['SLASH!', 'KRAK!', 'SHING!'], ['SLAAASH!!', 'KRA-KOOM!!']],
+  gun: [['BLAM!', 'BANG!', 'RATATA!'], ['KA-BLAM!!', 'BRRRAKK!!']],
+  blast: [['BOOM!', 'WHAM!', 'FWOOM!'], ['KA-BOOOM!!', 'BA-DOOM!!']],
+  any: ['POW!', 'BAM!', 'TAK!'],
+};
+const COMIC_COL = { melee: ['#ff2a55', '#fcee0a'], gun: ['#00f0ff', '#ffffff'], blast: ['#fcee0a', '#ff2a55'] };
+function comicPop(x, y, word, size, fill, back, life) {
+  const n = 14 + Math.floor(Math.random() * 5), pts = [];
+  for (let i = 0; i < n * 2; i++) pts.push((i % 2 ? 0.58 : 1) * rnd(0.85, 1.15));
+  G.comics.push({ x, y, word, size, fill, back, t: life || 0.75, max: life || 0.75, rot: rnd(-0.22, 0.22), pts });
+}
+function focusLines(x, y, col, t) { G.focus = { x, y, col, t: t || 0.28, max: t || 0.28, seed: Math.random() * 100 }; }
+let DOTS = null;
+function dotPattern(g) { // halftone dot tile
+  if (!DOTS) { DOTS = document.createElement('canvas'); DOTS.width = DOTS.height = 10; const d = DOTS.getContext('2d'); d.fillStyle = '#000'; d.beginPath(); d.arc(5, 5, 2.4, 0, TAU); d.fill(); }
+  return g.createPattern(DOTS, 'repeat');
+}
+function drawComics(g) {
+  for (const c of G.comics) {
+    const e = c.max - c.t, pop = e < 0.1 ? 0.4 + 6 * e : e < 0.18 ? 1.25 - (e - 0.1) * 3 : 1, a = Math.min(1, c.t / 0.18);
+    upright(g, c.x, c.y - e * 18, () => {
+      g.save(); g.globalAlpha = a; g.rotate(c.rot); g.scale(pop, pop);
+      g.font = `italic 900 ${c.size}px Rajdhani, "Arial Black", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      const tw = g.measureText(c.word).width, R = Math.max(tw * 0.7, c.size * 1.05), Ry = c.size * 0.95, n = c.pts.length;
+      g.beginPath(); for (let i = 0; i < n; i++) { const an = i / n * TAU, r = c.pts[i]; g.lineTo(Math.cos(an) * R * r * 1.08, Math.sin(an) * Ry * r * 1.08); } g.closePath();
+      g.fillStyle = c.back; g.fill(); g.save(); g.clip(); g.globalAlpha = a * 0.22; g.fillStyle = dotPattern(g); g.fillRect(-R * 1.2, -Ry * 1.2, R * 2.4, Ry * 2.4); g.restore();
+      g.lineWidth = 3.5; g.strokeStyle = '#10101c'; g.stroke();
+      g.transform(1, 0, -0.18, 1, 0, 0);
+      g.lineJoin = 'round'; g.lineWidth = c.size * 0.22; g.strokeStyle = '#10101c'; g.strokeText(c.word, 3, 4); g.strokeText(c.word, 0, 0);
+      g.fillStyle = '#10101c'; g.fillText(c.word, 3, 4);
+      g.fillStyle = c.fill; g.fillText(c.word, 0, 0);
+      g.restore();
+    });
+  }
+}
+function drawHalftones(g) {
+  for (const h of G.halftones) {
+    const k = 1 - h.t / h.max, r = 14 + k * h.R, band = 34, a = 1 - k;
+    g.fillStyle = `rgba(${h.col},${a})`;
+    for (let yy = -r - band; yy <= r + band; yy += 9) for (let xx = -r - band; xx <= r + band; xx += 9) {
+      const d = Math.hypot(xx, yy), q = 1 - Math.abs(d - r) / band; if (q <= 0) continue;
+      g.beginPath(); g.arc(h.x + xx, h.y + yy, 3.8 * q, 0, TAU); g.fill();
+    }
+  }
+}
+function drawFocus(g) {
+  const f = G.focus; if (!f) return;
+  const a = f.t / f.max; let sd = f.seed;
+  const rr = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
+  g.save(); g.fillStyle = f.col; g.globalAlpha = Math.min(1, a * 1.6);
+  for (let i = 0; i < 46; i++) {
+    const an = rr() * TAU, w = 0.012 + rr() * 0.03, r0 = 70 + rr() * 90 + (1 - a) * 40, r1 = 700;
+    g.beginPath(); g.moveTo(f.x + Math.cos(an) * r0, f.y + Math.sin(an) * r0);
+    g.lineTo(f.x + Math.cos(an - w) * r1, f.y + Math.sin(an - w) * r1); g.lineTo(f.x + Math.cos(an + w) * r1, f.y + Math.sin(an + w) * r1); g.closePath(); g.fill();
+  }
+  g.restore();
+}
 function addText(x, y, text, color, size) { G.texts.push({ x, y, text, color: color || '#fff', size: size || 18, t: 0.9, age: 0 }); }
 function sparks(x, y, n, color, spd, streak) {
   for (let i = 0; i < n; i++) {
@@ -2021,6 +2134,18 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   sparks(mx, my, 6, '#ffffff', 120);
   wave(mx, my, big ? '252,238,10' : '220,230,255', big ? 95 : 50, big ? 8 : 4, big ? 0.4 : 0.25);
   impact(big, mx, my);
+  if (!evaded) {
+    const tier = dmg > def.s.maxHp * 0.16 || (fam === 'blast' && big) ? 2 : big ? 1 : 0;
+    if (G.comicCD <= 0 && (tier > 0 || Math.random() < 0.3)) {
+      const W2 = tier ? COMIC[fam][tier - 1] : COMIC.any, cc = COMIC_COL[fam];
+      comicPop(mx + rnd(-14, 14), my - 26, pick(W2), tier === 2 ? 40 : tier ? 30 : 22, cc[1], cc[0], tier === 2 ? 0.9 : 0.7);
+      G.comicCD = tier ? 0.3 : 0.5;
+    }
+    if (tier >= 1) G.halftones.push({ x: mx, y: my, R: tier === 2 ? 150 : 90, col: tier === 2 ? '252,238,10' : '255,255,255', t: 0.4, max: 0.4 });
+    if (tier === 2) focusLines(mx, my, 'rgba(255,255,255,.85)');
+    def.hopT = 0.38; def.hopH = Math.min(30, 10 + dmg * 1.2) * (fam === 'blast' ? 1.4 : 1);
+    if (big && !(att.hopT > 0)) { att.hopT = 0.25; att.hopH = 7; }
+  }
   // knockback
   let kb = (0.5 + att.s.w.kb * 0.22) * bf * (sameDir ? 1 : 1.2) * att.kbMult * (40 + Math.min(900, vrel) * 0.25 + Math.min(900, Math.max(0, attN)) * 0.35) * (att.launchedT > 0 ? 1.35 : 1);
   if (def.s.a.special === 'shell') kb *= 0.5;
@@ -2053,6 +2178,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
       wave(def.x, def.y, '255,255,255', 170, 12, 0.55); wave(def.x, def.y, '255,180,90', 110, 6, 0.45);
       G.hitStop = 0.16; G.flash = 0.35; camPunch('ko', def.x, def.y); G.slowT = CAM.slowT;
       G.shake = 14; SFX.burst();
+      comicPop(def.x, def.y - 30, 'BREAK!!', 52, '#fcee0a', '#ff2a55', 1.2); focusLines(def.x, def.y, 'rgba(255,255,255,.9)', 0.5);
       endRound(att.side, 1, '爆甲');
     }
   }
@@ -2068,7 +2194,7 @@ function stepTop(t, foe, h) {
   }
   // timers
   if (t.s.a.special === 'regen' && t.hp > 0) t.hp = Math.min(t.s.maxHp, t.hp + t.s.maxHp * 0.012 * h);
-  for (const k of ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'nearT', 'comboT']) if (t[k] > 0) t[k] -= h;
+  for (const k of ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'nearT', 'comboT', 'hopT']) if (t[k] > 0) t[k] -= h;
   if (t.poisonT > 0) { t.poisonT -= h; if (t.poisonT <= 0) t.poison = 0; }
   if (t.boostT <= 0 && !t.ex) { t.dashMult = 1; t.kbMult = 1; }
 
@@ -2153,7 +2279,7 @@ function stepTop(t, foe, h) {
         const vn = t.vx * nx + t.vy * ny;
         if (t.hitT > 0 && vn > GATE_SPEED) {
           t.falling = 0.7; t.onRing = false; t.fellIn = gz;
-          addText(t.x, t.y - 50, `${gz.name}！+${gz.pts}`, gz.txt, 32); SFX.gate(); sparks(t.x, t.y, 40, `rgb(${gz.col})`, 300, true); G.shake = 14;
+          addText(t.x, t.y - 50, `${gz.name}！+${gz.pts}`, gz.txt, 32); SFX.gate(); comicPop(t.x, t.y - 105, gz.pts >= 3 ? 'KA-BOOOM!!' : 'OUT!!', gz.pts >= 3 ? 50 : 42, '#ffffff', '#ff2a55', 1.2); focusLines(t.x, t.y, 'rgba(255,42,85,.8)', 0.5); sparks(t.x, t.y, 40, `rgb(${gz.col})`, 300, true); G.shake = 14;
           wave(t.x, t.y, gz.col, 160, 10, 0.6); G.hitStop = 0.12; G.flash = 0.25; G.flashCol = gz.col; camPunch('ko', t.x, t.y); G.slowT = CAM.slowT;
         } else {
           const c = eClamp(t.x, t.y, m); t.x = c.x; t.y = c.y;
@@ -2172,7 +2298,7 @@ function stepTop(t, foe, h) {
         t.vx -= 1.95 * vn * nx; t.vy -= 1.95 * vn * ny; t.spin -= vn / 40000;
         // tangential kick from the spin, so tops ricochet along the rim instead of just stopping
         t.vx += -ny * t.s.w.dir * vn * 0.25; t.vy += nx * t.s.w.dir * vn * 0.25;
-        if (vn > 80) { sparks(t.x + nx * TR, t.y + ny * TR, Math.min(22, 4 + vn / 25), '#a8fbff', 120 + vn * 0.5); SFX.wall(vn); G.shake = Math.max(G.shake, Math.min(9, vn / 55)); G.rimFlash = { a: pAng(t.x, t.y), t: 0.25 }; if (vn > 250) wave(t.x + nx * TR, t.y + ny * TR, '190,200,255', 45, 4, 0.25); }
+        if (vn > 80) { sparks(t.x + nx * TR, t.y + ny * TR, Math.min(22, 4 + vn / 25), '#a8fbff', 120 + vn * 0.5); SFX.wall(vn); if (vn > 420 && G.comicCD <= 0) { comicPop(t.x + nx * TR * 0.5, t.y + ny * TR * 0.5 - 20, pick(['CLANG!', 'KLANG!', 'BONK!']), 24, '#ffffff', '#00b8d4', 0.6); G.comicCD = 0.35; } G.shake = Math.max(G.shake, Math.min(9, vn / 55)); G.rimFlash = { a: pAng(t.x, t.y), t: 0.25 }; if (vn > 250) wave(t.x + nx * TR, t.y + ny * TR, '190,200,255', 45, 4, 0.25); }
       }
     }
   }
@@ -2235,8 +2361,8 @@ function finish() {
   const today = new Date().toDateString(), daily = win && INV.day !== today;
   const got = (win ? WIN_COIN : LOSE_COIN) + (daily ? DAILY_COIN : 0);
   INV.coins += got; if (daily) INV.day = today; if (win) wins++; save();
-  document.getElementById('finalScore').innerHTML = `你 ${G.score[0]} : ${G.score[1]} 電腦<br><span class="coinGot">🪙 +${got}${daily ? '（含每日首勝 +50）' : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 🪙${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
-  const db = document.getElementById('drawBtn'); db.textContent = `立即單抽（🪙${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
+  document.getElementById('finalScore').innerHTML = `你 ${G.score[0]} : ${G.score[1]} 電腦<br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   document.getElementById('retryBtn').style.display = win ? 'none' : '';
   document.getElementById('toTeamBtn').style.display = '';
   show('final');
@@ -2288,6 +2414,10 @@ function update(dt) {
   for (const p of G.particles) { p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 1 - 3 * dt; p.vy *= 1 - 3 * dt; if (p.shard) p.rot += p.vr * dt; }
   G.particles = G.particles.filter(p => p.t > 0);
   for (const s of G.texts) { s.t -= dt; s.y -= 40 * dt; s.age += dt; }
+  for (const c of G.comics) c.t -= dt; G.comics = G.comics.filter(c => c.t > 0);
+  for (const h2 of G.halftones) h2.t -= dt; G.halftones = G.halftones.filter(h2 => h2.t > 0);
+  if (G.focus) { G.focus.t -= dt; if (G.focus.t <= 0) G.focus = null; }
+  if (G.comicCD > 0) G.comicCD -= dt;
   G.texts = G.texts.filter(s => s.t > 0);
   if (G.ripples) { for (const r of G.ripples) r.t -= dt; G.ripples = G.ripples.filter(r => r.t > 0); }
   G.shake = Math.max(0, G.shake - dt * 30);
@@ -2581,7 +2711,8 @@ function drawTopWorld(g, t) {
   g.strokeStyle = t.side === 0 ? 'rgba(0,240,255,.7)' : 'rgba(255,59,92,.7)'; g.lineWidth = 2.5;
   g.beginPath(); g.arc(0, 0, 38 * sc, 0, TAU); g.stroke();
   // lift the top off the floor; tilt & bob a little as it loses spin
-  const lift = (TOP_LIFT + (t.falling ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
+  const hop = t.hopT > 0 ? Math.sin(Math.PI * (1 - t.hopT / 0.38)) * (t.hopH || 12) : 0;
+  const lift = (TOP_LIFT + hop + (t.falling ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
   g.translate(0, -lift);
   if (viewK < 1) {
     const wob = (1 - t.spin) * 0.25;
@@ -2670,6 +2801,7 @@ function render() {
     }
     g.restore();
   }
+  drawHalftones(g);
   for (const t of [...G.tops].sort((a, b) => a.y - b.y)) drawTopWorld(g, t); // farther first
   drawNearWall(g);
   for (const w of G.waves) {
@@ -2689,6 +2821,7 @@ function render() {
     upright(g, s.x, s.y, () => { g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeText(s.text, 0, 0); g.fillStyle = s.color; g.fillText(s.text, 0, 0); });
   }
   g.globalAlpha = 1;
+  drawFocus(g); drawComics(g);
   if (G.exFreeze) {
     const F = G.exFreeze, k = 1 - F.t / F.max, tp = F.top;
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = `rgba(0,0,0,${0.5 * Math.min(1, k * 6)})`; g.fillRect(0, 0, cv.width, cv.height); g.restore();
@@ -2776,7 +2909,8 @@ function frame(now) {
   if (screens.tutorial.classList.contains('show')) drawTutorial(dt);
   if (G && G.phase !== 'final' && !settingsOpen) update(dt);
   const pt = G && G.tops ? G.tops[0] : null;
-  SFX.humUpdate(!!(G && G.phase === 'battle' && pt && !pt.dead && !pt.falling), pt ? pt.spin : 0, pt ? pt.onRing : false);
+  { const on = G && G.phase === 'battle' && !settingsOpen;
+    SFX.humUpdate([0, 1].map(i => { const q = G && G.tops ? G.tops[i] : null; return { on: !!(on && q && !q.dead && !q.falling), spin: q ? q.spin : 0, spd: q ? clamp(len(q.vx, q.vy) / 700, 0, 1) : 0, onRing: q ? q.onRing : false }; })); }
   render();
   requestAnimationFrame(frame);
 }
