@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.64</title>
+<title>SPIN! SPIN! v0.65</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -140,7 +140,9 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .hint,.rules,.tutText,.ipRow .d,.ipRow .k,.ipClose,.tipBubble{font-style:normal}
 #gmPanel{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.8)}
 #gmPanel.show{display:flex}
-#gmPanel .gmIn{width:min(90vw,360px);background:#141a24;border:3px solid #ff2a55;padding:1em;display:flex;flex-direction:column;gap:.45em}
+#gmPanel .gmIn{width:min(92vw,380px);max-height:90vh;overflow-y:auto;background:#141a24;border:3px solid #ff2a55;padding:.8em;display:flex;flex-direction:column;gap:.35em}
+#gmPanel .gmG{font-size:.75em;color:#ff7ad9;font-weight:900;margin-top:.3em}
+#gmPanel .gmRow{display:flex;gap:.35em}#gmPanel .gmRow .btn{flex:1;margin:0;font-size:.78em;padding:.5em .3em}
 #gmPanel h3{margin:0 0 .3em;color:#ff2a55;font-style:italic;font-weight:900;text-shadow:2px 2px 0 #05060a}
 #gmPanel .btn{margin:0;font-size:.85em;padding:.5em 1em}
 .screen{background:radial-gradient(rgba(0,240,255,.10) 1.1px,transparent 1.6px) 0 0/10px 10px,radial-gradient(ellipse at 50% 12%,rgba(0,240,255,.14) 0%,#07090c 62%)}
@@ -509,12 +511,17 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後吃 2 張同陣營、同品階的 3★ 卡<br>付費抽卡每抽 2% 出現隱藏角色（40 抽保底）</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
-  <button class="btn" data-gm="coin">金幣 +10000</button>
-  <button class="btn" data-gm="cat">取得機甲貓咪</button>
-  <button class="btn" data-gm="all">取得全部零件</button>
-  <button class="btn" data-gm="mat">全部零件 +3 素材（測試合成）</button>
-  <button class="btn" data-gm="pcat">下一次付費抽必出貓咪</button>
-  <button class="btn" data-gm="pyel">下一次付費抽必出紫色</button>
+  <div class="gmG">資源</div>
+  <div class="gmRow"><button class="btn" data-gm="coin">金幣 +10000</button><button class="btn" data-gm="shard">萬用碎片 +50</button></div>
+  <div class="gmG">收集與培養</div>
+  <div class="gmRow"><button class="btn" data-gm="cards">取得全部角色卡</button><button class="btn" data-gm="parts">取得全部武器鎧甲</button></div>
+  <div class="gmRow"><button class="btn" data-gm="mat">全部 +3 素材</button><button class="btn" data-gm="star3">全部升到 3★</button></div>
+  <div class="gmRow"><button class="btn" data-gm="fodder">補齊升階材料</button><button class="btn" data-gm="cat">取得機甲貓咪</button></div>
+  <div class="gmG">抽卡</div>
+  <div class="gmRow"><button class="btn" data-gm="pyel">下次必出紫</button><button class="btn" data-gm="pcat">下次必出貓咪</button></div>
+  <div class="gmG">任務與獎勵</div>
+  <div class="gmRow"><button class="btn" data-gm="quest">任務全部完成</button><button class="btn" data-gm="vault">保險箱填滿</button></div>
+  <div class="gmRow"><button class="btn" data-gm="gift">重置新手禮</button><button class="btn" data-gm="win">對戰：立即勝利</button></div>
   <button class="btn ghost" data-gm="close">關閉</button></div></div>
 <script>
 /* SPIN! SPIN! (formerly 旋刃對決) — version history (one step per update in the design chat)
@@ -582,10 +589,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.62 rank-up by feeding two same-faction (cards) or same-type (parts) 3-star copies of the same rarity, lands at 1 star; weapon types renamed 近戰 / 中距 / 遠距, armor types 衣服 / 護具 / 外甲; one draw table everywhere (white: starters 50% + factions, purple: factions 30/30/30 + 異哲團 10); ASSIST always from the previous slot, same-faction link is stronger; CPU lineups build faction bonds by difficulty
  v0.63 draw-again buttons (single / ten) after a crate; one-tap claim-all on the quest page
  v0.64 battle speed toggle (1x / 2x / 3x, battle phase only, extra fixed-step updates); ASSIST as a round portrait button above EX with a charge ring; auto-lineup button picks the strongest cards and parts including faction bonds and links
+ v0.65 GM panel updated for the current systems (cards, rank-up, quests, vault, starter gift, instant win)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.64';
+const GAME_VERSION = 'v0.65';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -599,11 +607,28 @@ document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
     const b = e.target.closest('[data-gm]'); if (!b && e.target.id !== 'gmPanel') return;
     const k = b ? b.dataset.gm : 'close', msg = m => toast('GM：' + m);
     if (k === 'coin') { INV.coins += 10000; msg('金幣 +10000'); }
-    else if (k === 'cat') { addPart('c', 'mechcat', 2, 0); msg('已取得機甲貓咪'); }
-    else if (k === 'all') { for (const k2 of 'cwa') for (const id in KIND[k2]) if (!Object.values(INV[k2]).some(e => e.id === id)) addPart(k2, id, 0, 0); msg('已取得全部零件'); }
-    else if (k === 'mat') { for (const k2 of 'cwa') for (const id in INV[k2]) if (INV[k2][id].s < 3) INV[k2][id].n += 3; msg('全部零件 +3 素材'); }
+    else if (k === 'shard') { INV.shards += 50; msg('萬用碎片 +50'); }
+    else if (k === 'cat') { addPart('c', 'mechcat', 0, 0); msg('已取得機甲貓咪'); }
+    else if (k === 'cards') { for (const id in CLASSES) if (!Object.values(INV.c).some(e => e.id === id)) addPart('c', id, CLASSES[id].philo ? 1 : 0, 0); msg('已取得全部角色卡'); }
+    else if (k === 'parts') { for (const k2 of 'wa') for (const id in KIND[k2]) if (!Object.values(INV[k2]).some(e => e.id === id)) addPart(k2, id, 0, 0); msg('已取得全部武器鎧甲'); }
+    else if (k === 'star3') { for (const k2 of 'cwa') for (const id in INV[k2]) { INV[k2][id].s = 3; INV[k2][id].n = 0; } msg('全部零件 3★（可測試升階）'); }
+    else if (k === 'fodder') { // two extra 3-star cards per faction at each rarity you own, plus same-type weapon/armor copies
+      let n = 0; for (const key of Object.keys(INV.c)) { const e = INV.c[key], f = CLASSES[e.id].fac;
+        const mates = Object.keys(CLASSES).filter(x => x !== e.id && !CLASSES[x].hidden && (CLASSES[x].fac === f || f === '異哲團'));
+        for (const x of mates) { if (Object.values(INV.c).filter(o => o.id !== e.id && o.r === e.r && o.s >= 3 && (CLASSES[o.id].fac === f || f === '異哲團')).length >= 2) break;
+          const own = Object.keys(INV.c).find(kk2 => INV.c[kk2].id === x); if (own) { if (INV.c[own].r === e.r) { INV.c[own].s = 3; n++; } } else { addPart('c', x, e.r, 3); n++; } } }
+      for (const k2 of 'wa') for (const key of Object.keys(INV[k2])) { const e = INV[k2][key]; if (e && e.s < 3) continue;
+        for (let i = 0; i < 2; i++) { const pool = Object.keys(KIND[k2]).filter(x => k2 === 'w' ? WEAPONS[x].fam === WEAPONS[e.id].fam : ARMORS[x].cls === ARMORS[e.id].cls);
+          const nk = pick(pool) + '~gm' + Math.random().toString(36).slice(2, 6); INV[k2][nk] = { id: nk.split('~')[0], r: e.r, s: 3, n: 0, isNew: 1, t: Date.now() }; n++; } }
+      msg(`已補 ${n} 份升階材料`); }
+    else if (k === 'quest') { const q = questState(); for (const [kq, , t] of DQ) q.d[kq] = Math.max(q.d[kq] || 0, t); for (const [kq, , t] of WQ) q.w[kq] = Math.max(q.w[kq] || 0, t); q.dayDone = 1; msg('每日／每週任務全部完成'); }
+    else if (k === 'vault') { const v = vaultState().v; v.from = Date.now() - VAULT_CAP * 1000; v.last = 0; msg('保險箱已填滿'); }
+    else if (k === 'gift') { INV.gift1 = 0; msg('下一場打完會再送新手禮'); }
+    else if (k === 'win') { if (G && G.phase !== 'final') { G.score = [9, 0]; document.getElementById('gmPanel').classList.remove('show'); finish(); return; } msg('目前不在對戰中'); }
+    else if (k === 'mat') { for (const k2 of 'cwa') for (const id in INV[k2]) if (INV[k2][id].s < 3) INV[k2][id].n += 3; msg('全部零件 +3 素材（可測試升星）'); }
     else if (k === 'pcat') { INV.pity.cat = 39; msg('下一次付費抽必出貓咪'); }
     else if (k === 'pyel') { INV.pity.r = 9; msg('下一次付費抽必出紫色'); }
+    if (k !== 'close' && typeof paintQuestDot === 'function') paintQuestDot();
     if (k !== 'close') { save(); if (screens.team.classList.contains('show')) renderTeam(); }
     else document.getElementById('gmPanel').classList.remove('show');
   });
