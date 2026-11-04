@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.51</title>
+<title>SPIN! SPIN! v0.52</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -250,7 +250,27 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #askBox.show{display:flex}
 .askIn{width:80%;background:#0b0f14;border:2px solid #ff2a55;padding:1.2em 1em;text-align:center;line-height:1.6}
 .askBtns{display:flex;gap:.6em;justify-content:center}.askBtns .btn{padding:.55em 1.4em}
-#codexOpen{position:absolute;right:.6em;top:2.9em;font-size:.72em;padding:.3em .8em;border:1px solid #fcee0a;color:#fcee0a;background:rgba(0,0,0,.55);font-weight:900;cursor:pointer;font-family:inherit;z-index:3}
+#codexOpen{position:absolute;right:calc(3% + 5.2em);top:1.2%;font-size:.75em;padding:.35em .8em;border:1px solid #fcee0a;color:#fcee0a;background:rgba(0,0,0,.55);font-weight:900;cursor:pointer;font-family:Rajdhani,"Noto Sans TC",sans-serif;z-index:65}
+.cxFilter{display:flex;gap:.3em;flex-wrap:wrap;justify-content:center;margin:0 0 .4em}
+.cxFilter button{font-size:.72em;padding:.25em .7em;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.4);color:#cfd8e6;font-weight:900;font-family:inherit;cursor:pointer}
+.cxFilter button.on{background:#fcee0a;color:#000;border-color:#fcee0a}
+.cxHd{width:100%;font-weight:900;font-size:.82em;margin:.4em 0 .2em;padding-left:.4em;border-left:4px solid;text-align:left}
+.cxGrid{width:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:.3em}
+.cxT{position:relative;background:rgba(0,0,0,.45);border:2px solid;padding:.15em;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.cxT img,.cxT .cxI{width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none}
+.cxT .cxI .ico{width:100%;height:100%}
+.cxT .n{font-size:.56em;font-weight:700;text-align:center;line-height:1.2;margin-top:.15em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cxT.no img,.cxT.no .cxI{filter:grayscale(1) brightness(.3) contrast(1.3)}
+.cxT.no{border-color:rgba(255,255,255,.18)!important}.cxT.no .n{color:#6d7888}
+.cxT .soon{position:absolute;top:.15em;right:.15em;font-size:.45em;background:#ff2a55;color:#fff;padding:0 .3em;font-weight:900}
+#cxPop{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);z-index:80}
+#cxPop.show{display:flex}
+#cxPop .in{width:78%;background:#0b0f14;border:3px solid;padding:.8em;text-align:center}
+#cxPop .big{width:62%;aspect-ratio:1;object-fit:cover;border:2px solid #05060a;display:block;margin:0 auto .4em}
+#cxPop .bigI{width:62%;aspect-ratio:1;margin:0 auto .4em}#cxPop .bigI .ico{width:100%;height:100%}
+#cxPop .no{filter:grayscale(1) brightness(.35) contrast(1.3)}
+#cxPop .t{font-weight:900;font-size:1.15em}#cxPop .tg{font-size:.75em;margin:.2em 0 .4em}
+#cxPop .d{font-size:.8em;line-height:1.6;text-align:left;color:#cfd8e6}#cxPop .d b{color:#fcee0a}
 #codex.screen{justify-content:flex-start}
 .codexTabs{margin:.2em 0 .5em}
 #codexList{width:100%;display:flex;flex-direction:column;gap:.45em}
@@ -417,9 +437,10 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <h1>圖鑑</h1>
     <div class="sub" id="codexSub"></div>
     <div class="seg codexTabs" id="codexTabs"><button data-t="c">角色卡</button><button data-t="w">武器</button><button data-t="a">鎧甲</button></div>
-    <div id="codexList"></div>
+    <div class="cxFilter" id="cxFilter"></div><div id="codexList"></div>
     <button class="btn" id="codexBack">返回</button>
   </div>
+  <div id="cxPop"><div class="in" id="cxPopIn"></div></div>
   <div id="askBox"><div class="askIn"><div id="askText"></div><div class="askBtns"><button class="btn ghost" id="askNo">取消</button><button class="btn" id="askYes">確定</button></div></div></div>
 
   <div id="tutorial" class="screen">
@@ -508,10 +529,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.49 lineup slots use one fixed, smaller portrait size (no per-tab stretching), faces centred
  v0.50 parts in the lineup are dimmed and listed first; a weapon / armor can be used once per lineup unless the copies differ in rarity (same rarity swaps out of the other slot)
  v0.51 reset uses an in-game confirm (browser confirm can be blocked in app webviews) and bigger setting buttons; tutorial text refreshed plus two strategy pages; codex screen (cards / weapons / armors with full stats); first finished match gives a one-time 10000-coin starter gift
+ v0.52 codex as a dense picture grid (cards grouped by faction with filter buttons, upcoming cards shown as silhouettes), tap / long-press for an enlarged card with details; codex button sits beside the settings button
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.51';
+const GAME_VERSION = 'v0.52';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1982,25 +2004,61 @@ function openCodex(back) {
   show('codex'); cxBack = back; renderCodex();
 }
 let cxBack = null;
-function renderCodex() {
-  const k = cxTab, list = document.getElementById('codexList'), ids = Object.keys(KIND[k]);
+// upcoming cards: shown in the codex as silhouettes so players can see the whole roster
+const CX_FUTURE = [
+  ['rat', '螺栓鼠・咔啦', '改造派'], ['rex', '鐵拳・雷克斯', '改造派'], ['octo', '義肢章魚・八爪', '改造派'], ['rider', '重機騎士・轟天', '改造派'], ['tesla', '磁暴機兵 TESLA-9', '改造派'],
+  ['cactus', '仙人掌・刺球', '自然派'], ['erin', '重盾・艾琳', '自然派'], ['jack', '賞金獵人・傑克', '自然派'], ['dj', '街頭 DJ・節拍', '自然派'],
+  ['spam', '垃圾郵件・SPAM', '網路派'], ['nova', '電路巫師・諾娃', '網路派'], ['raven', '霓影・夜鴉', '網路派'], ['twins', '雙生駭客・零與壹', '網路派'], ['chrono', '時間竊賊・克羅諾', '網路派'],
+  ['david', '大理石・大衛', '哲思派'], ['sheep', '電子羊・夢', '哲思派'], ['maiden', '鐵聖母・瑪登', '哲思派'], ['theseus', '忒修斯', '哲思派'], ['proteus', '擬態原生質・普羅透斯', '哲思派'], ['host', '寄生胚・宿主', '哲思派'],
+];
+const FACTIONS = [['改造派', '#ff2a55'], ['自然派', '#fcee0a'], ['網路派', '#00f0ff'], ['哲思派', '#b066ff']];
+const facCol = f => (FACTIONS.find(x => x[0] === f) || [0, '#cfd8e6'])[1];
+let cxFilter = 'all';
+function cxEntries(k) { // [{id, name, tag, col, has, soon, pic(html), d}]
   const ownIds = new Set(Object.values(INV[k]).map(e => e.id));
-  document.getElementById('codexSub').textContent = `已收集 ${ids.filter(i => ownIds.has(i)).length} / ${ids.length}・點分頁切換`;
-  document.querySelectorAll('#codexTabs button').forEach(b => b.classList.toggle('on', b.dataset.t === k));
-  list.innerHTML = ids.map(id => {
-    const P = KIND[k][id], has = ownIds.has(id);
-    const pic = k === 'c' ? `<img src="${PORTRAIT_SRC[id]}">` : `<div class="cxIco">${iconHTML(k, id, 'xl')}</div>`;
-    let tag, col, d;
-    if (k === 'c') { const L = CX_LORE[id] || ['', '']; tag = L[0]; col = P.color;
+  const out = Object.keys(KIND[k]).map(id => {
+    const P = KIND[k][id], has = ownIds.has(id); let tag, col, d;
+    if (k === 'c') { const L = CX_LORE[id] || ['', '']; tag = L[0]; col = facCol(L[0]);
       d = `${L[1]}<br><b>EX「${P.exName}」</b>：${P.exDesc}<br>速度 ${P.speed}・耐久 ${P.hp}・EX 累積 ×${P.gain}`; }
     else if (k === 'w') { const f = FAMILY[P.fam]; tag = f.name + '系'; col = f.col;
       d = `${P.desc}<br>攻擊 ${P.atk}・擊退 ${P.kb}・重量 ${P.wt}<br><b>${f.name}系</b>：${f.desc}<br>剋 ${ARMOR_CLASS[f.beats].name}（+30%），怕 ${ARMOR_CLASS[f.weak].name}（−20%）`; }
     else { const c = ARMOR_CLASS[P.cls], by = Object.values(FAMILY).find(f => f.beats === P.cls), vs = Object.values(FAMILY).find(f => f.weak === P.cls); tag = c.name; col = c.col;
       d = `${P.desc}<br>防禦 ${P.thick}・閃避 ${P.facets}<br>怕 ${by ? by.name + '系' : '—'}，擋得住 ${vs ? vs.name + '系' : '—'}`; }
-    return `<div class="cxRow${has ? '' : ' no'}" style="border-left-color:${col}">${pic}<div><div class="t">${P.name}<small style="color:${col}">${tag}</small><small>${has ? '已取得' : '未取得'}</small></div><div class="d">${d}</div></div></div>`;
-  }).join('');
+    return { id, name: P.name, tag, col, has, soon: false, src: k === 'c' ? PORTRAIT_SRC[id] : null, icon: k === 'c' ? '' : iconHTML(k, id, 'xl'), d };
+  });
+  if (k === 'c') for (const [id, name, fac] of CX_FUTURE) out.push({ id, name, tag: fac, col: facCol(fac), has: false, soon: true, src: `art/portraits/${id}.jpg`, icon: '', d: '新角色卡，即將登場！' });
+  return out;
 }
-document.querySelectorAll('#codexTabs button').forEach(b => b.onclick = () => { cxTab = b.dataset.t; renderCodex(); SFX.flip(); });
+function renderCodex() {
+  const k = cxTab, list = document.getElementById('codexList'), all = cxEntries(k);
+  document.querySelectorAll('#codexTabs button').forEach(b => b.classList.toggle('on', b.dataset.t === k));
+  document.getElementById('codexSub').textContent = `已收集 ${all.filter(e => e.has).length} / ${all.length}・點一下或長按看詳情`;
+  const groups = k === 'c' ? FACTIONS.map(f => f[0]) : [...new Set(all.map(e => e.tag))];
+  const fl = document.getElementById('cxFilter');
+  fl.innerHTML = ['all', ...groups].map(g => `<button data-f="${g}" class="${cxFilter === g ? 'on' : ''}">${g === 'all' ? '全部' : g}</button>`).join('');
+  fl.querySelectorAll('button').forEach(b => b.onclick = () => { cxFilter = b.dataset.f; renderCodex(); SFX.flip(); });
+  if (cxFilter !== 'all' && !groups.includes(cxFilter)) cxFilter = 'all';
+  const tile = (e, i) => `<div class="cxT${e.has ? '' : ' no'}" data-i="${i}" style="border-color:${e.col}">${e.src ? `<img src="${e.src}" draggable="false">` : `<div class="cxI">${e.icon}</div>`}${e.soon ? '<b class="soon">SOON</b>' : ''}<div class="n">${e.has ? e.name : '？？？'}</div></div>`;
+  list.innerHTML = groups.filter(g => cxFilter === 'all' || g === cxFilter).map(g => {
+    const items = all.map((e, i) => [e, i]).filter(([e]) => e.tag === g);
+    return `<div class="cxHd" style="border-color:${items[0] ? items[0][0].col : '#fff'};color:${items[0] ? items[0][0].col : '#fff'}">${g}　${items.filter(([e]) => e.has).length}/${items.length}</div><div class="cxGrid">${items.map(([e, i]) => tile(e, i)).join('')}</div>`;
+  }).join('');
+  list.querySelectorAll('.cxT').forEach(t => {
+    let tm = null; const open = () => { tm = null; cxShow(all[+t.dataset.i]); };
+    t.onpointerdown = () => { tm = setTimeout(open, 420); };
+    t.onpointerup = () => { if (tm) { clearTimeout(tm); open(); } };
+    t.onpointerleave = t.onpointercancel = () => { if (tm) clearTimeout(tm); tm = null; };
+  });
+}
+function cxShow(e) {
+  const pop = document.getElementById('cxPop'), inn = document.getElementById('cxPopIn');
+  inn.style.borderColor = e.col;
+  const pic = e.src ? `<img class="big${e.has ? '' : ' no'}" src="${e.src}">` : `<div class="bigI${e.has ? '' : ' no'}">${e.icon}</div>`;
+  inn.innerHTML = `${pic}<div class="t">${e.has ? e.name : (e.soon ? e.name : '？？？')}</div><div class="tg" style="color:${e.col}">${e.tag}・${e.has ? '已取得' : e.soon ? '即將登場' : '未取得'}</div><div class="d">${e.has ? e.d : e.soon ? e.d : '還沒抽到，打開補給箱收集它！'}</div>`;
+  pop.classList.add('show'); SFX.flip();
+}
+document.getElementById('cxPop').onclick = () => document.getElementById('cxPop').classList.remove('show');
+document.querySelectorAll('#codexTabs button').forEach(b => b.onclick = () => { cxTab = b.dataset.t; cxFilter = 'all'; renderCodex(); SFX.flip(); });
 document.getElementById('codexBack').onclick = () => { const f = cxBack || openTeam; cxBack = null; f(); };
 document.getElementById('codexBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); openCodex(openTeam); };
 document.getElementById('codexOpen').onclick = () => { SFX.init(); openCodex(openTeam); };
