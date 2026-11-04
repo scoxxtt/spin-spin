@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.62</title>
+<title>SPIN! SPIN! v0.63</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -63,7 +63,10 @@ h1{font-size:1.9em;margin:.3em 0 .1em;letter-spacing:.08em;background:linear-gra
 .vsrow .t{font-size:.72em;line-height:1.35}
 #gacha{padding:0;justify-content:flex-start;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#2a1660 0%,#0b0b16 75%)}
 #packCv{width:100%;aspect-ratio:540/860;touch-action:none;display:block}
-#gachaOk{position:absolute;bottom:5%;display:none;animation:pulse 1.2s infinite}
+#gachaBar{position:absolute;bottom:4%;left:0;right:0;display:none;justify-content:center;align-items:center;gap:.4em}
+#gachaOk{animation:pulse 1.2s infinite;margin:0}
+.gMore{margin:0;font-size:.8em;padding:.55em .7em;line-height:1.2}.gMore small{display:block;font-size:.75em}
+.gMore:disabled{opacity:.35}
 
 .tipBubble{position:fixed;left:50%;top:38%;transform:translateX(-50%);z-index:55;background:#fcee0a;color:#10101c;font-weight:700;font-size:.9em;padding:.7em 1em;box-shadow:0 0 0 2px #10101c,0 0 24px rgba(252,238,10,.6);clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);animation:popIn .25s ease-out;white-space:nowrap}
 .tipBubble.out{opacity:0;transition:opacity .3s}
@@ -453,7 +456,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 
   <div id="gacha" class="screen">
     <canvas id="packCv" width="1080" height="1720"></canvas>
-    <button class="btn" id="gachaOk">收下</button>
+    <div id="gachaBar"><button class="btn ghost gMore" id="gAgain1"></button><button class="btn" id="gachaOk">收下</button><button class="btn ghost gMore" id="gAgain10"></button></div>
   </div>
 
   <div id="codex" class="screen">
@@ -468,6 +471,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <div class="vault" id="vaultBox"></div>
     <div class="seg" id="questTabs"><button data-q="d">每日任務</button><button data-q="w">每週任務</button></div>
     <div class="sub" id="questSub"></div>
+    <button class="btn" id="claimAll" style="margin:.2em 0 .5em;padding:.5em 1.6em">一鍵領取</button>
     <div id="questList"></div>
     <button class="btn" id="questBack">返回</button>
   </div>
@@ -572,10 +576,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.60 EX gauge back to stepped rising bars across the full width into the round EX button, button yellow, no arena-following shape
  v0.61 rank-up (3-star parts climb to the next rarity with shards; starting classes cap at red, others at gold), 20 new character cards (portraits from art/portraits, 8 new EX types), purple draws give 異哲團 cards, faction bonds (2 / 3 of a faction, mixed +4%), ASSIST strike from the previous round's teammate
  v0.62 rank-up by feeding two same-faction (cards) or same-type (parts) 3-star copies of the same rarity, lands at 1 star; weapon types renamed 近戰 / 中距 / 遠距, armor types 衣服 / 護具 / 外甲; one draw table everywhere (white: starters 50% + factions, purple: factions 30/30/30 + 異哲團 10); ASSIST always from the previous slot, same-faction link is stronger; CPU lineups build faction bonds by difficulty
+ v0.63 draw-again buttons (single / ten) after a crate; one-tap claim-all on the quest page
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.62';
+const GAME_VERSION = 'v0.63';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1654,7 +1659,12 @@ function renderVersus() {
 // ---------- card pack opening ----------
 const PW = 540, PH = 860;
 const packCv = document.getElementById('packCv'), pg = packCv.getContext('2d');
-const okBtn = document.getElementById('gachaOk');
+const okBtn = document.getElementById('gachaOk'), gachaBar = document.getElementById('gachaBar');
+// draw again straight from the result screen (the cards just drawn are already in the inventory)
+for (const [id, n] of [['gAgain1', 1], ['gAgain10', 10]]) document.getElementById(id).onclick = () => {
+  if (INV.coins < (n === 10 ? PRICE10 : PRICE1)) return;
+  save(); PK.st = 'idle'; gachaBar.style.display = 'none'; buy(n);
+};
 const PK = { st: 'idle', t: 0, taps: 0, shake: 0, cards: [], title: '', done: null, fx: [], emblem: null, flash: 0, flashCol: '255,255,255' };
 // one draw table for every crate. White: starting classes 50% (cheap rank-up fodder), the rest split evenly by faction.
 // Purple: 鐵心幫 / 元森域 / 虛駭組 30% each, 異哲團 10%. Inside a faction, rarer cards (tier) come up less often.
@@ -1697,7 +1707,7 @@ function startGacha(n, title, done, opt) {
   PK.best = builds.some(b => CLASSES[b.c].hidden) ? 4 : Math.max(...builds.map(b => b.r.c));
   Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, banner: null, title, done, fx: [], emblem: randomTop(),
     cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })) });
-  okBtn.style.display = 'none';
+  gachaBar.style.display = 'none';
   show('gacha');
 }
 const easeOut = k => 1 - Math.pow(1 - k, 3);
@@ -1731,7 +1741,7 @@ packCv.addEventListener('pointerdown', e => {
   }
 });
 okBtn.onclick = () => {
-  save(); PK.st = 'idle'; okBtn.style.display = 'none';
+  save(); PK.st = 'idle'; gachaBar.style.display = 'none';
   PK.done && PK.done();
 };
 function roundRectP(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
@@ -1835,7 +1845,7 @@ function drawCard(g, card, sl, time, appear) {
     g.save(); g.translate(w / 2 - w * 0.17, -h / 2 + 8 + h * 0.5 - w * 0.17); const z2 = w / 200; g.scale(z2, z2);
     drawTop45(g, b, time * 6 * WEAPONS[b.w].dir, 0.9); g.restore();
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.font = `900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.lineJoin = 'round'; g.lineWidth = w * 0.03; g.strokeStyle = '#05060a'; g.strokeText(nameOf(b), 0, h * 0.13); g.fillStyle = '#fff'; g.fillText(nameOf(b), 0, h * 0.13);
+    g.font = `900 ${Math.round(w * 0.105)}px Rajdhani, sans-serif`; g.lineJoin = 'round'; g.lineWidth = w * 0.03; g.strokeStyle = '#05060a'; g.strokeText(CLASSES[b.c].name, 0, h * 0.13, w * 0.92); g.fillStyle = '#fff'; g.fillText(CLASSES[b.c].name, 0, h * 0.13, w * 0.92);
     const isz = w * 0.27;
     [['w', b.w, FAMILY[WEAPONS[b.w].fam].col], ['a', b.a, ARMOR_CLASS[ARMORS[b.a].cls].col]].forEach(([k, id, col], i) => {
       const ix = (i - 0.5) * (isz + w * 0.08) - isz / 2, iy = h * 0.185;
@@ -1922,7 +1932,10 @@ function drawPack(dt) {
     if (PK.st === 'cards' && flippedAll) {
       PK.st = 'done';
       okBtn.textContent = '收進零件庫';
-      okBtn.style.display = 'block';
+      gachaBar.style.display = 'flex';
+      const g1 = document.getElementById('gAgain1'), g10 = document.getElementById('gAgain10');
+      g1.innerHTML = `再抽一次<small>${ORE}${PRICE1}</small>`; g10.innerHTML = `十連抽<small>${ORE}${PRICE10}</small>`;
+      g1.disabled = INV.coins < PRICE1; g10.disabled = INV.coins < PRICE10;
     }
     if (PK.st === 'done') { const sl = cardSlot(PK.cards.length - 1, PK.cards.length); g.fillStyle = 'rgba(255,255,255,.7)'; g.font = '15px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・零件已放進零件庫', PW / 2, sl.y + sl.h / 2 + 34); }
   }
@@ -2127,6 +2140,7 @@ function canClaimAny() {
 function paintQuestDot() { if (INV) document.getElementById('questDot').style.display = canClaimAny() ? 'block' : 'none'; }
 let qTab = 'd', vaultTimer = null;
 function renderVault() {
+  { const ca = document.getElementById('claimAll'); if (ca) ca.disabled = !canClaimAny(); }
   const { stored, wait } = vaultState(), ok = wait === 0 && stored > 0;
   document.getElementById('vaultBox').innerHTML = `<div class="vt">🔐 數位保險箱</div><div class="vs">每秒自動存入 ${ORE}1，最多存 ${VAULT_CAP}（約 1 小時）。領取後 30 分鐘才能再領。</div>
     <div class="vrow"><div class="vbar"><i style="width:${stored / VAULT_CAP * 100}%"></i></div><div class="vn">${ORE}${stored}</div><button class="qBtn" id="vaultBtn" ${ok ? '' : 'disabled'}>${ok ? '領取' : wait ? mmss(wait) + ' 後可領' : '存款中'}</button></div>`;
@@ -2135,6 +2149,7 @@ function renderVault() {
 }
 function renderQuest() {
   const q = questState(); renderVault();
+  document.getElementById('claimAll').disabled = !canClaimAny();
   document.querySelectorAll('#questTabs button').forEach(b => b.classList.toggle('on', b.dataset.q === qTab));
   const row = (name, cur, tgt, rew, claimed, onClaim, cls = '') => { const done = cur >= tgt;
     const r = rew === 'purple' ? '必出紫色補給箱 ×1' : `${ORE}${rew}`;
@@ -2151,6 +2166,20 @@ function renderQuest() {
   const list = document.getElementById('questList'); list.innerHTML = rows.map(r => r.html).join('');
   list.querySelectorAll('.qBtn').forEach((b, i) => b.onclick = () => { if (b.disabled) return; const left = rows[i].onClaim(); save(); SFX.flip(); if (!left) renderQuest(); });
 }
+// claim every finished quest, the daily bonus and the vault in one tap; a weekly purple crate opens last
+function claimAll() {
+  const q = questState(); let got = 0, purple = false;
+  const vs = vaultState(); if (vs.wait === 0 && vs.stored > 0) { INV.coins += vs.stored; got += vs.stored; vs.v.from = vs.v.last = Date.now(); qAdd('vault'); }
+  for (const [k, , t, r] of DQ) if ((q.d[k] || 0) >= t && !q.got[k]) { q.got[k] = 1; INV.coins += r; got += r; }
+  if (q.dayDone && !q.bonus) { q.bonus = 1; INV.coins += DQ_BONUS; got += DQ_BONUS; }
+  for (const [k, , t, r] of WQ) if ((q.w[k] || 0) >= t && !q.wgot[k]) { q.wgot[k] = 1; if (r === 'purple') purple = true; else { INV.coins += r; got += r; } }
+  save();
+  if (!got && !purple) { SFX.flip(); return; }
+  SFX.ex && SFX.ex(); renderQuest();
+  const sub = document.getElementById('questSub'); sub.innerHTML = `<b style="color:#fcee0a">已領取 ${ORE}${got}${purple ? '＋紫色補給箱' : ''}</b>`;
+  if (purple) setTimeout(() => { stopVault(); startGacha(1, '每週紫色補給箱', openTeam, { paid: true, purple: true }); }, 700);
+}
+document.getElementById('claimAll').onclick = claimAll;
 function stopVault() { if (vaultTimer) clearInterval(vaultTimer); vaultTimer = null; }
 function openQuest() { show('quest'); renderQuest(); stopVault(); vaultTimer = setInterval(() => { if (screens.quest.classList.contains('show')) renderVault(); else stopVault(); }, 1000); }
 document.querySelectorAll('#questTabs button').forEach(b => b.onclick = () => { qTab = b.dataset.q; renderQuest(); SFX.flip(); });
