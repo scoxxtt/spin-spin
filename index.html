@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.44</title>
+<title>SPIN! SPIN! v0.45</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -469,10 +469,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.42 status bar shows the player's name (PLAYER until renamed); CPU gets a random old-school MMORPG-style name each match
  v0.43 auto-move modes (attack: hunt and push toward exits / defense: keep distance and circle, stay off the rim / core: hold CORE and strike intruders); selectable CPU strength (easy / normal / hard / hell: CPU gear level, skill and coin reward); 'class' renamed 'character card' in the UI
  v0.44 battle HUD as one framed panel (names on top, round + score in the centre, portraits / card name / parts / bars below); 10-pull card grid moved up so the prompt no longer covers the last row
+ v0.45 one rarity per draw (card, weapon and armor match); draws open a mechanical supply crate (three clamps, seam glow tinted by the best rarity inside, lid blows open with a light beam and steam)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.44';
+const GAME_VERSION = 'v0.45';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1335,7 +1336,7 @@ function buy(n) {
   const price = n === 10 ? PRICE10 : PRICE1; if (INV.coins < price) return;
   shopPop.classList.remove('show');
   INV.coins -= price; SFX.init(); INV.stats.draws += n === 10 ? 11 : 1;
-  startGacha(n === 10 ? 11 : 1, n === 10 ? '十連卡包' : '標準卡包', openTeam, { paid: true, ten: n === 10 });
+  startGacha(n === 10 ? 11 : 1, n === 10 ? '十連補給箱' : '補給箱', openTeam, { paid: true, ten: n === 10 });
 }
 function teamTap(idx) {
   invSel = null;
@@ -1410,11 +1411,12 @@ const okBtn = document.getElementById('gachaOk');
 const PK = { st: 'idle', t: 0, taps: 0, shake: 0, cards: [], title: '', done: null, fx: [], emblem: null, flash: 0, flashCol: '255,255,255' };
 function rollTop(base, opt) {
   const b = base || randomTop(); b.r = {}; b.s = {};
-  for (const k of 'cwa') { b.r[k] = rollFrom(R_RATE); b.s[k] = rollFrom(STAR_RATE); }
+  const rr = rollFrom(R_RATE); for (const k of 'cwa') { b.r[k] = rr; b.s[k] = rollFrom(STAR_RATE); }
+  const setR = v => { for (const k of 'cwa') b.r[k] = v; };
   if (opt && opt.paid) { // pity: a red+ at least every 10 draws, a yellow every 60
     INV.pity.r++; INV.pity.y++;
-    if (INV.pity.y >= 60) b.r[pick(['c', 'w', 'a'])] = 3;
-    else if (INV.pity.r >= 10 && Math.max(b.r.c, b.r.w, b.r.a) < 2) b.r[pick(['c', 'w', 'a'])] = 2;
+    if (INV.pity.y >= 60) setR(3);
+    else if (INV.pity.r >= 10 && b.r.c < 2) setR(2);
     const top = Math.max(b.r.c, b.r.w, b.r.a); if (top >= 2) INV.pity.r = 0; if (top >= 3) INV.pity.y = 0;
     INV.pity.cat = (INV.pity.cat || 0) + 1;
     if (Math.random() < 0.02 || INV.pity.cat >= 40) { b.c = 'mechcat'; INV.pity.cat = 0; }
@@ -1428,15 +1430,16 @@ function startGacha(n, title, done, opt) {
     const sh = o => Object.keys(o).sort(() => Math.random() - 0.5);
     const W2 = sh(WEAPONS), A2 = sh(ARMORS), C2 = BASIC_CLASSES.slice().sort(() => Math.random() - 0.5);
     builds = Array.from({ length: n }, (_, i) => rollTop({ w: W2[i % W2.length], a: A2[i % A2.length], c: C2[i % C2.length] }));
-    if (!builds.some(b => Math.max(b.r.c, b.r.w, b.r.a) >= 1)) builds[0].r[pick(['c', 'w', 'a'])] = 1;
+    if (!builds.some(b => b.r.c >= 1)) for (const k of 'cwa') builds[0].r[k] = 1;
   } else {
     builds = Array.from({ length: n }, () => rollTop(null, opt));
-    if (opt.ten && !builds.some(b => Math.max(b.r.c, b.r.w, b.r.a) >= 2)) builds[n - 1].r[pick(['c', 'w', 'a'])] = 2;
+    if (opt.ten && !builds.some(b => b.r.c >= 2)) for (const k of 'cwa') builds[n - 1].r[k] = 2;
   }
   // parts go into the inventory right away (coins are already spent); the cards show what each one became
   for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
   if (collection.length < 3) { collection = builds.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a })); fixTeam(); }
   save();
+  PK.best = builds.some(b => CLASSES[b.c].hidden) ? 4 : Math.max(...builds.map(b => b.r.c));
   Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, banner: null, title, done, fx: [], emblem: randomTop(),
     cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })) });
   okBtn.style.display = 'none';
@@ -1459,7 +1462,7 @@ packCv.addEventListener('pointerdown', e => {
     PK.taps++; PK.shake = 0.3;
     packFx(PW / 2 - 120 + 240 * PK.taps / 3, 262, 14, '#fffbd0', 260);
     SFX.tear(PK.taps);
-    if (PK.taps >= 3) { PK.st = 'burst'; PK.t = 0; SFX.burst(); SFX.ex(); packFx(PW / 2, 330, 70, null, 620); }
+    if (PK.taps >= 3) { PK.st = 'burst'; PK.t = 0; SFX.burst(); SFX.ex(); SFX.rev(0.6, 80, 220, 0.12); packFx(PW / 2, 330, 70, null, 620); }
   } else if (PK.st === 'cards') {
     const onCard = PK.cards.some((c, i) => { const sl = cardSlot(i, PK.cards.length); return Math.abs(x - sl.x) < sl.w / 2 && Math.abs(y - sl.y) < sl.h / 2; });
     if (!onCard) { let d = 0; PK.cards.forEach(c => { if (!c.flipping && c.flip === 0) { setTimeout(() => { c.flipping = true; SFX.flip(); }, d); d += 90; } }); return; }
@@ -1477,57 +1480,64 @@ okBtn.onclick = () => {
   PK.done && PK.done();
 };
 function roundRectP(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+// supply crate: front panel, lid, three clamps across the seam; the seam leaks light in the colour of the best pull inside
+const CRATE_GLOW = ['0,240,255', '176,102,255', '255,42,85', '252,238,10', '255,215,90'];
 function drawPackBody(g, cx, cy, time, tear, lidOff, lidRot, alpha) {
-  const w = 270, h = 400, x = cx - w / 2, y = cy - h / 2;
-  g.save(); g.globalAlpha = alpha;
-  // body
-  g.save();
-  roundRectP(g, x, y + 46, w, h - 46, 18); g.clip();
-  const foil = g.createLinearGradient(x, y, x + w, y + h);
-  foil.addColorStop(0, '#111417'); foil.addColorStop(0.45, '#1b2a30'); foil.addColorStop(0.7, '#0e3b44'); foil.addColorStop(1, '#0a0c0e');
-  g.fillStyle = foil; g.fillRect(x, y, w, h);
-  for (let i = -6; i < 14; i++) { g.strokeStyle = 'rgba(252,238,10,.07)'; g.lineWidth = 8; g.beginPath(); g.moveTo(x + i * 34, y); g.lineTo(x + i * 34 + 200, y + h); g.stroke(); }
-  // moving shimmer
-  const sx = x - 200 + ((time * 260) % (w + 400));
-  const sh = g.createLinearGradient(sx, y, sx + 140, y + 140);
-  sh.addColorStop(0, 'rgba(0,240,255,0)'); sh.addColorStop(0.5, 'rgba(0,240,255,.35)'); sh.addColorStop(1, 'rgba(0,240,255,0)');
-  g.fillStyle = sh; g.fillRect(x, y, w, h);
-  // emblem: a spinning top in a glowing medallion
-  const my = y + 200;
-  const mg = g.createRadialGradient(cx, my, 10, cx, my, 92);
-  mg.addColorStop(0, 'rgba(252,238,10,.55)'); mg.addColorStop(1, 'rgba(252,238,10,0)');
-  g.fillStyle = mg; g.beginPath(); g.arc(cx, my, 92, 0, TAU); g.fill();
-  g.strokeStyle = '#fcee0a'; g.lineWidth = 3; g.beginPath(); g.arc(cx, my, 64, 0, TAU); g.stroke();
-  g.save(); g.translate(cx, my); g.scale(1.6, 1.6); drawTop(g, PK.emblem, time * 3, { spin: 0.7 }); g.restore();
-  g.font = '900 38px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.9)'; g.strokeText('SPIN! SPIN!', cx, y + 318);
-  const tg = g.createLinearGradient(0, y + 300, 0, y + 336); tg.addColorStop(0, '#fffbd0'); tg.addColorStop(1, '#fcee0a');
-  g.fillStyle = tg; g.fillText('SPIN! SPIN!', cx, y + 318);
-  g.font = '700 17px Rajdhani, sans-serif'; g.fillStyle = '#00f0ff'; g.fillText(`陀螺卡包 ・ ${PK.cards.length} 張`, cx, y + 356);
+  const w = 300, h = 210, d = 64, x0 = cx - w / 2, x1 = cx + w / 2, yT = cy - h / 2 + 30, yB = yT + h;
+  const glow = CRATE_GLOW[PK.best || 0], open = Math.min(3, Math.round(tear * 3));
+  g.save(); g.globalAlpha = alpha; g.lineJoin = 'round';
+  // shadow
+  g.fillStyle = 'rgba(0,0,0,.5)'; g.beginPath(); g.ellipse(cx + 10, yB + 14, w * 0.58, 22, 0, 0, TAU); g.fill();
+  // side face (right)
+  g.beginPath(); g.moveTo(x1, yT); g.lineTo(x1 - 26, yT - d); g.lineTo(x1 - 26, yB - d); g.lineTo(x1, yB); g.closePath();
+  g.fillStyle = '#10151b'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke();
+  // front face
+  const fg = g.createLinearGradient(0, yT, 0, yB); fg.addColorStop(0, '#36404a'); fg.addColorStop(0.5, '#222a32'); fg.addColorStop(1, '#151a20');
+  g.beginPath(); g.moveTo(x0 + 10, yT); g.lineTo(x1, yT); g.lineTo(x1, yB - 10); g.lineTo(x1 - 10, yB); g.lineTo(x0, yB); g.lineTo(x0, yT + 10); g.closePath();
+  g.fillStyle = fg; g.fill();
+  g.save(); g.clip();
+  g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 2; // panel lines + rivets
+  for (const px of [x0 + 70, x1 - 70]) { g.beginPath(); g.moveTo(px, yT + 34); g.lineTo(px, yB - 34); g.stroke(); }
+  for (const [rx, ry] of [[x0 + 14, yT + 44], [x1 - 14, yT + 44], [x0 + 14, yB - 44], [x1 - 14, yB - 44]]) { g.fillStyle = '#5a6672'; g.beginPath(); g.arc(rx, ry, 3.5, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 1.5; g.stroke(); }
+  g.fillStyle = '#fcee0a'; g.fillRect(x0, yB - 26, w, 26); g.fillStyle = '#05060a'; // hazard band
+  for (let k = -2; k < 24; k++) { g.beginPath(); g.moveTo(x0 + k * 18, yB); g.lineTo(x0 + k * 18 + 9, yB); g.lineTo(x0 + k * 18 + 25, yB - 26); g.lineTo(x0 + k * 18 + 16, yB - 26); g.closePath(); g.fill(); }
+  g.globalAlpha = alpha * 0.15; g.fillStyle = dotPattern(g); g.fillRect(x0, yT, w, h); g.globalAlpha = alpha;
   g.restore();
-  roundRectP(g, x, y + 46, w, h - 46, 18); g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.stroke();
-  // lid (tear strip)
-  g.save(); g.translate(cx, y + 46 + lidOff); g.rotate(lidRot);
-  roundRectP(g, -w / 2, -46, w, 50, 14);
-  const lg = g.createLinearGradient(-w / 2, -46, w / 2, 4); lg.addColorStop(0, '#fcee0a'); lg.addColorStop(0.5, '#fff86b'); lg.addColorStop(1, '#c9b800');
-  g.fillStyle = lg; g.fill(); g.strokeStyle = '#8a5a10'; g.lineWidth = 2; g.stroke();
-  g.fillStyle = '#5a3a08'; g.font = '900 15px Rajdhani, sans-serif'; g.fillText('TEAR ▸▸▸', 0, -21);
-  g.restore();
-  // perforation + crack progress
-  if (lidOff === 0) {
-    g.setLineDash([6, 6]); g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2;
-    g.beginPath(); g.moveTo(x + 6, y + 48); g.lineTo(x + w - 6, y + 48); g.stroke(); g.setLineDash([]);
-    if (tear > 0) {
-      g.save(); g.shadowColor = '#fffbd0'; g.shadowBlur = 14; g.strokeStyle = '#fffbe6'; g.lineWidth = 3;
-      g.beginPath(); g.moveTo(x, y + 48);
-      const end = x + w * tear;
-      for (let px = x; px <= end; px += 12) g.lineTo(px, y + 48 + ((px / 12) % 2 ? -5 : 5));
-      g.stroke(); g.restore();
-    }
+  g.beginPath(); g.moveTo(x0 + 10, yT); g.lineTo(x1, yT); g.lineTo(x1, yB - 10); g.lineTo(x1 - 10, yB); g.lineTo(x0, yB); g.lineTo(x0, yT + 10); g.closePath();
+  g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = 'rgba(0,240,255,.5)'; g.lineWidth = 1.5; g.stroke();
+  // logo plate
+  g.fillStyle = '#0b0e14'; g.beginPath(); g.moveTo(cx - 84, yT + 70); g.lineTo(cx + 92, yT + 70); g.lineTo(cx + 84, yT + 132); g.lineTo(cx - 92, yT + 132); g.closePath(); g.fill();
+  g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = `rgba(${glow},.8)`; g.lineWidth = 1.5; g.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 900 30px Rajdhani, sans-serif';
+  g.lineWidth = 6; g.strokeStyle = '#05060a'; g.strokeText('SPIN! SPIN!', cx, yT + 95); g.fillStyle = '#fcee0a'; g.fillText('SPIN! SPIN!', cx, yT + 95);
+  g.font = '900 12px Rajdhani, sans-serif'; g.fillStyle = '#00f0ff'; g.fillText(`SUPPLY CRATE ・ ×${PK.cards.length}`, cx, yT + 120);
+  // seam light (stronger with every clamp opened)
+  if (open > 0 || lidOff < 0) {
+    const k = lidOff < 0 ? 1 : open / 3; g.save(); g.shadowColor = `rgb(${glow})`; g.shadowBlur = 20 + 20 * k;
+    g.strokeStyle = `rgba(${glow},${0.4 + 0.6 * k})`; g.lineWidth = 3 + 4 * k; g.beginPath(); g.moveTo(x0 + 12, yT); g.lineTo(x1 - 4, yT); g.stroke(); g.restore();
   }
+  // lid (top face), hinged at the back edge
+  g.save(); g.translate(cx, yT - d / 2 + lidOff); g.rotate(lidRot);
+  g.beginPath(); g.moveTo(-w / 2 + 10, d / 2); g.lineTo(w / 2, d / 2); g.lineTo(w / 2 - 26, -d / 2); g.lineTo(-w / 2 + 26 + 10, -d / 2); g.closePath();
+  const lg = g.createLinearGradient(0, -d / 2, 0, d / 2); lg.addColorStop(0, '#4a5560'); lg.addColorStop(1, '#2a323a'); g.fillStyle = lg; g.fill();
+  g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 2; g.beginPath(); g.moveTo(-w / 2 + 30, -d / 2 + 8); g.lineTo(w / 2 - 34, -d / 2 + 8); g.stroke();
+  g.fillStyle = '#fcee0a'; g.font = 'italic 900 13px Rajdhani, sans-serif'; g.fillText('▲ OPEN ▲', 0, 4);
+  g.restore();
+  // status lights + clamps across the seam
+  [-100, 0, 100].forEach((ox, i) => {
+    const unlocked = i < open, cxp = cx + ox;
+    g.save(); g.translate(cxp, yT);
+    if (unlocked) g.rotate(0.9 * (ox >= 0 ? 1 : -1));
+    g.fillStyle = unlocked ? '#5a6672' : '#fcee0a'; g.strokeStyle = '#05060a'; g.lineWidth = 3;
+    g.beginPath(); g.rect(-13, -14, 26, 30); g.fill(); g.stroke();
+    g.fillStyle = '#05060a'; g.fillRect(-7, -6, 14, 5);
+    g.restore();
+    g.fillStyle = unlocked ? '#5dff8f' : '#ff2a55'; g.beginPath(); g.arc(cxp, yT + 30, 4.5, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 1.5; g.stroke();
+    if (!unlocked) { g.globalAlpha = alpha * (0.5 + 0.5 * Math.sin(time * 8 + i)); g.fillStyle = 'rgba(255,42,85,.35)'; g.beginPath(); g.arc(cxp, yT + 30, 9, 0, TAU); g.fill(); g.globalAlpha = alpha; }
+  });
   g.restore();
 }
-// small result tag on a pack card part: NEW / star up / +1 / shard
 function resTag(g, res, x, y, w) {
   const T = { new: ['NEW', '#ff2a55', '#fff'], star: ['★UP', '#fcee0a', '#10101c'], up: ['稀有度↑', '#b066ff', '#fff'], '+1': ['+1', '#2a3340', '#fff'], shard: ['碎片', '#00f0ff', '#10101c'] }[res];
   if (!T) return;
@@ -1615,10 +1625,14 @@ function drawPack(dt) {
     if (PK.shake > 0) { PK.shake -= dt; cx += rnd(-1, 1) * 14 * PK.shake / 0.3; cy += rnd(-1, 1) * 8 * PK.shake / 0.3; }
     g.save(); g.shadowColor = 'rgba(0,240,255,.8)'; g.shadowBlur = 40;
     drawPackBody(g, cx, cy, time, PK.taps / 3, 0, 0, 1); g.restore();
-    if (PK.st === 'pack') prompt(`點擊卡包撕開！（還要 ${3 - PK.taps} 下）`);
+    if (PK.st === 'pack') prompt(`點擊解開鎖扣！（還有 ${3 - PK.taps} 個）`);
   } else if (PK.st === 'burst') {
     const k = PK.t;
-    drawPackBody(g, PW / 2, 410 + Math.max(0, k - 0.25) * 500, time, 1, -k * 900, -k * 3, Math.max(0, 1 - k * 1.6));
+    { const glow = CRATE_GLOW[PK.best || 0], bw = 120 + k * 260, ba = Math.max(0, 1 - k * 0.9);
+      const bg2 = g.createLinearGradient(0, 0, 0, 420); bg2.addColorStop(0, `rgba(${glow},0)`); bg2.addColorStop(1, `rgba(${glow},${0.55 * ba})`);
+      g.fillStyle = bg2; g.beginPath(); g.moveTo(PW / 2 - 140, 400); g.lineTo(PW / 2 + 140, 400); g.lineTo(PW / 2 + bw, 0); g.lineTo(PW / 2 - bw, 0); g.closePath(); g.fill();
+      for (let i = 0; i < 10; i++) { const sx2 = PW / 2 + (i - 4.5) * 30 + Math.sin(i * 3 + k * 6) * 10, sy2 = 380 - k * 260 - (i % 3) * 30; g.fillStyle = `rgba(220,230,240,${0.2 * ba})`; g.beginPath(); g.arc(sx2, sy2, 18 + k * 40, 0, TAU); g.fill(); } }
+    drawPackBody(g, PW / 2, 410 + Math.max(0, k - 0.3) * 420, time, 1, -k * 700, -k * 1.4, Math.max(0, 1 - k * 1.4));
     const n = PK.cards.length;
     PK.cards.forEach((c, i) => {
       const sl = cardSlot(i, n), m = clamp((k - 0.3) / 0.7, 0, 1), e = easeOut(m);
@@ -1704,7 +1718,7 @@ function tLabel(g, txt, x, y, col, size) { g.font = `italic 900 ${size || 22}px 
 function tFinger(g, x, y, press) { g.fillStyle = `rgba(255,255,255,${press ? 0.55 : 0.3})`; g.beginPath(); g.arc(x, y, press ? 15 : 18, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2.5; g.stroke(); }
 function tWave(g, x, y, k, col) { if (k < 0 || k > 1) return; g.strokeStyle = `rgba(${col},${1 - k})`; g.lineWidth = 8 * (1 - k) + 1; g.beginPath(); g.arc(x, y, 10 + k * 80, 0, TAU); g.stroke(); }
 const TUT = [
-  { title: '抽陀螺・組隊伍', text: '開局打開卡包抽 3 顆陀螺，零件會收進<b>零件庫</b>。陀螺分三層：<b>武器・鎧甲・角色</b>，每個出戰格各裝一組，再排好 1・2・3 的出場順序。打贏拿金幣再抽！', draw(g, t) {
+  { title: '抽陀螺・組隊伍', text: '開局打開補給箱抽 3 顆陀螺，零件會收進<b>零件庫</b>。陀螺分三層：<b>武器・鎧甲・角色</b>，每個出戰格各裝一組，再排好 1・2・3 的出場順序。打贏拿金幣再抽！', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       const ph = (t % 3.4) / 3.4, swapped = ph > 0.55;
       const A = { ...TA, w: swapped ? TB.w : TA.w }, B = { ...TB, w: swapped ? TA.w : TB.w };
@@ -1832,7 +1846,7 @@ function openTeam() {
   exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none'; exMeter.style.display = 'none';
   SFX.music('menu');
   if (!loadJSON('topTutSeen', false)) return showTutorial(openTeam);
-  if (collection.length < 3) return startGacha(3, '初始卡包', openTeam);
+  if (collection.length < 3) return startGacha(3, '初始補給箱', openTeam);
   show('team'); renderTeam();
   if (!loadJSON('topLpTip', false)) setTimeout(() => {
     const tip = document.createElement('div'); tip.className = 'tipBubble'; tip.innerHTML = '💡 小提示：<b>長按</b>頭像或零件，可以看詳情與相剋';
@@ -2061,7 +2075,7 @@ const SFX = (() => {
     launch() { rev(0.75, 55, 260, 0.2); noise(0.35, 0.18, 'bandpass', 500, 2500); },
     rev(d, f0, f1, v) { rev(d, f0, f1, v); },
     attach() { tone(520, 780, 0.12, 'sine', 0.12); },
-    tear(n) { noise(0.18, 0.35, 'highpass', 2500 + n * 900, 6000); tone(300 + n * 120, 180, 0.12, 'square', 0.08); },
+    tear(n) { tone(260 + n * 70, 110, 0.12, 'square', 0.16); tone(1800 + n * 300, 1200, 0.06, 'triangle', 0.12); noise(0.08, 0.3, 'bandpass', 3200, 1800); noise(0.25, 0.12, 'highpass', 5000, 9000, 0.06); },
     flip() { noise(0.12, 0.2, 'bandpass', 1200, 4000); },
     reveal() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, f, 0.35, 'triangle', 0.13, i * 0.07)); noise(0.5, 0.15, 'highpass', 3000, 8000); },
     rail() { tone(300, 1600, 0.45, 'sawtooth', 0.09); noise(0.5, 0.25, 'bandpass', 600, 5000); tone(880, 1320, 0.12, 'square', 0.06); },
