@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.56</title>
+<title>SPIN! SPIN! v0.57</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -560,10 +560,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.54 lineup title centred with a tri-colour underline and more room below the top-right buttons
  v0.55 removed the tri-colour underline under the lineup title
  v0.56 EX gauge redrawn as a full-width segmented band along the bottom that curves up around the EX button (pastel blue to pink); first-match starter-gift popup with single / ten draw buttons; faction names 鐵心幫 / 元森域 / 虛駭組 / 異哲團 with drawn badges in the codex
+ v0.57 EX gauge reworked as rising bars across the whole bottom, tops cut by the arena's lower rim (follows the camera); shakes with a tick from 90%, glows when full
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.56';
+const GAME_VERSION = 'v0.57';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3562,26 +3563,33 @@ function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcT
 
 // one framed HUD panel: names on top, round + score in the middle, each side's card below its name
 function fitText(g, txt, x, y, maxW) { const tw = g.measureText(txt).width; if (tw <= maxW) { g.fillText(txt, x, y); return; } g.save(); g.translate(x, y); g.scale(maxW / tw, 1); g.fillText(txt, 0, 0); g.restore(); }
-// EX gauge: a segmented band along the bottom that curves up around the EX button (pastel blue -> pink)
+// EX gauge: rising bars (like ▁▂▃▄▅▆▇█) across the whole bottom; their tops are cut by the arena's lower rim so the
+// gauge hugs the stadium. Lights left -> right, pastel blue -> pink; shakes near full, glows when full.
 function drawExArc(g) {
   if (!G || G.phase === 'final' || exBtn.style.display === 'none') return;
   const p = G.tops[0]; if (!p) return;
-  const L = SETTINGS.exSide === 'left', R = 74, cx = 459, cy = 867, y0 = cy + R * Math.SQRT1_2, x0 = 12;
-  const L1 = cx - R * Math.SQRT1_2 - x0, A0 = Math.PI * 0.75, A1 = Math.PI * 2.05, L2 = (A1 - A0) * R, tot = L1 + L2;
-  const at = d => { let x, y; if (d < L1) { x = x0 + d; y = y0; } else { const a = A0 + (d - L1) / R; x = cx + Math.cos(a) * R; y = cy + Math.sin(a) * R; } return { x: L ? W - x : x, y }; };
-  const passive = p.s.c.ex === 'revive', fill = passive ? 0 : clamp(p.energy / 100, 0, 1), full = fill >= 1, N = 34, seg = tot / N;
-  g.save(); g.lineCap = 'butt'; g.globalAlpha = passive ? 0.3 : 1;
-  const pulse = full ? 0.6 + 0.4 * Math.sin(G.time * 10) : 1;
+  const cam = camNow(), z = cam.z, ecx = CX - (cam.x - CX) * z, ecy = VIEW_CY - (cam.y - CY) * z * VIEW_K;
+  const rx = (AX + 34) * z, ry = (AX + 34) * z * VIEW_K + WALL_H * z + 6;
+  const passive = p.s.c.ex === 'revive', fill = passive ? 0 : clamp(p.energy / 100, 0, 1), full = fill >= 1;
+  if (!passive) { const hi = fill >= 0.9; if (hi && !G.exHi) SFX.flip(); G.exHi = hi; }
+  const N = 22, x0 = 8, x1 = W - 8, bw = (x1 - x0) / N, base = 946, L = SETTINGS.exSide === 'left';
+  const jit = !passive && fill >= 0.9 && !full ? 1.6 : 0, pulse = full ? 0.6 + 0.4 * Math.sin(G.time * 10) : 1;
+  g.save(); g.globalAlpha = passive ? 0.3 : 1;
   for (let i = 0; i < N; i++) {
-    const d0 = i * seg + 1.5, d1 = (i + 1) * seg - 1.5, pts = [];
-    for (let k = 0; k <= 4; k++) pts.push(at(d0 + (d1 - d0) * k / 4));
-    const path = () => { g.beginPath(); pts.forEach((q, j) => j ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y)); };
-    path(); g.strokeStyle = '#05060a'; g.lineWidth = 11; g.stroke();
-    const on = (i + 1) / N <= fill + 1e-6, u = i / (N - 1);
-    const col = `rgb(${Math.round(127 + 128 * u)},${Math.round(223 - 101 * u)},${Math.round(255 - 38 * u)})`; // #7fdfff -> #ff7ad9
-    path(); g.strokeStyle = on ? col : 'rgba(255,255,255,.12)'; g.lineWidth = 6.5;
-    if (on && full) { g.shadowColor = '#ff7ad9'; g.shadowBlur = 14 * pulse; } else g.shadowBlur = 0;
-    g.stroke();
+    const j = L ? N - 1 - i : i, xa = x0 + j * bw + 2, xb = xa + bw - 4, xm = (xa + xb) / 2;
+    const u = (xm - ecx) / rx, arcY = Math.abs(u) < 1 ? ecy + ry * Math.sqrt(1 - u * u) : -1e9;
+    const ramp = 26 + 250 * Math.pow(i / (N - 1), 1.15), top = Math.max(base - ramp, arcY + 8);
+    if (base - top < 6) continue;
+    const on = (i + 1) / N <= fill + 1e-6, k = i / (N - 1), sk = 7;
+    const dx = jit ? rnd(-jit, jit) : 0, dy = jit ? rnd(-jit, jit) : 0;
+    g.beginPath(); g.moveTo(xa + sk + dx, top + dy); g.lineTo(xb + sk + dx, top + dy); g.lineTo(xb + dx, base); g.lineTo(xa + dx, base); g.closePath();
+    if (on) {
+      const gr = g.createLinearGradient(0, top, 0, base);
+      const c = `${Math.round(127 + 128 * k)},${Math.round(223 - 101 * k)},${Math.round(255 - 38 * k)}`; // #7fdfff -> #ff7ad9
+      gr.addColorStop(0, `rgba(${c},1)`); gr.addColorStop(1, `rgba(${c},.35)`);
+      g.fillStyle = gr; if (full) { g.shadowColor = '#ff7ad9'; g.shadowBlur = 16 * pulse; }
+    } else { g.fillStyle = 'rgba(255,255,255,.07)'; g.shadowBlur = 0; }
+    g.fill(); g.shadowBlur = 0; g.lineWidth = 2; g.strokeStyle = 'rgba(5,6,10,.9)'; g.stroke();
   }
   g.restore();
 }
@@ -3890,7 +3898,7 @@ function render() {
     }
   }
   if (G.flash > 0) { g.fillStyle = `rgba(${G.flashCol || '255,255,255'},${Math.min(0.55, G.flash * 2)})`; g.fillRect(0, 0, W, H); if (G.flash <= 0.02) G.flashCol = null; }
-  drawHUD(g); drawExArc(g);
+  drawExArc(g); drawHUD(g);
   if (G.taps) for (const k of G.taps) {
     const e = 0.3 - k.t, r = 14 + e * 90, a = k.t * 3;
     g.strokeStyle = `rgba(5,6,10,${a})`; g.lineWidth = 8; g.beginPath(); g.arc(k.x, k.y, r, 0, TAU); g.stroke();
