@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.63</title>
+<title>SPIN! SPIN! v0.64</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -325,11 +325,15 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .upFx{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);z-index:4;color:#fcee0a;font-weight:900;font-size:.9em;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a;animation:upFx 1s ease-out forwards;pointer-events:none}
 @keyframes upFx{0%{opacity:0;margin-top:.6em}20%{opacity:1}100%{opacity:0;margin-top:-1.6em}}
 #autoBar{position:absolute;right:1.2em;top:10em;z-index:30;display:none;gap:.35em}
-#assistBtn{position:absolute;left:1.2em;top:10em;z-index:30;display:none;flex-direction:column;align-items:center;min-width:4.6em;padding:.25em .5em;border:1px solid #ff7ad9;background:rgba(0,0,0,.6);color:#ff7ad9;font-family:Rajdhani,"Noto Sans TC",sans-serif;cursor:pointer;overflow:hidden}
-#assistBtn b{font-size:.72em;font-weight:900;letter-spacing:.05em}#assistBtn i{font-style:normal;font-size:.55em;color:#cfd8e6}
-#assistBtn u{position:absolute;left:0;bottom:0;height:3px;background:#ff7ad9;width:0}
-#assistBtn.ready{background:#ff7ad9;color:#000;box-shadow:0 0 1em #ff7ad9;animation:pulse 1s infinite}#assistBtn.ready i{color:#000}
-#assistBtn.off{opacity:.35}
+#assistBtn{position:absolute;right:8.5%;bottom:17.6%;width:13%;aspect-ratio:1;z-index:30;display:none;padding:0;border:none;background:none;cursor:pointer;font-family:Rajdhani,"Noto Sans TC",sans-serif}
+#assistBtn.left{right:auto;left:8.5%}
+#assistBtn .asRing{position:absolute;inset:0;border-radius:50%;padding:4px;box-sizing:border-box;background:conic-gradient(#fcee0a var(--p,0%),rgba(252,238,10,.15) 0);display:block}
+#assistBtn img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid #05060a;box-sizing:border-box;background:#0a0a04}
+#assistBtn b{position:absolute;left:50%;bottom:-.35em;transform:translateX(-50%);font-size:.55em;font-weight:900;white-space:nowrap;background:#05060a;color:#fcee0a;padding:0 .4em;border:1px solid #fcee0a}
+#assistBtn u{display:none}
+#assistBtn.wait img{filter:grayscale(.8) brightness(.55)}
+#assistBtn.ready .asRing{box-shadow:0 0 1em #fcee0a;animation:pulse 1s infinite}
+#assistBtn.off{opacity:.3}#assistBtn.off img{filter:grayscale(1) brightness(.5)}
 .autoTog{font-family:Rajdhani,"Noto Sans TC",sans-serif;font-weight:900;font-size:.72em;display:flex;flex-direction:column;align-items:center;line-height:1;padding:.35em .6em .3em;background:#0b0e14;color:#7d8a99;border:2px solid #2a3340;cursor:pointer;clip-path:polygon(0 0,100% 0,100% 70%,82% 100%,0 100%)}
 .autoTog i{font-style:normal;font-size:.75em;margin-top:.15em}
 .autoTog.on{background:#fcee0a;color:#05060a;border-color:#05060a;box-shadow:0 0 .8em rgba(252,238,10,.7)}
@@ -421,8 +425,8 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div id="verFoot"></div>
   <button id="exBtn">EX</button>
   <div id="exMeter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <button id="assistBtn"><b>ASSIST</b><i>支援</i><u id="assistFill"></u></button>
-  <div id="autoBar"><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button><button id="autoMoveBtn" class="autoTog move"><b>MOVE</b><i>OFF</i></button></div>
+  <button id="assistBtn"><span class="asRing"><img id="assistImg" alt=""></span><b id="assistTag">支援</b><u id="assistFill"></u></button>
+  <div id="autoBar"><button id="spdBtn" class="autoTog"><b>SPEED</b><i>1×</i></button><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button><button id="autoMoveBtn" class="autoTog move"><b>MOVE</b><i>OFF</i></button></div>
   <button id="menuBtn">選單</button>
   <div id="topRight"><button id="questOpen" class="topB">任務<b class="tdot" id="questDot"></b></button><button id="codexOpen" class="topB">圖鑑</button><button id="gearBtn">⚙ 設定</button></div>
   <div id="settings">
@@ -577,10 +581,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.61 rank-up (3-star parts climb to the next rarity with shards; starting classes cap at red, others at gold), 20 new character cards (portraits from art/portraits, 8 new EX types), purple draws give 異哲團 cards, faction bonds (2 / 3 of a faction, mixed +4%), ASSIST strike from the previous round's teammate
  v0.62 rank-up by feeding two same-faction (cards) or same-type (parts) 3-star copies of the same rarity, lands at 1 star; weapon types renamed 近戰 / 中距 / 遠距, armor types 衣服 / 護具 / 外甲; one draw table everywhere (white: starters 50% + factions, purple: factions 30/30/30 + 異哲團 10); ASSIST always from the previous slot, same-faction link is stronger; CPU lineups build faction bonds by difficulty
  v0.63 draw-again buttons (single / ten) after a crate; one-tap claim-all on the quest page
+ v0.64 battle speed toggle (1x / 2x / 3x, battle phase only, extra fixed-step updates); ASSIST as a round portrait button above EX with a charge ring; auto-lineup button picks the strongest cards and parts including faction bonds and links
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.63';
+const GAME_VERSION = 'v0.64';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1134,6 +1139,30 @@ function fixTeam() {
     }
   }
 }
+// auto lineup: best three cards (power + faction bond + neighbouring ASSIST links), then the best weapons and armors
+function autoTeam() {
+  if (collection.length < 3) return;
+  const cPow = key => { const e = INV.c[key], c = CLASSES[e.id]; return partBonus('c', key) + (c.hp + c.speed + c.gain) * 0.08 + (c.philo ? 0.06 : 0); };
+  const cards = Object.keys(INV.c).sort((x, y) => cPow(y) - cPow(x)).slice(0, 9);
+  const fac = key => CLASSES[INV.c[key].id].fac, link = (x, y) => fac(x) === fac(y) || fac(x) === '異哲團' || fac(y) === '異哲團';
+  let best = null;
+  for (let i = 0; i < cards.length; i++) for (let j = 0; j < cards.length; j++) for (let k = 0; k < cards.length; k++) {
+    if (i === j || j === k || i === k) continue;
+    const o = [cards[i], cards[j], cards[k]], B = bondOf(o.map(x => ({ c: INV.c[x].id })));
+    const sc = o.reduce((t, x) => t + cPow(x), 0) + (B.lv >= 3 ? 0.32 : B.lv === 2 ? 0.18 : B.name === '混編' ? 0.06 : 0) + (link(o[0], o[1]) ? 0.05 : 0) + (link(o[1], o[2]) ? 0.05 : 0) + cPow(o[0]) * 0.01;
+    if (!best || sc > best.sc) best = { o, sc };
+  }
+  const pickParts = (k, val) => { const out = [], seen = new Set();
+    for (const key of Object.keys(INV[k]).sort((x, y) => val(y) - val(x))) { const tag = INV[k][key].id + '|' + INV[k][key].r; if (seen.has(tag)) continue; seen.add(tag); out.push(key); if (out.length === 3) break; }
+    return out; };
+  const W3 = pickParts('w', key => partBonus('w', key) + WEAPONS[INV.w[key].id].atk * 0.02 + WEAPONS[INV.w[key].id].kb * 0.015);
+  const A3 = pickParts('a', key => partBonus('a', key) + ARMORS[INV.a[key].id].thick * 0.02 + ARMORS[INV.a[key].id].facets * 0.004);
+  best.o.forEach((key, i) => { const b = collection[i]; b.ck = key; b.c = INV.c[key].id;
+    if (W3[i]) { b.wk = W3[i]; b.w = INV.w[W3[i]].id; } if (A3[i]) { b.ak = A3[i]; b.a = INV.a[A3[i]].id; } });
+  fixTeam(); save(); SFX.init(); SFX.attach(); renderTeam();
+  const B = bondOf(collection); document.querySelectorAll('#teamList .slot').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'eqf .5s'; });
+  if (B.lv) document.getElementById('teamSub').insertAdjacentHTML('beforeend', '');
+}
 function equip(i, k, key) {
   // one of each part per lineup: the same item, or the same weapon / armor at the same rarity, swaps out of the other slot
   const r0 = INV[k][key] ? INV[k][key].r : -1;
@@ -1410,7 +1439,7 @@ function renderTeam() {
   const panel = document.createElement('div'); panel.className = 'invPanel';
   const hintTxt = invSel ? `已選「${KIND[invSel.k][baseOf(invSel.k, invSel.id)].name}」，點出戰格裡的${KIND_NAME[invSel.k]}換裝` : swapSel ? `點下方的${KIND_NAME[swapSel.k]}換裝，或點另一格互換` : '拖曳換裝・長按詳情';
   const anyMerge = ['c', 'w', 'a'].some(k2 => Object.values(INV[k2]).some(canMerge));
-  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>碎片 ${INV.shards}</span><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
+  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>碎片 ${INV.shards}</span><button class="mergeAll" id="autoTeamBtn">自動上陣</button><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
   const tabs = document.createElement('div'); tabs.className = 'invTabs';
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
@@ -1457,6 +1486,7 @@ function renderTeam() {
   panel.appendChild(dots);
   list.appendChild(panel);
   document.getElementById('mergeAllBtn').onclick = mergeAll;
+  document.getElementById('autoTeamBtn').onclick = autoTeam;
   document.getElementById('sortBtn').onclick = () => { SETTINGS.invSort = SETTINGS.invSort === 'new' ? 'rarity' : 'new'; saveJSON('topSettings', SETTINGS); invPage.c = invPage.w = invPage.a = 0; renderTeam(); SFX.flip(); };
   const cur = Math.min(invPage[k] || 0, nP - 1), mark = p2 => { [...dots.children].forEach((d, i) => d.classList.toggle('on', i === p2)); arrL.classList.toggle('off', p2 <= 0); arrR.classList.toggle('off', p2 >= nP - 1); };
   invPage[k] = cur;
@@ -2697,11 +2727,13 @@ function doAssist(side) {
 }
 function paintAssist() {
   const b = document.getElementById('assistBtn'); if (!G || !G.tops) { b.style.display = 'none'; return; }
-  const A = assistInfo(0); b.style.display = G.phase === 'final' ? 'none' : 'flex';
-  const st = G.assist || { t: 0, used: [] }, ready = A && A.ok && !st.used[0] && st.t >= ASSIST_T && G.phase === 'battle';
-  b.classList.toggle('ready', !!ready); b.classList.toggle('off', !A || !A.ok || !!st.used[0]);
-  b.querySelector('i').textContent = !A ? '2 號起' : st.used[0] ? '已使用' : ready ? (A.link ? '連攜 ' : '') + CLASSES[A.prev.c].name.split('・')[0] : '準備中';
-  document.getElementById('assistFill').style.width = (A && A.ok && !st.used[0] ? Math.min(1, st.t / ASSIST_T) * 100 : 0) + '%';
+  const A = assistInfo(0); b.style.display = G.phase === 'final' || !A ? 'none' : 'block'; if (!A) return;
+  b.classList.toggle('left', SETTINGS.exSide === 'left');
+  const st = G.assist || { t: 0, used: [] }, used = !!st.used[0], ready = !used && st.t >= ASSIST_T && G.phase === 'battle';
+  const img = document.getElementById('assistImg'); if (img.dataset.c !== A.prev.c) { img.src = PORTRAIT_SRC[A.prev.c]; img.dataset.c = A.prev.c; }
+  b.classList.toggle('ready', ready); b.classList.toggle('off', used); b.classList.toggle('wait', !ready && !used);
+  b.style.setProperty('--p', (used ? 0 : Math.min(1, st.t / ASSIST_T) * 100) + '%');
+  document.getElementById('assistTag').textContent = used ? '已支援' : ready ? (A.link ? '連攜！' : '支援！') : '支援';
 }
 document.getElementById('assistBtn').addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); doAssist(0); });
 function startRound() {
@@ -3046,12 +3078,14 @@ function aiInput(me, foe, h) {
 const autoBar = document.getElementById('autoBar'), exMeter = document.getElementById('exMeter');
 const MOVE_MODES = ['off', 'atk', 'def', 'core'], MOVE_LABEL = { off: 'OFF', atk: '攻擊', def: '防禦', core: '佔點' };
 function paintAuto() {
+  { const b = document.getElementById('spdBtn'), v = SETTINGS.spd || 1; b.classList.toggle('on', v > 1); b.querySelector('i').textContent = v + '×'; }
   { const b = document.getElementById('autoMoveBtn'), m = SETTINGS.autoMove || 'off'; b.className = 'autoTog move ' + m; b.querySelector('i').textContent = MOVE_LABEL[m]; }
   for (const [id, key] of [['autoBtn', 'autoLaunch'], ['autoExBtn', 'autoEx']]) { const b = document.getElementById(id); b.classList.toggle('on', !!SETTINGS[key]); b.querySelector('i').textContent = SETTINGS[key] ? 'ON' : 'OFF'; }
 }
 for (const [id, key] of [['autoBtn', 'autoLaunch'], ['autoExBtn', 'autoEx']]) {
   document.getElementById(id).addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); SETTINGS[key] = !SETTINGS[key]; saveJSON('topSettings', SETTINGS); paintAuto(); SFX.attach(); });
 }
+document.getElementById('spdBtn').addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); SETTINGS.spd = (SETTINGS.spd || 1) % 3 + 1; saveJSON('topSettings', SETTINGS); paintAuto(); SFX.attach(); });
 document.getElementById('autoMoveBtn').addEventListener('pointerdown', e => {
   e.stopPropagation(); SFX.init(); const i = MOVE_MODES.indexOf(SETTINGS.autoMove || 'off');
   SETTINGS.autoMove = MOVE_MODES[(i + 1) % MOVE_MODES.length]; saveJSON('topSettings', SETTINGS); paintAuto(); SFX.attach();
@@ -4159,6 +4193,8 @@ function frame(now) {
   if (screens.gacha.classList.contains('show')) drawPack(dt);
   if (screens.tutorial.classList.contains('show')) drawTutorial(dt);
   if (G && G.phase !== 'final' && !settingsOpen) update(dt);
+  // fast-forward: extra fixed steps while the tops are fighting (launch / countdown stay real-time)
+  for (let i = 1; i < (SETTINGS.spd || 1); i++) if (G && G.phase === 'battle' && !settingsOpen) update(dt);
   const pt = G && G.tops ? G.tops[0] : null;
   { const on = G && G.phase === 'battle' && !settingsOpen;
     SFX.humUpdate([0, 1].map(i => { const q = G && G.tops ? G.tops[i] : null; return { on: !!(on && q && !q.dead && !q.falling), spin: q ? q.spin : 0, spd: q ? clamp(len(q.vx, q.vy) / 700, 0, 1) : 0, onRing: q ? q.onRing : false }; })); }
