@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.37</title>
+<title>SPIN! SPIN! v0.38</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -251,6 +251,22 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .pArrow.l{left:-.35em;clip-path:polygon(0 50%,35% 0,100% 0,100% 100%,35% 100%)}
 .pArrow.r{right:-.35em;clip-path:polygon(0 0,65% 0,100% 50%,65% 100%,0 100%)}
 .pArrow.off{opacity:.25;pointer-events:none}
+.tile.r1,.tile.r2,.tile.r3{border-width:2.5px}
+.tile.r1::before,.tile.r2::before,.tile.r3::before,.tile.r1::after,.tile.r2::after,.tile.r3::after{content:'';position:absolute;pointer-events:none;z-index:1;width:calc(var(--sl) * .32em + .1em);height:calc(var(--sl) * .32em + .1em);background:repeating-linear-gradient(135deg,var(--rc) 0 .14em,transparent .14em .32em)}
+.tile::before{left:0;bottom:0;clip-path:polygon(0 0,0 100%,100% 100%)}
+.tile::after{right:0;top:0;clip-path:polygon(0 0,100% 0,100% 100%)}
+.tile.r1{--sl:1;--rc:#b066ff}.tile.r2{--sl:2;--rc:#ff2a55;box-shadow:inset 0 0 0 2px rgba(0,0,0,.55),0 0 .5em rgba(255,42,85,.45)}
+.tile.r3{--sl:3;--rc:#fcee0a;animation:legend 1.8s infinite;background-image:linear-gradient(115deg,transparent 35%,rgba(255,240,140,.28) 50%,transparent 65%);background-size:250% 100%}
+@keyframes legend{0%{background-position:120% 0;box-shadow:inset 0 0 0 2px rgba(0,0,0,.55),0 0 .4em rgba(252,238,10,.5)}50%{box-shadow:inset 0 0 0 2px rgba(0,0,0,.55),0 0 1em rgba(252,238,10,.95)}100%{background-position:-120% 0;box-shadow:inset 0 0 0 2px rgba(0,0,0,.55),0 0 .4em rgba(252,238,10,.5)}}
+.tile .eqTag,.tile .newTag,.tile .cntTag,.tile .mergeBtn{z-index:2}
+.tile.starPop{animation:starPop .55s ease-out}
+@keyframes starPop{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(1.18);filter:brightness(2.2)}100%{transform:scale(1);filter:none}}
+.upFx{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);z-index:4;color:#fcee0a;font-weight:900;font-size:.9em;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a;animation:upFx 1s ease-out forwards;pointer-events:none}
+@keyframes upFx{0%{opacity:0;margin-top:.6em}20%{opacity:1}100%{opacity:0;margin-top:-1.6em}}
+#autoBar{position:absolute;right:1.2em;top:10.4em;z-index:30;display:none;gap:.35em}
+.autoTog{font-family:Rajdhani,"Noto Sans TC",sans-serif;font-weight:900;font-size:.72em;display:flex;flex-direction:column;align-items:center;line-height:1;padding:.35em .6em .3em;background:#0b0e14;color:#7d8a99;border:2px solid #2a3340;cursor:pointer;clip-path:polygon(0 0,100% 0,100% 70%,82% 100%,0 100%)}
+.autoTog i{font-style:normal;font-size:.75em;margin-top:.15em}
+.autoTog.on{background:#fcee0a;color:#05060a;border-color:#05060a;box-shadow:0 0 .8em rgba(252,238,10,.7)}
 .tile.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
 .starUp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,5,10,.75);animation:popIn .2s ease-out}
 .starUp.out{opacity:0;transition:opacity .3s}
@@ -291,6 +307,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <canvas id="cv"></canvas>
   <div id="verFoot"></div>
   <button id="exBtn">EX</button>
+  <div id="autoBar"><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button></div>
   <button id="menuBtn">選單</button>
   <button id="gearBtn">⚙ 設定</button>
   <div id="settings">
@@ -394,10 +411,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.35 announcer speaks each beat in English (Three / Two / One / SPIN! SPIN!), faster and brighter, synced to the countdown; smaller inventory tiles (5 per row)
  v0.36 one-screen lineup (no scrolling): compact slots, fixed inventory panel with swipe pages (5x2) and page dots, bottom bar with Draw / Fight, draw window popup, rules moved into the tutorial, tutorial + reset moved into settings, duplicate count badge on parts
  v0.37 one copy per class; weapons / armors may own extra copies only at a different star level (item keys); one-tap merge-all; HP bar over each top, HP % printed on the status bar; slot portraits grow to fill spare height; big page arrows on the inventory; readability pass (dark stacked shadows, contrast-paired comic words)
+ v0.38 countdown driven by the announcer's word boundaries (timer fallback); AUTO launch / auto-EX toggles under the CPU status; rarity frames with corner slashes (1/2/3) and gold shine; merge-all star cascade + summary burst
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.37';
+const GAME_VERSION = 'v0.38';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -876,15 +894,23 @@ function doMerge(k, key) {
   mergeOne(k, key); save(); starUpFx(k, key); renderTeam();
 }
 function mergeAll() {
-  let n = 0;
+  let n = 0; const ups = new Set();
   for (let guard = 0; guard < 200; guard++) {
     let did = false;
-    for (const k of 'cwa') for (const key of Object.keys(INV[k])) if (INV[k][key] && canMerge(INV[k][key])) { mergeOne(k, key); n++; did = true; }
+    for (const k of 'cwa') for (const key of Object.keys(INV[k])) if (INV[k][key] && canMerge(INV[k][key])) { mergeOne(k, key); n++; did = true; if (INV[k][key]) ups.add(k + '|' + key); }
     if (!did) break;
   }
   if (!n) { toast('目前沒有可以合成的零件'); return; }
-  save(); renderTeam(); SFX.init(); SFX.reveal(); SFX.ex(); if (navigator.vibrate) navigator.vibrate([20, 40, 30]);
-  toast(`一鍵合成完成：升星 ${n} 次！`);
+  save(); renderTeam(); SFX.init();
+  // every upgraded part on screen pops in turn, then a summary burst
+  const tiles = [...document.querySelectorAll('.invPage .tile')].filter(t => ups.has(t.dataset.ik + '|' + t.dataset.iid));
+  tiles.forEach((t, i) => setTimeout(() => { t.classList.add('starPop'); t.insertAdjacentHTML('beforeend', '<b class="upFx">★UP</b>'); SFX.attach(); }, i * 110));
+  setTimeout(() => {
+    const d = document.createElement('div'); d.className = 'starUp';
+    d.innerHTML = `<div class="suIn" style="--rc:#fcee0a"><div class="suT">一鍵合成！</div><div class="suN">升星 ×${n}</div><div class="suS">${[0, 1, 2].map(i => `<i class="on" style="animation-delay:${0.1 + i * 0.12}s">★</i>`).join('')}</div></div>`;
+    document.body.appendChild(d); SFX.reveal(); SFX.ex(); if (navigator.vibrate) navigator.vibrate([20, 40, 30, 40, 60]);
+    const bye = () => { d.classList.add('out'); setTimeout(() => d.remove(), 300); }; d.onclick = bye; setTimeout(bye, 1600);
+  }, Math.min(1200, tiles.length * 110 + 250));
 }
 function toast(msg) {
   const t = document.createElement('div'); t.className = 'tipBubble'; t.textContent = msg; document.body.appendChild(t);
@@ -1674,7 +1700,7 @@ document.getElementById('tutBtn').onclick = () => { settingsOpen = false; settin
 
 function openTeam() {
   G = null; swapSel = null;
-  exBtn.style.display = 'none'; menuBtn.style.display = 'none';
+  exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none';
   SFX.music('menu');
   if (!loadJSON('topTutSeen', false)) return showTutorial(openTeam);
   if (collection.length < 3) return startGacha(3, '初始卡包', openTeam);
@@ -1902,6 +1928,21 @@ const SFX = (() => {
       rev(0.8, 70, 300, 0.16, 0.05);
     },
     // a synthesized announcer voice through the browser's built-in speech (free, works offline on most phones)
+    // one quick phrase; reports when speech starts and which word (0..4) is being spoken
+    announceCount(onStart, onWord) {
+      if (muted || !('speechSynthesis' in window)) return false;
+      try {
+        const text = 'Three, two, one, spin! spin!', starts = [0, 7, 12, 17, 23];
+        const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 1.55; u.pitch = 1.3; u.volume = 1;
+        const vs = speechSynthesis.getVoices(), en = vs.filter(x => /^en/i.test(x.lang));
+        const v = en.find(x => /en(-|_)US/i.test(x.lang) && /male|david|alex|daniel|fred|guy|aaron|arthur/i.test(x.name)) || en.find(x => /en(-|_)US/i.test(x.lang)) || en[0];
+        if (v) u.voice = v;
+        u.onstart = () => onStart();
+        u.onboundary = e => { if (e.name === 'sentence') return; let i = 0; while (i + 1 < starts.length && e.charIndex >= starts[i + 1]) i++; onWord(i); };
+        speechSynthesis.cancel(); speechSynthesis.speak(u);
+        return true;
+      } catch (e) { return false; }
+    },
     announce(text, rate, pitch) {
       if (muted || !('speechSynthesis' in window)) return;
       try {
@@ -1963,7 +2004,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, hpPct: true, exSide: 'right' }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false }, loadJSON('topSettings', {}));
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
 function applySettings() {
@@ -2003,7 +2044,7 @@ function newMatch(lineup, aiTeam) {
         drag: null, joy: null, keys: {}, pairCD: 0, endT: 0, pending: null };
   startRound();
   show(null);
-  document.querySelectorAll('.tipBubble').forEach(t => t.remove()); exBtn.style.display = 'block'; menuBtn.style.display = 'block';
+  document.querySelectorAll('.tipBubble').forEach(t => t.remove()); exBtn.style.display = 'block'; menuBtn.style.display = 'block'; autoBar.style.display = 'flex'; paintAuto();
   SFX.music('battle');
   exBtn.innerHTML = 'EX';
 }
@@ -2235,19 +2276,26 @@ function pressEx(chargeOnly) {
 menuBtn.addEventListener('click', () => openTeam());
 
 // both tops launch together: the player's aim locks, the call plays, then the CPU's (hidden) drop is revealed
+// The countdown follows the announcer: the phone tells us when each word starts (boundary events), and the
+// picture shows that number at that moment. Phones that don't report words fall back to a fixed beat.
+const COUNT_BEAT = 0.42;
 function startCount(dx, dy, power) {
-  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
-  G.phase = 'count'; G.countT = 0; G.countN = -1; G.saidN = -1; G.pendingLaunch = { dx, dy, power }; G.banner = null;
+  G.phase = 'count'; G.countT = 0; G.countN = -1; G.pendingLaunch = { dx, dy, power }; G.banner = null;
+  G.beat = -1; G.beatMode = 'wait'; G.beatT0 = 0; G.lastBeatT = 0; G.gotWord = false;
+  const game = G;
+  const ok = SFX.announceCount(
+    () => { if (G === game && G.phase === 'count' && G.beatMode === 'wait') { G.beatMode = 'speech'; G.beat = 0; G.lastBeatT = G.countT; G.beatT0 = G.countT; } },
+    idx => { if (G === game && G.phase === 'count' && G.beatMode === 'speech') { G.gotWord = true; if (idx > G.beat) { G.beat = idx; G.lastBeatT = G.countT; } } });
+  if (!ok) G.beatMode = 'timer';
 }
-const COUNT_BEAT = 0.42, COUNT_LEAD = 0.16; // speech starts COUNT_LEAD ahead of the picture
 function updateCount(dt) {
   G.countT += dt;
-  const said = Math.floor(G.countT / COUNT_BEAT);
-  if (said !== G.saidN && said <= 3) { G.saidN = said; SFX.announce(['Three!', 'Two!', 'One!', 'Spin! Spin!'][said], said === 3 ? 1.35 : 1.6, said === 3 ? 1.35 : 1.2); }
-  if (G.countT < COUNT_LEAD) return;
-  const step = Math.floor((G.countT - COUNT_LEAD) / COUNT_BEAT);
-  if (step !== G.countN && step <= 3) {
-    G.countN = step;
+  if (G.beatMode === 'wait' && G.countT > 0.5) { G.beatMode = 'timer'; G.beatT0 = G.countT; }       // speech never started
+  if (G.beatMode === 'speech' && !G.gotWord && G.countT - G.beatT0 > 0.45) G.beatMode = 'timer';     // started, but no word timing
+  if (G.beatMode === 'speech' && G.countT - G.lastBeatT > 0.8) { G.beat++; G.lastBeatT = G.countT; } // speech stalled: keep going
+  const target = G.beatMode === 'timer' ? Math.floor((G.countT - G.beatT0) / COUNT_BEAT) : G.beatMode === 'speech' ? G.beat : -1;
+  if (target > G.countN) {
+    const step = Math.min(3, target); G.countN = step;
     if (step < 3) { comicPop(CX, CY - 30, ['3', '2', '1'][step], 64 + step * 8, '#ffffff', ['#00f0ff', '#fcee0a', '#ff2a55'][step], 0.42); SFX.countHit(step); G.shake = Math.max(G.shake, 3 + step * 2); }
     else {
       const me = G.tops[0], a = G.tops[1]; // CPU never lands on top of you
@@ -2323,6 +2371,21 @@ function aiInput(me, foe, h) {
 }
 
 // ---------- EX ----------
+const autoBar = document.getElementById('autoBar');
+function paintAuto() {
+  for (const [id, key] of [['autoBtn', 'autoLaunch'], ['autoExBtn', 'autoEx']]) { const b = document.getElementById(id); b.classList.toggle('on', !!SETTINGS[key]); b.querySelector('i').textContent = SETTINGS[key] ? 'ON' : 'OFF'; }
+}
+for (const [id, key] of [['autoBtn', 'autoLaunch'], ['autoExBtn', 'autoEx']]) {
+  document.getElementById(id).addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); SETTINGS[key] = !SETTINGS[key]; saveJSON('topSettings', SETTINGS); paintAuto(); SFX.attach(); });
+}
+// AUTO: pick a drop point and aim for you a moment after the round starts
+function autoLaunchStep(dt) {
+  if (!SETTINGS.autoLaunch || G.drag || G.phase !== 'launch') { if (G) G.autoT = 0; return; }
+  G.autoT = (G.autoT || 0) + dt; if (G.autoT < 0.8) return;
+  const me = G.tops[0], q = randomDrop(G.tops[1]); me.x = q.x; me.y = q.y; G.placed = true;
+  const d = norm(CX - me.x, CY - me.y), r = rnd(-0.6, 0.6);
+  startCount(d.x * Math.cos(r) - d.y * Math.sin(r), d.x * Math.sin(r) + d.y * Math.cos(r), rnd(0.65, 1));
+}
 function canEx(t) { return t.energy >= 100 && t.s.c.ex !== 'revive' && !t.dead && !t.falling && !t.ex; }
 function useEx(t) {
   if (!G || G.phase !== 'battle' || !canEx(t)) return;
@@ -2674,7 +2737,7 @@ function finish() {
   document.getElementById('toTeamBtn').style.display = '';
   show('final');
   win ? SFX.win() : SFX.lose();
-  exBtn.style.display = 'none'; menuBtn.style.display = 'none';
+  exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none';
   SFX.music('menu');
 }
 
@@ -2688,6 +2751,7 @@ function update(dt) {
   for (const w of G.waves) w.t -= dt; G.waves = G.waves.filter(w => w.t > 0);
   if (G.hitStop > 0) { G.hitStop -= dt; for (const s of G.texts) s.age += dt; return; } // freeze-frame on big hits
   if (G.exFreeze && G.exFreeze.t > 0) { G.exFreeze.t -= dt; if (G.exFreeze.t <= 0) G.exFreeze = null; if (G.cutin) G.cutin.t -= dt; for (const s2 of G.texts) s2.age += dt; return; } // EX freeze
+  if (G.phase === 'battle' && SETTINGS.autoEx && canEx(G.tops[0])) useEx(G.tops[0]);
   if (G.phase === 'battle') {
     const steps = 4, h = dt / steps;
     for (let i = 0; i < steps && G.phase === 'battle'; i++) {
@@ -2707,6 +2771,7 @@ function update(dt) {
     if (G.endT <= 0) afterRound();
   } else if (G.phase === 'launch') {
     for (const t of G.tops) t.angle += t.s.w.dir * 4 * dt;
+    autoLaunchStep(dt);
   } else if (G.phase === 'count') updateCount(dt);
   for (const t of G.tops) {
     const fast = t.onRing || len(t.vx, t.vy) > 380;
