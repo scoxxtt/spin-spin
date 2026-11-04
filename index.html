@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.53</title>
+<title>SPIN! SPIN! v0.54</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -212,8 +212,9 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .slot.equipFlash{animation:eqf .5s}
 @keyframes eqf{0%{filter:brightness(2.2)}100%{filter:none}}
 #team.screen{overflow:hidden;padding:.4em .6em 2.4em !important;justify-content:flex-start}
-#team .topBar{width:100%;display:flex;flex-direction:column;align-items:center;flex:none;padding-top:1.75em;box-sizing:border-box;position:relative}
-#team h1{font-size:1.45em;margin:.05em 0 0}
+#team .topBar{width:100%;display:flex;flex-direction:column;align-items:center;flex:none;padding:2.5em 0 0 0 !important;box-sizing:border-box;position:relative}
+#team h1{font-size:1.55em;margin:.1em 0 0;padding-left:.12em;line-height:1.1}
+#team h1::after{content:'';display:block;height:.12em;width:70%;margin:.12em auto 0;background:linear-gradient(90deg,transparent,#00f0ff 25%,#fcee0a 50%,#ff2a55 75%,transparent);transform:skew(6deg)}
 #team .sub{font-size:.78em;margin:.1em 0 .3em}
 #teamList{flex:1;min-height:0;width:100%;display:flex;flex-direction:column}
 #team .slots{flex:none}
@@ -555,10 +556,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.51 reset uses an in-game confirm (browser confirm can be blocked in app webviews) and bigger setting buttons; tutorial text refreshed plus two strategy pages; codex screen (cards / weapons / armors with full stats); first finished match gives a one-time 10000-coin starter gift
  v0.52 codex as a dense picture grid (cards grouped by faction with filter buttons, upcoming cards shown as silhouettes), tap / long-press for an enlarged card with details; codex button sits beside the settings button
  v0.53 top-right button row (quests / codex / settings, same size and line); daily quests, weekly quests and the digital vault (1 coin per second, 1-hour cap, claim every 30 min)
+ v0.54 lineup title centred with a tri-colour underline and more room below the top-right buttons
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.53';
+const GAME_VERSION = 'v0.54';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
