@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.38</title>
+<title>SPIN! SPIN! v0.39</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -267,6 +267,34 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .autoTog{font-family:Rajdhani,"Noto Sans TC",sans-serif;font-weight:900;font-size:.72em;display:flex;flex-direction:column;align-items:center;line-height:1;padding:.35em .6em .3em;background:#0b0e14;color:#7d8a99;border:2px solid #2a3340;cursor:pointer;clip-path:polygon(0 0,100% 0,100% 70%,82% 100%,0 100%)}
 .autoTog i{font-style:normal;font-size:.75em;margin-top:.15em}
 .autoTog.on{background:#fcee0a;color:#05060a;border-color:#05060a;box-shadow:0 0 .8em rgba(252,238,10,.7)}
+#team .topBar{padding-left:3.5em;position:relative}
+#profileBtn{position:absolute;left:-.2em;top:.1em;display:flex;align-items:center;gap:.3em;max-width:6.5em;padding:.15em .4em .15em .15em;background:rgba(0,0,0,.55);border:1px solid #00f0ff;color:#e8edf2;font-family:inherit;font-weight:900;font-size:.68em;cursor:pointer}
+#profileBtn img{width:1.9em;height:1.9em;object-fit:cover;border:1.5px solid #fcee0a}
+#profileBtn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#profilePop{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.75);padding:1em}
+#profilePop.show{display:flex;animation:popIn .18s ease-out}
+.pfCard{border-color:#00f0ff}
+.pfHead{display:flex;gap:.7em;align-items:center}
+.pfHead img{width:4.4em;height:4.4em;object-fit:cover;border:2px solid #fcee0a}
+.pfName{flex:1;min-width:0}
+.pfN{display:flex;align-items:center;gap:.5em;font-size:1.25em;font-weight:900;text-shadow:2px 2px 0 #05060a}
+.pfN span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pfEdit{font-family:inherit;font-size:.55em;font-weight:900;padding:.2em .6em;background:#00f0ff;color:#05060a;border:2px solid #05060a;cursor:pointer;flex:none}
+.pfRow{gap:.4em;margin:.3em 0}
+.pfRow input{flex:1;min-width:0;font-family:inherit;font-size:.9em;padding:.3em .4em;background:#05060a;color:#fff;border:2px solid #00f0ff}
+.pfSave{margin:0;font-size:.8em;padding:.3em .9em}
+.pfSec{margin:.7em 0 .3em;font-weight:900;font-style:italic;color:#00f0ff;font-size:.85em;border-bottom:1px solid rgba(0,240,255,.3)}
+.pfGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.3em}
+.pfCell{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:.35em .2em;text-align:center}
+.pfCell b{display:block;font-size:1.15em;color:#fcee0a;font-weight:900}
+.pfCell span{font-size:.68em;color:#9fb0c0}
+.pfFav{display:flex;align-items:center;gap:.5em;flex-wrap:wrap}
+.pfFav img{width:2.6em;height:2.6em;object-fit:cover;border:2px solid #00f0ff}
+.pfFav span{font-size:.75em;color:#9fb0c0}
+.sortBtn{font-family:inherit;font-weight:900;font-size:.68em;padding:.15em .5em;border:2px solid #05060a;background:#00f0ff;color:#05060a;cursor:pointer;letter-spacing:0}
+.autoTog.wide{flex-direction:row;gap:.5em;font-size:.9em;padding:.5em 1.1em;margin-top:1em}
+.autoTog.wide i{margin:0}
+#nextCount{margin-top:.5em;font-weight:900;color:#fcee0a;min-height:1.2em;font-size:.9em}
 .tile.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
 .starUp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,5,10,.75);animation:popIn .2s ease-out}
 .starUp.out{opacity:0;transition:opacity .3s}
@@ -324,7 +352,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   </div>
 
   <div id="team" class="screen show">
-    <div class="topBar"><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
+    <div class="topBar"><button id="profileBtn"></button><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
     <div id="teamList"></div>
     <div class="bottomBar"><button class="btn ghost" id="drawOpen">抽卡<b class="dot" id="drawDot"></b></button><button class="btn" id="startBtn">開戰！</button></div>
   </div>
@@ -356,10 +384,13 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <button class="btn" id="drawBtn">抽一顆新陀螺</button>
     <button class="btn" id="retryBtn">再挑戰（換新對手）</button>
     <button class="btn ghost" id="toTeamBtn">回到陣容</button>
+    <button class="autoTog wide" id="autoNextBtn"><b>自動下一局</b><i>OFF</i></button>
+    <div id="nextCount"></div>
   </div>
 </div>
 
 <div id="infoPop"></div>
+<div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
   <div class="k shopNote">每個零件各自抽稀有度：白 70%・紫 22%・紅 6.5%・黃 1.5%<br>十連保底紅色以上・每 60 抽保底黃色<br>付費抽卡每抽 2% 出現隱藏職業（40 抽保底）</div>
@@ -412,10 +443,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.36 one-screen lineup (no scrolling): compact slots, fixed inventory panel with swipe pages (5x2) and page dots, bottom bar with Draw / Fight, draw window popup, rules moved into the tutorial, tutorial + reset moved into settings, duplicate count badge on parts
  v0.37 one copy per class; weapons / armors may own extra copies only at a different star level (item keys); one-tap merge-all; HP bar over each top, HP % printed on the status bar; slot portraits grow to fill spare height; big page arrows on the inventory; readability pass (dark stacked shadows, contrast-paired comic words)
  v0.38 countdown driven by the announcer's word boundaries (timer fallback); AUTO launch / auto-EX toggles under the CPU status; rarity frames with corner slashes (1/2/3) and gold shine; merge-all star cascade + summary burst
+ v0.39 auto next match toggle on the result screen; player profile page (rename, ID, stats, collection, favourite class); inventory sort (rarity / newest); armor class colours no longer clash with weapon families
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.38';
+const GAME_VERSION = 'v0.39';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -481,9 +513,9 @@ const FAMILY = {
   blast: { name: '爆裂', col: '#fcee0a', desc: '傷害低、擊退最強；爆震：命中爆炸大幅擊飛，自己也會被反衝', beats: 'heavy', weak: 'light' },
 };
 const ARMOR_CLASS = {
-  light:  { name: '輕裝', col: '#00f0ff' },
-  heavy:  { name: '重裝', col: '#fcee0a' },
-  energy: { name: '能量護盾', col: '#b066ff' },
+  light:  { name: '輕裝', col: '#59f2a1' },
+  heavy:  { name: '重裝', col: '#ff8c2e' },
+  energy: { name: '能量護盾', col: '#ff5ad1' },
 };
 const COUNTER_UP = 1.3, COUNTER_DOWN = 0.8;
 const WEAPONS = {
@@ -839,7 +871,7 @@ function addPart(k, id, r, st) {
     e.n++; return res;
   }
   const key = INV[k][id] ? id + '~' + Math.random().toString(36).slice(2, 7) : id;
-  INV[k][key] = { id, r, s: st, n: 0, isNew: 1 }; return 'new';
+  INV[k][key] = { id, r, s: st, n: 0, isNew: 1, t: Date.now() }; return 'new';
 }
 const partBonus = (k, key) => { const e = INV[k][key]; return e ? R_BASE[e.r] + e.s * R_STEP[e.r] : 0; };
 const withBonus = b => ({ c: b.c, w: b.w, a: b.a, bc: partBonus('c', kk(b, 'c')), bw: partBonus('w', kk(b, 'w')), ba: partBonus('a', kk(b, 'a')) });
@@ -927,6 +959,10 @@ function starUpFx(k, id) {
 collection = (INV.team || []).filter(b => b && CLASSES[b.c] && WEAPONS[b.w] && ARMORS[b.a]);
 if (collection.length === 3) fixTeam(); else collection = [];
 let wins = loadJSON('topWins', 0) || 0;
+// player profile and lifetime stats (kept with the inventory so a future online account can upload them as-is)
+if (!INV.profile) INV.profile = { name: '玩家' + Math.floor(1000 + Math.random() * 9000), id: Math.random().toString(36).slice(2, 10).toUpperCase(), joined: Date.now() };
+if (!INV.stats) INV.stats = { matches: wins, wins, losses: 0, streak: 0, best: 0, coins: 0, draws: 0, use: {} };
+{ let n = 0; for (const k of 'cwa') for (const key of Object.keys(INV[k])) if (INV[k][key].t == null) INV[k][key].t = ++n; } // older items: keep their order
 let aiLineup = null;
 let swapSel = null; // {i, k} chip picked in a lineup slot
 let teamSel = null; // lineup slot picked by tapping (tap another to swap order)
@@ -1067,9 +1103,9 @@ function renderTeam() {
   // parts inventory: tabs for classes / weapons / armors
   const own = k => Object.keys(INV[k]);
   const panel = document.createElement('div'); panel.className = 'invPanel';
-  const hintTxt = invSel ? `已選「${KIND[invSel.k][baseOf(invSel.k, invSel.id)].name}」，點出戰格裡的${KIND_NAME[invSel.k]}換裝` : swapSel ? `點下方的${KIND_NAME[swapSel.k]}換裝，或點另一格互換` : '拖到出戰格換裝・長按看詳情';
+  const hintTxt = invSel ? `已選「${KIND[invSel.k][baseOf(invSel.k, invSel.id)].name}」，點出戰格裡的${KIND_NAME[invSel.k]}換裝` : swapSel ? `點下方的${KIND_NAME[swapSel.k]}換裝，或點另一格互換` : '拖曳換裝・長按詳情';
   const anyMerge = ['c', 'w', 'a'].some(k2 => Object.values(INV[k2]).some(canMerge));
-  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>碎片 ${INV.shards}</span><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
+  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>碎片 ${INV.shards}</span><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
   const tabs = document.createElement('div'); tabs.className = 'invTabs';
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
@@ -1080,7 +1116,7 @@ function renderTeam() {
   panel.appendChild(tabs);
   const pagesEl = document.createElement('div'); pagesEl.className = 'invPages';
   const k = invTab, PER = invCols * invRows; let grid = null, count = 0;
-  own(k).sort((x, y) => INV[k][y].r - INV[k][x].r || baseOf(k, x).localeCompare(baseOf(k, y)) || INV[k][y].s - INV[k][x].s).forEach(id => {
+  own(k).sort(SETTINGS.invSort === 'new' ? (x, y) => (INV[k][y].t || 0) - (INV[k][x].t || 0) : (x, y) => INV[k][y].r - INV[k][x].r || baseOf(k, x).localeCompare(baseOf(k, y)) || INV[k][y].s - INV[k][x].s).forEach(id => {
     const e = INV[k][id], bid = baseOf(k, id), slot = collection.findIndex(b => kk(b, k) === id), t = document.createElement('div');
     t.className = 'tile r' + e.r + (invSel && invSel.k === k && invSel.id === id ? ' picked' : '') + (swapSel && swapSel.k === k ? ' target' : '');
     t.dataset.ik = k; t.dataset.iid = id; t.style.borderColor = RARITY[e.r].col;
@@ -1114,6 +1150,7 @@ function renderTeam() {
   panel.appendChild(dots);
   list.appendChild(panel);
   document.getElementById('mergeAllBtn').onclick = mergeAll;
+  document.getElementById('sortBtn').onclick = () => { SETTINGS.invSort = SETTINGS.invSort === 'new' ? 'rarity' : 'new'; saveJSON('topSettings', SETTINGS); invPage.c = invPage.w = invPage.a = 0; renderTeam(); SFX.flip(); };
   const cur = Math.min(invPage[k] || 0, nP - 1), mark = p2 => { [...dots.children].forEach((d, i) => d.classList.toggle('on', i === p2)); arrL.classList.toggle('off', p2 <= 0); arrR.classList.toggle('off', p2 >= nP - 1); };
   invPage[k] = cur;
   pagesEl.scrollLeft = cur * pagesEl.clientWidth; mark(cur);
@@ -1130,7 +1167,42 @@ function renderTeam() {
   }
   pagesEl.onscroll = () => { const p2 = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth)); invPage[k] = p2; mark(p2); };
   document.getElementById('drawDot').style.display = INV.coins >= PRICE1 ? '' : 'none';
+  paintProfileBtn();
 }
+function paintProfileBtn() {
+  const b = document.getElementById('profileBtn'), c = collection[0] ? collection[0].c : 'berserker';
+  b.innerHTML = `<img src="${PORTRAIT_SRC[c]}"><span>${INV.profile.name.replace(/[<>&]/g, '')}</span>`;
+}
+const profilePop = document.getElementById('profilePop');
+function openProfile() {
+  const P = INV.profile, S = INV.stats, esc = t => String(t).replace(/[<>&"]/g, '');
+  const fav = Object.entries(S.use).sort((a, b) => b[1] - a[1])[0], favC = fav ? fav[0] : (collection[0] ? collection[0].c : 'berserker');
+  const own = k => new Set(Object.keys(INV[k]).map(x => baseOf(k, x))).size, tot = k => Object.keys(KIND[k]).filter(id => !KIND[k][id].hidden).length;
+  const golds = ['c', 'w', 'a'].reduce((n, k) => n + Object.values(INV[k]).filter(e => e.r === 3).length, 0);
+  const rate = S.matches ? Math.round(S.wins / S.matches * 100) : 0, d = new Date(P.joined);
+  const cell = (label, val) => `<div class="pfCell"><b>${val}</b><span>${label}</span></div>`;
+  profilePop.innerHTML = `<div class="ipCard pfCard">
+    <div class="pfHead"><img src="${PORTRAIT_SRC[collection[0] ? collection[0].c : favC]}">
+      <div class="pfName"><div class="pfN"><span id="pfNameTxt">${esc(P.name)}</span><button class="pfEdit" id="pfEdit">改名</button></div>
+      <div class="pfRow" id="pfEditRow" style="display:none"><input id="pfInput" maxlength="12" value="${esc(P.name)}"><button class="btn pfSave" id="pfSave">儲存</button></div>
+      <div class="k">ID #${P.id}・加入 ${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}</div></div></div>
+    <div class="pfSec">戰績</div>
+    <div class="pfGrid">${cell('對戰場數', S.matches)}${cell('勝場', S.wins)}${cell('勝率', rate + '%')}${cell('最高連勝', S.best)}${cell('目前連勝', S.streak)}${cell('隊伍戰力', '+' + Math.round(teamPower() * 100) + '%')}</div>
+    <div class="pfSec">收藏</div>
+    <div class="pfGrid">${cell('職業', own('c') + '/' + tot('c'))}${cell('武器', own('w') + '/' + tot('w'))}${cell('鎧甲', own('a') + '/' + tot('a'))}${cell('黃色零件', golds)}${cell('抽卡次數', S.draws)}${cell('累積金幣', S.coins)}</div>
+    <div class="pfSec">最常使用</div>
+    <div class="pfFav"><img src="${PORTRAIT_SRC[favC]}"><b>${CLASSES[favC].name}</b><span>${fav ? `出戰 ${fav[1]} 場` : '還沒有對戰紀錄'}</span>${INV.c.mechcat ? '<em class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏職業已解鎖</em>' : ''}</div>
+    <div class="ipClose">點其他地方關閉</div></div>`;
+  profilePop.classList.add('show'); SFX.init(); SFX.flip();
+  document.getElementById('pfEdit').onclick = e => { e.stopPropagation(); document.getElementById('pfEditRow').style.display = 'flex'; const inp = document.getElementById('pfInput'); inp.focus(); inp.select(); };
+  document.getElementById('pfSave').onclick = e => {
+    e.stopPropagation(); const v = document.getElementById('pfInput').value.trim().replace(/[<>&"]/g, '').slice(0, 12);
+    if (!v) { toast('名字不能是空白'); return; }
+    INV.profile.name = v; save(); document.getElementById('pfNameTxt').textContent = v; document.getElementById('pfEditRow').style.display = 'none'; paintProfileBtn(); SFX.attach(); toast('改名完成！');
+  };
+}
+profilePop.addEventListener('click', e => { if (!e.target.closest('.pfRow, .pfEdit')) profilePop.classList.remove('show'); });
+document.getElementById('profileBtn').onclick = openProfile;
 const invPage = { c: 0, w: 0, a: 0 }; let invRows = 2, invCols = 5;
 (() => {
   const list = document.getElementById('teamList'); let md = null;
@@ -1210,7 +1282,7 @@ document.getElementById('drawOpen').onclick = openShop;
 function buy(n) {
   const price = n === 10 ? PRICE10 : PRICE1; if (INV.coins < price) return;
   shopPop.classList.remove('show');
-  INV.coins -= price; SFX.init();
+  INV.coins -= price; SFX.init(); INV.stats.draws += n === 10 ? 11 : 1;
   startGacha(n === 10 ? 11 : 1, n === 10 ? '十連卡包' : '標準卡包', openTeam, { paid: true, ten: n === 10 });
 }
 function teamTap(idx) {
@@ -1718,14 +1790,29 @@ document.getElementById('startBtn').onclick = () => {
   renderVersus(); show('versus');
 };
 document.getElementById('backBtn').onclick = () => { renderTeam(); show('team'); };
-document.getElementById('fightBtn').onclick = () => {
+function fight() {
   SFX.init(); const pw = teamPower();
   newMatch(collection.map(withBonus), aiLineup.map(b => { const x = pw * rnd(0.85, 1.05); return { ...b, bc: x, bw: x, ba: x }; }));
-};
-document.getElementById('resetBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); if (!confirm('確定要清空零件庫、金幣和勝場，重新開始嗎？')) return; INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [] }; collection = []; wins = 0; save(); openTeam(); };
-document.getElementById('drawBtn').onclick = () => buy(1);
-document.getElementById('retryBtn').onclick = () => { aiLineup = [randomTop(), randomTop(), randomTop()]; renderVersus(); show('versus'); };
-document.getElementById('toTeamBtn').onclick = openTeam;
+}
+document.getElementById('fightBtn').onclick = fight;
+// auto next match: a short countdown on the result screen, then a new opponent straight away
+let nextTimer = null;
+function stopNext() { if (nextTimer) clearInterval(nextTimer); nextTimer = null; document.getElementById('nextCount').textContent = ''; }
+function armNext() {
+  stopNext(); if (!SETTINGS.autoNext) return;
+  let n = 4; const el = document.getElementById('nextCount'); el.textContent = `${n} 秒後自動開始下一局`;
+  nextTimer = setInterval(() => {
+    n--; if (!screens.final.classList.contains('show')) return stopNext();
+    if (n <= 0) { stopNext(); aiLineup = [randomTop(), randomTop(), randomTop()]; fight(); }
+    else el.textContent = `${n} 秒後自動開始下一局`;
+  }, 1000);
+}
+function paintNext() { const b = document.getElementById('autoNextBtn'); b.classList.toggle('on', !!SETTINGS.autoNext); b.querySelector('i').textContent = SETTINGS.autoNext ? 'ON' : 'OFF'; }
+document.getElementById('autoNextBtn').onclick = () => { SETTINGS.autoNext = !SETTINGS.autoNext; saveJSON('topSettings', SETTINGS); paintNext(); armNext(); SFX.attach(); };
+document.getElementById('resetBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); if (!confirm('確定要清空零件庫、金幣和勝場，重新開始嗎？')) return; INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [], profile: INV.profile, stats: { matches: 0, wins: 0, losses: 0, streak: 0, best: 0, coins: 0, draws: 0, use: {} } }; collection = []; wins = 0; save(); openTeam(); };
+document.getElementById('drawBtn').onclick = () => { stopNext(); buy(1); };
+document.getElementById('retryBtn').onclick = () => { stopNext(); aiLineup = [randomTop(), randomTop(), randomTop()]; renderVersus(); show('versus'); };
+document.getElementById('toTeamBtn').onclick = () => { stopNext(); openTeam(); };
 
 // ---------- sound (synthesised with Web Audio, no files) ----------
 // voices load late on some phones: ask early so an English voice is ready by the first match
@@ -2730,12 +2817,15 @@ function finish() {
   document.getElementById('finalText').style.color = win ? '#fcee0a' : '#ff2a55';
   const today = new Date().toDateString(), daily = win && INV.day !== today;
   const got = (win ? WIN_COIN : LOSE_COIN) + (daily ? DAILY_COIN : 0);
-  INV.coins += got; if (daily) INV.day = today; if (win) wins++; save();
+  INV.coins += got; if (daily) INV.day = today; if (win) wins++;
+  { const S = INV.stats; S.matches++; if (win) { S.wins++; S.streak++; S.best = Math.max(S.best, S.streak); } else { S.losses++; S.streak = 0; } S.coins += got;
+    for (const b of collection) S.use[b.c] = (S.use[b.c] || 0) + 1; }
+  save();
   document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
   const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
-  document.getElementById('retryBtn').style.display = win ? 'none' : '';
+  const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）';
   document.getElementById('toTeamBtn').style.display = '';
-  show('final');
+  show('final'); paintNext(); armNext();
   win ? SFX.win() : SFX.lose();
   exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none';
   SFX.music('menu');
