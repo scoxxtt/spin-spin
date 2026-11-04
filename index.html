@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.40</title>
+<title>SPIN! SPIN! v0.41</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -456,10 +456,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.38 countdown driven by the announcer's word boundaries (timer fallback); AUTO launch / auto-EX toggles under the CPU status; rarity frames with corner slashes (1/2/3) and gold shine; merge-all star cascade + summary burst
  v0.39 auto next match toggle on the result screen; player profile page (rename, ID, stats, collection, favourite class); inventory sort (rarity / newest); armor class colours no longer clash with weapon families
  v0.40 clearer controls: DRIVE joystick with direction arrow, in-battle coach for drag-to-move vs tap-to-charge, haptics, lightning tap burst, tutorial page covers both; segmented EX gauge (10 rising bars) beside the EX button
+ v0.41 lineup laid out after the screen is shown (portrait size no longer jumps after the first drag); re-layout on resize
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.40';
+const GAME_VERSION = 'v0.41';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1096,7 +1097,10 @@ function partChips(b, i) {
   });
   return chips;
 }
+// the lineup measures itself to fit the phone, so only lay it out while it is visible
+window.addEventListener('resize', () => { if (screens.team.classList.contains('show')) renderTeam(); });
 function renderTeam() {
+  if (!screens.team.classList.contains('show')) return;
   document.getElementById('teamSub').innerHTML = `<span class="coin">${ORE} ${INV.coins}</span>　隊伍戰力 <b>+${Math.round(teamPower() * 100)}%</b>　勝場 ${wins}`;
   renderShop();
   const list = document.getElementById('teamList'); list.innerHTML = '';
@@ -1792,7 +1796,7 @@ function openTeam() {
   SFX.music('menu');
   if (!loadJSON('topTutSeen', false)) return showTutorial(openTeam);
   if (collection.length < 3) return startGacha(3, '初始卡包', openTeam);
-  renderTeam(); show('team');
+  show('team'); renderTeam();
   if (!loadJSON('topLpTip', false)) setTimeout(() => {
     const tip = document.createElement('div'); tip.className = 'tipBubble'; tip.innerHTML = '💡 小提示：<b>長按</b>頭像或零件，可以看詳情與相剋';
     document.body.appendChild(tip); localStorage.setItem('topLpTip', 'true');
@@ -1805,7 +1809,7 @@ document.getElementById('startBtn').onclick = () => {
   aiLineup = [randomTop(), randomTop(), randomTop()];
   renderVersus(); show('versus');
 };
-document.getElementById('backBtn').onclick = () => { renderTeam(); show('team'); };
+document.getElementById('backBtn').onclick = () => { show('team'); renderTeam(); };
 function fight() {
   SFX.init(); const pw = teamPower();
   newMatch(collection.map(withBonus), aiLineup.map(b => { const x = pw * rnd(0.85, 1.05); return { ...b, bc: x, bw: x, ba: x }; }));
