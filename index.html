@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.57</title>
+<title>SPIN! SPIN! v0.58</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -162,6 +162,8 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .seg button.on{background:#00f0ff;color:#000}
 .spanel .btn{align-self:center}
 #exBtn.left{left:4%;right:auto}
+#exBtn{right:2.6%!important;bottom:2.4%!important;width:20%!important}
+#exBtn.left{left:2.6%!important;right:auto!important}
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:.45em;width:100%}
 .slot{position:relative;display:flex;flex-direction:column;align-items:center;padding:.4em .3em .5em;border:1px solid rgba(0,240,255,.5);background:linear-gradient(180deg,rgba(0,240,255,.12),rgba(0,0,0,.35));clip-path:polygon(0 0,100% 0,100% 92%,88% 100%,0 100%);touch-action:none;cursor:grab;user-select:none}
 .slot .sface{width:100%;aspect-ratio:1;object-fit:cover;border-bottom:2px solid #fcee0a;pointer-events:none}
@@ -561,10 +563,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.55 removed the tri-colour underline under the lineup title
  v0.56 EX gauge redrawn as a full-width segmented band along the bottom that curves up around the EX button (pastel blue to pink); first-match starter-gift popup with single / ten draw buttons; faction names 鐵心幫 / 元森域 / 虛駭組 / 異哲團 with drawn badges in the codex
  v0.57 EX gauge reworked as rising bars across the whole bottom, tops cut by the arena's lower rim (follows the camera); shakes with a tick from 90%, glows when full
+ v0.58 EX gauge redesigned from the director's sketch: six thick bars under the arena with tops hugging its lower rim, ending in a taller SKILL block that frames the round EX button
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.57';
+const GAME_VERSION = 'v0.58';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3563,34 +3566,47 @@ function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcT
 
 // one framed HUD panel: names on top, round + score in the middle, each side's card below its name
 function fitText(g, txt, x, y, maxW) { const tw = g.measureText(txt).width; if (tw <= maxW) { g.fillText(txt, x, y); return; } g.save(); g.translate(x, y); g.scale(maxW / tw, 1); g.fillText(txt, 0, 0); g.restore(); }
-// EX gauge: rising bars (like ▁▂▃▄▅▆▇█) across the whole bottom; their tops are cut by the arena's lower rim so the
-// gauge hugs the stadium. Lights left -> right, pastel blue -> pink; shakes near full, glows when full.
+// EX gauge: six thick bars under the arena whose tops hug the arena's lower rim, ending in a taller block that
+// holds the round EX button (the last 'bar' is the skill itself). Pastel blue -> pink, shakes from 90%, glows when full.
 function drawExArc(g) {
   if (!G || G.phase === 'final' || exBtn.style.display === 'none') return;
   const p = G.tops[0]; if (!p) return;
   const cam = camNow(), z = cam.z, ecx = CX - (cam.x - CX) * z, ecy = VIEW_CY - (cam.y - CY) * z * VIEW_K;
   const rx = (AX + 34) * z, ry = (AX + 34) * z * VIEW_K + WALL_H * z + 6;
+  const arcY = x => { const u = (x - ecx) / rx; return Math.abs(u) < 1 ? ecy + ry * Math.sqrt(1 - u * u) : -1e9; };
   const passive = p.s.c.ex === 'revive', fill = passive ? 0 : clamp(p.energy / 100, 0, 1), full = fill >= 1;
   if (!passive) { const hi = fill >= 0.9; if (hi && !G.exHi) SFX.flip(); G.exHi = hi; }
-  const N = 22, x0 = 8, x1 = W - 8, bw = (x1 - x0) / N, base = 946, L = SETTINGS.exSide === 'left';
-  const jit = !passive && fill >= 0.9 && !full ? 1.6 : 0, pulse = full ? 0.6 + 0.4 * Math.sin(G.time * 10) : 1;
+  const L = SETTINGS.exSide === 'left', mx = x => L ? W - x : x, base = 948, N = 6, gap = 7, sk = 8;
+  const bx0 = 8, bx1 = 396, bw = (bx1 - bx0 - gap * (N - 1)) / N;
+  const jit = !passive && fill >= 0.9 && !full ? 1.8 : 0, pulse = full ? 0.6 + 0.4 * Math.sin(G.time * 10) : 1;
+  const col = k => `${Math.round(127 + 128 * k)},${Math.round(223 - 101 * k)},${Math.round(255 - 38 * k)}`; // #7fdfff -> #ff7ad9
+  // a bar: polygon whose top edge follows the rim (sampled), bottom flat, slanted sides
+  const bar = (xa, xb, minTop, dx, dy) => {
+    const pts = []; for (let k = 0; k <= 6; k++) { const x = xa + (xb - xa) * k / 6; pts.push([x, Math.max(arcY(mx(x)) + 10, minTop)]); }
+    g.beginPath(); pts.forEach(([x, y], k) => { const X = mx(x + sk) + dx, Y = y + dy; k ? g.lineTo(X, Y) : g.moveTo(X, Y); });
+    g.lineTo(mx(xb) + dx, base); g.lineTo(mx(xa) + dx, base); g.closePath();
+    return Math.min(...pts.map(q => q[1]));
+  };
   g.save(); g.globalAlpha = passive ? 0.3 : 1;
   for (let i = 0; i < N; i++) {
-    const j = L ? N - 1 - i : i, xa = x0 + j * bw + 2, xb = xa + bw - 4, xm = (xa + xb) / 2;
-    const u = (xm - ecx) / rx, arcY = Math.abs(u) < 1 ? ecy + ry * Math.sqrt(1 - u * u) : -1e9;
-    const ramp = 26 + 250 * Math.pow(i / (N - 1), 1.15), top = Math.max(base - ramp, arcY + 8);
-    if (base - top < 6) continue;
-    const on = (i + 1) / N <= fill + 1e-6, k = i / (N - 1), sk = 7;
+    const xa = bx0 + i * (bw + gap), xb = xa + bw, k = i / N, on = fill >= (i + 1) / N - 1e-6, part = clamp(fill * N - i, 0, 1);
     const dx = jit ? rnd(-jit, jit) : 0, dy = jit ? rnd(-jit, jit) : 0;
-    g.beginPath(); g.moveTo(xa + sk + dx, top + dy); g.lineTo(xb + sk + dx, top + dy); g.lineTo(xb + dx, base); g.lineTo(xa + dx, base); g.closePath();
-    if (on) {
-      const gr = g.createLinearGradient(0, top, 0, base);
-      const c = `${Math.round(127 + 128 * k)},${Math.round(223 - 101 * k)},${Math.round(255 - 38 * k)}`; // #7fdfff -> #ff7ad9
-      gr.addColorStop(0, `rgba(${c},1)`); gr.addColorStop(1, `rgba(${c},.35)`);
-      g.fillStyle = gr; if (full) { g.shadowColor = '#ff7ad9'; g.shadowBlur = 16 * pulse; }
-    } else { g.fillStyle = 'rgba(255,255,255,.07)'; g.shadowBlur = 0; }
-    g.fill(); g.shadowBlur = 0; g.lineWidth = 2; g.strokeStyle = 'rgba(5,6,10,.9)'; g.stroke();
+    const top = bar(xa, xb, 716 - i * 6, dx, dy);
+    g.fillStyle = 'rgba(255,255,255,.07)'; g.fill();
+    if (part > 0) { // fill rises from the bottom inside the bar
+      g.save(); g.clip(); const h = (base - top) * part, gr = g.createLinearGradient(0, base - h, 0, base);
+      gr.addColorStop(0, `rgba(${col(k)},1)`); gr.addColorStop(1, `rgba(${col(k)},.45)`);
+      if (full) { g.shadowColor = '#ff7ad9'; g.shadowBlur = 18 * pulse; }
+      g.fillStyle = gr; g.fillRect(0, base - h, W, h); g.restore();
+    }
+    bar(xa, xb, 716 - i * 6, dx, dy); g.lineWidth = 2.5; g.strokeStyle = on ? `rgba(${col(k)},1)` : 'rgba(5,6,10,.95)'; g.stroke();
   }
+  // the EX block: tallest, frames the round EX button
+  { const xa = bx1 + gap, xb = W - 8; bar(xa, xb, 650, 0, 0);
+    g.fillStyle = full ? `rgba(255,122,217,${0.18 + 0.15 * pulse})` : 'rgba(5,6,10,.55)'; g.fill();
+    g.lineWidth = 3; g.strokeStyle = full ? '#ff7ad9' : 'rgba(127,223,255,.55)'; if (full) { g.shadowColor = '#ff7ad9'; g.shadowBlur = 20 * pulse; } g.stroke(); g.shadowBlur = 0;
+    g.fillStyle = full ? '#ff7ad9' : 'rgba(127,223,255,.8)'; g.font = 'italic 900 15px Rajdhani, sans-serif'; g.textAlign = 'center';
+    g.fillText('SKILL', mx((xa + xb) / 2 + 4), Math.max(arcY(mx((xa + xb) / 2)) + 10, 650) + 22); }
   g.restore();
 }
 function drawHUD(g) {
