@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.45</title>
+<title>SPIN! SPIN! v0.46</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -92,7 +92,8 @@ h1{font-size:1.9em;margin:.3em 0 .1em;letter-spacing:.08em;background:linear-gra
 #final .score{font-size:1.4em;margin:.6em 0 1.2em;opacity:.9}
 /* ---- cyberpunk skin: yellow #fcee0a + cyan #00f0ff ---- */
 html,body{background:#050607}
-#wrap{background:#07090c}
+#wrap{background:transparent}
+#envCv{position:fixed;inset:0;width:100%;height:100%;display:block}
 #wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);z-index:50}
 .screen{background:linear-gradient(rgba(0,240,255,.04) 1px,transparent 1px) 0 0/100% 1.6em,radial-gradient(ellipse at 50% 12%,rgba(0,240,255,.14) 0%,#07090c 62%)}
 h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Rajdhani,"Noto Sans TC",sans-serif;font-weight:700;letter-spacing:.12em;text-shadow:2px 0 #00f0ff,-2px 0 #ff2a55;text-transform:uppercase}
@@ -349,6 +350,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 </style>
 </head>
 <body>
+<canvas id="envCv"></canvas>
 <div id="wrap">
   <canvas id="cv"></canvas>
   <div id="verFoot"></div>
@@ -363,6 +365,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
       <div class="opt"><span>背景音樂</span><button class="tog" data-k="music"></button></div>
       <div class="opt"><span>音效</span><button class="tog" data-k="sfx"></button></div>
       <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
+      <div class="opt"><span>動態運鏡</span><button class="tog" data-k="camFollow"></button></div>
       <div class="opt"><span>頭上血條</span><button class="tog" data-k="hpPct"></button></div>
       <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
       <div class="opt setLinks"><button class="link" id="tutBtn">玩法教學</button><button class="link" id="resetBtn">重置全部進度</button></div>
@@ -470,10 +473,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.43 auto-move modes (attack: hunt and push toward exits / defense: keep distance and circle, stay off the rim / core: hold CORE and strike intruders); selectable CPU strength (easy / normal / hard / hell: CPU gear level, skill and coin reward); 'class' renamed 'character card' in the UI
  v0.44 battle HUD as one framed panel (names on top, round + score in the centre, portraits / card name / parts / bars below); 10-pull card grid moved up so the prompt no longer covers the last row
  v0.45 one rarity per draw (card, weapon and armor match); draws open a mechanical supply crate (three clamps, seam glow tinted by the best rarity inside, lid blows open with a light beam and steam)
+ v0.46 bigger arena: steeper view, base zoom so the walls touch the screen edges; stadium (crowd stands, LED barrier, spotlights) drawn on a full-screen canvas behind the game so tall phones have no black bars; follow camera (settings, on by default)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.45';
+const GAME_VERSION = 'v0.46';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -503,7 +507,9 @@ const AX = 228, BY = 228, R = AX; // round arena (AX = BY)
 const GW = 60; // hell gate half-width (px) at the bottom of the ellipse
 // 2.5D view: the floor is squashed vertically by VIEW_K (≈ looking down at 45°), walls are WALL_H screen px tall,
 // tops float TOP_LIFT px above their shadow and show a TOP_SIDE px thick body
-const VIEW_K = 0.78, WALL_H = 26, TOP_LIFT = 7, TOP_SIDE = 7;
+const VIEW_K = 0.9, WALL_H = 24, TOP_LIFT = 7, TOP_SIDE = 7;
+// framing: the arena is drawn BASE_Z times bigger, centred on screen y VIEW_CY; the follow camera may push in up to FOLLOW_ZMAX
+const BASE_Z = 1.03, VIEW_CY = 488, FOLLOW_ZMAX = 1.32;
 // auto camera: push-in amounts and timing (seconds). Tune here.
 const CAM = {
   hit: { z: 1.15, inT: 0.08, hold: 0.05, outT: 0.4, prio: 1 },
@@ -711,6 +717,88 @@ function stats(build) {
   };
 }
 
+// ---------- stadium (full-screen canvas behind the game) ----------
+// Drawn in the same logical units as the game (540 wide), anchored to where the arena sits, so it lines up with the arena
+// and keeps going past the 9:16 game area on taller or wider screens. Follows the camera at ENV_PAR strength.
+const envCv = document.getElementById('envCv'), envCtx = envCv.getContext('2d');
+const ENV = { d: 1, s: 1, l: 0, t: 0, M: 0, cache: null, sticks: [] }, ENV_PAR = 0.6;
+function envLayout(w, h, vw, vh) {
+  ENV.d = Math.min(window.devicePixelRatio || 1, 2);
+  envCv.width = Math.round(vw * ENV.d); envCv.height = Math.round(vh * ENV.d);
+  Object.assign(ENV, { s: w / W, l: (vw - w) / 2, t: (vh - h) / 2, M: Math.max(vw, vh) * 0.18, vw, vh, cache: null });
+}
+function buildEnvCache() {
+  const { d, s, l, t, M, vw, vh } = ENV, c = document.createElement('canvas');
+  c.width = Math.round((vw + 2 * M) * d); c.height = Math.round((vh + 2 * M) * d);
+  const g = c.getContext('2d');
+  g.setTransform(d * s, 0, 0, d * s, d * (l + M), d * (t + M));
+  const x0 = -(l + M) / s, y0 = -(t + M) / s, x1 = (vw + M - l) / s, y1 = (vh + M - t) / s;
+  const bg = g.createLinearGradient(0, y0, 0, y1);
+  bg.addColorStop(0, '#0b1424'); bg.addColorStop(0.45, '#070a10'); bg.addColorStop(1, '#0a0d14');
+  g.fillStyle = bg; g.fillRect(x0, y0, x1 - x0, y1 - y0);
+  const ax = CX, ay = VIEW_CY, k = VIEW_K;
+  let seed = 11; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  ENV.sticks = [];
+  // stand tiers: concentric rings around the arena, outer rows drawn first; near rows (screen bottom) are bigger
+  for (let row = 13; row >= 0; row--) {
+    const rx = 296 + row * 30, ry = rx * k;
+    g.fillStyle = row % 2 ? '#0c121c' : '#0f1724'; g.beginPath(); g.ellipse(ax, ay, rx + 30, (rx + 30) * k, 0, 0, TAU); g.fill();
+    g.strokeStyle = 'rgba(0,240,255,.10)'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(ax, ay, rx + 30, (rx + 30) * k, 0, 0, TAU); g.stroke();
+    const n = Math.round(rx * TAU / 17);
+    for (let i = 0; i < n; i++) {
+      const a = (i + rr() * 0.6) / n * TAU, hx = ax + Math.cos(a) * (rx + 12), hy = ay + Math.sin(a) * (rx + 12) * k;
+      if (hx < x0 - 20 || hx > x1 + 20 || hy < y0 - 20 || hy > y1 + 20) continue;
+      const near = (Math.sin(a) + 1) / 2, sz = 5.5 + near * 3.5 + rr() * 1.5;
+      g.fillStyle = `rgb(${22 - near * 8},${30 - near * 8},${46 - near * 10})`;
+      g.beginPath(); g.arc(hx, hy - sz * 0.9, sz * 0.55, 0, TAU); g.fill();
+      g.beginPath(); g.ellipse(hx, hy + sz * 0.15, sz * 0.95, sz * 0.7, 0, Math.PI, TAU); g.fill();
+      g.strokeStyle = near < 0.5 ? 'rgba(0,240,255,.5)' : 'rgba(255,42,85,.38)'; g.lineWidth = 1.6;
+      g.beginPath(); g.arc(hx, hy - sz * 0.9, sz * 0.55, Math.PI * 1.1, Math.PI * 1.9); g.stroke();
+      if (rr() < 0.07) ENV.sticks.push({ x: hx + (rr() - 0.5) * 6, y: hy - sz * 1.9, ph: rr() * TAU, col: pick(['252,238,10', '0,240,255', '255,42,85']) });
+    }
+  }
+  // LED barrier band right outside the arena wall
+  const bx = 268;
+  g.fillStyle = '#05070b'; g.beginPath(); g.ellipse(ax, ay, bx + 28, (bx + 28) * k, 0, 0, TAU); g.fill();
+  g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke();
+  g.setLineDash([16, 10]); g.lineWidth = 3;
+  g.strokeStyle = 'rgba(252,238,10,.55)'; g.beginPath(); g.ellipse(ax, ay, bx + 22, (bx + 22) * k, 0, 0, TAU); g.stroke();
+  g.setLineDash([4, 8]); g.strokeStyle = 'rgba(0,240,255,.5)'; g.beginPath(); g.ellipse(ax, ay, bx + 12, (bx + 12) * k, 0, 0, TAU); g.stroke();
+  g.setLineDash([]);
+  // comic halftone + vignette
+  g.globalAlpha = 0.18; g.fillStyle = dotPattern(g); g.fillRect(x0, y0, x1 - x0, y1 - y0); g.globalAlpha = 1;
+  const vg = g.createRadialGradient(ax, ay, 300, ax, ay, Math.max(x1 - x0, y1 - y0) * 0.7);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.7)'); g.fillStyle = vg; g.fillRect(x0, y0, x1 - x0, y1 - y0);
+  ENV.cache = c;
+}
+function drawEnv(time) {
+  const g = envCtx, { d, s, l, t, M } = ENV;
+  if (!ENV.cache) buildEnvCache();
+  const cam = G ? camNow() : { x: CX, y: CY, z: BASE_Z };
+  const zz = 1 + (cam.z / BASE_Z - 1) * ENV_PAR;
+  const Ax = l + CX * s, Ay = t + VIEW_CY * s;
+  const ox = -(cam.x - CX) * cam.z * s * ENV_PAR, oy = -(cam.y - CY) * cam.z * VIEW_K * s * ENV_PAR;
+  const tx = Ax + ox - zz * Ax, ty = Ay + oy - zz * Ay;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#05070b'; g.fillRect(0, 0, envCv.width, envCv.height);
+  g.setTransform(d * zz, 0, 0, d * zz, d * tx, d * ty);
+  g.drawImage(ENV.cache, -M, -M, ENV.cache.width / d, ENV.cache.height / d);
+  // live layer in logical units: glow sticks and two sweeping spotlights
+  g.setTransform(d * zz * s, 0, 0, d * zz * s, d * (tx + zz * l), d * (ty + zz * t));
+  for (const k of ENV.sticks) {
+    const a = 0.35 + 0.65 * Math.max(0, Math.sin(time * 3 + k.ph));
+    g.fillStyle = `rgba(${k.col},${a})`; g.fillRect(k.x - 1.2, k.y - 5 - 3 * Math.sin(time * 4 + k.ph), 2.4, 7);
+  }
+  g.globalCompositeOperation = 'lighter';
+  for (const [sx, col, sp] of [[-60, '0,240,255', 0.45], [600, '252,238,10', -0.38]]) {
+    const sy = -t / s - 40, aim = CX + Math.sin(time * sp) * 200, ty2 = VIEW_CY + Math.cos(time * sp * 1.3) * 120;
+    const gr = g.createLinearGradient(sx, sy, aim, ty2); gr.addColorStop(0, `rgba(${col},.16)`); gr.addColorStop(1, `rgba(${col},0)`);
+    const dx = aim - sx, dy = ty2 - sy, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+    g.fillStyle = gr; g.beginPath(); g.moveTo(sx, sy); g.lineTo(aim + nx * 90, ty2 + ny * 90); g.lineTo(aim - nx * 90, ty2 - ny * 90); g.closePath(); g.fill();
+  }
+  g.globalCompositeOperation = 'source-over';
+  if (G && G.exFreeze) { g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = `rgba(0,0,0,${0.5 * Math.min(1, (1 - G.exFreeze.t / G.exFreeze.max) * 6)})`; g.fillRect(0, 0, envCv.width, envCv.height); }
+}
+
 // ---------- canvas / layout ----------
 const wrap = document.getElementById('wrap');
 const cv = document.getElementById('cv');
@@ -726,6 +814,7 @@ function layout() {
   cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
   scale = cv.width / W;
   arenaCache = null;
+  envLayout(w, h, vw, vh);
 }
 window.addEventListener('resize', layout);
 layout();
@@ -2176,7 +2265,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal' }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal' }, loadJSON('topSettings', {}));
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
 function applySettings() {
@@ -2318,9 +2407,26 @@ function camPunch(kind, x, y) {
   if (c && kind === 'hit' && G.time - (c.at || -9) < CAM.cooldown) return;
   G.cam = { kind, x, y, z: k.z, inT: k.inT, hold: k.hold, outT: k.outT, prio: k.prio, t: 0, end: k.inT + k.hold + k.outT, at: G.time };
 }
+// follow camera: drifts toward the middle of the two tops and pushes in while they are close together,
+// pulls back to the full view when either top nears the wall (so the exits stay visible) and while aiming
+function camFollowStep(dt) {
+  if (!G.fcam) G.fcam = { x: CX, y: CY, z: BASE_Z };
+  const f = G.fcam, a = G.tops[0], b = G.tops[1];
+  let tx = CX, ty = CY, tz = BASE_Z;
+  if (SETTINGS.camFollow && G.phase === 'battle' && a && b && !a.dead && !b.dead && !a.falling && !b.falling) {
+    const fit = Math.min(470 / (Math.abs(a.x - b.x) + 220), 560 / ((Math.abs(a.y - b.y) + 220) * VIEW_K));
+    const edgeK = clamp((Math.max(qOf(a.x, a.y), qOf(b.x, b.y)) - 0.6) / 0.3, 0, 1);
+    tz = clamp(fit, BASE_Z, FOLLOW_ZMAX); tz += (BASE_Z - tz) * edgeK;
+    const pull = 0.5 * (1 - edgeK);
+    tx = CX + ((a.x + b.x) / 2 - CX) * pull; ty = CY + ((a.y + b.y) / 2 - CY) * pull;
+  }
+  const k = 1 - Math.exp(-dt * 2.6);
+  f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k;
+}
 function camNow() {
+  const base = G && G.fcam && SETTINGS.camFollow ? G.fcam : { x: CX, y: CY, z: BASE_Z };
   const c = G && G.cam;
-  if (!c || c.t >= c.end) return { x: CX, y: CY, z: 1 };
+  if (!c || c.t >= c.end) return base;
   let e;
   if (c.t < c.inT) e = 1 - Math.pow(1 - c.t / c.inT, 3);
   else if (c.t < c.inT + c.hold) e = 1;
@@ -2329,9 +2435,9 @@ function camNow() {
   const a = G.tops[0], b = G.tops[1];
   let zMax = 2;
   if (a && b && !a.dead && !b.dead) zMax = Math.max(1, Math.min(460 / (Math.abs(a.x - b.x) + 140), 500 / (Math.abs(a.y - b.y) * VIEW_K + 160)));
-  const z = 1 + (Math.min(c.z, zMax) - 1) * e;
-  const fx = c.x * 0.6 + CX * 0.4, fy = c.y * 0.6 + CY * 0.4;
-  return { x: CX + (fx - CX) * e, y: CY + (fy - CY) * e, z };
+  const z = base.z * (1 + (Math.min(c.z, zMax) - 1) * e);
+  const fx = c.x * 0.6 + base.x * 0.4, fy = c.y * 0.6 + base.y * 0.4;
+  return { x: base.x + (fx - base.x) * e, y: base.y + (fy - base.y) * e, z };
 }
 function impact(big, x, y) {
   if (big) camPunch('hit', x, y);
@@ -2368,7 +2474,7 @@ function toLogical(e) {
   return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H };
 }
 // screen point -> point on the tilted floor
-const toWorld = p => { const c = camNow(); return { x: c.x + (p.x - CX) / c.z, y: c.y + (p.y - CY) / (c.z * VIEW_K) }; };
+const toWorld = p => { const c = camNow(); return { x: c.x + (p.x - CX) / c.z, y: c.y + (p.y - VIEW_CY) / (c.z * VIEW_K) }; };
 cv.addEventListener('pointerdown', e => {
   SFX.init();
   if (!G) return;
@@ -2949,6 +3055,7 @@ function finish() {
 
 // ---------- update ----------
 function update(dt) {
+  camFollowStep(dt);
   if (G.cam) G.cam.t += dt;
   if (G.slowT > 0) { G.slowT -= dt; dt *= CAM.slowRate; } // finishing-blow slow motion
   G.time += dt;
@@ -3005,7 +3112,8 @@ function update(dt) {
 }
 
 // ---------- render ----------
-function drawArenaStatic(g, noWall) {
+function drawArenaStatic(g, noWall, noBack) {
+  if (!noBack) {
   // backdrop: deep vignette + star dust
   const bg = g.createRadialGradient(CX, CY, 60, CX, CY, 640);
   bg.addColorStop(0, '#0f2026'); bg.addColorStop(0.55, '#0a1014'); bg.addColorStop(1, '#050607');
@@ -3019,6 +3127,7 @@ function drawArenaStatic(g, noWall) {
   for (let y = 7; y < H; y += 14) for (let x = (y / 14 % 2) * 7 + 7; x < W; x += 14) {
     const q = clamp((Math.hypot(x - CX, y - CY) - 270) / 380, 0, 1); if (q <= 0) continue;
     g.fillStyle = `rgba(0,240,255,${0.07 + 0.08 * q})`; g.beginPath(); g.arc(x, y, 1 + 4 * q, 0, TAU); g.fill();
+  }
   }
   const ell = (m, a0, a1, ccw) => g.ellipse(CX, CY, AX + m, BY + m, 0, a0 === undefined ? 0 : a0, a1 === undefined ? TAU : a1, !!ccw);
   if (!noWall) {
@@ -3245,9 +3354,10 @@ function drawHUD(g) {
   };
   side(p, 'left', '#00f0ff'); side(a, 'right', '#ff3b5c');
   // bottom hints
-  g.textAlign = 'center'; g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.5)';
-  if (G.phase === 'launch') { g.fillText('按下的位置就是落點・往後拉決定方向和力道・放開發射', CX, 752); g.fillText('電腦的落點是秘密！放開後 3、2、1、SPIN! SPIN! 一起發射', CX, 776); }
-  else if (G.phase === 'battle' && !(G.coach && !(G.didDrag && G.didTap))) g.fillText('按住拖曳移動・點畫面任何地方充能 EX', CX - 50, 760);
+  g.textAlign = 'center'; g.font = '14px Rajdhani, sans-serif';
+  const hint = (lines, y) => { const L = SETTINGS.exSide === 'left'; g.font = '13px Rajdhani, sans-serif'; g.textAlign = 'left'; const x = L ? 160 : 16; g.fillStyle = 'rgba(5,6,10,.7)'; g.fillRect(x, y - 16, 364, lines.length * 20 + 8); g.fillStyle = 'rgba(255,255,255,.85)'; lines.forEach((l, i) => g.fillText(l, x + 9, y + i * 20)); g.textAlign = 'center'; };
+  if (G.phase === 'launch') hint(['按下的位置就是落點・往後拉決定方向和力道・放開發射', '電腦落點是秘密！放開後 3、2、1、SPIN! SPIN! 一起發射'], 772);
+  else if (G.phase === 'battle' && !(G.coach && !(G.didDrag && G.didTap))) { g.fillStyle = 'rgba(255,255,255,.55)'; g.fillText('按住拖曳移動・點畫面任何地方充能 EX', CX - 50, 800); }
 }
 
 // wall pieces in world coords under the squashed transform; dz = WALL_H / VIEW_K lifts things to the rim height
@@ -3422,17 +3532,18 @@ function drawTopWorld(g, t) {
 function render() {
   const g = ctx;
   g.setTransform(1, 0, 0, 1, 0, 0);
-  g.fillStyle = '#0b0b16'; g.fillRect(0, 0, cv.width, cv.height);
+  g.clearRect(0, 0, cv.width, cv.height);
+  drawEnv(G ? G.time : performance.now() / 1000);
   if (!G) return;
   const sx = G.shake ? rnd(-G.shake, G.shake) : 0, sy = G.shake ? rnd(-G.shake, G.shake) : 0;
   if (!arenaCache) {
     arenaCache = document.createElement('canvas'); arenaCache.width = cv.width; arenaCache.height = cv.height;
-    const ac = arenaCache.getContext('2d'); ac.setTransform(scale, 0, 0, scale, 0, 0); drawArenaStatic(ac, true); // walls are drawn live in 2.5D
+    const ac = arenaCache.getContext('2d'); ac.setTransform(scale, 0, 0, scale, 0, 0); drawArenaStatic(ac, true, true); // walls are drawn live in 2.5D; backdrop is the stadium canvas
   }
   // the floor layer and everything on it is drawn squashed about CY
   viewK = VIEW_K;
   const cam = camNow(), z = cam.z;
-  const ex = scale * (CX - cam.x * z) + sx * scale, ey = scale * (CY - cam.y * z * VIEW_K) + sy * scale;
+  const ex = scale * (CX - cam.x * z) + sx * scale, ey = scale * (VIEW_CY - cam.y * z * VIEW_K) + sy * scale;
   g.setTransform(z, 0, 0, z * VIEW_K, ex, ey); g.drawImage(arenaCache, 0, 0);
   g.setTransform(scale * z, 0, 0, scale * z * VIEW_K, ex, ey);
   drawArena(g, G.time);
