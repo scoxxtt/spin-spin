@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.48</title>
+<title>SPIN! SPIN! v0.49</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -217,7 +217,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #team .sub{font-size:.78em;margin:.1em 0 .3em}
 #teamList{flex:1;min-height:0;width:100%;display:flex;flex-direction:column}
 #team .slots{flex:none}
-#team .slot .sface{aspect-ratio:1.3;object-position:50% 20%}
+#team .slot .sface{aspect-ratio:1.5;height:auto;object-fit:cover;object-position:50% 22%}
 #team .slot .nm{margin:.2em 0 .1em;font-size:.68em}
 #team .slot .mini{margin-top:.1em}
 #team .slot .stop{width:2.2em;height:2.2em}
@@ -476,10 +476,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.46 bigger arena: steeper view, base zoom so the walls touch the screen edges; stadium (crowd stands, LED barrier, spotlights) drawn on a full-screen canvas behind the game so tall phones have no black bars; follow camera (settings, on by default)
  v0.47 new portrait style (anime faces + comic graphics) for the six starting classes and the mech cat; all 27 character portraits stored in art/portraits for upcoming cards
  v0.48 draws give white (85%) or purple (15%) only; ten-pull guarantees a purple, 10 draws without purple make the 10th purple; red / gold pity removed (those tiers will come from merging); draw popup text updated
+ v0.49 lineup slots use one fixed, smaller portrait size (no per-tab stretching), faces centred
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.48';
+const GAME_VERSION = 'v0.49';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1305,9 +1306,7 @@ function renderTeam() {
     let best = null;
     for (const c of [5, 6]) { const r = Math.max(1, Math.min(4, Math.floor((ph + gap) / (h5 * 5 / c + gap)))); if (!best || c * r > best.c * best.r) best = { c, r }; }
     if (best.c !== invCols || best.r !== invRows) { invCols = best.c; invRows = best.r; return renderTeam(); }
-    // give any height the tiles can't use to the slot portraits
-    const usedRows = Math.min(invRows, Math.ceil(count / invCols)), spare = ph - usedRows * (ft.offsetHeight + gap) - 2;
-    if (spare > 6) list.querySelectorAll('.slot .sface').forEach(im => { const h0 = im.offsetHeight; im.style.aspectRatio = 'auto'; im.style.height = (h0 + Math.min(spare, h0)) + 'px'; });
+    // lineup slots keep one fixed size (no stretching per tab), so nothing jumps when switching tabs or equipping
   }
   pagesEl.onscroll = () => { const p2 = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth)); invPage[k] = p2; mark(p2); };
   document.getElementById('drawDot').style.display = INV.coins >= PRICE1 ? '' : 'none';
