@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.50</title>
+<title>SPIN! SPIN! v0.51</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -243,6 +243,25 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .shopCard .shopBtn{flex:1;font-size:1em;padding:.6em 0}
 .shopNote{line-height:1.6}
 .setLinks{justify-content:center;gap:1.2em}
+.setBtns{justify-content:center;gap:.5em;flex-wrap:wrap}
+.sbtn{flex:1;min-width:5.5em;padding:.7em .4em;font-size:.9em;font-weight:900;background:rgba(0,240,255,.12);border:2px solid #00f0ff;color:#00f0ff;cursor:pointer;font-family:inherit}
+.sbtn.warn{border-color:#ff2a55;color:#ff2a55;background:rgba(255,42,85,.1)}
+#askBox{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);z-index:90}
+#askBox.show{display:flex}
+.askIn{width:80%;background:#0b0f14;border:2px solid #ff2a55;padding:1.2em 1em;text-align:center;line-height:1.6}
+.askBtns{display:flex;gap:.6em;justify-content:center}.askBtns .btn{padding:.55em 1.4em}
+#codexOpen{position:absolute;right:.6em;top:2.9em;font-size:.72em;padding:.3em .8em;border:1px solid #fcee0a;color:#fcee0a;background:rgba(0,0,0,.55);font-weight:900;cursor:pointer;font-family:inherit;z-index:3}
+#codex.screen{justify-content:flex-start}
+.codexTabs{margin:.2em 0 .5em}
+#codexList{width:100%;display:flex;flex-direction:column;gap:.45em}
+.cxRow{display:flex;gap:.6em;align-items:flex-start;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.3);border-left:4px solid #00f0ff;padding:.5em;text-align:left}
+.cxRow.no{opacity:.55}
+.cxRow img,.cxRow .cxIco{width:4.6em;height:4.6em;flex:none;object-fit:cover;border:2px solid #05060a}
+.cxRow .cxIco .ico{width:100%;height:100%}
+.cxRow .t{font-weight:900;font-size:1em}
+.cxRow .t small{font-weight:700;font-size:.7em;margin-left:.5em;padding:.05em .4em;background:#05060a}
+.cxRow .d{font-size:.78em;line-height:1.55;color:#cfd8e6}
+.cxRow .d b{color:#fcee0a}
 .tutRules{text-align:left;font-size:.82em;line-height:1.55}
 .chip .st{font-style:normal;background:#05060a;border-radius:.7em;padding:0 .35em;margin-left:.3em;text-shadow:none}
 .mergeAll{font-family:inherit;font-weight:900;font-size:.7em;padding:.15em .6em;border:2px solid #05060a;background:#3a4250;color:#9fb0c0;cursor:pointer;letter-spacing:0}
@@ -369,13 +388,13 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
       <div class="opt"><span>動態運鏡</span><button class="tog" data-k="camFollow"></button></div>
       <div class="opt"><span>頭上血條</span><button class="tog" data-k="hpPct"></button></div>
       <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
-      <div class="opt setLinks"><button class="link" id="tutBtn">玩法教學</button><button class="link" id="resetBtn">重置全部進度</button></div>
+      <div class="opt setBtns"><button class="sbtn" id="tutBtn">玩法教學</button><button class="sbtn" id="codexBtn">圖鑑</button><button class="sbtn warn" id="resetBtn">重置進度</button></div>
       <button class="btn" id="setClose">關閉</button>
     </div>
   </div>
 
   <div id="team" class="screen show">
-    <div class="topBar"><button id="profileBtn"></button><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
+    <div class="topBar"><button id="profileBtn"></button><button id="codexOpen">圖鑑</button><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
     <div id="teamList"></div>
     <div class="bottomBar"><button class="btn ghost" id="drawOpen">抽卡<b class="dot" id="drawDot"></b></button><button class="btn" id="startBtn">開戰！</button></div>
   </div>
@@ -393,6 +412,15 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <canvas id="packCv" width="1080" height="1720"></canvas>
     <button class="btn" id="gachaOk">收下</button>
   </div>
+
+  <div id="codex" class="screen">
+    <h1>圖鑑</h1>
+    <div class="sub" id="codexSub"></div>
+    <div class="seg codexTabs" id="codexTabs"><button data-t="c">角色卡</button><button data-t="w">武器</button><button data-t="a">鎧甲</button></div>
+    <div id="codexList"></div>
+    <button class="btn" id="codexBack">返回</button>
+  </div>
+  <div id="askBox"><div class="askIn"><div id="askText"></div><div class="askBtns"><button class="btn ghost" id="askNo">取消</button><button class="btn" id="askYes">確定</button></div></div></div>
 
   <div id="tutorial" class="screen">
     <div class="sub" id="tutStep"></div>
@@ -479,10 +507,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.48 draws give white (85%) or purple (15%) only; ten-pull guarantees a purple, 10 draws without purple make the 10th purple; red / gold pity removed (those tiers will come from merging); draw popup text updated
  v0.49 lineup slots use one fixed, smaller portrait size (no per-tab stretching), faces centred
  v0.50 parts in the lineup are dimmed and listed first; a weapon / armor can be used once per lineup unless the copies differ in rarity (same rarity swaps out of the other slot)
+ v0.51 reset uses an in-game confirm (browser confirm can be blocked in app webviews) and bigger setting buttons; tutorial text refreshed plus two strategy pages; codex screen (cards / weapons / armors with full stats); first finished match gives a one-time 10000-coin starter gift
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.50';
+const GAME_VERSION = 'v0.51';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1116,7 +1145,7 @@ let invSel = null;  // {k, id} part picked in the inventory
 let invTab = 'c';
 const save = () => { INV.team = collection; saveJSON('topInv', INV); saveJSON('topWins', wins); };
 
-const screens = ['team', 'versus', 'gacha', 'final', 'tutorial'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
+const screens = ['team', 'versus', 'gacha', 'final', 'tutorial', 'codex'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
 function show(id) { if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
 const anyScreen = () => Object.values(screens).some(e => e.classList.contains('show'));
 
@@ -1812,7 +1841,7 @@ function tLabel(g, txt, x, y, col, size) { g.font = `italic 900 ${size || 22}px 
 function tFinger(g, x, y, press) { g.fillStyle = `rgba(255,255,255,${press ? 0.55 : 0.3})`; g.beginPath(); g.arc(x, y, press ? 15 : 18, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2.5; g.stroke(); }
 function tWave(g, x, y, k, col) { if (k < 0 || k > 1) return; g.strokeStyle = `rgba(${col},${1 - k})`; g.lineWidth = 8 * (1 - k) + 1; g.beginPath(); g.arc(x, y, 10 + k * 80, 0, TAU); g.stroke(); }
 const TUT = [
-  { title: '抽陀螺・組隊伍', text: '開局打開補給箱抽 3 顆陀螺，零件會收進<b>零件庫</b>。陀螺分三層：<b>武器・鎧甲・角色</b>，每個出戰格各裝一組，再排好 1・2・3 的出場順序。打贏拿金幣再抽！', draw(g, t) {
+  { title: '抽陀螺・組隊伍', text: '開局打開<b>補給箱</b>抽 3 顆陀螺，零件收進<b>零件庫</b>。陀螺分三層：<b>武器・鎧甲・角色卡</b>，把零件拖到出戰格換裝，再排好 1・2・3 的出場順序。打完第一場送 <b>10000 金幣</b>，盡情開箱！', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       const ph = (t % 3.4) / 3.4, swapped = ph > 0.55;
       const A = { ...TA, w: swapped ? TB.w : TA.w }, B = { ...TB, w: swapped ? TA.w : TB.w };
@@ -1903,12 +1932,12 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色、武器、鎧甲分開收藏，拖到出戰格就能換裝，再排好 1・2・3 出場順序<br>・<b>升星</b>：抽到同名零件會累積素材，夠了按「合成」升星（最多 3 星）；滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜黃；付費抽卡有機會抽到<b>隱藏角色</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20；單抽 100、十連 1000 多送 1 抽<br>・<b>三場制</b>：依序對上對手的 1・2・3，總分高者勝，同分加賽<br>・<b>開場</b>：按下位置＝落點，往後拉瞄準，放開後 3、2、1、SPIN! SPIN! 一起發射<br>・<b>對戰</b>：按住拖曳移動，點畫面充能 EX；WORMHOLE 加速、CORE 增傷<br>・<b>得分</b>：BLOOD +2、DEAD +3、爆甲 +1，停轉平局</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（十連必出 1 紫），紅、金之後靠合成升階<br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
   } },
-  { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>。下方有三個出口：左右兩個窄的 <b>BLOOD 出口 +2 分</b>，正中間寬的 <b>DEAD 出口 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了就能再開一包卡包！', draw(g, t) {
+  { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>。下方有三個出口：左右兩個窄的 <b>BLOOD 出口 +2 分</b>，正中間寬的 <b>DEAD 出口 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了拿更多金幣去開補給箱！', draw(g, t) {
       tutArenaBg(g);
       const ph = t % 3.6, Ax = CX, B0 = { x: CX + 6, y: CY + 92 };
       let ay = CY - 40, bx = B0.x, by = B0.y, bs = 1;
@@ -1921,6 +1950,11 @@ const TUT = [
   } },
 ];
 function showTutorial(done) { tutIdx = 0; tutT = 0; tutDone = done; renderTutStep(); show('tutorial'); }
+// strategy pages reuse the drag / lineup animations
+TUT.push(
+  { title: '攻略①・拖曳追擊', text: '<div class="tutRules">・<b>別站著不動</b>：開場後馬上<b>按住拖曳</b>追著對手跑，速度就是傷害<br>・<b>從側面撞</b>：繞到對手側後方，朝<b>出口方向</b>撞，最容易撞出 BLOOD／DEAD<br>・<b>對手靠近出口</b>：從反方向全速衝過去補一下<br>・<b>被逼到牆邊</b>：往中央 CORE 拖回來，CORE 裡撞擊 +20%、EX 累積更快<br>・<b>EX 留著用</b>：等對手靠近出口或剛撞完牆再放<br>・<b>另一隻手</b>點畫面充能，邊追邊集 EX</div>', draw: TUT[2].draw },
+  { title: '攻略②・角色配置', text: '<div class="tutRules">・<b>1 號先鋒</b>：狂戰士或刺客，配<b>近戰武器</b>，開場搶攻拿分<br>・<b>2 號主力</b>：獵人或術士，配<b>射擊武器＋輕裝</b>，速度快、追得上人<br>・<b>3 號壓軸</b>：守護者或不死者，配<b>爆裂武器＋重裝</b>，耐打又能把人炸出場<br>・<b>看對手換裝</b>：對手重裝多帶爆裂、輕裝多帶射擊、能量護盾多帶近戰<br>・<b>集中培養</b>：先把一顆主力升到 3 星，比平均培養更容易贏<br>・<b>打不贏？</b>先降低對手強度，或開 MOVE 攻擊模式看電腦怎麼走位</div>', draw: TUT[5].draw },
+);
 function renderTutStep() {
   const st = TUT[tutIdx];
   document.getElementById('tutStep').textContent = `玩法教學 ${tutIdx + 1} / ${TUT.length}`;
@@ -1933,6 +1967,43 @@ function drawTutorial(dt) { tutT += dt; TUT[tutIdx].draw(tg2, tutT); }
 function endTutorial() { saveJSON('topTutSeen', true); const d = tutDone; tutDone = null; d && d(); }
 document.getElementById('tutNext').onclick = () => { SFX.init(); if (tutIdx < TUT.length - 1) { tutIdx++; renderTutStep(); } else endTutorial(); };
 document.getElementById('tutSkip').onclick = () => { SFX.init(); endTutorial(); };
+// ---------- codex ----------
+const CX_LORE = {
+  berserker: ['改造派', '機械義臂狂暴化的戰士，衝勁十足。適合 1 號先鋒，開場搶攻。'],
+  guardian: ['自然派', '不靠改造，靠古典重甲和巨盾硬扛一切。適合壓軸，耐打穩定。'],
+  assassin: ['網路派', '光學迷彩加資料刺殺，專從背後下手。速度快，適合先鋒或收割。'],
+  mage: ['網路派', '用程式碼施法的駭客法師，EX 累積最快，擅長把對手彈開控場。'],
+  hunter: ['自然派', '只用弓和陷阱等實體獵具，會追蹤對手。適合 2 號主力追擊。'],
+  undead: ['改造派', '死後被改造重啟的機體，第一次爆甲會復活。適合壓軸保分。'],
+  mechcat: ['自然派', '駕駛圓滾滾機甲的貓，半夜最有精神。隱藏角色，付費抽卡才會出現。'],
+};
+let cxTab = 'c';
+function openCodex(back) {
+  show('codex'); cxBack = back; renderCodex();
+}
+let cxBack = null;
+function renderCodex() {
+  const k = cxTab, list = document.getElementById('codexList'), ids = Object.keys(KIND[k]);
+  const ownIds = new Set(Object.values(INV[k]).map(e => e.id));
+  document.getElementById('codexSub').textContent = `已收集 ${ids.filter(i => ownIds.has(i)).length} / ${ids.length}・點分頁切換`;
+  document.querySelectorAll('#codexTabs button').forEach(b => b.classList.toggle('on', b.dataset.t === k));
+  list.innerHTML = ids.map(id => {
+    const P = KIND[k][id], has = ownIds.has(id);
+    const pic = k === 'c' ? `<img src="${PORTRAIT_SRC[id]}">` : `<div class="cxIco">${iconHTML(k, id, 'xl')}</div>`;
+    let tag, col, d;
+    if (k === 'c') { const L = CX_LORE[id] || ['', '']; tag = L[0]; col = P.color;
+      d = `${L[1]}<br><b>EX「${P.exName}」</b>：${P.exDesc}<br>速度 ${P.speed}・耐久 ${P.hp}・EX 累積 ×${P.gain}`; }
+    else if (k === 'w') { const f = FAMILY[P.fam]; tag = f.name + '系'; col = f.col;
+      d = `${P.desc}<br>攻擊 ${P.atk}・擊退 ${P.kb}・重量 ${P.wt}<br><b>${f.name}系</b>：${f.desc}<br>剋 ${ARMOR_CLASS[f.beats].name}（+30%），怕 ${ARMOR_CLASS[f.weak].name}（−20%）`; }
+    else { const c = ARMOR_CLASS[P.cls], by = Object.values(FAMILY).find(f => f.beats === P.cls), vs = Object.values(FAMILY).find(f => f.weak === P.cls); tag = c.name; col = c.col;
+      d = `${P.desc}<br>防禦 ${P.thick}・閃避 ${P.facets}<br>怕 ${by ? by.name + '系' : '—'}，擋得住 ${vs ? vs.name + '系' : '—'}`; }
+    return `<div class="cxRow${has ? '' : ' no'}" style="border-left-color:${col}">${pic}<div><div class="t">${P.name}<small style="color:${col}">${tag}</small><small>${has ? '已取得' : '未取得'}</small></div><div class="d">${d}</div></div></div>`;
+  }).join('');
+}
+document.querySelectorAll('#codexTabs button').forEach(b => b.onclick = () => { cxTab = b.dataset.t; renderCodex(); SFX.flip(); });
+document.getElementById('codexBack').onclick = () => { const f = cxBack || openTeam; cxBack = null; f(); };
+document.getElementById('codexBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); openCodex(openTeam); };
+document.getElementById('codexOpen').onclick = () => { SFX.init(); openCodex(openTeam); };
 document.getElementById('tutBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); showTutorial(openTeam); };
 
 function openTeam() {
@@ -1943,6 +2014,7 @@ function openTeam() {
   if (collection.length < 3) return startGacha(3, '初始補給箱', openTeam);
   show('team'); renderTeam();
   if (!loadJSON('topLpTip', false)) setTimeout(() => {
+    if (!screens.team.classList.contains('show') || settingsOpen) return; // only on the lineup screen
     const tip = document.createElement('div'); tip.className = 'tipBubble'; tip.innerHTML = '💡 小提示：<b>長按</b>頭像或零件，可以看詳情與相剋';
     document.body.appendChild(tip); localStorage.setItem('topLpTip', 'true');
     const bye = () => { tip.classList.add('out'); setTimeout(() => tip.remove(), 300); };
@@ -1988,7 +2060,14 @@ function armNext() {
 }
 function paintNext() { const b = document.getElementById('autoNextBtn'); b.classList.toggle('on', !!SETTINGS.autoNext); b.querySelector('i').textContent = SETTINGS.autoNext ? 'ON' : 'OFF'; }
 document.getElementById('autoNextBtn').onclick = () => { SETTINGS.autoNext = !SETTINGS.autoNext; saveJSON('topSettings', SETTINGS); paintNext(); armNext(); SFX.attach(); };
-document.getElementById('resetBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); if (!confirm('確定要清空零件庫、金幣和勝場，重新開始嗎？')) return; INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [], profile: INV.profile, stats: { matches: 0, wins: 0, losses: 0, streak: 0, best: 0, coins: 0, draws: 0, use: {} } }; collection = []; wins = 0; save(); openTeam(); };
+// in-game yes/no box (the browser confirm() is blocked inside some app webviews, which made reset look broken)
+function ask(text, yes) {
+  const box = document.getElementById('askBox'); document.getElementById('askText').innerHTML = text; box.classList.add('show');
+  document.getElementById('askNo').onclick = () => box.classList.remove('show');
+  document.getElementById('askYes').onclick = () => { box.classList.remove('show'); yes(); };
+}
+document.getElementById('resetBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); ask('確定要清空零件庫、金幣和勝場，<br>重新開始嗎？<br><small style="opacity:.7">玩家名稱會保留</small>', resetAll); };
+function resetAll() { INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [], profile: INV.profile, stats: { matches: 0, wins: 0, losses: 0, streak: 0, best: 0, coins: 0, draws: 0, use: {} } }; collection = []; wins = 0; save(); openTeam(); }
 document.getElementById('drawBtn').onclick = () => { stopNext(); buy(1); };
 document.getElementById('retryBtn').onclick = () => { stopNext(); newOpponent(); renderVersus(); show('versus'); };
 document.getElementById('toTeamBtn').onclick = () => { stopNext(); openTeam(); };
@@ -2282,7 +2361,7 @@ function applySettings() {
 }
 settingsEl.querySelectorAll('.tog').forEach(b => b.onclick = () => { SFX.unlock(); SETTINGS[b.dataset.k] = !SETTINGS[b.dataset.k]; applySettings(); if (b.dataset.k === 'sfx' && SETTINGS.sfx) SFX.round(); });
 settingsEl.querySelectorAll('[data-ex]').forEach(b => b.onclick = () => { SETTINGS.exSide = b.dataset.ex; applySettings(); });
-document.getElementById('gearBtn').onclick = () => { SFX.unlock(); settingsOpen = true; settingsEl.classList.add('show'); if (G) G.joy = null; };
+document.getElementById('gearBtn').onclick = () => { SFX.unlock(); document.querySelectorAll('.tipBubble').forEach(t => t.remove()); document.getElementById('codexBtn').style.display = G && G.phase !== 'final' ? 'none' : ''; settingsOpen = true; settingsEl.classList.add('show'); if (G) G.joy = null; };
 document.getElementById('setClose').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); };
 applySettings();
 let G = null; // current match
@@ -3045,10 +3124,12 @@ function finish() {
   const today = new Date().toDateString(), daily = win && INV.day !== today;
   const D = DIFF[G.diff] || DIFF.normal, got = Math.round((win ? WIN_COIN : LOSE_COIN) * D.coin) + (daily ? DAILY_COIN : 0);
   INV.coins += got; if (daily) INV.day = today; if (win) wins++;
+  let gift = 0; if (!INV.gift1) { INV.gift1 = 1; gift = 10000; INV.coins += gift; } // one-time starter gift after the first finished match
   { const S = INV.stats; S.matches++; if (win) { S.wins++; S.streak++; S.best = Math.max(S.best, S.streak); } else { S.losses++; S.streak = 0; } S.coins += got;
     for (const b of collection) S.use[b.c] = (S.use[b.c] || 0) + 1; }
   save();
   document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  if (gift) document.getElementById('finalScore').insertAdjacentHTML('beforeend', `<div class="coinGot" style="margin-top:.4em;color:#fcee0a;font-weight:900">🎁 新手禮：${ORE} +10000，快去抽補給箱！</div>`);
   const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）';
   document.getElementById('toTeamBtn').style.display = '';
