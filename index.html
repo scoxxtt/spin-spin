@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.58</title>
+<title>SPIN! SPIN! v0.59</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -564,10 +564,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.56 EX gauge redrawn as a full-width segmented band along the bottom that curves up around the EX button (pastel blue to pink); first-match starter-gift popup with single / ten draw buttons; faction names 鐵心幫 / 元森域 / 虛駭組 / 異哲團 with drawn badges in the codex
  v0.57 EX gauge reworked as rising bars across the whole bottom, tops cut by the arena's lower rim (follows the camera); shakes with a tick from 90%, glows when full
  v0.58 EX gauge redesigned from the director's sketch: six thick bars under the arena with tops hugging its lower rim, ending in a taller SKILL block that frames the round EX button
+ v0.59 EX gauge back to a low-to-high triangle; the arena rim only bends the tops where the ramp would touch it
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.58';
+const GAME_VERSION = 'v0.59';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3580,9 +3581,10 @@ function drawExArc(g) {
   const bx0 = 8, bx1 = 396, bw = (bx1 - bx0 - gap * (N - 1)) / N;
   const jit = !passive && fill >= 0.9 && !full ? 1.8 : 0, pulse = full ? 0.6 + 0.4 * Math.sin(G.time * 10) : 1;
   const col = k => `${Math.round(127 + 128 * k)},${Math.round(223 - 101 * k)},${Math.round(255 - 38 * k)}`; // #7fdfff -> #ff7ad9
+  const rampY = x => base - (28 + (x - 8) / (W - 16) * 310); // low -> high triangle; the rim only bends the top where they meet
   // a bar: polygon whose top edge follows the rim (sampled), bottom flat, slanted sides
   const bar = (xa, xb, minTop, dx, dy) => {
-    const pts = []; for (let k = 0; k <= 6; k++) { const x = xa + (xb - xa) * k / 6; pts.push([x, Math.max(arcY(mx(x)) + 10, minTop)]); }
+    const pts = []; for (let k = 0; k <= 6; k++) { const x = xa + (xb - xa) * k / 6; pts.push([x, Math.max(arcY(mx(x)) + 10, rampY(x))]); }
     g.beginPath(); pts.forEach(([x, y], k) => { const X = mx(x + sk) + dx, Y = y + dy; k ? g.lineTo(X, Y) : g.moveTo(X, Y); });
     g.lineTo(mx(xb) + dx, base); g.lineTo(mx(xa) + dx, base); g.closePath();
     return Math.min(...pts.map(q => q[1]));
@@ -3606,7 +3608,7 @@ function drawExArc(g) {
     g.fillStyle = full ? `rgba(255,122,217,${0.18 + 0.15 * pulse})` : 'rgba(5,6,10,.55)'; g.fill();
     g.lineWidth = 3; g.strokeStyle = full ? '#ff7ad9' : 'rgba(127,223,255,.55)'; if (full) { g.shadowColor = '#ff7ad9'; g.shadowBlur = 20 * pulse; } g.stroke(); g.shadowBlur = 0;
     g.fillStyle = full ? '#ff7ad9' : 'rgba(127,223,255,.8)'; g.font = 'italic 900 15px Rajdhani, sans-serif'; g.textAlign = 'center';
-    g.fillText('SKILL', mx((xa + xb) / 2 + 4), Math.max(arcY(mx((xa + xb) / 2)) + 10, 650) + 22); }
+    g.fillText('SKILL', mx((xa + xb) / 2 + 4), Math.max(arcY(mx((xa + xb) / 2)) + 10, rampY((xa + xb) / 2)) + 22); }
   g.restore();
 }
 function drawHUD(g) {
