@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.61</title>
+<title>SPIN! SPIN! v0.62</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -498,7 +498,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 <div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
-  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階之後改由合成升階取得<br>付費抽卡每抽 2% 出現隱藏角色（40 抽保底）</div>
+  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後吃 2 張同陣營、同品階的 3★ 卡<br>付費抽卡每抽 2% 出現隱藏角色（40 抽保底）</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <button class="btn" data-gm="coin">金幣 +10000</button>
@@ -571,10 +571,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.59 EX gauge back to a low-to-high triangle; the arena rim only bends the tops where the ramp would touch it
  v0.60 EX gauge back to stepped rising bars across the full width into the round EX button, button yellow, no arena-following shape
  v0.61 rank-up (3-star parts climb to the next rarity with shards; starting classes cap at red, others at gold), 20 new character cards (portraits from art/portraits, 8 new EX types), purple draws give 異哲團 cards, faction bonds (2 / 3 of a faction, mixed +4%), ASSIST strike from the previous round's teammate
+ v0.62 rank-up by feeding two same-faction (cards) or same-type (parts) 3-star copies of the same rarity, lands at 1 star; weapon types renamed 近戰 / 中距 / 遠距, armor types 衣服 / 護具 / 外甲; one draw table everywhere (white: starters 50% + factions, purple: factions 30/30/30 + 異哲團 10); ASSIST always from the previous slot, same-faction link is stronger; CPU lineups build faction bonds by difficulty
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.61';
+const GAME_VERSION = 'v0.62';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -638,13 +639,13 @@ const RAIL_TOP = 1500, RAIL_ACCEL = 7, RAIL_EXIT = 820, RAIL_GAIN = 0.36; // aur
 // weapon families: melee (red) / gun (cyan) / blast (yellow). Guns do not shoot: they hit harder the faster they charge in.
 const FAMILY = {
   melee: { name: '近戰', col: '#ff2a55', desc: '傷害高、擊退低；連擊：1 秒內連續命中每下 +10%（最多 3 層）', beats: 'energy', weak: 'heavy' },
-  gun:   { name: '射擊', col: '#00f0ff', desc: '傷害擊退均衡；衝鋒加成：撞擊速度越快傷害越高', beats: 'light', weak: 'energy' },
-  blast: { name: '爆裂', col: '#fcee0a', desc: '傷害低、擊退最強；爆震：命中爆炸大幅擊飛，自己也會被反衝', beats: 'heavy', weak: 'light' },
+  gun:   { name: '遠距', col: '#00f0ff', desc: '傷害擊退均衡；衝鋒加成：撞擊速度越快傷害越高', beats: 'light', weak: 'energy' },
+  blast: { name: '中距', col: '#fcee0a', desc: '傷害低、擊退最強；爆震：命中爆炸大幅擊飛，自己也會被反衝', beats: 'heavy', weak: 'light' },
 };
 const ARMOR_CLASS = {
-  light:  { name: '輕裝', col: '#59f2a1' },
-  heavy:  { name: '重裝', col: '#ff8c2e' },
-  energy: { name: '能量護盾', col: '#ff5ad1' },
+  light:  { name: '衣服', col: '#59f2a1' },
+  heavy:  { name: '外甲', col: '#ff8c2e' },
+  energy: { name: '護具', col: '#ff5ad1' },
 };
 const COUNTER_UP = 1.3, COUNTER_DOWN = 0.8;
 const WEAPONS = {
@@ -752,7 +753,7 @@ const portraitOk = c => PORTRAITS[c] && PORTRAITS[c].complete && PORTRAITS[c].na
 // draw a class face into a circle of radius r centred on (x, y)
 function drawFace(g, c, x, y, r, rot) {
   if (!portraitOk(c)) return false;
-  const [fx, fy, fr] = FACE[c];
+  const [fx, fy, fr] = FACE[c] || [128, 100, 74]; // new cards use a centred face box
   g.save(); g.beginPath(); g.arc(x, y, r, 0, TAU); g.clip();
   if (rot) { g.translate(x, y); g.rotate(rot); g.translate(-x, -y); }
   g.drawImage(PORTRAITS[c], fx - fr, fy - fr, fr * 2, fr * 2, x - r, y - r, r * 2, r * 2);
@@ -1092,7 +1093,6 @@ const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '角色卡'
 const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '黃', col: '#fcee0a' }];
 const R_RATE = [0.85, 0.15, 0, 0], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
 const R_BASE = [0, 0.20, 0.44, 0.72], R_STEP = [0.06, 0.07, 0.08, 0.10], NEED = [1, 2, 3]; // each rarity starts above the previous one's 3-star
-const RANK_COST = [5, 10, 20]; // shards to climb white->purple, purple->red, red->gold
 const PRICE1 = 100, PRICE10 = 1000, WIN_COIN = 100, LOSE_COIN = 20, DAILY_COIN = 50;
 const rollFrom = rates => { let x = Math.random(); for (let i = 0; i < rates.length; i++) { x -= rates[i]; if (x < 0) return i; } return 0; };
 const starStr = n => '★'.repeat(n) + '☆'.repeat(3 - n);
@@ -1151,14 +1151,24 @@ for (const k of 'cwa') for (const id in INV[k]) {
   if (e.s >= 3 && e.n) { INV.shards += e.n; e.n = 0; }
 }
 const canMerge = e => e.s < 3 && e.n >= NEED[e.s];
-const canRank = (k, key) => { const e = INV[k][key]; return !!e && e.s >= 3 && e.r < rankCap(k, e.id) && INV.shards >= RANK_COST[e.r]; };
-// rank up: a 3-star part spends shards and climbs to the next rarity at 0 stars
+// rank-up material: two other 3-star items of the same rarity — cards from the same faction (異哲團 counts as any),
+// weapons of the same type, armors of the same type. Starting classes are the natural fodder, so they're picked first.
+const sameKind = (k, a, b) => k === 'c' ? (CLASSES[a].fac === CLASSES[b].fac || CLASSES[a].fac === '異哲團' || CLASSES[b].fac === '異哲團')
+  : k === 'w' ? WEAPONS[a].fam === WEAPONS[b].fam : ARMORS[a].cls === ARMORS[b].cls;
+function rankFodder(k, key) {
+  const e = INV[k][key]; if (!e) return [];
+  const inUse = x => collection.some(b => kk(b, k) === x);
+  return Object.keys(INV[k]).filter(x => x !== key && INV[k][x].s >= 3 && INV[k][x].r === e.r && sameKind(k, INV[k][x].id, e.id))
+    .sort((x, y) => inUse(x) - inUse(y) || (k === 'c' ? (STARTERS.includes(INV[k][y].id) - STARTERS.includes(INV[k][x].id)) || ((CLASSES[INV[k][x].id].tier || 1) - (CLASSES[INV[k][y].id].tier || 1)) : 0)).slice(0, 2);
+}
+const canRank = (k, key) => { const e = INV[k][key]; return !!e && e.s >= 3 && e.r < rankCap(k, e.id) && rankFodder(k, key).length >= 2; };
 function rankUp(k, key) {
   const e = INV[k][key]; if (!canRank(k, key)) return false;
-  INV.shards -= RANK_COST[e.r]; e.r++; e.s = 0; e.n = 0; qAdd('merge');
-  const twin = Object.keys(INV[k]).find(x => x !== key && baseOf(k, x) === e.id && INV[k][x].s === 0 && k !== 'c');
-  if (twin) { const t2 = INV[k][twin]; e.n += t2.n + 1; e.r = Math.max(e.r, t2.r); delete INV[k][twin]; for (const b of collection) if (kk(b, k) === twin) b[k + 'k'] = null; fixTeam(); }
-  return true;
+  for (const x of rankFodder(k, key)) { delete INV[k][x]; for (const b of collection) if (kk(b, k) === x) b[k + 'k'] = null; }
+  e.r++; e.s = 1; e.n = 0; qAdd('merge');
+  const twin = k !== 'c' && Object.keys(INV[k]).find(x => x !== key && baseOf(k, x) === e.id && INV[k][x].s === 1);
+  if (twin) { const t2 = INV[k][twin]; e.n += t2.n + 1; e.r = Math.max(e.r, t2.r); delete INV[k][twin]; for (const b of collection) if (kk(b, k) === twin) b[k + 'k'] = null; }
+  fixTeam(); return true;
 }
 // one star up; if another copy already sits at the new star level, the two fold into one item
 function mergeOne(k, key) {
@@ -1239,7 +1249,14 @@ const NAME_POOL = (() => {
     return pick2(fantasy);
   };
 })();
-const newOpponent = () => { aiLineup = [randomTop(), randomTop(), randomTop()]; aiName = NAME_POOL(); };
+const newOpponent = () => {
+  aiLineup = [randomTop(), randomTop(), randomTop()]; aiName = NAME_POOL();
+  // harder CPUs line up more of one faction: easy random, normal 50% a pair, hard a pair (35% a trio), hell a full trio
+  const d = SETTINGS.diff || 'normal', f = pick(FAC3), pool = Object.keys(CLASSES).filter(k => CLASSES[k].fac === f && !CLASSES[k].hidden);
+  const same = d === 'hell' ? 3 : d === 'hard' ? (Math.random() < 0.35 ? 3 : 2) : d === 'normal' ? (Math.random() < 0.5 ? 2 : 0) : 0;
+  const picks = pool.sort(() => Math.random() - 0.5).slice(0, same);
+  picks.forEach((c, i) => { aiLineup[i].c = c; }); aiLineup.sort(() => Math.random() - 0.5);
+};
 const playerName = () => (INV.profile && INV.profile.named ? INV.profile.name : 'PLAYER');
 let swapSel = null; // {i, k} chip picked in a lineup slot
 let teamSel = null; // lineup slot picked by tapping (tap another to swap order)
@@ -1287,10 +1304,11 @@ function showPart(k, id) {
       <div class="k">${KIND_NAME[k]}${slot >= 0 ? `・出戰第 ${slot + 1} 格` : '・未裝備'}</div></div></div>
     <div class="ipRow"><div><div class="d">${body}</div>
       <div class="k" style="color:#fcee0a">目前加成：${eff} +${Math.round(b0 * 100)}%${e.s < 3 ? `　下一星 +${Math.round((b0 + R_STEP[e.r]) * 100)}%` : '（已滿星）'}</div>
-      <div class="k">素材：${e.s < 3 ? `${e.n} / ${NEED[e.s]}（抽到同名${k === 'c' ? '' : '同星數'}零件就是素材${need ? `，還差 ${need} 個` : '，可以升星了！'}）` : '已滿星，之後抽到同名會變成萬用碎片（可用來升階）'}</div></div></div>
+      <div class="k">素材：${e.s < 3 ? `${e.n} / ${NEED[e.s]}（抽到同名${k === 'c' ? '' : '同星數'}零件就是素材${need ? `，還差 ${need} 個` : '，可以升星了！'}）` : '已滿星，可以升階了；之後抽到同名會變成萬用碎片'}</div></div></div>
     ${e.s < 3 ? `<button class="btn ipBtn" id="doMergeBtn" ${need ? 'disabled' : ''}>${need ? `合成升星（還差 ${need} 個素材）` : '合成升星！'}</button>
       ${need ? `<button class="btn ipBtn ghost" id="useShard" ${INV.shards >= need ? '' : 'disabled'}>用萬用碎片補足並升星（需 ${need}，持有 ${INV.shards}）</button>` : ''}` : ''}
-    ${e.s >= 3 ? (e.r < rankCap(k, e.id) ? `<button class="btn ipBtn" id="rankBtn" ${canRank(k, id) ? '' : 'disabled'}>升階 → ${RARITY[e.r + 1].n}（萬用碎片 ${RANK_COST[e.r]}，持有 ${INV.shards}）</button>` : `<div class="k" style="text-align:center;margin-top:.4em">已達最高品階${rankCap(k, e.id) === 2 ? '（起始角色最高紅）' : ''}</div>`) : ''}
+    ${e.s >= 3 ? (e.r < rankCap(k, e.id) ? (() => { const fd = rankFodder(k, id), nm = x => KIND[k][INV[k][x].id].name, what = k === 'c' ? `同陣營${CLASSES[e.id].fac === '異哲團' ? '（異哲團可吃任何陣營）' : ''}` : `同類型（${k === 'w' ? FAMILY[P.fam].name : ARMOR_CLASS[P.cls].name}）`;
+      return fd.length >= 2 ? `<button class="btn ipBtn" id="rankBtn">升階 → ${RARITY[e.r + 1].n} 1★（吃掉 ${fd.map(nm).join('、')}）</button>` : `<div class="k" style="text-align:center;margin-top:.4em">升階需要 2 張${what}、${RARITY[e.r].n}色 3★ 的${KIND_NAME[k]}（目前 ${fd.length} 張）</div>`; })() : `<div class="k" style="text-align:center;margin-top:.4em">已達最高品階${rankCap(k, e.id) === 2 ? '（起始角色最高紅）' : ''}</div>`) : ''}
     <div class="ipClose">點其他地方關閉</div></div>`;
   infoPop.classList.add('show'); SFX.init(); SFX.flip();
   { const rb = document.getElementById('rankBtn'); if (rb) rb.onclick = ev => { ev.stopPropagation(); if (rankUp(k, id)) { save(); infoPop.classList.remove('show'); SFX.ex(); starUpFx(k, id); renderTeam(); } }; }
@@ -1638,9 +1656,13 @@ const PW = 540, PH = 860;
 const packCv = document.getElementById('packCv'), pg = packCv.getContext('2d');
 const okBtn = document.getElementById('gachaOk');
 const PK = { st: 'idle', t: 0, taps: 0, shake: 0, cards: [], title: '', done: null, fx: [], emblem: null, flash: 0, flashCol: '255,255,255' };
-// white draws pick a non-philosophy card weighted by its tier (common 6 : rare 3 : very rare 1)
-function whitePick() { const pool = Object.keys(CLASSES).filter(k => !CLASSES[k].hidden && !CLASSES[k].philo), wt = k => [0, 6, 3, 1][CLASSES[k].tier || 1];
-  let x = Math.random() * pool.reduce((t, k) => t + wt(k), 0); for (const k of pool) { x -= wt(k); if (x < 0) return k; } return pool[0]; }
+// one draw table for every crate. White: starting classes 50% (cheap rank-up fodder), the rest split evenly by faction.
+// Purple: 鐵心幫 / 元森域 / 虛駭組 30% each, 異哲團 10%. Inside a faction, rarer cards (tier) come up less often.
+const FAC3 = ['鐵心幫', '元森域', '虛駭組'];
+const tierPick = list => { const wt = k => [0, 3, 2, 1][CLASSES[k].tier || 1]; let x = Math.random() * list.reduce((t, k) => t + wt(k), 0); for (const k of list) { x -= wt(k); if (x < 0) return k; } return list[0]; };
+const facPool = f => Object.keys(CLASSES).filter(k => CLASSES[k].fac === f && !CLASSES[k].hidden && !STARTERS.includes(k));
+function whitePick() { return Math.random() < 0.5 ? pick(STARTERS) : tierPick(facPool(pick(FAC3))); }
+function purplePick() { const x = Math.random(); return x < 0.1 ? pick(PHILO) : tierPick(facPool(FAC3[Math.min(2, Math.floor((x - 0.1) / 0.3))])); }
 function rollTop(base, opt) {
   const b = base || randomTop(); b.r = {}; b.s = {};
   const rr = rollFrom(R_RATE); for (const k of 'cwa') { b.r[k] = rr; b.s[k] = rollFrom(STAR_RATE); }
@@ -1651,9 +1673,9 @@ function rollTop(base, opt) {
     if (INV.pity.r >= 10 && b.r.c < 1) setR(1);
     if (b.r.c >= 1) INV.pity.r = 0;
     INV.pity.cat = (INV.pity.cat || 0) + 1;
-    if (!base) b.c = b.r.c >= 1 ? pick(PHILO) : whitePick();
+    if (!base || !b.c) b.c = b.r.c >= 1 ? purplePick() : whitePick();
     if (Math.random() < 0.02 || INV.pity.cat >= 40) { b.c = 'mechcat'; INV.pity.cat = 0; }
-  } else if (!base) b.c = b.r.c >= 1 ? pick(PHILO) : whitePick();
+  } else if (!base || !b.c) b.c = b.r.c >= 1 ? purplePick() : whitePick();
   return b;
 }
 function startGacha(n, title, done, opt) {
@@ -1662,11 +1684,11 @@ function startGacha(n, title, done, opt) {
     // the starting draw: no two share a weapon, armor or class, so swapping parts matters; at least one purple
     const sh = o => Object.keys(o).sort(() => Math.random() - 0.5);
     const W2 = sh(WEAPONS), A2 = sh(ARMORS), C2 = STARTERS.slice().sort(() => Math.random() - 0.5);
-    builds = Array.from({ length: n }, (_, i) => rollTop({ w: W2[i % W2.length], a: A2[i % A2.length], c: C2[i % C2.length] }));
-    if (!builds.some(b => b.r.c >= 1)) for (const k of 'cwa') builds[0].r[k] = 1;
+    builds = Array.from({ length: n }, (_, i) => rollTop({ w: W2[i % W2.length], a: A2[i % A2.length], c: null }));
+    if (!builds.some(b => b.r.c >= 1)) { for (const k of 'cwa') builds[0].r[k] = 1; builds[0].c = purplePick(); }
   } else {
     builds = Array.from({ length: n }, () => rollTop(null, opt));
-    if (opt.ten && !builds.some(b => b.r.c >= 1)) { for (const k of 'cwa') builds[n - 1].r[k] = 1; if (!CLASSES[builds[n - 1].c].hidden) builds[n - 1].c = pick(PHILO); }
+    if (opt.ten && !builds.some(b => b.r.c >= 1)) { for (const k of 'cwa') builds[n - 1].r[k] = 1; if (!CLASSES[builds[n - 1].c].hidden) builds[n - 1].c = purplePick(); }
   }
   // parts go into the inventory right away (coins are already spent); the cards show what each one became
   for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
@@ -2020,7 +2042,7 @@ const TUT = [
       g.beginPath(); g.arc(x, y, r * (0.9 + 0.1 * Math.sin(t * 6)), 0, TAU); g.stroke(); g.restore();
       tLabel(g, txt, x, y + (i === 3 ? -80 : i === 2 ? -70 : i === 0 ? 70 : 0), col, 34);
   } },
-  { title: '武器三系與相剋', text: '<b style="color:#ff2a55">近戰系</b>傷害高、會連擊；<b style="color:#00f0ff">射擊系</b>衝越快打越痛；<b style="color:#fcee0a">爆裂系</b>擊退最強，適合把人炸出場。鎧甲分<b>輕裝・重裝・能量護盾</b>：近戰剋能量、射擊剋輕裝、爆裂剋重裝（+30%），被剋則 −20%。排陣容前先看對手！', draw(g, t) {
+  { title: '武器三型與相剋', text: '武器分三型：<b style="color:#ff2a55">近戰</b>傷害高、會連擊；<b style="color:#fcee0a">中距</b>擊退最強，適合把人炸出場；<b style="color:#00f0ff">遠距</b>衝越快打越痛。鎧甲分<b>衣服・護具・外甲</b>：近戰剋護具、中距剋外甲、遠距剋衣服（+30%），被剋則 −20%。排陣容前先看對手！', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       const W3 = [['melee', 200, 70], ['gun', 330, 290], ['blast', 70, 290]];
       const A3 = { energy: [265, 180], light: [200, 320], heavy: [135, 180] };
@@ -2042,7 +2064,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（紫卡＝異哲團，十連必出 1 紫）；3 星後用萬用碎片<b>升階</b>（白→紫 5、紫→紅 10、紅→金 20，起始角色最高紅）<br>・<b>陣營羈絆</b>：隊伍裡同陣營 2 隻以上有加成（鐵心幫耐打、元森域速度、虛駭組 EX），異哲團可算任一陣營；3 隻都不同陣營全能力 +4%<br>・<b>ASSIST 支援</b>：第 2 回合起，上一場的隊友和目前角色同陣營時，開打 5 秒後可以叫他衝進來撞一下（每回合一次）<br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（十連必出 1 紫）。<b>升階</b>：3 星後吃掉 2 張<b>同陣營、同品階的 3 星角色卡</b>，升到下一品階 1 星（武器、鎧甲吃同類型）；起始 6 角色最適合當升階材料，最高只到紅<br>・<b>陣營羈絆</b>：隊伍裡同陣營 2 隻以上有加成（鐵心幫耐打、元森域速度、虛駭組 EX），異哲團可算任一陣營；3 隻都不同陣營全能力 +4%<br>・<b>ASSIST 支援</b>：2 號上場時 1 號來支援、3 號上場時 2 號來支援；開打 5 秒後可以叫隊友衝進來撞一下（每回合一次），同陣營（含異哲團）會變成更強的<b>連攜</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2063,7 +2085,7 @@ function showTutorial(done) { tutIdx = 0; tutT = 0; tutDone = done; renderTutSte
 // strategy pages reuse the drag / lineup animations
 TUT.push(
   { title: '攻略①・拖曳追擊', text: '<div class="tutRules">・<b>別站著不動</b>：開場後馬上<b>按住拖曳</b>追著對手跑，速度就是傷害<br>・<b>從側面撞</b>：繞到對手側後方，朝<b>出口方向</b>撞，最容易撞出 BLOOD／DEAD<br>・<b>對手靠近出口</b>：從反方向全速衝過去補一下<br>・<b>被逼到牆邊</b>：往中央 CORE 拖回來，CORE 裡撞擊 +20%、EX 累積更快<br>・<b>EX 留著用</b>：等對手靠近出口或剛撞完牆再放<br>・<b>另一隻手</b>點畫面充能，邊追邊集 EX</div>', draw: TUT[2].draw },
-  { title: '攻略②・角色配置', text: '<div class="tutRules">・<b>1 號先鋒</b>：狂戰士或刺客，配<b>近戰武器</b>，開場搶攻拿分<br>・<b>2 號主力</b>：獵人或術士，配<b>射擊武器＋輕裝</b>，速度快、追得上人<br>・<b>3 號壓軸</b>：守護者或不死者，配<b>爆裂武器＋重裝</b>，耐打又能把人炸出場<br>・<b>看對手換裝</b>：對手重裝多帶爆裂、輕裝多帶射擊、能量護盾多帶近戰<br>・<b>集中培養</b>：先把一顆主力升到 3 星，比平均培養更容易贏<br>・<b>打不贏？</b>先降低對手強度，或開 MOVE 攻擊模式看電腦怎麼走位</div>', draw: TUT[5].draw },
+  { title: '攻略②・角色配置', text: '<div class="tutRules">・<b>1 號先鋒</b>：狂戰士或刺客，配<b>近戰武器</b>，開場搶攻拿分<br>・<b>2 號主力</b>：獵人或術士，配<b>遠距武器＋衣服</b>，速度快、追得上人<br>・<b>3 號壓軸</b>：守護者或不死者，配<b>中距武器＋外甲</b>，耐打又能把人炸出場<br>・<b>同陣營排一起</b>：2 隻以上有羈絆，前一棒還能 ASSIST 支援下一棒<br>・<b>看對手換裝</b>：對手外甲多帶中距、衣服多帶遠距、護具多帶近戰<br>・<b>集中培養</b>：先把一顆主力升到 3 星，比平均培養更容易贏<br>・<b>打不贏？</b>先降低對手強度，或開 MOVE 攻擊模式看電腦怎麼走位</div>', draw: TUT[5].draw },
 );
 function renderTutStep() {
   const st = TUT[tutIdx];
@@ -2627,7 +2649,7 @@ function assistInfo(side) {
   if (!G || G.sudden) return null; const idx = G.round - 1; if (idx < 1) return null;
   const L = side === 0 ? G.lineup : G.aiLineup, prev = L[idx - 1], cur = L[idx]; if (!prev || !cur) return null;
   const fp = CLASSES[prev.c].fac, fc = CLASSES[cur.c].fac, ok = fp === fc || fp === '異哲團' || fc === '異哲團';
-  return { prev, ok, fac: fp === '異哲團' ? fc : fp };
+  return { prev, ok: true, link: ok, fac: fp === '異哲團' ? fc : fp };
 }
 function doAssist(side) {
   const A = assistInfo(side), st = G.assist; if (!A || !A.ok || st.used[side] || st.t < ASSIST_T || G.phase !== 'battle') return;
@@ -2635,10 +2657,11 @@ function doAssist(side) {
   const foe = G.tops[1 - side]; if (!foe || foe.dead || foe.falling) return;
   const fromL = Math.random() < 0.5, sx = fromL ? CX - AX - 40 : CX + AX + 40, sy = foe.y - 60;
   G.assistFx = { x0: sx, y0: sy, x1: foe.x, y1: foe.y, t: 0.5, c: A.prev.c, col: facCol(A.fac) };
-  const ng = nearestGate(foe.x, foe.y), gd = norm(ng.x - foe.x, ng.y - foe.y), hurt = d => { foe.hp = Math.max(1, foe.hp - d); foe.flash = 0.15; addText(foe.x, foe.y - 30, Math.round(d).toString(), '#ff7ad9', 20); };
-  if (A.fac === '鐵心幫') { foe.vx += gd.x * 620 / Math.sqrt(foe.s.mass); foe.vy += gd.y * 620 / Math.sqrt(foe.s.mass); hurt(6); comicPop(foe.x, foe.y - 50, 'SLAM!!', 36, '#ff2a55', '#fcee0a', 0.8); }
-  else if (A.fac === '元森域') { const d = norm(foe.x - sx, foe.y - sy); foe.vx += d.x * 480; foe.vy += d.y * 480; hurt(12); comicPop(foe.x, foe.y - 50, 'SLASH!!', 36, '#fcee0a', '#ff2a55', 0.8); }
-  else { foe.stunT = 1; foe.hitT = 1; foe.energy = Math.max(0, foe.energy - 30); detach(foe, 1); hurt(4); comicPop(foe.x, foe.y - 50, 'EMP!!', 36, '#00f0ff', '#ff2a55', 0.8); }
+  const P = A.link ? 1.4 : 1; if (A.link) addText(foe.x, foe.y - 76, '連攜！', '#ff7ad9', 20);
+  const ng = nearestGate(foe.x, foe.y), gd = norm(ng.x - foe.x, ng.y - foe.y), hurt = d0 => { const d = d0 * P; foe.hp = Math.max(1, foe.hp - d); foe.flash = 0.15; addText(foe.x, foe.y - 30, Math.round(d).toString(), '#ff7ad9', 20); };
+  if (A.fac === '鐵心幫') { foe.vx += gd.x * 560 * P / Math.sqrt(foe.s.mass); foe.vy += gd.y * 560 * P / Math.sqrt(foe.s.mass); hurt(6); comicPop(foe.x, foe.y - 50, 'SLAM!!', 36, '#ff2a55', '#fcee0a', 0.8); }
+  else if (A.fac === '元森域') { const d = norm(foe.x - sx, foe.y - sy); foe.vx += d.x * 380 * P; foe.vy += d.y * 380 * P; hurt(11); comicPop(foe.x, foe.y - 50, 'SLASH!!', 36, '#fcee0a', '#ff2a55', 0.8); }
+  else { foe.stunT = 0.8 * P; foe.hitT = foe.stunT; foe.energy = Math.max(0, foe.energy - 25 * P); detach(foe, 1); hurt(4); comicPop(foe.x, foe.y - 50, 'EMP!!', 36, '#00f0ff', '#ff2a55', 0.8); }
   detach(foe, 0.8); sparks(foe.x, foe.y, 26, facCol(A.fac), 320); wave(foe.x, foe.y, '255,122,217', 130, 9, 0.4);
   addText(G.tops[side].x, G.tops[side].y - 64, `${CLASSES[A.prev.c].name} 支援！`, '#ff7ad9', 16);
   G.shake = Math.max(G.shake, 8); SFX.ex(); camPunch('hit', foe.x, foe.y); paintAssist();
@@ -2648,7 +2671,7 @@ function paintAssist() {
   const A = assistInfo(0); b.style.display = G.phase === 'final' ? 'none' : 'flex';
   const st = G.assist || { t: 0, used: [] }, ready = A && A.ok && !st.used[0] && st.t >= ASSIST_T && G.phase === 'battle';
   b.classList.toggle('ready', !!ready); b.classList.toggle('off', !A || !A.ok || !!st.used[0]);
-  b.querySelector('i').textContent = !A ? '第 2 回合起' : !A.ok ? '陣營不同' : st.used[0] ? '已使用' : ready ? CLASSES[A.prev.c].name.split('・')[0] : '準備中';
+  b.querySelector('i').textContent = !A ? '2 號起' : st.used[0] ? '已使用' : ready ? (A.link ? '連攜 ' : '') + CLASSES[A.prev.c].name.split('・')[0] : '準備中';
   document.getElementById('assistFill').style.width = (A && A.ok && !st.used[0] ? Math.min(1, st.t / ASSIST_T) * 100 : 0) + '%';
 }
 document.getElementById('assistBtn').addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); doAssist(0); });
