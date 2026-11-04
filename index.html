@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.55</title>
+<title>SPIN! SPIN! v0.56</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +247,8 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .sbtn{flex:1;min-width:5.5em;padding:.7em .4em;font-size:.9em;font-weight:900;background:rgba(0,240,255,.12);border:2px solid #00f0ff;color:#00f0ff;cursor:pointer;font-family:inherit}
 .sbtn.warn{border-color:#ff2a55;color:#ff2a55;background:rgba(255,42,85,.1)}
 #askBox{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);z-index:90}
-#askBox.show{display:flex}
+#askBox.show,#giftPop.show{display:flex}
+#giftPop{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);z-index:90}
 .askIn{width:80%;background:#0b0f14;border:2px solid #ff2a55;padding:1.2em 1em;text-align:center;line-height:1.6}
 .askBtns{display:flex;gap:.6em;justify-content:center}.askBtns .btn{padding:.55em 1.4em}
 #topRight{position:absolute;right:3%;top:1.2%;display:flex;gap:.45em;z-index:65;align-items:stretch}
@@ -352,7 +353,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .autoTog.wide{flex-direction:row;gap:.5em;font-size:.9em;padding:.5em 1.1em;margin-top:1em}
 .autoTog.wide i{margin:0}
 #nextCount{margin-top:.5em;font-weight:900;color:#fcee0a;min-height:1.2em;font-size:.9em}
-#exMeter{position:absolute;right:27.5%;bottom:4.6%;z-index:20;display:none;align-items:flex-end;gap:.16em;height:3.4em;pointer-events:none;filter:drop-shadow(2px 2px 0 #05060a)}
+#exMeter{display:none!important;position:absolute;right:27.5%;bottom:4.6%;z-index:20;display:none;align-items:flex-end;gap:.16em;height:3.4em;pointer-events:none;filter:drop-shadow(2px 2px 0 #05060a)}
 #exMeter.left{right:auto;left:27.5%;flex-direction:row-reverse}
 #exMeter i{width:.62em;background:rgba(255,255,255,.1);border:1.5px solid #05060a;transform:skewX(-14deg);transition:background .12s}
 #exMeter i:nth-child(1){height:14%}#exMeter i:nth-child(2){height:23%}#exMeter i:nth-child(3){height:32%}#exMeter i:nth-child(4){height:41%}#exMeter i:nth-child(5){height:50%}
@@ -465,6 +466,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <button class="btn" id="questBack">返回</button>
   </div>
   <div id="cxPop"><div class="in" id="cxPopIn"></div></div>
+  <div id="giftPop"><div class="askIn" style="border-color:#fcee0a"><div style="font-size:1.3em;font-weight:900;color:#fcee0a">🎁 新手完成獎勵</div><div style="margin:.4em 0 .2em">第一場對戰完成！</div><div style="font-size:1.5em;font-weight:900" id="giftAmt"></div><div style="font-size:.8em;opacity:.8;margin-bottom:.3em">馬上去開補給箱吧</div><div class="askBtns" style="flex-wrap:wrap"><button class="btn ghost" id="giftNo">取消</button><button class="btn" id="gift1">單抽</button><button class="btn" id="gift10">十連抽</button></div></div></div>
   <div id="askBox"><div class="askIn"><div id="askText"></div><div class="askBtns"><button class="btn ghost" id="askNo">取消</button><button class="btn" id="askYes">確定</button></div></div></div>
 
   <div id="tutorial" class="screen">
@@ -557,10 +559,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.53 top-right button row (quests / codex / settings, same size and line); daily quests, weekly quests and the digital vault (1 coin per second, 1-hour cap, claim every 30 min)
  v0.54 lineup title centred with a tri-colour underline and more room below the top-right buttons
  v0.55 removed the tri-colour underline under the lineup title
+ v0.56 EX gauge redrawn as a full-width segmented band along the bottom that curves up around the EX button (pastel blue to pink); first-match starter-gift popup with single / ten draw buttons; faction names 鐵心幫 / 元森域 / 虛駭組 / 異哲團 with drawn badges in the codex
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.55';
+const GAME_VERSION = 'v0.56';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2077,13 +2080,13 @@ document.getElementById('questOpen').onclick = () => { SFX.init(); openQuest(); 
 
 // ---------- codex ----------
 const CX_LORE = {
-  berserker: ['改造派', '機械義臂狂暴化的戰士，衝勁十足。適合 1 號先鋒，開場搶攻。'],
-  guardian: ['自然派', '不靠改造，靠古典重甲和巨盾硬扛一切。適合壓軸，耐打穩定。'],
-  assassin: ['網路派', '光學迷彩加資料刺殺，專從背後下手。速度快，適合先鋒或收割。'],
-  mage: ['網路派', '用程式碼施法的駭客法師，EX 累積最快，擅長把對手彈開控場。'],
-  hunter: ['自然派', '只用弓和陷阱等實體獵具，會追蹤對手。適合 2 號主力追擊。'],
-  undead: ['改造派', '死後被改造重啟的機體，第一次爆甲會復活。適合壓軸保分。'],
-  mechcat: ['自然派', '駕駛圓滾滾機甲的貓，半夜最有精神。隱藏角色，付費抽卡才會出現。'],
+  berserker: ['鐵心幫', '機械義臂狂暴化的戰士，衝勁十足。適合 1 號先鋒，開場搶攻。'],
+  guardian: ['元森域', '不靠改造，靠古典重甲和巨盾硬扛一切。適合壓軸，耐打穩定。'],
+  assassin: ['虛駭組', '光學迷彩加資料刺殺，專從背後下手。速度快，適合先鋒或收割。'],
+  mage: ['虛駭組', '用程式碼施法的駭客法師，EX 累積最快，擅長把對手彈開控場。'],
+  hunter: ['元森域', '只用弓和陷阱等實體獵具，會追蹤對手。適合 2 號主力追擊。'],
+  undead: ['鐵心幫', '死後被改造重啟的機體，第一次爆甲會復活。適合壓軸保分。'],
+  mechcat: ['元森域', '駕駛圓滾滾機甲的貓，半夜最有精神。隱藏角色，付費抽卡才會出現。'],
 };
 let cxTab = 'c';
 function openCodex(back) {
@@ -2092,12 +2095,20 @@ function openCodex(back) {
 let cxBack = null;
 // upcoming cards: shown in the codex as silhouettes so players can see the whole roster
 const CX_FUTURE = [
-  ['rat', '螺栓鼠・咔啦', '改造派'], ['rex', '鐵拳・雷克斯', '改造派'], ['octo', '義肢章魚・八爪', '改造派'], ['rider', '重機騎士・轟天', '改造派'], ['tesla', '磁暴機兵 TESLA-9', '改造派'],
-  ['cactus', '仙人掌・刺球', '自然派'], ['erin', '重盾・艾琳', '自然派'], ['jack', '賞金獵人・傑克', '自然派'], ['dj', '街頭 DJ・節拍', '自然派'],
-  ['spam', '垃圾郵件・SPAM', '網路派'], ['nova', '電路巫師・諾娃', '網路派'], ['raven', '霓影・夜鴉', '網路派'], ['twins', '雙生駭客・零與壹', '網路派'], ['chrono', '時間竊賊・克羅諾', '網路派'],
-  ['david', '大理石・大衛', '哲思派'], ['sheep', '電子羊・夢', '哲思派'], ['maiden', '鐵聖母・瑪登', '哲思派'], ['theseus', '忒修斯', '哲思派'], ['proteus', '擬態原生質・普羅透斯', '哲思派'], ['host', '寄生胚・宿主', '哲思派'],
+  ['rat', '螺栓鼠・咔啦', '鐵心幫'], ['rex', '鐵拳・雷克斯', '鐵心幫'], ['octo', '義肢章魚・八爪', '鐵心幫'], ['rider', '重機騎士・轟天', '鐵心幫'], ['tesla', '磁暴機兵 TESLA-9', '鐵心幫'],
+  ['cactus', '仙人掌・刺球', '元森域'], ['erin', '重盾・艾琳', '元森域'], ['jack', '賞金獵人・傑克', '元森域'], ['dj', '街頭 DJ・節拍', '元森域'],
+  ['spam', '垃圾郵件・SPAM', '虛駭組'], ['nova', '電路巫師・諾娃', '虛駭組'], ['raven', '霓影・夜鴉', '虛駭組'], ['twins', '雙生駭客・零與壹', '虛駭組'], ['chrono', '時間竊賊・克羅諾', '虛駭組'],
+  ['david', '大理石・大衛', '異哲團'], ['sheep', '電子羊・夢', '異哲團'], ['maiden', '鐵聖母・瑪登', '異哲團'], ['theseus', '忒修斯', '異哲團'], ['proteus', '擬態原生質・普羅透斯', '異哲團'], ['host', '寄生胚・宿主', '異哲團'],
 ];
-const FACTIONS = [['改造派', '#ff2a55'], ['自然派', '#fcee0a'], ['網路派', '#00f0ff'], ['哲思派', '#b066ff']];
+const FACTIONS = [['鐵心幫', '#ff2a55'], ['元森域', '#fcee0a'], ['虛駭組', '#00f0ff'], ['異哲團', '#b066ff']];
+// faction badges (drawn, 40x40 viewBox)
+const FAC_SVG = {
+  '鐵心幫': '<polygon points="20,2 36,11 36,29 20,38 4,29 4,11"/><path d="M20 30 L11.5 21.5 A5 5 0 0 1 20 14 A5 5 0 0 1 28.5 21.5 Z"/>',
+  '元森域': '<circle cx="20" cy="20" r="17"/><path d="M20 7 L30 24 H23.5 V32 H16.5 V24 H10 Z"/>',
+  '虛駭組': '<polygon points="20,2 38,20 20,38 2,20"/><path d="M15 14 L10 20 L15 26 M25 14 L30 20 L25 26 M22 12 L18 28" fill="none"/>',
+  '異哲團': '<circle cx="20" cy="20" r="17"/><path d="M6 20 Q20 7 34 20 Q20 33 6 20 Z"/><circle cx="20" cy="20" r="4"/>',
+};
+const facBadge = (f, em = 1.2) => FAC_SVG[f] ? `<svg viewBox="0 0 40 40" style="width:${em}em;height:${em}em;vertical-align:-.25em;fill:#0b0f14;stroke:${facCol(f)};stroke-width:2.6;stroke-linejoin:round">${FAC_SVG[f]}</svg>` : '';
 const facCol = f => (FACTIONS.find(x => x[0] === f) || [0, '#cfd8e6'])[1];
 let cxFilter = 'all';
 function cxEntries(k) { // [{id, name, tag, col, has, soon, pic(html), d}]
@@ -2127,7 +2138,7 @@ function renderCodex() {
   const tile = (e, i) => `<div class="cxT${e.has ? '' : ' no'}" data-i="${i}" style="border-color:${e.col}">${e.src ? `<img src="${e.src}" draggable="false">` : `<div class="cxI">${e.icon}</div>`}${e.soon ? '<b class="soon">SOON</b>' : ''}<div class="n">${e.has ? e.name : '？？？'}</div></div>`;
   list.innerHTML = groups.filter(g => cxFilter === 'all' || g === cxFilter).map(g => {
     const items = all.map((e, i) => [e, i]).filter(([e]) => e.tag === g);
-    return `<div class="cxHd" style="border-color:${items[0] ? items[0][0].col : '#fff'};color:${items[0] ? items[0][0].col : '#fff'}">${g}　${items.filter(([e]) => e.has).length}/${items.length}</div><div class="cxGrid">${items.map(([e, i]) => tile(e, i)).join('')}</div>`;
+    return `<div class="cxHd" style="border-color:${items[0] ? items[0][0].col : '#fff'};color:${items[0] ? items[0][0].col : '#fff'}">${k === 'c' ? facBadge(g) + ' ' : ''}${g}　${items.filter(([e]) => e.has).length}/${items.length}</div><div class="cxGrid">${items.map(([e, i]) => tile(e, i)).join('')}</div>`;
   }).join('');
   list.querySelectorAll('.cxT').forEach(t => {
     let tm = null; const open = () => { tm = null; cxShow(all[+t.dataset.i]); };
@@ -2140,7 +2151,7 @@ function cxShow(e) {
   const pop = document.getElementById('cxPop'), inn = document.getElementById('cxPopIn');
   inn.style.borderColor = e.col;
   const pic = e.src ? `<img class="big${e.has ? '' : ' no'}" src="${e.src}">` : `<div class="bigI${e.has ? '' : ' no'}">${e.icon}</div>`;
-  inn.innerHTML = `${pic}<div class="t">${e.has ? e.name : (e.soon ? e.name : '？？？')}</div><div class="tg" style="color:${e.col}">${e.tag}・${e.has ? '已取得' : e.soon ? '即將登場' : '未取得'}</div><div class="d">${e.has ? e.d : e.soon ? e.d : '還沒抽到，打開補給箱收集它！'}</div>`;
+  inn.innerHTML = `${pic}<div class="t">${e.has ? e.name : (e.soon ? e.name : '？？？')}</div><div class="tg" style="color:${e.col}">${cxTab === 'c' ? facBadge(e.tag, 1.4) + ' ' : ''}${e.tag}・${e.has ? '已取得' : e.soon ? '即將登場' : '未取得'}</div><div class="d">${e.has ? e.d : e.soon ? e.d : '還沒抽到，打開補給箱收集它！'}</div>`;
   pop.classList.add('show'); SFX.flip();
 }
 document.getElementById('cxPop').onclick = () => document.getElementById('cxPop').classList.remove('show');
@@ -2204,6 +2215,10 @@ function armNext() {
 }
 function paintNext() { const b = document.getElementById('autoNextBtn'); b.classList.toggle('on', !!SETTINGS.autoNext); b.querySelector('i').textContent = SETTINGS.autoNext ? 'ON' : 'OFF'; }
 document.getElementById('autoNextBtn').onclick = () => { SETTINGS.autoNext = !SETTINGS.autoNext; saveJSON('topSettings', SETTINGS); paintNext(); armNext(); SFX.attach(); };
+{ const gp = document.getElementById('giftPop'), close = () => gp.classList.remove('show');
+  document.getElementById('giftNo').onclick = close;
+  document.getElementById('gift1').onclick = () => { close(); stopNext(); buy(1); };
+  document.getElementById('gift10').onclick = () => { close(); stopNext(); buy(10); }; }
 // in-game yes/no box (the browser confirm() is blocked inside some app webviews, which made reset look broken)
 function ask(text, yes) {
   const box = document.getElementById('askBox'); document.getElementById('askText').innerHTML = text; box.classList.add('show');
@@ -3281,6 +3296,7 @@ function finish() {
   const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）';
   document.getElementById('toTeamBtn').style.display = '';
   show('final'); paintNext(); armNext();
+  if (gift) { stopNext(); document.getElementById('giftAmt').innerHTML = `${ORE} +10000`; document.getElementById('giftPop').classList.add('show'); }
   win ? SFX.win() : SFX.lose();
   exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none'; exMeter.style.display = 'none';
   SFX.music('menu');
@@ -3546,6 +3562,29 @@ function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcT
 
 // one framed HUD panel: names on top, round + score in the middle, each side's card below its name
 function fitText(g, txt, x, y, maxW) { const tw = g.measureText(txt).width; if (tw <= maxW) { g.fillText(txt, x, y); return; } g.save(); g.translate(x, y); g.scale(maxW / tw, 1); g.fillText(txt, 0, 0); g.restore(); }
+// EX gauge: a segmented band along the bottom that curves up around the EX button (pastel blue -> pink)
+function drawExArc(g) {
+  if (!G || G.phase === 'final' || exBtn.style.display === 'none') return;
+  const p = G.tops[0]; if (!p) return;
+  const L = SETTINGS.exSide === 'left', R = 74, cx = 459, cy = 867, y0 = cy + R * Math.SQRT1_2, x0 = 12;
+  const L1 = cx - R * Math.SQRT1_2 - x0, A0 = Math.PI * 0.75, A1 = Math.PI * 2.05, L2 = (A1 - A0) * R, tot = L1 + L2;
+  const at = d => { let x, y; if (d < L1) { x = x0 + d; y = y0; } else { const a = A0 + (d - L1) / R; x = cx + Math.cos(a) * R; y = cy + Math.sin(a) * R; } return { x: L ? W - x : x, y }; };
+  const passive = p.s.c.ex === 'revive', fill = passive ? 0 : clamp(p.energy / 100, 0, 1), full = fill >= 1, N = 34, seg = tot / N;
+  g.save(); g.lineCap = 'butt'; g.globalAlpha = passive ? 0.3 : 1;
+  const pulse = full ? 0.6 + 0.4 * Math.sin(G.time * 10) : 1;
+  for (let i = 0; i < N; i++) {
+    const d0 = i * seg + 1.5, d1 = (i + 1) * seg - 1.5, pts = [];
+    for (let k = 0; k <= 4; k++) pts.push(at(d0 + (d1 - d0) * k / 4));
+    const path = () => { g.beginPath(); pts.forEach((q, j) => j ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y)); };
+    path(); g.strokeStyle = '#05060a'; g.lineWidth = 11; g.stroke();
+    const on = (i + 1) / N <= fill + 1e-6, u = i / (N - 1);
+    const col = `rgb(${Math.round(127 + 128 * u)},${Math.round(223 - 101 * u)},${Math.round(255 - 38 * u)})`; // #7fdfff -> #ff7ad9
+    path(); g.strokeStyle = on ? col : 'rgba(255,255,255,.12)'; g.lineWidth = 6.5;
+    if (on && full) { g.shadowColor = '#ff7ad9'; g.shadowBlur = 14 * pulse; } else g.shadowBlur = 0;
+    g.stroke();
+  }
+  g.restore();
+}
 function drawHUD(g) {
   const [p, a] = G.tops, T = 48, B = 172;
   g.textBaseline = 'middle'; g.lineJoin = 'round';
@@ -3851,7 +3890,7 @@ function render() {
     }
   }
   if (G.flash > 0) { g.fillStyle = `rgba(${G.flashCol || '255,255,255'},${Math.min(0.55, G.flash * 2)})`; g.fillRect(0, 0, W, H); if (G.flash <= 0.02) G.flashCol = null; }
-  drawHUD(g);
+  drawHUD(g); drawExArc(g);
   if (G.taps) for (const k of G.taps) {
     const e = 0.3 - k.t, r = 14 + e * 90, a = k.t * 3;
     g.strokeStyle = `rgba(5,6,10,${a})`; g.lineWidth = 8; g.beginPath(); g.arc(k.x, k.y, r, 0, TAU); g.stroke();
