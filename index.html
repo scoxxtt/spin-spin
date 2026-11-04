@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.49</title>
+<title>SPIN! SPIN! v0.50</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -339,6 +339,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .tile .bigIco{aspect-ratio:1;display:flex}.tile .bigIco .ico{width:100%;height:100%;border-radius:2px}
 .tile .tst{font-size:.6em;text-align:center;letter-spacing:.05em}
 .tile .pg{font-size:.85em;color:#9fb0c0;margin-left:.3em;letter-spacing:0}
+.tile.used>img,.tile.used .bigIco,.tile.used .tn,.tile.used .tst,.tile.used .pbar{filter:brightness(.42) saturate(.5)}
 .eqTag{position:absolute;top:.2em;left:.2em;background:#fcee0a;color:#10101c;font-size:.5em;padding:.05em .35em}
 .chip .st{font-style:normal;font-size:.9em;margin-left:.15em;text-shadow:0 0 2px #000,0 0 2px #000}
 .selHint{color:#fcee0a;text-align:center;margin-top:.4em;font-size:.68em}
@@ -477,10 +478,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.47 new portrait style (anime faces + comic graphics) for the six starting classes and the mech cat; all 27 character portraits stored in art/portraits for upcoming cards
  v0.48 draws give white (85%) or purple (15%) only; ten-pull guarantees a purple, 10 draws without purple make the 10th purple; red / gold pity removed (those tiers will come from merging); draw popup text updated
  v0.49 lineup slots use one fixed, smaller portrait size (no per-tab stretching), faces centred
+ v0.50 parts in the lineup are dimmed and listed first; a weapon / armor can be used once per lineup unless the copies differ in rarity (same rarity swaps out of the other slot)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.49';
+const GAME_VERSION = 'v0.50';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1006,7 +1008,9 @@ function fixTeam() {
   }
 }
 function equip(i, k, key) {
-  const j = collection.findIndex(b => kk(b, k) === key);
+  // one of each part per lineup: the same item, or the same weapon / armor at the same rarity, swaps out of the other slot
+  const r0 = INV[k][key] ? INV[k][key].r : -1;
+  const j = collection.findIndex((b, x) => x !== i && (kk(b, k) === key || (k !== 'c' && baseOf(k, kk(b, k)) === baseOf(k, key) && INV[k][kk(b, k)] && INV[k][kk(b, k)].r === r0)));
   if (j >= 0 && j !== i) { collection[j][k + 'k'] = kk(collection[i], k); collection[j][k] = collection[i][k]; }
   collection[i][k + 'k'] = key; collection[i][k] = baseOf(k, key);
 }
@@ -1261,9 +1265,10 @@ function renderTeam() {
   panel.appendChild(tabs);
   const pagesEl = document.createElement('div'); pagesEl.className = 'invPages';
   const k = invTab, PER = invCols * invRows; let grid = null, count = 0;
-  own(k).sort(SETTINGS.invSort === 'new' ? (x, y) => (INV[k][y].t || 0) - (INV[k][x].t || 0) : (x, y) => INV[k][y].r - INV[k][x].r || baseOf(k, x).localeCompare(baseOf(k, y)) || INV[k][y].s - INV[k][x].s).forEach(id => {
+  const slotOf = id => { const q = collection.findIndex(b => kk(b, k) === id); return q < 0 ? 9 : q; }; // equipped parts first, in slot order
+  own(k).sort((x, y) => slotOf(x) - slotOf(y) || (SETTINGS.invSort === 'new' ? (INV[k][y].t || 0) - (INV[k][x].t || 0) : INV[k][y].r - INV[k][x].r || baseOf(k, x).localeCompare(baseOf(k, y)) || INV[k][y].s - INV[k][x].s)).forEach(id => {
     const e = INV[k][id], bid = baseOf(k, id), slot = collection.findIndex(b => kk(b, k) === id), t = document.createElement('div');
-    t.className = 'tile r' + e.r + (invSel && invSel.k === k && invSel.id === id ? ' picked' : '') + (swapSel && swapSel.k === k ? ' target' : '');
+    t.className = 'tile r' + e.r + (slot >= 0 ? ' used' : '') + (invSel && invSel.k === k && invSel.id === id ? ' picked' : '') + (swapSel && swapSel.k === k ? ' target' : '');
     t.dataset.ik = k; t.dataset.iid = id; t.style.borderColor = RARITY[e.r].col;
     const pic = k === 'c' ? `<img draggable="false" src="${PORTRAIT_SRC[bid]}">` : `<div class="bigIco">${iconHTML(k, bid)}</div>`;
     const ready = canMerge(e); if (ready) t.classList.add('ready');
