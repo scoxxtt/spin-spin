@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.66</title>
+<title>SPIN! SPIN! v0.67</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -221,9 +221,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #team h1{font-size:1.55em;margin:.1em 0 0;padding-left:.12em;line-height:1.1}
 #team .sub{font-size:.78em;margin:.1em 0 .3em}
 #teamList{flex:1;min-height:0;width:100%;display:flex;flex-direction:column}
-#team .slots{flex:none}
+#team .slots{flex:none;grid-template-columns:repeat(3,minmax(0,1fr))}
 #team .slot .sface{aspect-ratio:1.5;height:auto;object-fit:cover;object-position:50% 22%}
-#team .slot .nm{margin:.2em 0 .1em;font-size:.68em}
+#team .slot .nm{margin:.2em 0 .1em;font-size:.68em;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#team .slot .chip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#team .slot{min-width:0}
 #team .slot .mini{margin-top:.1em}
 #team .slot .stop{width:2.2em;height:2.2em}
 .invPanel{flex:1;min-height:0;display:flex;flex-direction:column;margin-top:.35em}
@@ -591,10 +593,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.64 battle speed toggle (1x / 2x / 3x, battle phase only, extra fixed-step updates); ASSIST as a round portrait button above EX with a charge ring; auto-lineup button picks the strongest cards and parts including faction bonds and links
  v0.65 GM panel updated for the current systems (cards, rank-up, quests, vault, starter gift, instant win)
  v0.66 longer rounds: HP x2.3, single-hit cap 24%, knockback x0.72, exit step needs more speed, weaker launch knockback, slower spin decay, ASSIST ready after 3 s (median round ~4.6 s -> ~13 s in CPU-vs-CPU sims)
+ v0.67 lineup slot names stay on one line (ellipsis) so long card names no longer grow the slot; auto EX also triggers ASSIST
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.66';
+const GAME_VERSION = 'v0.67';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3551,6 +3554,7 @@ function update(dt) {
   if (G.hitStop > 0) { G.hitStop -= dt; for (const s of G.texts) s.age += dt; return; } // freeze-frame on big hits
   if (G.exFreeze && G.exFreeze.t > 0) { G.exFreeze.t -= dt; if (G.exFreeze.t <= 0) G.exFreeze = null; if (G.cutin) G.cutin.t -= dt; for (const s2 of G.texts) s2.age += dt; return; } // EX freeze
   if (G.phase === 'battle' && SETTINGS.autoEx && canEx(G.tops[0])) useEx(G.tops[0]);
+  if (G.phase === 'battle' && SETTINGS.autoEx && G.assist && !G.assist.used[0] && G.assist.t >= ASSIST_T) doAssist(0); // auto EX also calls in the ASSIST
   if (G.phase === 'battle') {
     const steps = 4, h = dt / steps;
     for (let i = 0; i < steps && G.phase === 'battle'; i++) {
