@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.47</title>
+<title>SPIN! SPIN! v0.48</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -416,7 +416,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 <div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
-  <div class="k shopNote">每個零件各自抽稀有度：白 70%・紫 22%・紅 6.5%・黃 1.5%<br>十連保底紅色以上・每 60 抽保底黃色<br>付費抽卡每抽 2% 出現隱藏角色（40 抽保底）</div>
+  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階之後改由合成升階取得<br>付費抽卡每抽 2% 出現隱藏角色（40 抽保底）</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <button class="btn" data-gm="coin">金幣 +10000</button>
@@ -424,7 +424,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <button class="btn" data-gm="all">取得全部零件</button>
   <button class="btn" data-gm="mat">全部零件 +3 素材（測試合成）</button>
   <button class="btn" data-gm="pcat">下一次付費抽必出貓咪</button>
-  <button class="btn" data-gm="pyel">下一次付費抽必出黃色</button>
+  <button class="btn" data-gm="pyel">下一次付費抽必出紫色</button>
   <button class="btn ghost" data-gm="close">關閉</button></div></div>
 <script>
 /* SPIN! SPIN! (formerly 旋刃對決) — version history (one step per update in the design chat)
@@ -475,10 +475,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.45 one rarity per draw (card, weapon and armor match); draws open a mechanical supply crate (three clamps, seam glow tinted by the best rarity inside, lid blows open with a light beam and steam)
  v0.46 bigger arena: steeper view, base zoom so the walls touch the screen edges; stadium (crowd stands, LED barrier, spotlights) drawn on a full-screen canvas behind the game so tall phones have no black bars; follow camera (settings, on by default)
  v0.47 new portrait style (anime faces + comic graphics) for the six starting classes and the mech cat; all 27 character portraits stored in art/portraits for upcoming cards
+ v0.48 draws give white (85%) or purple (15%) only; ten-pull guarantees a purple, 10 draws without purple make the 10th purple; red / gold pity removed (those tiers will come from merging); draw popup text updated
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.47';
+const GAME_VERSION = 'v0.48';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -496,7 +497,7 @@ document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
     else if (k === 'all') { for (const k2 of 'cwa') for (const id in KIND[k2]) if (!Object.values(INV[k2]).some(e => e.id === id)) addPart(k2, id, 0, 0); msg('已取得全部零件'); }
     else if (k === 'mat') { for (const k2 of 'cwa') for (const id in INV[k2]) if (INV[k2][id].s < 3) INV[k2][id].n += 3; msg('全部零件 +3 素材'); }
     else if (k === 'pcat') { INV.pity.cat = 39; msg('下一次付費抽必出貓咪'); }
-    else if (k === 'pyel') { INV.pity.y = 59; msg('下一次付費抽必出黃色'); }
+    else if (k === 'pyel') { INV.pity.r = 9; msg('下一次付費抽必出紫色'); }
     if (k !== 'close') { save(); if (screens.team.classList.contains('show')) renderTeam(); }
     else document.getElementById('gmPanel').classList.remove('show');
   });
@@ -965,7 +966,7 @@ const ORE = '<svg class="ore" viewBox="0 0 32 32" aria-label="金幣"><g stroke=
   + '<circle cx="14" cy="8" r="1.4" fill="#fff"/><path d="M26 4 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1 -2.2 -2.2 -1 2.2 -1z" fill="#00f0ff"/></svg>';
 const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '角色卡', w: '武器', a: '鎧甲' };
 const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '黃', col: '#fcee0a' }];
-const R_RATE = [0.70, 0.22, 0.065, 0.015], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
+const R_RATE = [0.85, 0.15, 0, 0], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
 const R_BASE = [0, 0.05, 0.10, 0.15], R_STEP = [0.10, 0.12, 0.15, 0.20], NEED = [1, 2, 3];
 const PRICE1 = 100, PRICE10 = 1000, WIN_COIN = 100, LOSE_COIN = 20, DAILY_COIN = 50;
 const rollFrom = rates => { let x = Math.random(); for (let i = 0; i < rates.length; i++) { x -= rates[i]; if (x < 0) return i; } return 0; };
@@ -1503,11 +1504,10 @@ function rollTop(base, opt) {
   const b = base || randomTop(); b.r = {}; b.s = {};
   const rr = rollFrom(R_RATE); for (const k of 'cwa') { b.r[k] = rr; b.s[k] = rollFrom(STAR_RATE); }
   const setR = v => { for (const k of 'cwa') b.r[k] = v; };
-  if (opt && opt.paid) { // pity: a red+ at least every 10 draws, a yellow every 60
-    INV.pity.r++; INV.pity.y++;
-    if (INV.pity.y >= 60) setR(3);
-    else if (INV.pity.r >= 10 && b.r.c < 2) setR(2);
-    const top = Math.max(b.r.c, b.r.w, b.r.a); if (top >= 2) INV.pity.r = 0; if (top >= 3) INV.pity.y = 0;
+  if (opt && opt.paid) { // draws give white or purple only (red / gold come from merging); pity: a purple at least every 10 draws
+    INV.pity.r++;
+    if (INV.pity.r >= 10 && b.r.c < 1) setR(1);
+    if (b.r.c >= 1) INV.pity.r = 0;
     INV.pity.cat = (INV.pity.cat || 0) + 1;
     if (Math.random() < 0.02 || INV.pity.cat >= 40) { b.c = 'mechcat'; INV.pity.cat = 0; }
   }
@@ -1523,7 +1523,7 @@ function startGacha(n, title, done, opt) {
     if (!builds.some(b => b.r.c >= 1)) for (const k of 'cwa') builds[0].r[k] = 1;
   } else {
     builds = Array.from({ length: n }, () => rollTop(null, opt));
-    if (opt.ten && !builds.some(b => b.r.c >= 2)) for (const k of 'cwa') builds[n - 1].r[k] = 2;
+    if (opt.ten && !builds.some(b => b.r.c >= 1)) for (const k of 'cwa') builds[n - 1].r[k] = 1;
   }
   // parts go into the inventory right away (coins are already spent); the cards show what each one became
   for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
