@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.65</title>
+<title>SPIN! SPIN! v0.66</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -590,10 +590,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.63 draw-again buttons (single / ten) after a crate; one-tap claim-all on the quest page
  v0.64 battle speed toggle (1x / 2x / 3x, battle phase only, extra fixed-step updates); ASSIST as a round portrait button above EX with a charge ring; auto-lineup button picks the strongest cards and parts including faction bonds and links
  v0.65 GM panel updated for the current systems (cards, rank-up, quests, vault, starter gift, instant win)
+ v0.66 longer rounds: HP x2.3, single-hit cap 24%, knockback x0.72, exit step needs more speed, weaker launch knockback, slower spin decay, ASSIST ready after 3 s (median round ~4.6 s -> ~13 s in CPU-vs-CPU sims)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.65';
+const GAME_VERSION = 'v0.66';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -662,7 +663,7 @@ const GATES = [
 for (const gt of GATES) { gt.x = CX + Math.cos(gt.a) * AX; gt.y = CY + Math.sin(gt.a) * BY; }
 const GATE_A = GATES[0].a, GATE_HALF = GATES[0].half, GATE = GATES[0];
 const nearestGate = (x, y) => GATES.reduce((b, gt) => (len(gt.x - x, gt.y - y) < len(b.x - x, b.y - y) ? gt : b));
-const GATE_SPEED = 320, GATE_SLOPE = 300; // step height: outward speed needed to clear it, and the uphill pull before it
+const GATE_SPEED = 420, GATE_SLOPE = 300; // step height: outward speed needed to clear it, and the uphill pull before it
 const TAU = Math.PI * 2;
 const AI_TAP_RATE = 14, RAIL_REF = 128;
 // centre: a basin that pulls tops back in, and a 'battle heart' ring worth fighting over
@@ -864,17 +865,19 @@ function railPath(g, r, off) {
   r.pts.forEach((p, i) => { const x = p.x + (off ? r.nrm[i].x * off : 0), y = p.y + (off ? r.nrm[i].y * off : 0); i ? g.lineTo(x, y) : g.moveTo(x, y); });
 }
 
+// match pacing: tops are tougher and harder to knock out than before so rounds last long enough for ASSIST and EX
+const HP_SCALE = 230, KB_SCALE = 0.72, HIT_CAP = 0.24;
 function stats(build) {
   const w = WEAPONS[build.w], a = ARMORS[build.a], c = CLASSES[build.c];
   const mass = 1 + (w.wt + a.thick) * 0.12;
   return {
     w, a, c, mass,
     bw: build.bw || 0,
-    maxHp: 100 * (0.8 + a.thick * 0.08) * c.hp * (1 + (build.ba || 0) * 0.6 + (build.bc || 0) * 0.4),
+    maxHp: HP_SCALE * (0.8 + a.thick * 0.08) * c.hp * (1 + (build.ba || 0) * 0.6 + (build.bc || 0) * 0.4),
     evade: a.facets * 0.035,
     accel: 1200 * c.speed * (a.special === 'gale' ? 1.15 : 1) / Math.sqrt(mass),
     maxSpeed: 420 * c.speed * (a.special === 'gale' ? 1.12 : 1),
-    decay: (1 / 42) * (0.8 + mass * 0.2) * c.decay,
+    decay: (1 / 58) * (0.8 + mass * 0.2) * c.decay,
     gain: 17 * c.gain * (a.special === 'magnet' ? 1.2 : 1) * (1 + (build.bc || 0) * 0.5),
   };
 }
@@ -2728,7 +2731,7 @@ function newMatch(lineup, aiTeam) {
 }
 
 // ASSIST: from round 2, the previous round's teammate can dash in once if it shares the current card's faction (異哲團 matches any)
-const ASSIST_T = 5;
+const ASSIST_T = 3;
 function assistInfo(side) {
   if (!G || G.sudden) return null; const idx = G.round - 1; if (idx < 1) return null;
   const L = side === 0 ? G.lineup : G.aiLineup, prev = L[idx - 1], cur = L[idx]; if (!prev || !cur) return null;
@@ -3259,7 +3262,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   if (def.markT > 0) mult *= 1.5;
   let dmg = spd * 0.03 * (0.6 + att.s.w.atk * 0.25) * bf * mult / defense(def) * (def.bond ? def.bond.dmgIn : 1) * (att.bond ? att.bond.all : 1);
   if (att.bond && att.bond.crit && attN > 260 && Math.random() < 0.25) { dmg *= 1.5; addText(att.x, att.y - 58, '暴擊！', '#fcee0a', 18); }
-  dmg = Math.min(dmg, def.s.maxHp * 0.38); // no single hit breaks a full-health top; big hits knock you away instead
+  dmg = Math.min(dmg, def.s.maxHp * HIT_CAP); // no single hit breaks a full-health top; big hits knock you away instead
   let evaded = false;
   if (Math.random() < def.s.evade) { dmg *= 0.3; evaded = true; }
   if (def.s.w.special === 'deflect') dmg *= 0.85;
@@ -3288,7 +3291,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
     if (big && !(att.hopT > 0)) { att.hopT = 0.25; att.hopH = 7; }
   }
   // knockback
-  let kb = (0.5 + att.s.w.kb * 0.22) * bf * (sameDir ? 1 : 1.2) * att.kbMult * (40 + Math.min(900, vrel) * 0.25 + Math.min(900, Math.max(0, attN)) * 0.35) * (att.launchedT > 0 ? 1.35 : 1);
+  let kb = KB_SCALE * (0.5 + att.s.w.kb * 0.22) * bf * (sameDir ? 1 : 1.2) * att.kbMult * (40 + Math.min(900, vrel) * 0.25 + Math.min(900, Math.max(0, attN)) * 0.35) * (att.launchedT > 0 ? 1.1 : 1);
   if (def.s.a.special === 'shell') kb *= 0.5;
   if (def.s.a.special === 'deflectA') kb *= 0.7;
   if (fam === 'blast' && !evaded) { // blast: big knock on the target, recoil on yourself
