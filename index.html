@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.43</title>
+<title>SPIN! SPIN! v0.44</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -264,7 +264,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 @keyframes starPop{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(1.18);filter:brightness(2.2)}100%{transform:scale(1);filter:none}}
 .upFx{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);z-index:4;color:#fcee0a;font-weight:900;font-size:.9em;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a;animation:upFx 1s ease-out forwards;pointer-events:none}
 @keyframes upFx{0%{opacity:0;margin-top:.6em}20%{opacity:1}100%{opacity:0;margin-top:-1.6em}}
-#autoBar{position:absolute;right:1.2em;top:10.4em;z-index:30;display:none;gap:.35em}
+#autoBar{position:absolute;right:1.2em;top:10em;z-index:30;display:none;gap:.35em}
 .autoTog{font-family:Rajdhani,"Noto Sans TC",sans-serif;font-weight:900;font-size:.72em;display:flex;flex-direction:column;align-items:center;line-height:1;padding:.35em .6em .3em;background:#0b0e14;color:#7d8a99;border:2px solid #2a3340;cursor:pointer;clip-path:polygon(0 0,100% 0,100% 70%,82% 100%,0 100%)}
 .autoTog i{font-style:normal;font-size:.75em;margin-top:.15em}
 .autoTog.on{background:#fcee0a;color:#05060a;border-color:#05060a;box-shadow:0 0 .8em rgba(252,238,10,.7)}
@@ -468,10 +468,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.41 lineup laid out after the screen is shown (portrait size no longer jumps after the first drag); re-layout on resize
  v0.42 status bar shows the player's name (PLAYER until renamed); CPU gets a random old-school MMORPG-style name each match
  v0.43 auto-move modes (attack: hunt and push toward exits / defense: keep distance and circle, stay off the rim / core: hold CORE and strike intruders); selectable CPU strength (easy / normal / hard / hell: CPU gear level, skill and coin reward); 'class' renamed 'character card' in the UI
+ v0.44 battle HUD as one framed panel (names on top, round + score in the centre, portraits / card name / parts / bars below); 10-pull card grid moved up so the prompt no longer covers the last row
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.43';
+const GAME_VERSION = 'v0.44';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1444,7 +1445,7 @@ function startGacha(n, title, done, opt) {
 const easeOut = k => 1 - Math.pow(1 - k, 3);
 const easeBack = k => { const c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
 function cardSlot(i, n) {
-  if (n > 3) { const col = i % 4, row = Math.floor(i / 4), inRow = Math.min(4, n - row * 4); return { x: PW / 2 + (col - (inRow - 1) / 2) * 128, y: 240 + row * 186, w: 120, h: 176 }; }
+  if (n > 3) { const col = i % 4, row = Math.floor(i / 4), inRow = Math.min(4, n - row * 4); return { x: PW / 2 + (col - (inRow - 1) / 2) * 124, y: 206 + row * 174, w: 114, h: 164 }; }
   if (n === 1) return { x: PW / 2, y: 410, w: 230, h: 330 };
   return { x: PW / 2 + (i - (n - 1) / 2) * 170, y: 410, w: 156, h: 226 };
 }
@@ -3187,45 +3188,48 @@ function drawBar(g, x, y, w, h, v, c1, c2) {
 }
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
+// one framed HUD panel: names on top, round + score in the middle, each side's card below its name
+function fitText(g, txt, x, y, maxW) { const tw = g.measureText(txt).width; if (tw <= maxW) { g.fillText(txt, x, y); return; } g.save(); g.translate(x, y); g.scale(maxW / tw, 1); g.fillText(txt, 0, 0); g.restore(); }
 function drawHUD(g) {
-  const [p, a] = G.tops;
-  g.textBaseline = 'middle';
-  // score
-  g.textAlign = 'center'; g.font = 'italic 900 46px Rajdhani, sans-serif'; g.lineJoin = 'round';
-  { const sc = `${G.score[0]}  :  ${G.score[1]}`; g.lineWidth = 8; g.strokeStyle = '#05060a'; g.strokeText(sc, CX + 3, 59); g.strokeText(sc, CX, 56); g.fillStyle = '#05060a'; g.fillText(sc, CX + 3, 59); g.fillStyle = '#fcee0a'; g.fillText(sc, CX, 56); }
-  g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.65)';
-  g.font = 'italic 900 15px Rajdhani, sans-serif'; g.fillText(G.sudden ? 'SUDDEN DEATH' : `ROUND ${G.round} / 3`, CX, 22);
-  // panels
-  const panel = (t, x0, align, label, col) => {
-    // portrait tile on the outer edge, panel shifted inward
-    const px = align === 'left' ? 22 : W - 22 - 58;
-    g.save(); g.beginPath(); g.moveTo(px, 88); g.lineTo(px + 58, 88); g.lineTo(px + 58, 136); g.lineTo(px + 48, 146); g.lineTo(px, 146); g.closePath();
-    g.fillStyle = '#000'; g.fill(); g.clip(); drawPortrait(g, t.build.c, px, 88, 58, 58); g.restore();
-    g.beginPath(); g.moveTo(px, 88); g.lineTo(px + 58, 88); g.lineTo(px + 58, 136); g.lineTo(px + 48, 146); g.lineTo(px, 146); g.closePath();
-    g.strokeStyle = '#05060a'; g.lineWidth = 6; g.stroke(); g.strokeStyle = col; g.lineWidth = 2.5; g.stroke();
-    if (t.dead || t.falling) { g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(px, 88, 58, 58); }
-    const x = align === 'left' ? x0 + 66 : x0;
-    g.textAlign = align; g.fillStyle = col; g.font = 'italic 900 17px Rajdhani, sans-serif';
-    { const txt = `${label}・${CLASSES[t.build.c].name}`, maxW = 176; g.save(); const tw = g.measureText(txt).width;
-      if (tw > maxW) { const ax = align === 'left' ? x : x + 124; g.translate(ax, 98); g.scale(maxW / tw, 1); g.fillText(txt, 0, 0); } else g.fillText(txt, align === 'left' ? x : x + 124, 98);
-      g.restore(); }
-    g.font = '11px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.55)';
-    g.fillText(`${t.s.w.name}・${t.s.a.name}・${t.s.c.name}`, align === 'left' ? x : x + 124, 118);
-    drawBar(g, x, 132, 124, 11, t.hp / t.s.maxHp, '#fcee0a', '#ff9f1a');
-    { const pc = Math.max(0, Math.ceil(t.hp / t.s.maxHp * 100)) + '%'; g.save(); g.font = 'italic 900 11px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-      g.lineWidth = 3.5; g.strokeStyle = '#05060a'; g.strokeText(pc, x + 62, 138); g.fillStyle = '#ffffff'; g.fillText(pc, x + 62, 138); g.restore(); }
-    drawBar(g, x, 148, 124, 7, t.spin, '#00f0ff', '#00a3ff');
-    if (t.s.c.ex !== 'revive') drawBar(g, x, 160, 124, 5, t.energy / 100, '#ffffff', '#00f0ff');
-    g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.5)'; g.textAlign = 'left';
+  const [p, a] = G.tops, T = 48, B = 172;
+  g.textBaseline = 'middle'; g.lineJoin = 'round';
+  // frame
+  const frame = () => { g.beginPath(); g.moveTo(10, T); g.lineTo(W - 10, T); g.lineTo(W - 10, B - 12); g.lineTo(W - 22, B); g.lineTo(22, B); g.lineTo(10, B - 12); g.closePath(); };
+  frame(); g.fillStyle = 'rgba(5,6,10,.8)'; g.fill();
+  g.save(); frame(); g.clip(); g.globalAlpha = 0.18; g.fillStyle = dotPattern(g); g.fillRect(10, T, W - 20, B - T); g.restore();
+  frame(); g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = 'rgba(0,240,255,.55)'; g.lineWidth = 1.5; g.stroke();
+  g.fillStyle = 'rgba(0,240,255,.25)'; g.fillRect(22, T + 30, W - 44, 1.5);
+  // names row
+  g.font = 'italic 900 18px Rajdhani, sans-serif'; g.lineWidth = 4; g.strokeStyle = '#05060a';
+  const nameAt = (txt, x, align, col) => { g.textAlign = align; const tw = Math.min(150, g.measureText(txt).width); g.save(); g.translate(x, T + 16); if (g.measureText(txt).width > 150) g.scale(150 / g.measureText(txt).width, 1); g.strokeText(txt, 0, 0); g.fillStyle = col; g.fillText(txt, 0, 0); g.restore(); };
+  nameAt(playerName(), 24, 'left', '#00f0ff'); nameAt(aiName, W - 24, 'right', '#ff3b5c');
+  g.textAlign = 'center'; g.font = 'italic 900 13px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.75)';
+  g.fillText(G.sudden ? 'SUDDEN DEATH' : `ROUND ${G.round} / 3`, CX, T + 16);
+  // score plate
+  g.beginPath(); g.moveTo(CX - 62, T + 40); g.lineTo(CX + 70, T + 40); g.lineTo(CX + 62, T + 108); g.lineTo(CX - 70, T + 108); g.closePath();
+  g.fillStyle = '#0b0e14'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = 'rgba(252,238,10,.7)'; g.lineWidth = 1.5; g.stroke();
+  g.font = 'italic 900 44px Rajdhani, sans-serif';
+  { const sc = `${G.score[0]} : ${G.score[1]}`, sy = T + 76; g.lineWidth = 8; g.strokeStyle = '#05060a'; g.strokeText(sc, CX + 3, sy + 3); g.strokeText(sc, CX, sy); g.fillStyle = '#05060a'; g.fillText(sc, CX + 3, sy + 3); g.fillStyle = '#fcee0a'; g.fillText(sc, CX, sy); }
+  // each side: portrait, card name, parts, bars, status tags
+  const side = (t, align, col) => {
+    const L = align === 'left', ps = 54, px = L ? 22 : W - 22 - ps, py = T + 40, x = L ? px + ps + 8 : px - 8 - 118, tw = 118;
+    const tile = () => { g.beginPath(); g.moveTo(px, py); g.lineTo(px + ps, py); g.lineTo(px + ps, py + ps - 10); g.lineTo(px + ps - 10, py + ps); g.lineTo(px, py + ps); g.closePath(); };
+    g.save(); tile(); g.fillStyle = '#000'; g.fill(); g.clip(); drawPortrait(g, t.build.c, px, py, ps, ps); g.restore();
+    tile(); g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = col; g.lineWidth = 2.2; g.stroke();
+    if (t.dead || t.falling) { g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(px, py, ps, ps); }
+    const ax = L ? x : x + tw; g.textAlign = L ? 'left' : 'right';
+    g.font = '900 14px Rajdhani, sans-serif'; g.fillStyle = '#ffffff'; fitText(g, CLASSES[t.build.c].name, ax, py + 7, tw);
+    g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.6)'; fitText(g, `${t.s.w.name}・${t.s.a.name}`, ax, py + 22, tw);
+    drawBar(g, x, py + 30, tw, 11, t.hp / t.s.maxHp, '#fcee0a', '#ff9f1a');
+    { const pc = Math.max(0, Math.ceil(t.hp / t.s.maxHp * 100)) + '%'; g.save(); g.font = 'italic 900 11px Rajdhani, sans-serif'; g.textAlign = 'center';
+      g.lineWidth = 3.5; g.strokeStyle = '#05060a'; g.strokeText(pc, x + tw / 2, py + 36); g.fillStyle = '#ffffff'; g.fillText(pc, x + tw / 2, py + 36); g.restore(); }
+    drawBar(g, x, py + 45, tw, 6, t.spin, '#00f0ff', '#00a3ff');
+    if (t.s.c.ex !== 'revive') drawBar(g, x, py + 54, tw, 4, t.energy / 100, '#ffffff', '#00f0ff');
     const tags = [];
     if (t.poison) tags.push(`毒×${t.poison}`); if (t.markT > 0) tags.push('標記'); if (t.shieldT > 0) tags.push('護盾'); if (t.stunT > 0) tags.push('暈眩'); if (t.revived) tags.push('已復活'); if (t.inCore) tags.push('CORE');
-    if (tags.length) { g.fillStyle = '#fcee0a'; g.textAlign = align; g.fillText(tags.join(' '), align === 'left' ? x : x + 124, 176); }
+    if (tags.length) { g.font = 'italic 900 11px Rajdhani, sans-serif'; g.textAlign = L ? 'left' : 'right'; g.lineWidth = 3; g.strokeStyle = '#05060a'; const tx = L ? 24 : W - 24; g.strokeText(tags.join(' '), tx, B - 9); g.fillStyle = '#fcee0a'; g.fillText(tags.join(' '), tx, B - 9); }
   };
-  panel(p, 22, 'left', playerName(), '#00f0ff');
-  panel(a, W - 22 - 58 - 8 - 124, 'right', aiName, '#ff3b5c');
-  // legend
-  g.textAlign = 'left'; g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.35)';
-  g.font = 'italic 900 10px Rajdhani, sans-serif'; g.fillText('HP  /  SPIN  /  EX', 22, 194);
+  side(p, 'left', '#00f0ff'); side(a, 'right', '#ff3b5c');
   // bottom hints
   g.textAlign = 'center'; g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.5)';
   if (G.phase === 'launch') { g.fillText('按下的位置就是落點・往後拉決定方向和力道・放開發射', CX, 752); g.fillText('電腦的落點是秘密！放開後 3、2、1、SPIN! SPIN! 一起發射', CX, 776); }
