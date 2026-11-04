@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.52</title>
+<title>SPIN! SPIN! v0.53</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -212,7 +212,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .slot.equipFlash{animation:eqf .5s}
 @keyframes eqf{0%{filter:brightness(2.2)}100%{filter:none}}
 #team.screen{overflow:hidden;padding:.4em .6em 2.4em !important;justify-content:flex-start}
-#team .topBar{width:100%;display:flex;flex-direction:column;align-items:center;flex:none;padding-right:3.5em;box-sizing:border-box}
+#team .topBar{width:100%;display:flex;flex-direction:column;align-items:center;flex:none;padding-top:1.75em;box-sizing:border-box;position:relative}
 #team h1{font-size:1.45em;margin:.05em 0 0}
 #team .sub{font-size:.78em;margin:.1em 0 .3em}
 #teamList{flex:1;min-height:0;width:100%;display:flex;flex-direction:column}
@@ -250,7 +250,23 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #askBox.show{display:flex}
 .askIn{width:80%;background:#0b0f14;border:2px solid #ff2a55;padding:1.2em 1em;text-align:center;line-height:1.6}
 .askBtns{display:flex;gap:.6em;justify-content:center}.askBtns .btn{padding:.55em 1.4em}
-#codexOpen{position:absolute;right:calc(3% + 5.2em);top:1.2%;font-size:.75em;padding:.35em .8em;border:1px solid #fcee0a;color:#fcee0a;background:rgba(0,0,0,.55);font-weight:900;cursor:pointer;font-family:Rajdhani,"Noto Sans TC",sans-serif;z-index:65}
+#topRight{position:absolute;right:3%;top:1.2%;display:flex;gap:.45em;z-index:65;align-items:stretch}
+#topRight #gearBtn{position:static}
+#topRight .topB{display:none;position:relative;font-size:.75em;padding:.35em .8em;border:1px solid #fcee0a;color:#fcee0a;background:rgba(0,0,0,.55);font-family:Rajdhani,"Noto Sans TC",sans-serif;cursor:pointer;line-height:normal}
+#topRight.home .topB{display:block}
+.tdot{position:absolute;top:-.3em;right:-.3em;width:.6em;height:.6em;border-radius:50%;background:#ff2a55;display:none}
+#quest.screen{justify-content:flex-start}
+.vault{width:100%;box-sizing:border-box;border:2px solid #fcee0a;background:linear-gradient(135deg,rgba(252,238,10,.12),rgba(0,0,0,.4));padding:.6em .7em;margin:.3em 0 .5em;text-align:left}
+.vault .vt{font-weight:900;color:#fcee0a}.vault .vs{font-size:.72em;color:#cfd8e6;margin:.2em 0}
+.vault .vrow{display:flex;align-items:center;gap:.6em}.vault .vbar{flex:1;height:.7em;background:rgba(255,255,255,.1);border:1px solid #05060a}.vault .vbar i{display:block;height:100%;background:linear-gradient(90deg,#fcee0a,#ff8c2e)}
+.vault .vn{font-weight:900;font-size:1.1em;min-width:4.5em;text-align:right}
+.qBtn{font-size:.8em;font-weight:900;padding:.4em .9em;border:none;background:#fcee0a;color:#000;cursor:pointer;font-family:inherit;white-space:nowrap}
+.qBtn:disabled{background:rgba(255,255,255,.15);color:#8a94a3;cursor:default}
+#questList{width:100%;display:flex;flex-direction:column;gap:.35em}
+.qRow{display:flex;align-items:center;gap:.5em;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.3);padding:.45em .55em;text-align:left}
+.qRow.bonus{border-color:#fcee0a;background:rgba(252,238,10,.08)}
+.qRow .qm{flex:1}.qRow .qt{font-size:.85em;font-weight:700}.qRow .qr{font-size:.7em;color:#fcee0a}
+.qRow .qp{height:.4em;background:rgba(255,255,255,.1);margin-top:.25em}.qRow .qp i{display:block;height:100%;background:#00f0ff}
 .cxFilter{display:flex;gap:.3em;flex-wrap:wrap;justify-content:center;margin:0 0 .4em}
 .cxFilter button{font-size:.72em;padding:.25em .7em;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.4);color:#cfd8e6;font-weight:900;font-family:inherit;cursor:pointer}
 .cxFilter button.on{background:#fcee0a;color:#000;border-color:#fcee0a}
@@ -398,7 +414,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div id="exMeter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div id="autoBar"><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button><button id="autoMoveBtn" class="autoTog move"><b>MOVE</b><i>OFF</i></button></div>
   <button id="menuBtn">選單</button>
-  <button id="gearBtn">⚙ 設定</button>
+  <div id="topRight"><button id="questOpen" class="topB">任務<b class="tdot" id="questDot"></b></button><button id="codexOpen" class="topB">圖鑑</button><button id="gearBtn">⚙ 設定</button></div>
   <div id="settings">
     <div class="spanel">
       <h2>設定</h2>
@@ -414,7 +430,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   </div>
 
   <div id="team" class="screen show">
-    <div class="topBar"><button id="profileBtn"></button><button id="codexOpen">圖鑑</button><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
+    <div class="topBar"><button id="profileBtn"></button><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
     <div id="teamList"></div>
     <div class="bottomBar"><button class="btn ghost" id="drawOpen">抽卡<b class="dot" id="drawDot"></b></button><button class="btn" id="startBtn">開戰！</button></div>
   </div>
@@ -439,6 +455,14 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <div class="seg codexTabs" id="codexTabs"><button data-t="c">角色卡</button><button data-t="w">武器</button><button data-t="a">鎧甲</button></div>
     <div class="cxFilter" id="cxFilter"></div><div id="codexList"></div>
     <button class="btn" id="codexBack">返回</button>
+  </div>
+  <div id="quest" class="screen">
+    <h1>任務</h1>
+    <div class="vault" id="vaultBox"></div>
+    <div class="seg" id="questTabs"><button data-q="d">每日任務</button><button data-q="w">每週任務</button></div>
+    <div class="sub" id="questSub"></div>
+    <div id="questList"></div>
+    <button class="btn" id="questBack">返回</button>
   </div>
   <div id="cxPop"><div class="in" id="cxPopIn"></div></div>
   <div id="askBox"><div class="askIn"><div id="askText"></div><div class="askBtns"><button class="btn ghost" id="askNo">取消</button><button class="btn" id="askYes">確定</button></div></div></div>
@@ -530,10 +554,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.50 parts in the lineup are dimmed and listed first; a weapon / armor can be used once per lineup unless the copies differ in rarity (same rarity swaps out of the other slot)
  v0.51 reset uses an in-game confirm (browser confirm can be blocked in app webviews) and bigger setting buttons; tutorial text refreshed plus two strategy pages; codex screen (cards / weapons / armors with full stats); first finished match gives a one-time 10000-coin starter gift
  v0.52 codex as a dense picture grid (cards grouped by faction with filter buttons, upcoming cards shown as silhouettes), tap / long-press for an enlarged card with details; codex button sits beside the settings button
+ v0.53 top-right button row (quests / codex / settings, same size and line); daily quests, weekly quests and the digital vault (1 coin per second, 1-hour cap, claim every 30 min)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.52';
+const GAME_VERSION = 'v0.53';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1083,7 +1108,7 @@ const canMerge = e => e.s < 3 && e.n >= NEED[e.s];
 // one star up; if another copy already sits at the new star level, the two fold into one item
 function mergeOne(k, key) {
   const e = INV[k][key]; if (!e || !canMerge(e)) return false;
-  e.n -= NEED[e.s]; e.s++;
+  e.n -= NEED[e.s]; e.s++; qAdd('merge');
   const twin = Object.keys(INV[k]).find(x => x !== key && baseOf(k, x) === e.id && INV[k][x].s === e.s);
   if (twin) {
     const t2 = INV[k][twin]; e.n += t2.n + 1; e.r = Math.max(e.r, t2.r); delete INV[k][twin];
@@ -1167,8 +1192,8 @@ let invSel = null;  // {k, id} part picked in the inventory
 let invTab = 'c';
 const save = () => { INV.team = collection; saveJSON('topInv', INV); saveJSON('topWins', wins); };
 
-const screens = ['team', 'versus', 'gacha', 'final', 'tutorial', 'codex'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
-function show(id) { if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
+const screens = ['team', 'versus', 'gacha', 'final', 'tutorial', 'codex', 'quest'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
+function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
 const anyScreen = () => Object.values(screens).some(e => e.classList.contains('show'));
 
 let previews = [];
@@ -1481,7 +1506,7 @@ document.getElementById('drawOpen').onclick = openShop;
 function buy(n) {
   const price = n === 10 ? PRICE10 : PRICE1; if (INV.coins < price) return;
   shopPop.classList.remove('show');
-  INV.coins -= price; SFX.init(); INV.stats.draws += n === 10 ? 11 : 1;
+  INV.coins -= price; SFX.init(); INV.stats.draws += n === 10 ? 11 : 1; qAdd('draw', 1, n === 10 ? 11 : 1);
   startGacha(n === 10 ? 11 : 1, n === 10 ? '十連補給箱' : '補給箱', openTeam, { paid: true, ten: n === 10 });
 }
 function teamTap(idx) {
@@ -1559,6 +1584,7 @@ function rollTop(base, opt) {
   const b = base || randomTop(); b.r = {}; b.s = {};
   const rr = rollFrom(R_RATE); for (const k of 'cwa') { b.r[k] = rr; b.s[k] = rollFrom(STAR_RATE); }
   const setR = v => { for (const k of 'cwa') b.r[k] = v; };
+  if (opt && opt.purple) setR(1);
   if (opt && opt.paid) { // draws give white or purple only (red / gold come from merging); pity: a purple at least every 10 draws
     INV.pity.r++;
     if (INV.pity.r >= 10 && b.r.c < 1) setR(1);
@@ -1989,6 +2015,64 @@ function drawTutorial(dt) { tutT += dt; TUT[tutIdx].draw(tg2, tutT); }
 function endTutorial() { saveJSON('topTutSeen', true); const d = tutDone; tutDone = null; d && d(); }
 document.getElementById('tutNext').onclick = () => { SFX.init(); if (tutIdx < TUT.length - 1) { tutIdx++; renderTutStep(); } else endTutorial(); };
 document.getElementById('tutSkip').onclick = () => { SFX.init(); endTutorial(); };
+// ---------- quests & digital vault ----------
+// daily quests reset at local midnight, weekly ones on Monday. Progress lives in INV.quest.
+const DQ = [['m', '對戰 3 場', 3, 300], ['ex', '使用 EX 5 次', 5, 200], ['draw', '抽卡 1 次', 1, 100], ['merge', '合成 1 次', 1, 200], ['vault', '領取數位保險箱 1 次', 1, 100]], DQ_BONUS = 500;
+const WQ = [['days', '完成全部每日任務 5 天', 5, 'purple'], ['win', '贏得 10 場對戰', 10, 1000], ['dead', '把對手撞進 DEAD 出口 5 次', 5, 800], ['draw', '開補給箱 20 次', 20, 800], ['merge', '合成升星 5 次', 5, 600]];
+const VAULT_RATE = 1, VAULT_CAP = 3600, VAULT_CD = 30 * 60; // coins per second, max stored, seconds between claims
+const weekKey = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.toDateString(); };
+function questState() {
+  const q = INV.quest = INV.quest || {}, today = new Date().toDateString(), wk = weekKey();
+  if (q.day !== today) Object.assign(q, { day: today, d: {}, got: {}, bonus: 0, dayDone: 0 });
+  if (q.week !== wk) Object.assign(q, { week: wk, w: {}, wgot: {} });
+  return q;
+}
+function qAdd(key, n = 1, wn = n) {
+  if (!INV) return; const q = questState();
+  if (DQ.some(x => x[0] === key)) q.d[key] = (q.d[key] || 0) + n;
+  if (WQ.some(x => x[0] === key)) q.w[key] = (q.w[key] || 0) + wn;
+  if (!q.dayDone && DQ.every(([k, , t]) => (q.d[k] || 0) >= t)) { q.dayDone = 1; q.w.days = (q.w.days || 0) + 1; }
+}
+function vaultState() { const v = INV.vault = INV.vault || { from: Date.now() - 600000, last: 0 }; const now = Date.now();
+  return { v, stored: Math.min(VAULT_CAP, Math.floor((now - v.from) / 1000 * VAULT_RATE)), wait: Math.max(0, Math.ceil(VAULT_CD - (now - v.last) / 1000)) }; }
+const mmss = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+function canClaimAny() {
+  const q = questState(), vs = vaultState();
+  return (vs.wait === 0 && vs.stored > 0) || DQ.some(([k, , t]) => (q.d[k] || 0) >= t && !q.got[k]) || (q.dayDone && !q.bonus) || WQ.some(([k, , t]) => (q.w[k] || 0) >= t && !q.wgot[k]);
+}
+function paintQuestDot() { if (INV) document.getElementById('questDot').style.display = canClaimAny() ? 'block' : 'none'; }
+let qTab = 'd', vaultTimer = null;
+function renderVault() {
+  const { stored, wait } = vaultState(), ok = wait === 0 && stored > 0;
+  document.getElementById('vaultBox').innerHTML = `<div class="vt">🔐 數位保險箱</div><div class="vs">每秒自動存入 ${ORE}1，最多存 ${VAULT_CAP}（約 1 小時）。領取後 30 分鐘才能再領。</div>
+    <div class="vrow"><div class="vbar"><i style="width:${stored / VAULT_CAP * 100}%"></i></div><div class="vn">${ORE}${stored}</div><button class="qBtn" id="vaultBtn" ${ok ? '' : 'disabled'}>${ok ? '領取' : wait ? mmss(wait) + ' 後可領' : '存款中'}</button></div>`;
+  document.getElementById('vaultBtn').onclick = () => { const st = vaultState(); if (st.wait || !st.stored) return;
+    INV.coins += st.stored; st.v.from = st.v.last = Date.now(); qAdd('vault'); save(); SFX.ex && SFX.ex(); renderQuest(); };
+}
+function renderQuest() {
+  const q = questState(); renderVault();
+  document.querySelectorAll('#questTabs button').forEach(b => b.classList.toggle('on', b.dataset.q === qTab));
+  const row = (name, cur, tgt, rew, claimed, onClaim, cls = '') => { const done = cur >= tgt;
+    const r = rew === 'purple' ? '必出紫色補給箱 ×1' : `${ORE}${rew}`;
+    return { html: `<div class="qRow ${cls}"><div class="qm"><div class="qt">${name}　${Math.min(cur, tgt)}/${tgt}</div><div class="qr">獎勵 ${r}</div><div class="qp"><i style="width:${Math.min(1, cur / tgt) * 100}%"></i></div></div><button class="qBtn" ${done && !claimed ? '' : 'disabled'}>${claimed ? '已領取' : done ? '領取' : '進行中'}</button></div>`, onClaim }; };
+  let rows;
+  if (qTab === 'd') {
+    rows = DQ.map(([k, n, t, r]) => row(n, q.d[k] || 0, t, r, q.got[k], () => { q.got[k] = 1; INV.coins += r; }));
+    rows.push(row('全部完成獎勵', DQ.filter(([k, , t]) => (q.d[k] || 0) >= t).length, DQ.length, DQ_BONUS, q.bonus, () => { q.bonus = 1; INV.coins += DQ_BONUS; }, 'bonus'));
+    document.getElementById('questSub').textContent = '每天 00:00 重置';
+  } else {
+    rows = WQ.map(([k, n, t, r]) => row(n, q.w[k] || 0, t, r, q.wgot[k], () => { q.wgot[k] = 1; if (r === 'purple') { save(); stopVault(); startGacha(1, '每週紫色補給箱', openTeam, { paid: true, purple: true }); return true; } INV.coins += r; }, r === 'purple' ? 'bonus' : ''));
+    document.getElementById('questSub').textContent = '每週一 00:00 重置';
+  }
+  const list = document.getElementById('questList'); list.innerHTML = rows.map(r => r.html).join('');
+  list.querySelectorAll('.qBtn').forEach((b, i) => b.onclick = () => { if (b.disabled) return; const left = rows[i].onClaim(); save(); SFX.flip(); if (!left) renderQuest(); });
+}
+function stopVault() { if (vaultTimer) clearInterval(vaultTimer); vaultTimer = null; }
+function openQuest() { show('quest'); renderQuest(); stopVault(); vaultTimer = setInterval(() => { if (screens.quest.classList.contains('show')) renderVault(); else stopVault(); }, 1000); }
+document.querySelectorAll('#questTabs button').forEach(b => b.onclick = () => { qTab = b.dataset.q; renderQuest(); SFX.flip(); });
+document.getElementById('questBack').onclick = () => { stopVault(); openTeam(); };
+document.getElementById('questOpen').onclick = () => { SFX.init(); openQuest(); };
+
 // ---------- codex ----------
 const CX_LORE = {
   berserker: ['改造派', '機械義臂狂暴化的戰士，衝勁十足。適合 1 號先鋒，開場搶攻。'],
@@ -2837,6 +2921,7 @@ function autoLaunchStep(dt) {
 function canEx(t) { return t.energy >= 100 && t.s.c.ex !== 'revive' && !t.dead && !t.falling && !t.ex; }
 function useEx(t) {
   if (!G || G.phase !== 'battle' || !canEx(t)) return;
+  if (t.side === 0) qAdd('ex');
   const foe = G.tops[1 - t.side];
   t.energy = 0;
   const name = t.s.c.exName;
@@ -3153,6 +3238,7 @@ function endRound(winner, pts, reason) {
   if (G.phase !== 'battle') return;
   G.phase = 'roundEnd'; G.joy = null;
   if (winner !== null) G.score[winner] += pts;
+  if (winner === 0 && pts === 3) qAdd('dead');
   const who = winner === 0 ? 'YOU' : 'CPU';
   let text, color;
   if (winner === null) { text = 'STOP! DRAW'; color = '#cfd5e0'; }
@@ -3182,6 +3268,7 @@ function finish() {
   const today = new Date().toDateString(), daily = win && INV.day !== today;
   const D = DIFF[G.diff] || DIFF.normal, got = Math.round((win ? WIN_COIN : LOSE_COIN) * D.coin) + (daily ? DAILY_COIN : 0);
   INV.coins += got; if (daily) INV.day = today; if (win) wins++;
+  qAdd('m'); if (win) qAdd('win');
   let gift = 0; if (!INV.gift1) { INV.gift1 = 1; gift = 10000; INV.coins += gift; } // one-time starter gift after the first finished match
   { const S = INV.stats; S.matches++; if (win) { S.wins++; S.streak++; S.best = Math.max(S.best, S.streak); } else { S.losses++; S.streak = 0; } S.coins += got;
     for (const b of collection) S.use[b.c] = (S.use[b.c] || 0) + 1; }
