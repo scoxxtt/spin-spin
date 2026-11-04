@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.39</title>
+<title>SPIN! SPIN! v0.40</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -132,6 +132,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .benchHd,.sub,#teamSub,.vsrow .t,.score,.spanel h2,.ipRow .n,.ipHead .t,.slot .nm,.tile .tn{text-shadow:2px 2px 0 #05060a}
 .vs{font-size:1.6em;color:#fcee0a;text-shadow:-1.5px -1.5px 0 #05060a,1.5px -1.5px 0 #05060a,-1.5px 1.5px 0 #05060a,1.5px 1.5px 0 #05060a,3px 4px 0 #05060a}
 #exBtn{text-shadow:2px 2px 0 #05060a}
+#exBtn.ready{text-shadow:none}
 .hint,.rules,.tutText,.ipRow .d,.ipRow .k,.ipClose,.tipBubble{font-style:normal}
 #gmPanel{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.8)}
 #gmPanel.show{display:flex}
@@ -295,6 +296,15 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .autoTog.wide{flex-direction:row;gap:.5em;font-size:.9em;padding:.5em 1.1em;margin-top:1em}
 .autoTog.wide i{margin:0}
 #nextCount{margin-top:.5em;font-weight:900;color:#fcee0a;min-height:1.2em;font-size:.9em}
+#exMeter{position:absolute;right:27.5%;bottom:4.6%;z-index:20;display:none;align-items:flex-end;gap:.16em;height:3.4em;pointer-events:none;filter:drop-shadow(2px 2px 0 #05060a)}
+#exMeter.left{right:auto;left:27.5%;flex-direction:row-reverse}
+#exMeter i{width:.62em;background:rgba(255,255,255,.1);border:1.5px solid #05060a;transform:skewX(-14deg);transition:background .12s}
+#exMeter i:nth-child(1){height:14%}#exMeter i:nth-child(2){height:23%}#exMeter i:nth-child(3){height:32%}#exMeter i:nth-child(4){height:41%}#exMeter i:nth-child(5){height:50%}
+#exMeter i:nth-child(6){height:59%}#exMeter i:nth-child(7){height:68%}#exMeter i:nth-child(8){height:77%}#exMeter i:nth-child(9){height:88%}#exMeter i:nth-child(10){height:100%}
+#exMeter i.on{background:#00f0ff}#exMeter i.on:nth-child(n+5){background:#fcee0a}#exMeter i.on:nth-child(n+8){background:#ff8c2e}#exMeter i.on:nth-child(10){background:#ff2a55}
+#exMeter.full i{animation:exFull .5s infinite alternate}
+@keyframes exFull{from{background:#fcee0a;box-shadow:0 0 .4em #fcee0a}to{background:#ff2a55;box-shadow:0 0 .9em #ff2a55}}
+#exMeter.off{opacity:.25}
 .tile.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
 .starUp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,5,10,.75);animation:popIn .2s ease-out}
 .starUp.out{opacity:0;transition:opacity .3s}
@@ -335,6 +345,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <canvas id="cv"></canvas>
   <div id="verFoot"></div>
   <button id="exBtn">EX</button>
+  <div id="exMeter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div id="autoBar"><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button></div>
   <button id="menuBtn">選單</button>
   <button id="gearBtn">⚙ 設定</button>
@@ -444,10 +455,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.37 one copy per class; weapons / armors may own extra copies only at a different star level (item keys); one-tap merge-all; HP bar over each top, HP % printed on the status bar; slot portraits grow to fill spare height; big page arrows on the inventory; readability pass (dark stacked shadows, contrast-paired comic words)
  v0.38 countdown driven by the announcer's word boundaries (timer fallback); AUTO launch / auto-EX toggles under the CPU status; rarity frames with corner slashes (1/2/3) and gold shine; merge-all star cascade + summary burst
  v0.39 auto next match toggle on the result screen; player profile page (rename, ID, stats, collection, favourite class); inventory sort (rarity / newest); armor class colours no longer clash with weapon families
+ v0.40 clearer controls: DRIVE joystick with direction arrow, in-battle coach for drag-to-move vs tap-to-charge, haptics, lightning tap burst, tutorial page covers both; segmented EX gauge (10 rising bars) beside the EX button
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.39';
+const GAME_VERSION = 'v0.40';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1679,15 +1691,19 @@ const TUT = [
       if (ph > 1.3) { tTop(g, TB, ex, ey, -t * 4); tLabel(g, 'CPU', ex, ey + 50, '#ff3b5c', 16); } else tLabel(g, '?', E.x, E.y, '#ff3b5c', 40);
       if (ph > 1.0 && ph < 1.4) tLabel(g, 'SPIN! SPIN!', CX, CY - 120, '#fcee0a', 36);
   } },
-  { title: '拖曳移動', text: '對戰中<b>按住畫面任何地方拖曳</b>，陀螺就會往那個方向衝。場地中間是往下凹的碗，陀螺會自然滑回中心；中央的<b>戰心圈</b>裡 EX 累積更快、撞擊更痛，記得去搶！', draw(g, t) {
+  { title: '移動與充能', text: '<b style="color:#00f0ff">按住拖曳＝移動</b>：手指按住畫面任何地方往外拉，會出現 DRIVE 搖桿，陀螺往那個方向衝。<b style="color:#fcee0a">快速點一下＝充能 EX</b>：每點一下累積 EX；移動時用<b>另一隻手指</b>點，就能邊跑邊充能。中央 CORE 圈裡 EX 累積更快、撞擊更痛！', draw(g, t) {
       tutArenaBg(g);
       const a = t * 1.6, px = CX + Math.cos(a) * 130, py = CY + Math.sin(a * 2) * 55;
       for (let i = 8; i > 0; i--) { const b = a - i * 0.06; g.fillStyle = `rgba(0,240,255,${0.05 * (8 - i)})`; g.beginPath(); g.arc(CX + Math.cos(b) * 130, CY + Math.sin(b * 2) * 55, 22, 0, TAU); g.fill(); }
       tTop(g, TA, px, py, t * 18);
       g.setTransform(2, 0, 0, 2, 0, 0);
       const jx = 300, jy = 330, vx = -Math.sin(a) * 130 * 1.6, vy = Math.cos(a * 2) * 2 * 55 * 1.6, n = norm(vx, vy);
-      g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 2; g.beginPath(); g.arc(jx, jy, 46, 0, TAU); g.stroke();
-      tFinger(g, jx + n.x * 32, jy + n.y * 32, true);
+      g.strokeStyle = 'rgba(0,240,255,.8)'; g.lineWidth = 3; g.beginPath(); g.arc(jx, jy, 46, 0, TAU); g.stroke();
+      g.strokeStyle = 'rgba(252,238,10,.9)'; g.lineWidth = 6; g.lineCap = 'round'; g.beginPath(); g.moveTo(jx, jy); g.lineTo(jx + n.x * 32, jy + n.y * 32); g.stroke();
+      tFinger(g, jx + n.x * 32, jy + n.y * 32, true); tLabel(g, 'DRIVE', jx, jy + 66, '#00f0ff', 16);
+      const tp = (t * 1.4) % 1; tFinger(g, 96, 330, tp < 0.18);
+      if (tp < 0.55) { g.strokeStyle = `rgba(252,238,10,${1 - tp * 1.8})`; g.lineWidth = 4; g.beginPath(); g.arc(96, 330, 10 + tp * 70, 0, TAU); g.stroke(); tLabel(g, '⚡+EX', 96, 290 - tp * 20, '#fcee0a', 18); }
+      tLabel(g, '點一下', 96, 380, '#fcee0a', 15);
   } },
   { title: '光環軌道・EX', text: '上半圈牆邊有兩段像貓耳的<b>加速軌道 WORMHOLE</b>：陀螺貼牆滑過去會被吸上去高速衝刺並累積 EX，衝到 12 點鐘的<b>開口會直衝場地中心</b>，在中間的對手會被正面撞上。也可以<b>連點畫面任何地方</b>充能，集滿再按 EX 按鈕發動職業技能。', draw(g, t) {
       tutArenaBg(g);
@@ -1772,7 +1788,7 @@ document.getElementById('tutBtn').onclick = () => { settingsOpen = false; settin
 
 function openTeam() {
   G = null; swapSel = null;
-  exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none';
+  exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none'; exMeter.style.display = 'none';
   SFX.music('menu');
   if (!loadJSON('topTutSeen', false)) return showTutorial(openTeam);
   if (collection.length < 3) return startGacha(3, '初始卡包', openTeam);
@@ -2125,13 +2141,13 @@ function makeTop(build, side) {
 }
 
 function newMatch(lineup, aiTeam) {
-  G = { lineup: lineup.map(b => ({ ...b })), aiLineup: aiTeam.map(b => ({ ...b })), pb: null, ab: null, score: [0, 0], round: 1, sudden: false,
+  G = { coach: (INV.stats ? INV.stats.matches : 0) < 3, didDrag: false, didTap: false, lineup: lineup.map(b => ({ ...b })), aiLineup: aiTeam.map(b => ({ ...b })), pb: null, ab: null, score: [0, 0], round: 1, sudden: false,
         aiSkill: Math.min(1, 0.8 + wins * 0.025),
         phase: 'launch', tops: null, particles: [], texts: [], waves: [], hitStop: 0, flash: 0, banner: null, shake: 0, time: 0,
         drag: null, joy: null, keys: {}, pairCD: 0, endT: 0, pending: null };
   startRound();
   show(null);
-  document.querySelectorAll('.tipBubble').forEach(t => t.remove()); exBtn.style.display = 'block'; menuBtn.style.display = 'block'; autoBar.style.display = 'flex'; paintAuto();
+  document.querySelectorAll('.tipBubble').forEach(t => t.remove()); exBtn.style.display = 'block'; menuBtn.style.display = 'block'; autoBar.style.display = 'flex'; exMeter.style.display = 'flex'; paintAuto();
   SFX.music('battle');
   exBtn.innerHTML = 'EX';
 }
@@ -2300,7 +2316,7 @@ cv.addEventListener('pointerdown', e => {
   }
   else if (G.phase === 'battle') {
     // a second finger tapping anywhere charges EX; a first finger is the joystick (a quick tap also charges)
-    if (G.joy) { pressEx(true); tapFx(p.x, p.y); }
+    if (G.joy) { pressEx(true); tapFx(p.x, p.y); G.didTap = true; }
     else G.joy = { sx: p.x, sy: p.y, x: p.x, y: p.y, id: e.pointerId, t0: performance.now(), moved: false };
   }
 });
@@ -2310,7 +2326,7 @@ cv.addEventListener('pointermove', e => {
   if (G.drag && G.drag.id === e.pointerId) { const wp = toWorld(p); G.drag.x = wp.x; G.drag.y = wp.y; }
   if (G.joy && G.joy.id === e.pointerId) {
     G.joy.x = p.x; G.joy.y = p.y;
-    if (!G.joy.moved && len(p.x - G.joy.sx, p.y - G.joy.sy) > 14) G.joy.moved = true;
+    if (!G.joy.moved && len(p.x - G.joy.sx, p.y - G.joy.sy) > 14) { G.joy.moved = true; G.didDrag = true; if (navigator.vibrate) navigator.vibrate(6); }
     // floating joystick: drag the base along if finger goes far
     const dx = G.joy.x - G.joy.sx, dy = G.joy.y - G.joy.sy, l = len(dx, dy);
     if (l > 90) { G.joy.sx = G.joy.x - dx / l * 90; G.joy.sy = G.joy.y - dy / l * 90; }
@@ -2324,7 +2340,7 @@ function endPointer(e) {
     G.drag = null;
   }
   if (G.joy && G.joy.id === e.pointerId) {
-    if (G.phase === 'battle' && !G.joy.moved && performance.now() - G.joy.t0 < 260) { pressEx(true); tapFx(G.joy.x, G.joy.y); }
+    if (G.phase === 'battle' && !G.joy.moved && performance.now() - G.joy.t0 < 260) { pressEx(true); tapFx(G.joy.x, G.joy.y); G.didTap = true; if (navigator.vibrate) navigator.vibrate(10); }
     G.joy = null;
   }
 }
@@ -2458,7 +2474,7 @@ function aiInput(me, foe, h) {
 }
 
 // ---------- EX ----------
-const autoBar = document.getElementById('autoBar');
+const autoBar = document.getElementById('autoBar'), exMeter = document.getElementById('exMeter');
 function paintAuto() {
   for (const [id, key] of [['autoBtn', 'autoLaunch'], ['autoExBtn', 'autoEx']]) { const b = document.getElementById(id); b.classList.toggle('on', !!SETTINGS[key]); b.querySelector('i').textContent = SETTINGS[key] ? 'ON' : 'OFF'; }
 }
@@ -2518,6 +2534,9 @@ function detach(t, cd) { if (t.onRing) { t.onRing = false; } t.ringCD = Math.max
 function updateExBtn() {
   if (!G) return;
   const p = G.tops[0];
+  exMeter.classList.toggle('left', SETTINGS.exSide === 'left');
+  const lit = p.s.c.ex === 'revive' ? 0 : Math.floor(p.energy / 10), full = p.energy >= 100 && p.s.c.ex !== 'revive';
+  if (exMeter._lit !== lit || exMeter._full !== full) { exMeter._lit = lit; exMeter._full = full; [...exMeter.children].forEach((b, i) => b.classList.toggle('on', i < lit)); exMeter.classList.toggle('full', full); exMeter.classList.toggle('off', p.s.c.ex === 'revive'); }
   if (p.s.c.ex === 'revive') {
     exBtn.classList.remove('ready'); exBtn.innerHTML = `被動<small>${p.revived ? '已使用' : '亡者回魂'}</small>`;
     return;
@@ -2827,7 +2846,7 @@ function finish() {
   document.getElementById('toTeamBtn').style.display = '';
   show('final'); paintNext(); armNext();
   win ? SFX.win() : SFX.lose();
-  exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none';
+  exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none'; exMeter.style.display = 'none';
   SFX.music('menu');
 }
 
@@ -3126,7 +3145,7 @@ function drawHUD(g) {
   // bottom hints
   g.textAlign = 'center'; g.font = '14px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.5)';
   if (G.phase === 'launch') { g.fillText('按下的位置就是落點・往後拉決定方向和力道・放開發射', CX, 752); g.fillText('電腦的落點是秘密！放開後 3、2、1、SPIN! SPIN! 一起發射', CX, 776); }
-  else if (G.phase === 'battle') g.fillText('按住拖曳移動・點畫面任何地方充能 EX', CX - 50, 760);
+  else if (G.phase === 'battle' && !(G.coach && !(G.didDrag && G.didTap))) g.fillText('按住拖曳移動・點畫面任何地方充能 EX', CX - 50, 760);
 }
 
 // wall pieces in world coords under the squashed transform; dz = WALL_H / VIEW_K lifts things to the rim height
@@ -3387,12 +3406,36 @@ function render() {
   }
   if (G.flash > 0) { g.fillStyle = `rgba(${G.flashCol || '255,255,255'},${Math.min(0.55, G.flash * 2)})`; g.fillRect(0, 0, W, H); if (G.flash <= 0.02) G.flashCol = null; }
   drawHUD(g);
-  if (G.taps) for (const k of G.taps) { g.strokeStyle = `rgba(252,238,10,${k.t * 3})`; g.lineWidth = 5; g.beginPath(); g.arc(k.x, k.y, 14 + (0.3 - k.t) * 90, 0, TAU); g.stroke(); }
+  if (G.taps) for (const k of G.taps) {
+    const e = 0.3 - k.t, r = 14 + e * 90, a = k.t * 3;
+    g.strokeStyle = `rgba(5,6,10,${a})`; g.lineWidth = 8; g.beginPath(); g.arc(k.x, k.y, r, 0, TAU); g.stroke();
+    g.strokeStyle = `rgba(252,238,10,${a})`; g.lineWidth = 4; g.stroke();
+    g.strokeStyle = `rgba(255,255,255,${a})`; g.lineWidth = 2.5;
+    for (let i = 0; i < 6; i++) { const an = i / 6 * TAU + 0.3; g.beginPath(); g.moveTo(k.x + Math.cos(an) * (r + 4), k.y + Math.sin(an) * (r + 4)); g.lineTo(k.x + Math.cos(an) * (r + 14), k.y + Math.sin(an) * (r + 14)); g.stroke(); }
+    if (e < 0.2) { g.font = 'italic 900 18px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText('⚡', k.x, k.y + 6); g.fillStyle = '#fcee0a'; g.fillText('⚡', k.x, k.y + 6); }
+  }
   // joystick
-  if (G.joy && G.phase === 'battle') {
-    g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = 2; g.beginPath(); g.arc(G.joy.sx, G.joy.sy, 70, 0, TAU); g.stroke();
-    const dx = G.joy.x - G.joy.sx, dy = G.joy.y - G.joy.sy, l = Math.min(70, len(dx, dy)), d = norm(dx, dy);
-    g.fillStyle = 'rgba(0,240,255,.45)'; g.beginPath(); g.arc(G.joy.sx + d.x * l, G.joy.sy + d.y * l, 26, 0, TAU); g.fill();
+  if (G.joy && G.phase === 'battle' && G.joy.moved) {
+    const J = G.joy, dx = J.x - J.sx, dy = J.y - J.sy, l = Math.min(70, len(dx, dy)), d = norm(dx, dy), kx = J.sx + d.x * l, ky = J.sy + d.y * l, pw = l / 70;
+    g.save(); g.lineJoin = 'round';
+    g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.arc(J.sx, J.sy, 72, 0, TAU); g.fill();
+    g.strokeStyle = '#05060a'; g.lineWidth = 6; g.stroke(); g.strokeStyle = 'rgba(0,240,255,.8)'; g.lineWidth = 2.5; g.stroke();
+    for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; g.beginPath(); g.moveTo(J.sx + Math.cos(a) * 60, J.sy + Math.sin(a) * 60); g.lineTo(J.sx + Math.cos(a) * 70, J.sy + Math.sin(a) * 70); g.stroke(); }
+    g.strokeStyle = `rgba(252,238,10,${0.4 + 0.6 * pw})`; g.lineWidth = 8; g.lineCap = 'round'; g.beginPath(); g.moveTo(J.sx, J.sy); g.lineTo(kx, ky); g.stroke();
+    g.fillStyle = '#00f0ff'; g.strokeStyle = '#05060a'; g.lineWidth = 4; g.beginPath(); g.arc(kx, ky, 26, 0, TAU); g.fill(); g.stroke();
+    g.fillStyle = '#05060a'; g.beginPath(); g.moveTo(kx + d.x * 16, ky + d.y * 16); g.lineTo(kx - d.y * 10 - d.x * 6, ky + d.x * 10 - d.y * 6); g.lineTo(kx + d.y * 10 - d.x * 6, ky - d.x * 10 - d.y * 6); g.closePath(); g.fill();
+    g.font = 'italic 900 13px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText('DRIVE', J.sx, J.sy + 92); g.fillStyle = '#00f0ff'; g.fillText('DRIVE', J.sx, J.sy + 92);
+    g.restore();
+  }
+  // first matches: a coach line until you have both dragged and tapped
+  if (G.phase === 'battle' && G.coach && !(G.didDrag && G.didTap)) {
+    const t = G.time, fy = 715, a = 0.55 + 0.45 * Math.sin(t * 4);
+    g.save(); g.globalAlpha = a; g.textAlign = 'center'; g.lineJoin = 'round';
+    const parts = [!G.didDrag ? '按住拖曳 ▸ 移動' : null, !G.didTap ? '點一下 ▸ 充能 EX' : null].filter(Boolean).join('　｜　');
+    g.font = '900 17px Rajdhani, sans-serif'; g.lineWidth = 5; g.strokeStyle = '#05060a'; g.strokeText(parts, CX, fy); g.fillStyle = '#fcee0a'; g.fillText(parts, CX, fy);
+    if (!G.didDrag) { const ph = (t * 0.8) % 1, fx = CX - 70 + Math.sin(ph * TAU) * 40, fyy = fy - 70 + Math.cos(ph * TAU) * 20; g.strokeStyle = 'rgba(0,240,255,.8)'; g.lineWidth = 2; g.beginPath(); g.arc(CX - 70, fy - 70, 40, 0, TAU); g.stroke(); tFinger(g, fx, fyy, true); }
+    if (!G.didTap) { const ph = (t * 1.3) % 1; tFinger(g, CX + 80, fy - 70, ph < 0.2); if (ph < 0.5) { g.strokeStyle = `rgba(252,238,10,${1 - ph * 2})`; g.lineWidth = 4; g.beginPath(); g.arc(CX + 80, fy - 70, 12 + ph * 60, 0, TAU); g.stroke(); } }
+    g.restore();
   }
   if (G.cutin) {
     // EX cut-in: slanted band slides in from the caster's side with their portrait and the skill name
