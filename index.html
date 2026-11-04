@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.41</title>
+<title>SPIN! SPIN! v0.42</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -457,10 +457,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.39 auto next match toggle on the result screen; player profile page (rename, ID, stats, collection, favourite class); inventory sort (rarity / newest); armor class colours no longer clash with weapon families
  v0.40 clearer controls: DRIVE joystick with direction arrow, in-battle coach for drag-to-move vs tap-to-charge, haptics, lightning tap burst, tutorial page covers both; segmented EX gauge (10 rising bars) beside the EX button
  v0.41 lineup laid out after the screen is shown (portrait size no longer jumps after the first drag); re-layout on resize
+ v0.42 status bar shows the player's name (PLAYER until renamed); CPU gets a random old-school MMORPG-style name each match
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.41';
+const GAME_VERSION = 'v0.42';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -976,7 +977,31 @@ let wins = loadJSON('topWins', 0) || 0;
 if (!INV.profile) INV.profile = { name: '玩家' + Math.floor(1000 + Math.random() * 9000), id: Math.random().toString(36).slice(2, 10).toUpperCase(), joined: Date.now() };
 if (!INV.stats) INV.stats = { matches: wins, wins, losses: 0, streak: 0, best: 0, coins: 0, draws: 0, use: {} };
 { let n = 0; for (const k of 'cwa') for (const key of Object.keys(INV[k])) if (INV[k][key].t == null) INV[k][key].t = ++n; } // older items: keep their order
-let aiLineup = null;
+let aiLineup = null, aiName = 'CPU';
+// CPU names in the spirit of old-school MMORPG handles: local-legend jokes, puns, memes, chuunibyou symbols, and fantasy
+const NAME_POOL = (() => {
+  const pick2 = a => a[Math.floor(Math.random() * a.length)];
+  const places = ['三重', '板橋', '新莊', '鹿港', '岡山', '北投', '永和', '員林', '花蓮', '西門町', '夜市', '巷口'];
+  const legends = ['一枝花', '小霸王', '車神', '賭神', '扛霸子', '彭于晏', '金城武', '劉德華', '周潤發', '舞王', '歌王', '吳彥祖'];
+  const fixedFun = ['梅川酷子', '杜子騰', '范統', '賈正經', '郝帥', '吳奈何', '白開水', '史上最強路人'];
+  const memes = ['放開那個阿嬤', '怪太強我先走', '我只是路過', '補師救我', '等我上個廁所', '手機快沒電', '先睡了晚安', '媽媽叫我吃飯', '不要打我臉', '再一場就睡'];
+  const kids = ['小強', '阿明', '小黑', '阿翔', '胖虎', '阿凱', '小美', '大雄'];
+  const swords = ['御劍風神', '血色修羅', '闇夜龍皇', '狂刀戰神', '冰火魔尊', '絕世劍聖'];
+  const mars = ['暗黑狂戰', '殺手無情', '火星王子', '孤狼', '天使之淚', '傷心太平洋'];
+  const fantasy = ['晨曦之星', '影中漫步者', '永夜的詠嘆調', '星塵旅人', '月下獨酌', '銀翼守望者', '黎明前的風', '燃燒的鳶尾花', '無名的吟遊者', '霜語者'];
+  return () => {
+    const r = Math.random();
+    if (r < 0.14) return pick2(places) + pick2(legends);
+    if (r < 0.26) return pick2(fixedFun);
+    if (r < 0.42) return pick2(memes);
+    if (r < 0.54) return '煞氣a' + pick2(kids);
+    if (r < 0.66) return '卍' + pick2(swords) + '卍';
+    if (r < 0.76) return '☆㊣↙' + pick2(mars) + '↗㊣☆';
+    return pick2(fantasy);
+  };
+})();
+const newOpponent = () => { aiLineup = [randomTop(), randomTop(), randomTop()]; aiName = NAME_POOL(); };
+const playerName = () => (INV.profile && INV.profile.named ? INV.profile.name : 'PLAYER');
 let swapSel = null; // {i, k} chip picked in a lineup slot
 let teamSel = null; // lineup slot picked by tapping (tap another to swap order)
 let invSel = null;  // {k, id} part picked in the inventory
@@ -1214,7 +1239,7 @@ function openProfile() {
   document.getElementById('pfSave').onclick = e => {
     e.stopPropagation(); const v = document.getElementById('pfInput').value.trim().replace(/[<>&"]/g, '').slice(0, 12);
     if (!v) { toast('名字不能是空白'); return; }
-    INV.profile.name = v; save(); document.getElementById('pfNameTxt').textContent = v; document.getElementById('pfEditRow').style.display = 'none'; paintProfileBtn(); SFX.attach(); toast('改名完成！');
+    INV.profile.name = v; INV.profile.named = true; save(); document.getElementById('pfNameTxt').textContent = v; document.getElementById('pfEditRow').style.display = 'none'; paintProfileBtn(); SFX.attach(); toast('改名完成！');
   };
 }
 profilePop.addEventListener('click', e => { if (!e.target.closest('.pfRow, .pfEdit')) profilePop.classList.remove('show'); });
@@ -1360,7 +1385,7 @@ function renderVersus() {
     const L = document.createElement('div'); L.className = 'side'; L.appendChild((() => { const im = document.createElement('img'); im.className = 'face sm'; im.src = PORTRAIT_SRC[me.c]; return im; })());
     L.insertAdjacentHTML('beforeend', `<div class="t"><b style="color:#00f0ff">第 ${i + 1} 場</b><br>${nameOf(me)}<br><span class="mini">${ARMORS[me.a].name}</span></div>`);
     const R2 = document.createElement('div'); R2.className = 'side r'; R2.appendChild((() => { const im = document.createElement('img'); im.className = 'face sm'; im.src = PORTRAIT_SRC[ai.c]; return im; })());
-    R2.insertAdjacentHTML('beforeend', `<div class="t"><b style="color:#ff3b5c">電腦</b><br>${nameOf(ai)}<br><span class="mini">${ARMORS[ai.a].name}</span></div>`);
+    R2.insertAdjacentHTML('beforeend', `<div class="t"><b style="color:#ff3b5c">${aiName.replace(/[<>&]/g, "")}</b><br>${nameOf(ai)}<br><span class="mini">${ARMORS[ai.a].name}</span></div>`);
     row.append(L); row.insertAdjacentHTML('beforeend', '<div class="vs">VS</div>'); row.append(R2);
     list.appendChild(row);
   }
@@ -1806,7 +1831,7 @@ function openTeam() {
 }
 document.getElementById('startBtn').onclick = () => {
   SFX.init(); swapSel = null;
-  aiLineup = [randomTop(), randomTop(), randomTop()];
+  newOpponent();
   renderVersus(); show('versus');
 };
 document.getElementById('backBtn').onclick = () => { show('team'); renderTeam(); };
@@ -1823,7 +1848,7 @@ function armNext() {
   let n = 4; const el = document.getElementById('nextCount'); el.textContent = `${n} 秒後自動開始下一局`;
   nextTimer = setInterval(() => {
     n--; if (!screens.final.classList.contains('show')) return stopNext();
-    if (n <= 0) { stopNext(); aiLineup = [randomTop(), randomTop(), randomTop()]; fight(); }
+    if (n <= 0) { stopNext(); newOpponent(); fight(); }
     else el.textContent = `${n} 秒後自動開始下一局`;
   }, 1000);
 }
@@ -1831,7 +1856,7 @@ function paintNext() { const b = document.getElementById('autoNextBtn'); b.class
 document.getElementById('autoNextBtn').onclick = () => { SETTINGS.autoNext = !SETTINGS.autoNext; saveJSON('topSettings', SETTINGS); paintNext(); armNext(); SFX.attach(); };
 document.getElementById('resetBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); if (!confirm('確定要清空零件庫、金幣和勝場，重新開始嗎？')) return; INV = { c: {}, w: {}, a: {}, coins: 0, shards: 0, pity: { r: 0, y: 0 }, day: '', team: [], profile: INV.profile, stats: { matches: 0, wins: 0, losses: 0, streak: 0, best: 0, coins: 0, draws: 0, use: {} } }; collection = []; wins = 0; save(); openTeam(); };
 document.getElementById('drawBtn').onclick = () => { stopNext(); buy(1); };
-document.getElementById('retryBtn').onclick = () => { stopNext(); aiLineup = [randomTop(), randomTop(), randomTop()]; renderVersus(); show('versus'); };
+document.getElementById('retryBtn').onclick = () => { stopNext(); newOpponent(); renderVersus(); show('versus'); };
 document.getElementById('toTeamBtn').onclick = () => { stopNext(); openTeam(); };
 
 // ---------- sound (synthesised with Web Audio, no files) ----------
@@ -3128,7 +3153,9 @@ function drawHUD(g) {
     if (t.dead || t.falling) { g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(px, 88, 58, 58); }
     const x = align === 'left' ? x0 + 66 : x0;
     g.textAlign = align; g.fillStyle = col; g.font = 'italic 900 17px Rajdhani, sans-serif';
-    g.fillText(`${label}・${CLASSES[t.build.c].name}`, align === 'left' ? x : x + 124, 98);
+    { const txt = `${label}・${CLASSES[t.build.c].name}`, maxW = 176; g.save(); const tw = g.measureText(txt).width;
+      if (tw > maxW) { const ax = align === 'left' ? x : x + 124; g.translate(ax, 98); g.scale(maxW / tw, 1); g.fillText(txt, 0, 0); } else g.fillText(txt, align === 'left' ? x : x + 124, 98);
+      g.restore(); }
     g.font = '11px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.55)';
     g.fillText(`${t.s.w.name}・${t.s.a.name}・${t.s.c.name}`, align === 'left' ? x : x + 124, 118);
     drawBar(g, x, 132, 124, 11, t.hp / t.s.maxHp, '#fcee0a', '#ff9f1a');
@@ -3141,8 +3168,8 @@ function drawHUD(g) {
     if (t.poison) tags.push(`毒×${t.poison}`); if (t.markT > 0) tags.push('標記'); if (t.shieldT > 0) tags.push('護盾'); if (t.stunT > 0) tags.push('暈眩'); if (t.revived) tags.push('已復活'); if (t.inCore) tags.push('CORE');
     if (tags.length) { g.fillStyle = '#fcee0a'; g.textAlign = align; g.fillText(tags.join(' '), align === 'left' ? x : x + 124, 176); }
   };
-  panel(p, 22, 'left', 'YOU', '#00f0ff');
-  panel(a, W - 22 - 58 - 8 - 124, 'right', 'CPU', '#ff3b5c');
+  panel(p, 22, 'left', playerName(), '#00f0ff');
+  panel(a, W - 22 - 58 - 8 - 124, 'right', aiName, '#ff3b5c');
   // legend
   g.textAlign = 'left'; g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.35)';
   g.font = 'italic 900 10px Rajdhani, sans-serif'; g.fillText('HP  /  SPIN  /  EX', 22, 194);
