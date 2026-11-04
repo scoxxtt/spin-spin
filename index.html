@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.42</title>
+<title>SPIN! SPIN! v0.43</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -305,6 +305,14 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #exMeter.full i{animation:exFull .5s infinite alternate}
 @keyframes exFull{from{background:#fcee0a;box-shadow:0 0 .4em #fcee0a}to{background:#ff2a55;box-shadow:0 0 .9em #ff2a55}}
 #exMeter.off{opacity:.25}
+.autoTog.move.atk{background:#ff2a55;color:#fff;border-color:#05060a;box-shadow:0 0 .8em rgba(255,42,85,.7)}
+.autoTog.move.def{background:#00f0ff;color:#05060a;border-color:#05060a;box-shadow:0 0 .8em rgba(0,240,255,.7)}
+.autoTog.move.core{background:#fcee0a;color:#05060a;border-color:#05060a;box-shadow:0 0 .8em rgba(252,238,10,.7)}
+.diffBox{display:flex;flex-direction:column;align-items:center;gap:.3em;margin:.2em 0 .6em}
+.diffBox>span{font-weight:900;font-size:.8em;color:#00f0ff}
+.diffSeg button.on{background:#fcee0a;color:#05060a}
+.diffSeg button[data-d="hell"].on{background:#ff2a55;color:#fff}
+.diffInfo{font-size:.72em;color:#9fb0c0}.diffInfo b{color:#fcee0a}
 .tile.dropTarget{outline:3px solid #fcee0a;outline-offset:-3px;box-shadow:0 0 1.4em #fcee0a}
 .starUp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,5,10,.75);animation:popIn .2s ease-out}
 .starUp.out{opacity:0;transition:opacity .3s}
@@ -346,7 +354,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div id="verFoot"></div>
   <button id="exBtn">EX</button>
   <div id="exMeter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <div id="autoBar"><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button></div>
+  <div id="autoBar"><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button><button id="autoMoveBtn" class="autoTog move"><b>MOVE</b><i>OFF</i></button></div>
   <button id="menuBtn">選單</button>
   <button id="gearBtn">⚙ 設定</button>
   <div id="settings">
@@ -371,6 +379,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div id="versus" class="screen">
     <h1>對手陣容</h1>
     <div class="sub">看清楚對手的出場順序，不滿意可以回去調整</div>
+    <div class="diffBox"><span>對手強度</span><div class="seg diffSeg" id="diffSeg"><button data-d="easy">簡單</button><button data-d="normal">普通</button><button data-d="hard">困難</button><button data-d="hell">地獄</button></div><div class="diffInfo" id="diffInfo"></div></div>
     <div id="vsList"></div>
     <button class="btn" id="fightBtn">開戰</button>
     <button class="btn ghost" id="backBtn">回去調整陣容</button>
@@ -404,7 +413,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 <div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
-  <div class="k shopNote">每個零件各自抽稀有度：白 70%・紫 22%・紅 6.5%・黃 1.5%<br>十連保底紅色以上・每 60 抽保底黃色<br>付費抽卡每抽 2% 出現隱藏職業（40 抽保底）</div>
+  <div class="k shopNote">每個零件各自抽稀有度：白 70%・紫 22%・紅 6.5%・黃 1.5%<br>十連保底紅色以上・每 60 抽保底黃色<br>付費抽卡每抽 2% 出現隱藏角色（40 抽保底）</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <button class="btn" data-gm="coin">金幣 +10000</button>
@@ -458,10 +467,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.40 clearer controls: DRIVE joystick with direction arrow, in-battle coach for drag-to-move vs tap-to-charge, haptics, lightning tap burst, tutorial page covers both; segmented EX gauge (10 rising bars) beside the EX button
  v0.41 lineup laid out after the screen is shown (portrait size no longer jumps after the first drag); re-layout on resize
  v0.42 status bar shows the player's name (PLAYER until renamed); CPU gets a random old-school MMORPG-style name each match
+ v0.43 auto-move modes (attack: hunt and push toward exits / defense: keep distance and circle, stay off the rim / core: hold CORE and strike intruders); selectable CPU strength (easy / normal / hard / hell: CPU gear level, skill and coin reward); 'class' renamed 'character card' in the UI
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.42';
+const GAME_VERSION = 'v0.43';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -861,7 +871,7 @@ const ORE = '<svg class="ore" viewBox="0 0 32 32" aria-label="金幣"><g stroke=
   + '<path d="M16 2 L23 10 L21 26 L16 30 L11 26 L9 10 Z" fill="#fcee0a"/><path d="M16 2 L19 11 L16 30 L13 11 Z" fill="#fff7a8"/>'
   + '<path d="M9 10 L13 11 L16 30 L11 26 Z" fill="#e0b800"/><path d="M5 24 L27 24 L24 30 L8 30 Z" fill="#3a2a4a"/></g>'
   + '<circle cx="14" cy="8" r="1.4" fill="#fff"/><path d="M26 4 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1 -2.2 -2.2 -1 2.2 -1z" fill="#00f0ff"/></svg>';
-const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '職業', w: '武器', a: '鎧甲' };
+const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '角色卡', w: '武器', a: '鎧甲' };
 const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '黃', col: '#fcee0a' }];
 const R_RATE = [0.70, 0.22, 0.065, 0.015], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
 const R_BASE = [0, 0.05, 0.10, 0.15], R_STEP = [0.10, 0.12, 0.15, 0.20], NEED = [1, 2, 3];
@@ -1043,7 +1053,7 @@ function showPart(k, id) {
   const need = e.s < 3 ? Math.max(0, NEED[e.s] - e.n) : 0;
   infoPop.innerHTML = `<div class="ipCard" style="border-color:${RARITY[e.r].col}">
     <div class="ipRow" style="border:0">${k === 'c' ? `<img src="${PORTRAIT_SRC[bid]}" style="width:5em;height:5em;object-fit:cover;border-radius:4px">` : iconHTML(k, bid, 'xl')}
-      <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}${P.hidden ? '<span class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏職業</span>' : ''}</div>
+      <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}${P.hidden ? '<span class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏角色</span>' : ''}</div>
       <div style="color:${RARITY[e.r].col};font-size:1.1em;letter-spacing:.1em">${starStr(e.s)}</div>
       <div class="k">${KIND_NAME[k]}${slot >= 0 ? `・出戰第 ${slot + 1} 格` : '・未裝備'}</div></div></div>
     <div class="ipRow"><div><div class="d">${body}</div>
@@ -1073,7 +1083,7 @@ function showInfo(b, focus) {
       <div class="d">${w.desc}。${f.desc}</div><div class="k">攻擊 ${w.atk}・擊退 ${w.kb}・重量 ${w.wt}｜剋 ${ARMOR_CLASS[f.beats].name}，怕 ${ARMOR_CLASS[f.weak].name}</div></div></div>
     <div class="ipRow ${focus === 'a' ? 'focus' : ''}">${iconHTML('a', b.a)}<div><div class="n">${a.name}${tag(ac.name, ac.col)}${rs('a')}</div>
       <div class="d">${a.desc}</div><div class="k">防禦 ${a.thick}・閃避 ${a.facets}｜怕 ${weakW.join('、') || '—'}，不怕 ${beatsW.join('、') || '—'}</div></div></div>
-    <div class="ipRow ${focus === 'c' ? 'focus' : ''}"><img src="${PORTRAIT_SRC[b.c]}" style="width:4.2em;height:4.2em;object-fit:cover;border-radius:4px"><div><div class="n">${c.name}${tag('職業', '#ffffff')}${rs('c')}</div>
+    <div class="ipRow ${focus === 'c' ? 'focus' : ''}"><img src="${PORTRAIT_SRC[b.c]}" style="width:4.2em;height:4.2em;object-fit:cover;border-radius:4px"><div><div class="n">${c.name}${tag('角色', '#ffffff')}${rs('c')}</div>
       <div class="d">EX「${c.exName}」${c.exDesc ? '：' + c.exDesc : ''}</div><div class="k">速度 ${c.speed}</div></div></div>
     <div class="ipClose">點任何地方關閉</div></div>`;
   infoPop.classList.add('show'); SFX.init(); SFX.flip();
@@ -1230,9 +1240,9 @@ function openProfile() {
     <div class="pfSec">戰績</div>
     <div class="pfGrid">${cell('對戰場數', S.matches)}${cell('勝場', S.wins)}${cell('勝率', rate + '%')}${cell('最高連勝', S.best)}${cell('目前連勝', S.streak)}${cell('隊伍戰力', '+' + Math.round(teamPower() * 100) + '%')}</div>
     <div class="pfSec">收藏</div>
-    <div class="pfGrid">${cell('職業', own('c') + '/' + tot('c'))}${cell('武器', own('w') + '/' + tot('w'))}${cell('鎧甲', own('a') + '/' + tot('a'))}${cell('黃色零件', golds)}${cell('抽卡次數', S.draws)}${cell('累積金幣', S.coins)}</div>
+    <div class="pfGrid">${cell('角色', own('c') + '/' + tot('c'))}${cell('武器', own('w') + '/' + tot('w'))}${cell('鎧甲', own('a') + '/' + tot('a'))}${cell('黃色零件', golds)}${cell('抽卡次數', S.draws)}${cell('累積金幣', S.coins)}</div>
     <div class="pfSec">最常使用</div>
-    <div class="pfFav"><img src="${PORTRAIT_SRC[favC]}"><b>${CLASSES[favC].name}</b><span>${fav ? `出戰 ${fav[1]} 場` : '還沒有對戰紀錄'}</span>${INV.c.mechcat ? '<em class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏職業已解鎖</em>' : ''}</div>
+    <div class="pfFav"><img src="${PORTRAIT_SRC[favC]}"><b>${CLASSES[favC].name}</b><span>${fav ? `出戰 ${fav[1]} 場` : '還沒有對戰紀錄'}</span>${INV.c.mechcat ? '<em class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏角色已解鎖</em>' : ''}</div>
     <div class="ipClose">點其他地方關閉</div></div>`;
   profilePop.classList.add('show'); SFX.init(); SFX.flip();
   document.getElementById('pfEdit').onclick = e => { e.stopPropagation(); document.getElementById('pfEditRow').style.display = 'flex'; const inp = document.getElementById('pfInput'); inp.focus(); inp.select(); };
@@ -1378,6 +1388,7 @@ function teamTap(idx) {
 })();
 
 function renderVersus() {
+  paintDiff();
   const list = document.getElementById('vsList'); list.innerHTML = '';
   for (let i = 0; i < 3; i++) {
     const me = collection[i], ai = aiLineup[i];
@@ -1623,7 +1634,7 @@ function drawPack(dt) {
           c.flipping = false; c.glow = 1; const sl = cardSlot(i, PK.cards.length); packFx(sl.x, sl.y, 40, null, 480); SFX.reveal();
           const tr = c.b.r ? Math.max(c.b.r.c, c.b.r.w, c.b.r.a) : 0;
           if (CLASSES[c.b.c].hidden) { // hidden class: gold flash, long shake, big banner
-            PK.flash = 1.4; PK.flashCol = '255,215,90'; PK.shake = 0.9; PK.banner = { t: 2.4, max: 2.4, text: `隱藏職業出現！${CLASSES[c.b.c].name}` };
+            PK.flash = 1.4; PK.flashCol = '255,215,90'; PK.shake = 0.9; PK.banner = { t: 2.4, max: 2.4, text: `隱藏角色出現！${CLASSES[c.b.c].name}` };
             packFx(sl.x, sl.y, 220, '#ffd75a', 1000); packFx(sl.x, sl.y, 60, '#ffffff', 700); SFX.burst(); SFX.ex(); SFX.reveal();
             if (navigator.vibrate) navigator.vibrate([60, 60, 120, 60, 200]);
           } else if (tr >= 2) { // red / yellow: flash, shake, a shower in the rarity colour
@@ -1692,7 +1703,7 @@ function tLabel(g, txt, x, y, col, size) { g.font = `italic 900 ${size || 22}px 
 function tFinger(g, x, y, press) { g.fillStyle = `rgba(255,255,255,${press ? 0.55 : 0.3})`; g.beginPath(); g.arc(x, y, press ? 15 : 18, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2.5; g.stroke(); }
 function tWave(g, x, y, k, col) { if (k < 0 || k > 1) return; g.strokeStyle = `rgba(${col},${1 - k})`; g.lineWidth = 8 * (1 - k) + 1; g.beginPath(); g.arc(x, y, 10 + k * 80, 0, TAU); g.stroke(); }
 const TUT = [
-  { title: '抽陀螺・組隊伍', text: '開局打開卡包抽 3 顆陀螺，零件會收進<b>零件庫</b>。陀螺分三層：<b>武器・鎧甲・職業</b>，每個出戰格各裝一組，再排好 1・2・3 的出場順序。打贏拿金幣再抽！', draw(g, t) {
+  { title: '抽陀螺・組隊伍', text: '開局打開卡包抽 3 顆陀螺，零件會收進<b>零件庫</b>。陀螺分三層：<b>武器・鎧甲・角色</b>，每個出戰格各裝一組，再排好 1・2・3 的出場順序。打贏拿金幣再抽！', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       const ph = (t % 3.4) / 3.4, swapped = ph > 0.55;
       const A = { ...TA, w: swapped ? TB.w : TA.w }, B = { ...TB, w: swapped ? TA.w : TB.w };
@@ -1701,7 +1712,7 @@ const TUT = [
         const chip = (txt, x) => { roundRectP(g, x - 34, y - 15, 68, 30, 4); g.fillStyle = '#00f0ff'; g.fill(); g.fillStyle = '#10101c'; g.font = '700 15px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillText(txt, x, y); };
         chip(WEAPONS[TA.w].name, 80 + 240 * k); chip(WEAPONS[TB.w].name, 320 - 240 * k); }
       if (swapped) tLabel(g, '武器互換！', 200, 300, '#fcee0a', 24);
-      tLabel(g, '武器　鎧甲　職業', 200, 360, 'rgba(255,255,255,.55)', 15);
+      tLabel(g, '武器　鎧甲　角色', 200, 360, 'rgba(255,255,255,.55)', 15);
   } },
   { title: '選落點・彈射開場', text: '在場上<b>按下的位置就是落點</b>，往後拉決定方向和力道，放開發射。電腦的落點是秘密，放開後會喊「3、2、1、SPIN! SPIN!」，雙方同時發射！', draw(g, t) {
       tutArenaBg(g);
@@ -1734,7 +1745,7 @@ const TUT = [
       if (tp < 0.55) { g.strokeStyle = `rgba(252,238,10,${1 - tp * 1.8})`; g.lineWidth = 4; g.beginPath(); g.arc(96, 330, 10 + tp * 70, 0, TAU); g.stroke(); tLabel(g, '⚡+EX', 96, 290 - tp * 20, '#fcee0a', 18); }
       tLabel(g, '點一下', 96, 380, '#fcee0a', 15);
   } },
-  { title: '光環軌道・EX', text: '上半圈牆邊有兩段像貓耳的<b>加速軌道 WORMHOLE</b>：陀螺貼牆滑過去會被吸上去高速衝刺並累積 EX，衝到 12 點鐘的<b>開口會直衝場地中心</b>，在中間的對手會被正面撞上。也可以<b>連點畫面任何地方</b>充能，集滿再按 EX 按鈕發動職業技能。', draw(g, t) {
+  { title: '光環軌道・EX', text: '上半圈牆邊有兩段像貓耳的<b>加速軌道 WORMHOLE</b>：陀螺貼牆滑過去會被吸上去高速衝刺並累積 EX，衝到 12 點鐘的<b>開口會直衝場地中心</b>，在中間的對手會被正面撞上。也可以<b>連點畫面任何地方</b>充能，集滿再按 EX 按鈕發動角色技能。', draw(g, t) {
       tutArenaBg(g);
       const ph = t % 2.6; let x, y;
       const RL = RAILS[0];
@@ -1783,7 +1794,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：職業、武器、鎧甲分開收藏，拖到出戰格就能換裝，再排好 1・2・3 出場順序<br>・<b>升星</b>：抽到同名零件會累積素材，夠了按「合成」升星（最多 3 星）；滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜黃；付費抽卡有機會抽到<b>隱藏職業</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20；單抽 100、十連 1000 多送 1 抽<br>・<b>三場制</b>：依序對上對手的 1・2・3，總分高者勝，同分加賽<br>・<b>開場</b>：按下位置＝落點，往後拉瞄準，放開後 3、2、1、SPIN! SPIN! 一起發射<br>・<b>對戰</b>：按住拖曳移動，點畫面充能 EX；WORMHOLE 加速、CORE 增傷<br>・<b>得分</b>：BLOOD +2、DEAD +3、爆甲 +1，停轉平局</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色、武器、鎧甲分開收藏，拖到出戰格就能換裝，再排好 1・2・3 出場順序<br>・<b>升星</b>：抽到同名零件會累積素材，夠了按「合成」升星（最多 3 星）；滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜黃；付費抽卡有機會抽到<b>隱藏角色</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20；單抽 100、十連 1000 多送 1 抽<br>・<b>三場制</b>：依序對上對手的 1・2・3，總分高者勝，同分加賽<br>・<b>開場</b>：按下位置＝落點，往後拉瞄準，放開後 3、2、1、SPIN! SPIN! 一起發射<br>・<b>對戰</b>：按住拖曳移動，點畫面充能 EX；WORMHOLE 加速、CORE 增傷<br>・<b>得分</b>：BLOOD +2、DEAD +3、爆甲 +1，停轉平局</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -1835,9 +1846,23 @@ document.getElementById('startBtn').onclick = () => {
   renderVersus(); show('versus');
 };
 document.getElementById('backBtn').onclick = () => { show('team'); renderTeam(); };
+// CPU strength: how its gear compares to yours, how sharp it plays, and how many coins a match pays
+const DIFF = {
+  easy:   { name: '簡單', mul: 0.6, add: -0.1, skill: 0.6,  coin: 0.6, gear: '白色等級', note: '電腦反應慢、裝備較弱' },
+  normal: { name: '普通', mul: 0.95, add: 0,   skill: 0.82, coin: 1,   gear: '跟你差不多', note: '跟你的隊伍戰力相當' },
+  hard:   { name: '困難', mul: 1.1, add: 0.15, skill: 0.97, coin: 1.5, gear: '紅色等級', note: '電腦更積極、裝備更好' },
+  hell:   { name: '地獄', mul: 1.25, add: 0.35, skill: 1.12, coin: 2.2, gear: '黃色滿星等級', note: '電腦全力追殺、EX 充更快' },
+};
+const curDiff = () => DIFF[SETTINGS.diff] || DIFF.normal;
+function paintDiff() {
+  document.querySelectorAll('#diffSeg [data-d]').forEach(b => b.classList.toggle('on', b.dataset.d === (SETTINGS.diff || 'normal')));
+  const D = curDiff(); document.getElementById('diffInfo').innerHTML = `${D.note}・裝備約 <b>${D.gear}</b>・獎勵金幣 <b>×${D.coin}</b>`;
+}
+document.querySelectorAll('#diffSeg [data-d]').forEach(b => b.onclick = () => { SETTINGS.diff = b.dataset.d; saveJSON('topSettings', SETTINGS); paintDiff(); SFX.init(); SFX.attach(); });
 function fight() {
-  SFX.init(); const pw = teamPower();
-  newMatch(collection.map(withBonus), aiLineup.map(b => { const x = pw * rnd(0.85, 1.05); return { ...b, bc: x, bw: x, ba: x }; }));
+  SFX.init(); const pw = teamPower(), D = curDiff();
+  newMatch(collection.map(withBonus), aiLineup.map(b => { const x = Math.max(-0.2, (pw * D.mul + D.add) * rnd(0.9, 1.05) + (D.add < 0 ? 0 : 0)); return { ...b, bc: x, bw: x, ba: x }; }));
+  G.aiSkill = D.skill + Math.min(0.08, wins * 0.01); G.diff = SETTINGS.diff || 'normal';
 }
 document.getElementById('fightBtn').onclick = fight;
 // auto next match: a short countdown on the result screen, then a new opponent straight away
@@ -2136,7 +2161,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal' }, loadJSON('topSettings', {}));
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
 function applySettings() {
@@ -2504,11 +2529,39 @@ function aiInput(me, foe, h) {
 
 // ---------- EX ----------
 const autoBar = document.getElementById('autoBar'), exMeter = document.getElementById('exMeter');
+const MOVE_MODES = ['off', 'atk', 'def', 'core'], MOVE_LABEL = { off: 'OFF', atk: '攻擊', def: '防禦', core: '佔點' };
 function paintAuto() {
+  { const b = document.getElementById('autoMoveBtn'), m = SETTINGS.autoMove || 'off'; b.className = 'autoTog move ' + m; b.querySelector('i').textContent = MOVE_LABEL[m]; }
   for (const [id, key] of [['autoBtn', 'autoLaunch'], ['autoExBtn', 'autoEx']]) { const b = document.getElementById(id); b.classList.toggle('on', !!SETTINGS[key]); b.querySelector('i').textContent = SETTINGS[key] ? 'ON' : 'OFF'; }
 }
 for (const [id, key] of [['autoBtn', 'autoLaunch'], ['autoExBtn', 'autoEx']]) {
   document.getElementById(id).addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); SETTINGS[key] = !SETTINGS[key]; saveJSON('topSettings', SETTINGS); paintAuto(); SFX.attach(); });
+}
+document.getElementById('autoMoveBtn').addEventListener('pointerdown', e => {
+  e.stopPropagation(); SFX.init(); const i = MOVE_MODES.indexOf(SETTINGS.autoMove || 'off');
+  SETTINGS.autoMove = MOVE_MODES[(i + 1) % MOVE_MODES.length]; saveJSON('topSettings', SETTINGS); paintAuto(); SFX.attach();
+  if (G && G.tops) addText(G.tops[0].x, G.tops[0].y - 60, { off: '手動移動', atk: '攻擊模式！', def: '防禦模式！', core: '佔點模式！' }[SETTINGS.autoMove], '#fcee0a', 20);
+});
+// auto-move while your finger is off the screen: attack hunts the foe from the far side of the nearest exit,
+// defense keeps its distance and circles away from the rim, core sits on CORE and strikes anyone who comes in
+function playerAutoInput(me, foe) {
+  const m = SETTINGS.autoMove; if (!m || m === 'off' || foe.dead || foe.falling) return null;
+  let tx, ty;
+  if (m === 'atk') { const ng = nearestGate(foe.x, foe.y), gd = norm(ng.x - foe.x, ng.y - foe.y); tx = foe.x + foe.vx * 0.15 - gd.x * 16; ty = foe.y + foe.vy * 0.15 - gd.y * 16; }
+  else if (m === 'core') { if (len(foe.x - CX, foe.y - CY) < AX * CORE_Q * 1.5) { tx = foe.x; ty = foe.y; } else { tx = CX + (foe.x - CX) * 0.15; ty = CY + (foe.y - CY) * 0.15; } }
+  else if (len(foe.x - CX, foe.y - CY) > AX * 0.6 && len(me.x - CX, me.y - CY) < len(foe.x - CX, foe.y - CY) - 30 && len(me.x - foe.x, me.y - foe.y) < 200) {
+    // defense counter: the foe drifted near the rim and we are on the inside, so shove it out
+    const ng = nearestGate(foe.x, foe.y), gd = norm(ng.x - foe.x, ng.y - foe.y); tx = foe.x - gd.x * 10; ty = foe.y - gd.y * 10;
+  } else {
+    const away = norm(me.x - foe.x, me.y - foe.y), dist = len(me.x - foe.x, me.y - foe.y), push = dist < 170 ? 1 : 0.25;
+    let dx = away.x * push - away.y * 0.8, dy = away.y * push + away.x * 0.8;
+    const toC = norm(CX - me.x, CY - me.y), rr = len(me.x - CX, me.y - CY) / AX, pull = Math.max(0, rr - 0.45) * 3;
+    dx += toC.x * pull; dy += toC.y * pull; tx = me.x + dx * 100; ty = me.y + dy * 100;
+  }
+  const d = norm(tx - me.x, ty - me.y); let ux = d.x, uy = d.y;
+  for (const gt of GATES) { const gdist = len(me.x - gt.x, me.y - gt.y); if (gdist < 120) { const aw = norm(CX - me.x, CY - me.y), k = (120 - gdist) / 120 * 1.6; ux += aw.x * k; uy += aw.y * k; } }
+  const l = len(ux, uy); if (l > 1) { ux /= l; uy /= l; }
+  return { x: ux, y: uy };
 }
 // AUTO: pick a drop point and aim for you a moment after the round starts
 function autoLaunchStep(dt) {
@@ -2693,7 +2746,7 @@ function stepTop(t, foe, h) {
 
   // input
   let u = { x: 0, y: 0 };
-  if (t.stunT <= 0) u = t.side === 0 ? playerInput(t) : aiInput(t, foe, h);
+  if (t.stunT <= 0) { if (t.side === 0) { u = playerInput(t); if (!u.x && !u.y && !G.joy) { const a = playerAutoInput(t, foe); if (a) u = a; } } else u = aiInput(t, foe, h); }
   if ((t.s.c.homing || t.s.w.special === 'homing') && !foe.dead && t.side === 0 && (u.x || u.y)) {
     const d = norm(foe.x - t.x, foe.y - t.y); u = { x: u.x + d.x * 0.18, y: u.y + d.y * 0.18 };
   }
@@ -2864,12 +2917,12 @@ function finish() {
   document.getElementById('finalText').textContent = win ? 'VICTORY!' : 'DEFEAT...';
   document.getElementById('finalText').style.color = win ? '#fcee0a' : '#ff2a55';
   const today = new Date().toDateString(), daily = win && INV.day !== today;
-  const got = (win ? WIN_COIN : LOSE_COIN) + (daily ? DAILY_COIN : 0);
+  const D = DIFF[G.diff] || DIFF.normal, got = Math.round((win ? WIN_COIN : LOSE_COIN) * D.coin) + (daily ? DAILY_COIN : 0);
   INV.coins += got; if (daily) INV.day = today; if (win) wins++;
   { const S = INV.stats; S.matches++; if (win) { S.wins++; S.streak++; S.best = Math.max(S.best, S.streak); } else { S.losses++; S.streak = 0; } S.coins += got;
     for (const b of collection) S.use[b.c] = (S.use[b.c] || 0) + 1; }
   save();
-  document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
   const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）';
   document.getElementById('toTeamBtn').style.display = '';
@@ -3536,7 +3589,7 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { get INV() { return INV; }, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openTeam();
 })();
 </script>
