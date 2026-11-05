@@ -532,7 +532,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <div class="gmG">資源</div>
-  <div class="gmRow"><button class="btn" data-gm="coin">金幣 +10000</button><button class="btn" data-gm="shard">萬用碎片 +50</button></div>
+  <div class="gmRow"><button class="btn" data-gm="coin">金幣 +10000</button><button class="btn" data-gm="shard">萬能卡 +50</button></div>
   <div class="gmG">收集與培養</div>
   <div class="gmRow"><button class="btn" data-gm="cards">取得全部角色卡</button><button class="btn" data-gm="parts">取得全部武器鎧甲</button></div>
   <div class="gmRow"><button class="btn" data-gm="mat">全部 +3 素材</button><button class="btn" data-gm="star3">全部升到 3★</button></div>
@@ -615,10 +615,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.68 auto-lineup button red until used (grey again only while the lineup is the auto one); shard count labelled 萬用碎片 in the inventory header
  v0.7.0 three-part version numbers from here on; card names capped at 4+4 characters and shown on two fixed lines (inventory columns no longer stretch); purple ribbon on card backs, no hidden card any more (mech-cat is a regular very rare 元森域 card); shard card in the inventory; rank-up asks you to pick the 2 materials; ASSIST cut-in panel; balance pass on cards, coins and the vault
  v0.7.1 ten-pull labelled 10連抽+1 with purple pity everywhere; result screen gets a 開始下一局 button (no wait) with a separate 自動 toggle for the countdown
+ v0.7.2 萬用碎片 renamed 萬能卡 with a card icon (fills star-up material only; rank-up still needs same-faction 3-star cards)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.7.1';
+const GAME_VERSION = 'v0.7.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -632,7 +633,7 @@ document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
     const b = e.target.closest('[data-gm]'); if (!b && e.target.id !== 'gmPanel') return;
     const k = b ? b.dataset.gm : 'close', msg = m => toast('GM：' + m);
     if (k === 'coin') { INV.coins += 10000; msg('金幣 +10000'); }
-    else if (k === 'shard') { INV.shards += 50; msg('萬用碎片 +50'); }
+    else if (k === 'shard') { INV.shards += 50; msg('萬能卡 +50'); }
     else if (k === 'cat') { addPart('c', 'mechcat', 0, 0); msg('已取得機甲貓咪'); }
     else if (k === 'cards') { for (const id in CLASSES) if (!Object.values(INV.c).some(e => e.id === id)) addPart('c', id, CLASSES[id].philo ? 1 : 0, 0); msg('已取得全部角色卡'); }
     else if (k === 'parts') { for (const k2 of 'wa') for (const id in KIND[k2]) if (!Object.values(INV[k2]).some(e => e.id === id)) addPart(k2, id, 0, 0); msg('已取得全部武器鎧甲'); }
@@ -1396,9 +1397,9 @@ function showPart(k, id) {
       <div class="k">${KIND_NAME[k]}${slot >= 0 ? `・出戰第 ${slot + 1} 格` : '・未裝備'}</div></div></div>
     <div class="ipRow"><div><div class="d">${body}</div>
       <div class="k" style="color:#fcee0a">目前加成：${eff} +${Math.round(b0 * 100)}%${e.s < 3 ? `　下一星 +${Math.round((b0 + R_STEP[e.r]) * 100)}%` : '（已滿星）'}</div>
-      <div class="k">素材：${e.s < 3 ? `${e.n} / ${NEED[e.s]}（抽到同名${k === 'c' ? '' : '同星數'}零件就是素材${need ? `，還差 ${need} 個` : '，可以升星了！'}）` : '已滿星，可以升階了；之後抽到同名會變成萬用碎片'}</div></div></div>
+      <div class="k">素材：${e.s < 3 ? `${e.n} / ${NEED[e.s]}（抽到同名${k === 'c' ? '' : '同星數'}零件就是素材${need ? `，還差 ${need} 個` : '，可以升星了！'}）` : '已滿星，可以升階了；之後抽到同名會變成萬能卡'}</div></div></div>
     ${e.s < 3 ? `<button class="btn ipBtn" id="doMergeBtn" ${need ? 'disabled' : ''}>${need ? `合成升星（還差 ${need} 個素材）` : '合成升星！'}</button>
-      ${need ? `<button class="btn ipBtn ghost" id="useShard" ${INV.shards >= need ? '' : 'disabled'}>用萬用碎片補足並升星（需 ${need}，持有 ${INV.shards}）</button>` : ''}` : ''}
+      ${need ? `<button class="btn ipBtn ghost" id="useShard" ${INV.shards >= need ? '' : 'disabled'}>用萬能卡補足並升星（需 ${need}，持有 ${INV.shards}）</button>` : ''}` : ''}
     ${e.s >= 3 ? (e.r < rankCap(k, e.id) ? (() => { const fd = rankFodder(k, id), nm = x => KIND[k][INV[k][x].id].name, what = k === 'c' ? `同陣營${CLASSES[e.id].fac === '異哲團' ? '（異哲團可吃任何陣營）' : ''}` : `同類型（${k === 'w' ? FAMILY[P.fam].name : ARMOR_CLASS[P.cls].name}）`;
       return fd.length >= 2 ? `<button class="btn ipBtn" id="rankBtn">升階 → ${RARITY[e.r + 1].n} 1★（選 2 張素材）</button>` : `<div class="k" style="text-align:center;margin-top:.4em">升階需要 2 張${what}、${RARITY[e.r].n}色 3★ 的${KIND_NAME[k]}（目前 ${fd.length} 張）</div>`; })() : `<div class="k" style="text-align:center;margin-top:.4em">已達最高品階${rankCap(k, e.id) === 2 ? '（起始角色最高紅）' : ''}</div>`) : ''}
     <div class="ipClose">點其他地方關閉</div></div>`;
@@ -1590,13 +1591,13 @@ function renderTeam() {
   document.getElementById('drawDot').style.display = INV.coins >= PRICE1 ? '' : 'none';
   paintProfileBtn();
 }
-const SHARD_SVG = '<svg viewBox="0 0 64 64" style="width:100%;height:100%"><defs><linearGradient id="shG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fdfff"/><stop offset="1" stop-color="#ff7ad9"/></linearGradient></defs><path d="M32 4 50 22 40 60 24 60 14 22Z" fill="url(#shG)" stroke="#05060a" stroke-width="3" stroke-linejoin="round"/><path d="M14 22H50M32 4 24 22 32 60 40 22Z" fill="none" stroke="#05060a" stroke-width="2" stroke-linejoin="round" opacity=".55"/><path d="M22 14 26 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>';
+const SHARD_SVG = '<svg viewBox="0 0 64 64" style="width:100%;height:100%"><defs><linearGradient id="shG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fe8ff"/><stop offset="1" stop-color="#ff8fdc"/></linearGradient></defs><rect x="14" y="6" width="36" height="52" rx="5" fill="#05060a" transform="translate(3 3)"/><rect x="14" y="6" width="36" height="52" rx="5" fill="url(#shG)" stroke="#05060a" stroke-width="3"/><rect x="19" y="11" width="26" height="42" rx="3" fill="none" stroke="#fff" stroke-width="1.5" opacity=".8"/><path d="M32 18 35.5 27.5 45 28 37.5 34 40 43.5 32 38 24 43.5 26.5 34 19 28 28.5 27.5Z" fill="#fff" stroke="#05060a" stroke-width="2" stroke-linejoin="round"/></svg>';
 function shardTile() {
   const t = document.createElement('div'); t.className = 'tile shard';
-  t.innerHTML = `<div class="bigIco">${SHARD_SVG}</div><div class="tn nm2"><i>萬用碎片</i></div><div class="tst">×${INV.shards}</div><div class="pbar max"><span>補星素材</span></div>`;
+  t.innerHTML = `<div class="bigIco">${SHARD_SVG}</div><div class="tn nm2"><i>萬能卡</i></div><div class="tst">×${INV.shards}</div><div class="pbar max"><span>補星素材</span></div>`;
   t.onclick = () => {
-    infoPop.innerHTML = `<div class="ipCard" style="border-color:#7fdfff"><div class="ipRow" style="border:0"><div style="width:4.5em;flex:none">${SHARD_SVG}</div><div><div class="n" style="font-size:1.15em">萬用碎片 ×${INV.shards}</div><div class="k">角色卡、武器、鎧甲都能用</div></div></div>
-      <div class="ipRow"><div class="d">・<b>怎麼來</b>：已經 3★ 的零件，再抽到同名的會自動變成萬用碎片。<br>・<b>怎麼用</b>：長按還沒滿星的零件，素材不夠時按「用萬用碎片補足並升星」。<br>・升階（換品階顏色）不吃碎片，要選 2 張同陣營／同類型的 3★ 當素材。</div></div><div class="ipClose">點其他地方關閉</div></div>`;
+    infoPop.innerHTML = `<div class="ipCard" style="border-color:#7fdfff"><div class="ipRow" style="border:0"><div style="width:4.5em;flex:none">${SHARD_SVG}</div><div><div class="n" style="font-size:1.15em">萬能卡 ×${INV.shards}</div><div class="k">角色卡、武器、鎧甲都能用</div></div></div>
+      <div class="ipRow"><div class="d">・<b>怎麼來</b>：已經 3★ 的零件，再抽到同名的會自動變成萬能卡。<br>・<b>怎麼用</b>：長按還沒滿星的零件，素材不夠時按「用萬能卡補足並升星」。<br>・升階（換品階顏色）不能用萬能卡，還是要選 2 張同陣營／同類型的 3★ 當素材，四大陣營的規則不變。</div></div><div class="ipClose">點其他地方關閉</div></div>`;
     infoPop.classList.add('show'); SFX.init(); SFX.flip();
   };
   return t;
@@ -1929,7 +1930,7 @@ function drawPackBody(g, cx, cy, time, tear, lidOff, lidRot, alpha) {
   g.restore();
 }
 function resTag(g, res, x, y, w) {
-  const T = { new: ['NEW', '#ff2a55', '#fff'], star: ['★UP', '#fcee0a', '#10101c'], up: ['稀有度↑', '#b066ff', '#fff'], '+1': ['+1', '#2a3340', '#fff'], shard: ['碎片', '#00f0ff', '#10101c'] }[res];
+  const T = { new: ['NEW', '#ff2a55', '#fff'], star: ['★UP', '#fcee0a', '#10101c'], up: ['稀有度↑', '#b066ff', '#fff'], '+1': ['+1', '#2a3340', '#fff'], shard: ['萬能卡', '#ff7ad9', '#10101c'] }[res];
   if (!T) return;
   g.save(); g.font = `900 ${Math.round(w * 0.07)}px Rajdhani, sans-serif`; g.textAlign = 'right'; g.textBaseline = 'top';
   const tw = g.measureText(T[0]).width + 6; g.fillStyle = T[1]; g.fillRect(x - tw, y, tw, w * 0.09); g.fillStyle = T[2]; g.fillText(T[0], x - 3, y + 1); g.restore();
@@ -2206,7 +2207,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（十連必出 1 紫）。<b>升階</b>：3 星後按「升階」，自己挑 2 張<b>同陣營、同品階的 3 星角色卡</b>當素材，升到下一品階 1 星（武器、鎧甲吃同類型）；起始 6 角色最適合當升階材料，最高只到紅<br>・<b>陣營羈絆</b>：隊伍裡同陣營 2 隻以上有加成（鐵心幫耐打、元森域速度、虛駭組 EX），異哲團可算任一陣營；3 隻都不同陣營全能力 +4%<br>・<b>ASSIST 支援</b>：2 號上場時 1 號來支援、3 號上場時 2 號來支援；開打 5 秒後可以叫隊友衝進來撞一下（每回合一次），同陣營（含異哲團）會變成更強的<b>連攜</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（十連必出 1 紫）。<b>升階</b>：3 星後按「升階」，自己挑 2 張<b>同陣營、同品階的 3 星角色卡</b>當素材，升到下一品階 1 星（武器、鎧甲吃同類型）；起始 6 角色最適合當升階材料，最高只到紅<br>・<b>陣營羈絆</b>：隊伍裡同陣營 2 隻以上有加成（鐵心幫耐打、元森域速度、虛駭組 EX），異哲團可算任一陣營；3 隻都不同陣營全能力 +4%<br>・<b>ASSIST 支援</b>：2 號上場時 1 號來支援、3 號上場時 2 號來支援；開打 5 秒後可以叫隊友衝進來撞一下（每回合一次），同陣營（含異哲團）會變成更強的<b>連攜</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
