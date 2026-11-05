@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.8.0</title>
+<title>SPIN! SPIN! v0.9.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -459,7 +459,8 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
       <div class="opt"><span>音效</span><button class="tog" data-k="sfx"></button></div>
       <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
       <div class="opt"><span>動態運鏡</span><button class="tog" data-k="camFollow"></button></div>
-      <div class="opt"><span>視角傾斜<small class="optS">（對戰中雙指上下滑也能調）</small></span><input type="range" id="viewKIn" min="0" max="100" class="vRange"></div>
+      <div class="opt"><span>視角自動傾斜<small class="optS">（拉近變斜、拉遠回正圓）</small></span><button class="tog" data-k="autoTilt"></button></div>
+      <div class="opt"><span>視角傾斜（基準）<small class="optS">（對戰中雙指上下滑也能調）</small></span><input type="range" id="viewKIn" min="0" max="100" class="vRange"></div>
       <div class="opt"><span>場地縮放<small class="optS">（雙指捏合／滾輪）</small></span><input type="range" id="viewZIn" min="0" max="100" class="vRange"></div>
       <div class="opt"><span>視角</span><button class="sbtn" id="viewReset">重設視角</button></div>
       <div class="opt"><span>頭上血條</span><button class="tog" data-k="hpPct"></button></div>
@@ -622,10 +623,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.7.2 萬用碎片 renamed 萬能卡 with a card icon (fills star-up material only; rank-up still needs same-faction 3-star cards)
  v0.7.3 browser tab title follows GAME_VERSION automatically (it was stuck at v0.68)
  v0.8.0 player camera: pinch to zoom, two-finger slide up/down to tilt (0.65 flat-ish side view .. 1.0 top-down), mouse wheel / shift+wheel on desktop; saved per player, sliders and reset in settings; default tilt 0.85 (was 0.9); a quick second-finger tap still charges EX
+ v0.9.0 auto tilt tied to zoom: the closer the camera, the lower the angle (0.95 full arena -> 0.85 follow -> 0.70 close-up), eased; pinching zoom tilts too; two fingers take over the camera (auto follow and punches pause while pinching); player tilt acts as an offset; settings toggle 視角自動傾斜 (on by default) next to 鏡頭特效 / 動態運鏡
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.8.0';
+const GAME_VERSION = 'v0.9.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -970,7 +972,7 @@ function buildEnvCache() {
 }
 function drawEnv(time) {
   const g = envCtx, { d, s, l, t, M } = ENV;
-  if (!ENV.cache || (ENV.k !== VIEW_K && performance.now() - (ENV.bt || 0) > 140)) buildEnvCache();
+  if (!ENV.cache || (Math.abs((ENV.k || 0) - VIEW_K) > 0.015 && performance.now() - (ENV.bt || 0) > 140)) buildEnvCache();
   const cam = G ? camNow() : { x: CX, y: CY, z: BASE_Z };
   const zz = 1 + (cam.z / BASE_Z - 1) * ENV_PAR;
   const Ax = l + CX * s, Ay = t + VIEW_CY * s;
@@ -2749,7 +2751,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1 }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1, autoTilt: true }, loadJSON('topSettings', {}));
 VIEW_K = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
@@ -2972,7 +2974,7 @@ function shards(x, y, color, n) {
 }
 // camera: push toward a point, then ease back. Both tops are kept on screen.
 function camPunch(kind, x, y) {
-  if (!G || !SETTINGS.camera) return;
+  if (!G || !SETTINGS.camera || (two && two.mode === 'pinch')) return;
   const k = CAM[kind], c = G.cam;
   if (c && c.t < c.end && c.prio > k.prio) return;
   if (c && kind === 'hit' && G.time - (c.at || -9) < CAM.cooldown) return;
@@ -2991,9 +2993,17 @@ function camFollowStep(dt) {
     const pull = 0.5 * (1 - edgeK);
     tx = CX + ((a.x + b.x) / 2 - CX) * pull; ty = CY + ((a.y + b.y) / 2 - CY) * pull;
   }
+  const pinching = two && two.mode === 'pinch';
   const k = 1 - Math.exp(-dt * 2.6);
-  f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k;
+  if (!pinching) { f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k; } // two fingers on screen = the player drives the camera
+  // auto tilt: closer camera -> lower angle; the player's tilt setting is an offset on top
+  const base = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
+  const tgt = SETTINGS.autoTilt !== false ? clamp(tiltCurve(camNow().z / BASE_Z) + (base - 0.85), VIEW_K_MIN, VIEW_K_MAX) : base;
+  G.vk = G.vk == null ? tgt : G.vk + (tgt - G.vk) * (1 - Math.exp(-dt * (pinching ? 14 : 3)));
+  VIEW_K = G.vk;
 }
+// zoom ratio (1 = whole arena) -> squash: 0.95 near top-down when wide, 0.85 while following, 0.70 in close-ups
+function tiltCurve(zr) { return zr <= 1 ? 0.95 : zr <= 1.12 ? 0.95 - (zr - 1) / 0.12 * 0.10 : zr <= 1.45 ? 0.85 - (zr - 1.12) / 0.33 * 0.15 : 0.70; }
 function camNow() { const c = camGame(), uz = clamp(+SETTINGS.viewZ || 1, VIEW_Z_MIN, VIEW_Z_MAX); return uz === 1 ? c : { x: c.x, y: c.y, z: c.z * uz }; }
 function camGame() {
   const base = G && G.fcam && SETTINGS.camFollow ? G.fcam : { x: CX, y: CY, z: BASE_Z };
@@ -3050,13 +3060,13 @@ const toWorld = p => { const c = camNow(); return { x: c.x + (p.x - CX) / c.z, y
 // ---- player camera: two fingers pinch = zoom, slide up/down together = tilt; a quick second-finger tap still charges EX ----
 const ptrs = new Map(); let two = null, viewHintT = 0;
 function setView(k, z, save) {
-  VIEW_K = clamp(k, VIEW_K_MIN, VIEW_K_MAX); SETTINGS.viewK = Math.round(VIEW_K * 100) / 100;
+  const kk2 = clamp(k, VIEW_K_MIN, VIEW_K_MAX); SETTINGS.viewK = Math.round(kk2 * 100) / 100; if (!G || !G.tops) VIEW_K = kk2; // in a match the camera eases to it
   SETTINGS.viewZ = Math.round(clamp(z, VIEW_Z_MIN, VIEW_Z_MAX) * 100) / 100; viewHintT = performance.now() + 1300;
   if (save) saveJSON('topSettings', SETTINGS); paintViewOpts();
 }
 function paintViewOpts() {
   const a = document.getElementById('viewKIn'), b = document.getElementById('viewZIn'); if (!a) return;
-  a.value = Math.round((1 - VIEW_K) / (1 - VIEW_K_MIN) * 100); b.value = Math.round((SETTINGS.viewZ - VIEW_Z_MIN) / (VIEW_Z_MAX - VIEW_Z_MIN) * 100);
+  a.value = Math.round((1 - (+SETTINGS.viewK || 0.85)) / (1 - VIEW_K_MIN) * 100); b.value = Math.round((SETTINGS.viewZ - VIEW_Z_MIN) / (VIEW_Z_MAX - VIEW_Z_MIN) * 100);
 }
 function twoPinch() {
   const [a, b] = [...ptrs.values()]; if (!a || !b) return;
@@ -3066,8 +3076,8 @@ function twoPinch() {
 }
 cv.addEventListener('wheel', e => {
   e.preventDefault();
-  if (e.shiftKey) setView(VIEW_K + Math.sign(e.deltaY || e.deltaX) * 0.02, SETTINGS.viewZ, true);
-  else setView(VIEW_K, SETTINGS.viewZ * (e.deltaY > 0 ? 0.96 : 1.04), true);
+  if (e.shiftKey) setView((+SETTINGS.viewK || 0.85) + Math.sign(e.deltaY || e.deltaX) * 0.02, SETTINGS.viewZ, true);
+  else setView(+SETTINGS.viewK || 0.85, SETTINGS.viewZ * (e.deltaY > 0 ? 0.96 : 1.04), true);
 }, { passive: false });
 cv.addEventListener('pointerdown', e => {
   SFX.init();
@@ -3075,7 +3085,7 @@ cv.addEventListener('pointerdown', e => {
   const p = toLogical(e);
   try { cv.setPointerCapture(e.pointerId); } catch (_) {}
   ptrs.set(e.pointerId, p);
-  if (ptrs.size === 2 && !two) { const [a, b] = [...ptrs.values()]; two = { mode: 'pending', t0: performance.now(), d0: Math.max(20, len(a.x - b.x, a.y - b.y)), my0: (a.y + b.y) / 2, k0: VIEW_K, z0: SETTINGS.viewZ || 1, ids: [...ptrs.keys()], at: p }; return; }
+  if (ptrs.size === 2 && !two) { const [a, b] = [...ptrs.values()]; two = { mode: 'pending', t0: performance.now(), d0: Math.max(20, len(a.x - b.x, a.y - b.y)), my0: (a.y + b.y) / 2, k0: +SETTINGS.viewK || 0.85, z0: SETTINGS.viewZ || 1, ids: [...ptrs.keys()], at: p }; return; }
   if (ptrs.size > 2) return;
   if (G.phase === 'launch' && G.banner && G.banner.t > 0.4 && /^(ROUND|SUDDEN)/.test(G.banner.text)) G.banner.t = 0.4;
   if (G.phase === 'launch') {
@@ -3107,7 +3117,7 @@ cv.addEventListener('pointermove', e => {
   }
 });
 document.getElementById('viewKIn').oninput = e => setView(1 - e.target.value / 100 * (1 - VIEW_K_MIN), SETTINGS.viewZ, true);
-document.getElementById('viewZIn').oninput = e => setView(VIEW_K, VIEW_Z_MIN + e.target.value / 100 * (VIEW_Z_MAX - VIEW_Z_MIN), true);
+document.getElementById('viewZIn').oninput = e => setView(+SETTINGS.viewK || 0.85, VIEW_Z_MIN + e.target.value / 100 * (VIEW_Z_MAX - VIEW_Z_MIN), true);
 document.getElementById('viewReset').onclick = () => { setView(0.85, 1, true); SFX.attach && SFX.attach(); };
 paintViewOpts();
 function endPointer(e) {
