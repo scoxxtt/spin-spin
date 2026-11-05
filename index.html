@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.68</title>
+<title>SPIN! SPIN! v0.7.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -616,11 +616,12 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.7.0 three-part version numbers from here on; card names capped at 4+4 characters and shown on two fixed lines (inventory columns no longer stretch); purple ribbon on card backs, no hidden card any more (mech-cat is a regular very rare 元森域 card); shard card in the inventory; rank-up asks you to pick the 2 materials; ASSIST cut-in panel; balance pass on cards, coins and the vault
  v0.7.1 ten-pull labelled 10連抽+1 with purple pity everywhere; result screen gets a 開始下一局 button (no wait) with a separate 自動 toggle for the countdown
  v0.7.2 萬用碎片 renamed 萬能卡 with a card icon (fills star-up material only; rank-up still needs same-faction 3-star cards)
+ v0.7.3 browser tab title follows GAME_VERSION automatically (it was stuck at v0.68)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.7.2';
-document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
+const GAME_VERSION = 'v0.7.3';
+document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
   const vf = document.getElementById('verFoot'); vf.style.pointerEvents = 'auto'; vf.style.left = '30%'; vf.style.right = '30%'; vf.style.padding = '.6em 0';
