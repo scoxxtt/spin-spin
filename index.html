@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.67</title>
+<title>SPIN! SPIN! v0.68</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -310,6 +310,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .chip .st{font-style:normal;background:#05060a;border-radius:.7em;padding:0 .35em;margin-left:.3em;text-shadow:none}
 .mergeAll{font-family:inherit;font-weight:900;font-size:.7em;padding:.15em .6em;border:2px solid #05060a;background:#3a4250;color:#9fb0c0;cursor:pointer;letter-spacing:0}
 .mergeAll.on{background:#ff2a55;color:#fff;box-shadow:0 0 .6em rgba(255,42,85,.7)}
+.shardTag{color:#7fdfff;font-size:.8em;font-weight:900;font-style:normal}
 .pageWrap{position:relative;flex:1;min-height:0;display:flex}
 .pageWrap .invPages{flex:1}
 .pArrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:2.1em;height:3.6em;border:3px solid #05060a;background:#fcee0a;color:#05060a;font-size:.9em;font-weight:900;cursor:pointer;box-shadow:0 0 0 2px #fcee0a55,0 0 1em rgba(252,238,10,.6);display:flex;align-items:center;justify-content:center;padding:0}
@@ -594,10 +595,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.65 GM panel updated for the current systems (cards, rank-up, quests, vault, starter gift, instant win)
  v0.66 longer rounds: HP x2.3, single-hit cap 24%, knockback x0.72, exit step needs more speed, weaker launch knockback, slower spin decay, ASSIST ready after 3 s (median round ~4.6 s -> ~13 s in CPU-vs-CPU sims)
  v0.67 lineup slot names stay on one line (ellipsis) so long card names no longer grow the slot; auto EX also triggers ASSIST
+ v0.68 auto-lineup button red until used (grey again only while the lineup is the auto one); shard count labelled 萬用碎片 in the inventory header
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.67';
+const GAME_VERSION = 'v0.68';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1171,6 +1173,8 @@ function fixTeam() {
   }
 }
 // auto lineup: best three cards (power + faction bond + neighbouring ASSIST links), then the best weapons and armors
+// the auto-lineup button stays red until it has been used on the current lineup
+let autoSig = null; const lineupSig = () => collection ? collection.map(b => [kk(b, 'c'), kk(b, 'w'), kk(b, 'a')].join('/')).join('|') : '';
 function autoTeam() {
   if (collection.length < 3) return;
   const cPow = key => { const e = INV.c[key], c = CLASSES[e.id]; return partBonus('c', key) + (c.hp + c.speed + c.gain) * 0.08 + (c.philo ? 0.06 : 0); };
@@ -1190,7 +1194,7 @@ function autoTeam() {
   const A3 = pickParts('a', key => partBonus('a', key) + ARMORS[INV.a[key].id].thick * 0.02 + ARMORS[INV.a[key].id].facets * 0.004);
   best.o.forEach((key, i) => { const b = collection[i]; b.ck = key; b.c = INV.c[key].id;
     if (W3[i]) { b.wk = W3[i]; b.w = INV.w[W3[i]].id; } if (A3[i]) { b.ak = A3[i]; b.a = INV.a[A3[i]].id; } });
-  fixTeam(); save(); SFX.init(); SFX.attach(); renderTeam();
+  fixTeam(); autoSig = lineupSig(); save(); SFX.init(); SFX.attach(); renderTeam();
   const B = bondOf(collection); document.querySelectorAll('#teamList .slot').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'eqf .5s'; });
   if (B.lv) document.getElementById('teamSub').insertAdjacentHTML('beforeend', '');
 }
@@ -1470,7 +1474,7 @@ function renderTeam() {
   const panel = document.createElement('div'); panel.className = 'invPanel';
   const hintTxt = invSel ? `已選「${KIND[invSel.k][baseOf(invSel.k, invSel.id)].name}」，點出戰格裡的${KIND_NAME[invSel.k]}換裝` : swapSel ? `點下方的${KIND_NAME[swapSel.k]}換裝，或點另一格互換` : '拖曳換裝・長按詳情';
   const anyMerge = ['c', 'w', 'a'].some(k2 => Object.values(INV[k2]).some(canMerge));
-  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span>碎片 ${INV.shards}</span><button class="mergeAll" id="autoTeamBtn">自動上陣</button><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
+  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span class="shardTag" title="萬用碎片：可補足升星素材">◆ 萬用碎片 ${INV.shards}</span><button class="mergeAll${lineupSig() === autoSig ? '' : ' on'}" id="autoTeamBtn">自動上陣</button><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
   const tabs = document.createElement('div'); tabs.className = 'invTabs';
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
