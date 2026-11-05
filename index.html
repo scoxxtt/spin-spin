@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.10.0</title>
+<title>SPIN! SPIN! v0.11.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -625,10 +625,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.8.0 player camera: pinch to zoom, two-finger slide up/down to tilt (0.65 flat-ish side view .. 1.0 top-down), mouse wheel / shift+wheel on desktop; saved per player, sliders and reset in settings; default tilt 0.85 (was 0.9); a quick second-finger tap still charges EX
  v0.9.0 auto tilt tied to zoom: the closer the camera, the lower the angle (0.95 full arena -> 0.85 follow -> 0.70 close-up), eased; pinching zoom tilts too; two fingers take over the camera (auto follow and punches pause while pinching); player tilt acts as an offset; settings toggle 視角自動傾斜 (on by default) next to 鏡頭特效 / 動態運鏡
  v0.10.0 RING OUT +2: a big hit that slams a top into the wall fast enough can launch it over the rim into the crowd (chance grows with speed); tops coasting after a round now stay inside the walls; tops are drawn in front of the near wall so they no longer look sunk into it
+ v0.11.0 SURVIVE +1: the top that keeps spinning longer scores 1 (both stopping on the same tick is still a draw); scoring tutorial lists SURVIVE and RING OUT
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.10.0';
+const GAME_VERSION = 'v0.11.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2224,7 +2225,7 @@ const TUT = [
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
   } },
-  { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>。下方有三個出口：左右兩個窄的 <b>BLOOD 出口 +2 分</b>，正中間寬的 <b>DEAD 出口 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了拿更多金幣去開補給箱！', draw(g, t) {
+  { title: '得分方式', text: '把對手血量打到 0 會<b>爆甲：+1 分</b>；比對手轉得久，對手先停下來是 <b>SURVIVE：+1 分</b>（同時停才算平手）；重擊把對手撞飛過牆是 <b>RING OUT：+2 分</b>。下方有三個出口：左右兩個窄的 <b>BLOOD 出口 +2 分</b>，正中間寬的 <b>DEAD 出口 +3 分</b>，都要把對手撞過台階才會掉進去。三場總分高的贏，贏了拿更多金幣去開補給箱！', draw(g, t) {
       tutArenaBg(g);
       const ph = t % 3.6, Ax = CX, B0 = { x: CX + 6, y: CY + 92 };
       let ay = CY - 40, bx = B0.x, by = B0.y, bs = 1;
@@ -3638,7 +3639,14 @@ function stepTop(t, foe, h) {
   }
   t.angle += t.s.w.dir * (6 + 24 * t.spin) * h;
   t.spin -= t.s.decay * h;
-  if (t.spin <= 0) { t.spin = 0; endRound(null, 0, '停轉'); }
+  if (t.spin <= 0) {
+    t.spin = 0;
+    if (foe && !foe.dead && foe.spin > 0) { // the one still spinning wins the round (+1); both at once = draw
+      addText(foe.x, foe.y - 50, 'SURVIVE！+1', '#fcee0a', 28); comicPop(foe.x, foe.y - 100, 'LAST SPIN!', 40, '#ffffff', '#fcee0a', 1.1);
+      focusLines(foe.x, foe.y, 'rgba(252,238,10,.7)', 0.4); camPunch('ko', foe.x, foe.y);
+      endRound(foe.side, 1, 'SURVIVE');
+    } else endRound(null, 0, '停轉');
+  }
 }
 
 function collide(a, b, h) {
