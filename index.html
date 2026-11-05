@@ -383,6 +383,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .pfFav img{width:2.6em;height:2.6em;object-fit:cover;border:2px solid #00f0ff}
 .pfFav span{font-size:.75em;color:#9fb0c0}
 .sortBtn{font-family:inherit;font-weight:900;font-size:.68em;padding:.15em .5em;border:2px solid #05060a;background:#00f0ff;color:#05060a;cursor:pointer;letter-spacing:0}
+.nextRow{display:flex;gap:.5em;align-items:stretch;margin-top:1em}.nextRow .btn{margin:0}.nextRow .autoTog{font-size:.9em;justify-content:center;min-width:4.2em}
 .autoTog.wide{flex-direction:row;gap:.5em;font-size:.9em;padding:.5em 1.1em;margin-top:1em}
 .autoTog.wide i{margin:0}
 #nextCount{margin-top:.5em;font-weight:900;color:#fcee0a;min-height:1.2em;font-size:.9em}
@@ -501,7 +502,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <button class="btn" id="questBack">返回</button>
   </div>
   <div id="cxPop"><div class="in" id="cxPopIn"></div></div>
-  <div id="giftPop"><div class="askIn" style="border-color:#fcee0a"><div style="font-size:1.3em;font-weight:900;color:#fcee0a">🎁 新手完成獎勵</div><div style="margin:.4em 0 .2em">第一場對戰完成！</div><div style="font-size:1.5em;font-weight:900" id="giftAmt"></div><div style="font-size:.8em;opacity:.8;margin-bottom:.3em">馬上去開補給箱吧</div><div class="askBtns" style="flex-wrap:wrap"><button class="btn ghost" id="giftNo">取消</button><button class="btn" id="gift1">單抽</button><button class="btn" id="gift10">十連抽</button></div></div></div>
+  <div id="giftPop"><div class="askIn" style="border-color:#fcee0a"><div style="font-size:1.3em;font-weight:900;color:#fcee0a">🎁 新手完成獎勵</div><div style="margin:.4em 0 .2em">第一場對戰完成！</div><div style="font-size:1.5em;font-weight:900" id="giftAmt"></div><div style="font-size:.8em;opacity:.8;margin-bottom:.3em">馬上去開補給箱吧</div><div class="askBtns" style="flex-wrap:wrap"><button class="btn ghost" id="giftNo">取消</button><button class="btn" id="gift1">單抽</button><button class="btn" id="gift10">10連抽+1</button></div></div></div>
   <div id="askBox"><div class="askIn"><div id="askText"></div><div class="askBtns"><button class="btn ghost" id="askNo">取消</button><button class="btn" id="askYes">確定</button></div></div></div>
 
   <div id="tutorial" class="screen">
@@ -518,7 +519,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <button class="btn" id="drawBtn">抽一顆新陀螺</button>
     <button class="btn" id="retryBtn">再挑戰（換新對手）</button>
     <button class="btn ghost" id="toTeamBtn">回到陣容</button>
-    <button class="autoTog wide" id="autoNextBtn"><b>自動下一局</b><i>OFF</i></button>
+    <div class="nextRow"><button class="btn" id="nextBtn">開始下一局 ▶</button><button class="autoTog" id="autoNextBtn"><b>自動</b><i>OFF</i></button></div>
     <div id="nextCount"></div>
   </div>
 </div>
@@ -527,7 +528,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 <div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
-  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後吃 2 張同陣營、同品階的 3★ 卡</div>
+  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後自己挑 2 張同陣營、同品階的 3★ 卡當素材</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <div class="gmG">資源</div>
@@ -613,10 +614,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.67 lineup slot names stay on one line (ellipsis) so long card names no longer grow the slot; auto EX also triggers ASSIST
  v0.68 auto-lineup button red until used (grey again only while the lineup is the auto one); shard count labelled 萬用碎片 in the inventory header
  v0.7.0 three-part version numbers from here on; card names capped at 4+4 characters and shown on two fixed lines (inventory columns no longer stretch); purple ribbon on card backs, no hidden card any more (mech-cat is a regular very rare 元森域 card); shard card in the inventory; rank-up asks you to pick the 2 materials; ASSIST cut-in panel; balance pass on cards, coins and the vault
+ v0.7.1 ten-pull labelled 10連抽+1 with purple pity everywhere; result screen gets a 開始下一局 button (no wait) with a separate 自動 toggle for the countdown
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.7.0';
+const GAME_VERSION = 'v0.7.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1702,7 +1704,7 @@ let invDragged = false;
 })();
 function renderShop() {
   const sh = document.getElementById('shop');
-  sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>${ORE}${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>十連＋1<small>${ORE}${PRICE10}・保底紅</small></button>`;
+  sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>${ORE}${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>10連抽+1<small>${ORE}${PRICE10}・保底紫</small></button>`;
   document.getElementById('buy1').onclick = () => buy(1); document.getElementById('buy10').onclick = () => buy(10);
 }
 const shopPop = document.getElementById('shopPop');
@@ -2061,7 +2063,7 @@ function drawPack(dt) {
       okBtn.textContent = '收進零件庫';
       gachaBar.style.display = 'flex';
       const g1 = document.getElementById('gAgain1'), g10 = document.getElementById('gAgain10');
-      g1.innerHTML = `再抽一次<small>${ORE}${PRICE1}</small>`; g10.innerHTML = `十連抽<small>${ORE}${PRICE10}</small>`;
+      g1.innerHTML = `再抽一次<small>${ORE}${PRICE1}</small>`; g10.innerHTML = `10連抽+1<small>${ORE}${PRICE10}</small>`;
       g1.disabled = INV.coins < PRICE1; g10.disabled = INV.coins < PRICE10;
     }
     if (PK.st === 'done') { const sl = cardSlot(PK.cards.length - 1, PK.cards.length); g.fillStyle = 'rgba(255,255,255,.7)'; g.font = '15px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・零件已放進零件庫', PW / 2, sl.y + sl.h / 2 + 34); }
@@ -2444,6 +2446,7 @@ function armNext() {
   }, 1000);
 }
 function paintNext() { const b = document.getElementById('autoNextBtn'); b.classList.toggle('on', !!SETTINGS.autoNext); b.querySelector('i').textContent = SETTINGS.autoNext ? 'ON' : 'OFF'; }
+document.getElementById('nextBtn').onclick = () => { stopNext(); newOpponent(); fight(); };
 document.getElementById('autoNextBtn').onclick = () => { SETTINGS.autoNext = !SETTINGS.autoNext; saveJSON('topSettings', SETTINGS); paintNext(); armNext(); SFX.attach(); };
 { const gp = document.getElementById('giftPop'), close = () => gp.classList.remove('show');
   document.getElementById('giftNo').onclick = close;
