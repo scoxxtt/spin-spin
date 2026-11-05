@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.9.0</title>
+<title>SPIN! SPIN! v0.10.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -624,10 +624,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.7.3 browser tab title follows GAME_VERSION automatically (it was stuck at v0.68)
  v0.8.0 player camera: pinch to zoom, two-finger slide up/down to tilt (0.65 flat-ish side view .. 1.0 top-down), mouse wheel / shift+wheel on desktop; saved per player, sliders and reset in settings; default tilt 0.85 (was 0.9); a quick second-finger tap still charges EX
  v0.9.0 auto tilt tied to zoom: the closer the camera, the lower the angle (0.95 full arena -> 0.85 follow -> 0.70 close-up), eased; pinching zoom tilts too; two fingers take over the camera (auto follow and punches pause while pinching); player tilt acts as an offset; settings toggle 視角自動傾斜 (on by default) next to 鏡頭特效 / 動態運鏡
+ v0.10.0 RING OUT +2: a big hit that slams a top into the wall fast enough can launch it over the rim into the crowd (chance grows with speed); tops coasting after a round now stay inside the walls; tops are drawn in front of the near wall so they no longer look sunk into it
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.9.0';
+const GAME_VERSION = 'v0.10.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -697,7 +698,9 @@ const GATES = [
 for (const gt of GATES) { gt.x = CX + Math.cos(gt.a) * AX; gt.y = CY + Math.sin(gt.a) * BY; }
 const GATE_A = GATES[0].a, GATE_HALF = GATES[0].half, GATE = GATES[0];
 const nearestGate = (x, y) => GATES.reduce((b, gt) => (len(gt.x - x, gt.y - y) < len(b.x - x, b.y - y) ? gt : b));
-const GATE_SPEED = 420, GATE_SLOPE = 300; // step height: outward speed needed to clear it, and the uphill pull before it
+const GATE_SPEED = 420, GATE_SLOPE = 300;
+// RING OUT: only a top that was just hit hard (bigT) and hits the wall faster than RO_SPEED can fly over it; chance grows with speed
+const RO_SPEED = 650, RO_SPAN = 650, RO_MAX = 0.3, RINGOUT = { pts: 2, name: 'RING OUT', col: '127,223,255', txt: '#7fdfff' }; // step height: outward speed needed to clear it, and the uphill pull before it
 const TAU = Math.PI * 2;
 const AI_TAP_RATE = 14, RAIL_REF = 128;
 // centre: a basin that pulls tops back in, and a 'battle heart' ring worth fighting over
@@ -3432,14 +3435,14 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   let evaded = false;
   if (Math.random() < def.s.evade) { dmg *= 0.3; evaded = true; }
   if (def.s.w.special === 'deflect') dmg *= 0.85;
-  def.hp -= dmg; def.flash = 0.15; def.hitT = 0.7;
+  def.hp -= dmg; def.flash = 0.15; def.hitT = 0.7; def.bigT = 0;
   const mx = (att.x + def.x) / 2, my = (att.y + def.y) / 2;
   if (evaded) SFX.evade(); else SFX.hit(dmg, bf >= 1.1);
   if (!evaded && cm > 1) addText(def.x, def.y - 50, '剋制！', '#fcee0a', 15); else if (!evaded && cm < 1) addText(def.x, def.y - 50, '被剋制', '#8fa0b0', 13);
   if (!evaded && att.combo > 0 && fam === 'melee') addText(att.x, att.y - 46, `連擊 x${att.combo + 1}`, '#ff2a55', 14);
   if (evaded) addText(def.x, def.y - 32, '閃避', '#c7f5ff', 16);
   else addText(def.x + rnd(-10, 10), def.y - 30, Math.round(dmg).toString(), bf >= 1.1 ? '#fcee0a' : '#ffffff', bf >= 1.1 ? 22 : 16);
-  const big = !evaded && (dmg > def.s.maxHp * 0.1 || bf >= 1.1);
+  const big = !evaded && (dmg > def.s.maxHp * 0.1 || bf >= 1.1); if (big) def.bigT = 0.6;
   sparks(mx, my, Math.round(6 + dmg * 0.9), bf >= 1.1 ? '#fcee0a' : '#ffe9c4', 200 + vrel * 0.5, true);
   sparks(mx, my, 6, '#ffffff', 120);
   wave(mx, my, big ? '252,238,10' : '220,230,255', big ? 95 : 50, big ? 8 : 4, big ? 0.4 : 0.25);
@@ -3499,13 +3502,13 @@ function stepTop(t, foe, h) {
   if (t.dead) return;
   if (t.falling > 0) {
     t.falling -= h; t.spin = Math.max(0, t.spin - h);
-    t.x += t.vx * h * 0.4; t.y += t.vy * h * 0.4;
+    const fk = t.ringOut ? 0.75 : 0.4; t.x += t.vx * h * fk; t.y += t.vy * h * fk;
     if (t.falling <= 0) { t.dead = true; const gz = t.fellIn || GATE; endRound(foe.side, gz.pts, gz.name); }
     return;
   }
   // timers
   if (t.s.a.special === 'regen' && t.hp > 0) t.hp = Math.min(t.s.maxHp, t.hp + t.s.maxHp * 0.012 * h);
-  for (const k of ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'nearT', 'comboT', 'hopT']) if (t[k] > 0) t[k] -= h;
+  for (const k of ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT']) if (t[k] > 0) t[k] -= h;
   if (t.poisonT > 0) { t.poisonT -= h; if (t.poisonT <= 0) t.poison = 0; }
   if (t.boostT <= 0 && !t.ex) { t.dashMult = 1; t.kbMult = 1; }
 
@@ -3616,6 +3619,14 @@ function stepTop(t, foe, h) {
       const n = eNormal(t.x, t.y), nx = n.x, ny = n.y;
       const c = eClamp(t.x, t.y, m); t.x = c.x; t.y = c.y;
       const vn = t.vx * nx + t.vy * ny;
+      if (vn > RO_SPEED && t.hitT > 0 && t.bigT > 0 && Math.random() < Math.min(RO_MAX, (vn - RO_SPEED) / RO_SPAN)) {
+        t.falling = 1.0; t.ringOut = true; t.onRing = false; t.fellIn = RINGOUT; t.vx = nx * vn * 0.9 + t.vx * 0.2; t.vy = ny * vn * 0.9 + t.vy * 0.2;
+        addText(t.x, t.y - 50, 'RING OUT！+2', RINGOUT.txt, 32); SFX.gate(); SFX.wall(vn);
+        comicPop(t.x, t.y - 105, 'SKY HIGH!!', 46, '#ffffff', '#00f0ff', 1.2); focusLines(t.x, t.y, 'rgba(127,223,255,.8)', 0.5);
+        sparks(t.x + nx * TR, t.y + ny * TR, 30, '#a8fbff', 420); wave(t.x, t.y, RINGOUT.col, 170, 10, 0.6);
+        G.hitStop = 0.12; G.flash = 0.25; G.flashCol = RINGOUT.col; camPunch('ko', t.x, t.y); G.slowT = CAM.slowT; G.shake = Math.max(G.shake || 0, 12);
+        return;
+      }
       if (vn > 0) {
         t.vx -= 1.95 * vn * nx; t.vy -= 1.95 * vn * ny; t.spin -= vn / 40000;
         // tangential kick from the spin, so tops ricochet along the rim instead of just stopping
@@ -3733,8 +3744,9 @@ function update(dt) {
     updateExBtn();
   } else if (G.phase === 'roundEnd') {
     // let tops coast while the banner shows
-    for (const t of G.tops) if (!t.dead && !t.falling) { t.x += t.vx * dt; t.y += t.vy * dt; t.vx *= 1 - 2 * dt; t.vy *= 1 - 2 * dt; t.angle += t.s.w.dir * (6 + 24 * t.spin) * dt; }
-    for (const t of G.tops) if (t.falling > 0) { t.falling -= dt; if (t.falling <= 0) t.dead = true; }
+    for (const t of G.tops) if (!t.dead && !t.falling) { t.x += t.vx * dt; t.y += t.vy * dt; t.vx *= 1 - 2 * dt; t.vy *= 1 - 2 * dt; t.angle += t.s.w.dir * (6 + 24 * t.spin) * dt;
+      if (qOf(t.x, t.y, TR * 0.6) > 1) { const n = eNormal(t.x, t.y), c = eClamp(t.x, t.y, TR * 0.6), vn = t.vx * n.x + t.vy * n.y; t.x = c.x; t.y = c.y; if (vn > 0) { t.vx -= 1.6 * vn * n.x; t.vy -= 1.6 * vn * n.y; } } } // the walls still hold while the banner shows
+    for (const t of G.tops) if (t.falling > 0) { t.falling -= dt; if (t.ringOut) { t.x += t.vx * dt * 0.75; t.y += t.vy * dt * 0.75; } if (t.falling <= 0) t.dead = true; }
     G.endT -= dt;
     if (G.endT <= 0) afterRound();
   } else if (G.phase === 'launch') {
@@ -4151,14 +4163,16 @@ function drawTopWorld(g, t) {
   g.save();
   g.translate(t.x, t.y);
   let sc = 1;
-  if (t.falling > 0) { sc = clamp(t.falling / 0.7, 0, 1); g.globalAlpha = Math.sqrt(sc); }
+  let roLift = 0;
+  if (t.falling > 0 && t.ringOut) { const u = 1 - clamp(t.falling, 0, 1); roLift = Math.sin(Math.PI * Math.min(1, u * 1.15)) * 150 + u * 40; sc = 1 - u * 0.35; g.globalAlpha = Math.min(1, t.falling * 2.5); }
+  else if (t.falling > 0) { sc = clamp(t.falling / 0.7, 0, 1); g.globalAlpha = Math.sqrt(sc); }
   // shadow + owner ring lie on the floor
   g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(3, 8, 31 * sc, 29 * sc, 0, 0, TAU); g.fill();
   g.strokeStyle = t.side === 0 ? 'rgba(0,240,255,.7)' : 'rgba(255,59,92,.7)'; g.lineWidth = 2.5;
   g.beginPath(); g.arc(0, 0, 38 * sc, 0, TAU); g.stroke();
   // lift the top off the floor; tilt & bob a little as it loses spin
   const hop = t.hopT > 0 ? Math.sin(Math.PI * (1 - t.hopT / 0.38)) * (t.hopH || 12) : 0;
-  const lift = (TOP_LIFT + hop + (t.falling ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
+  const lift = (TOP_LIFT + hop + roLift + (t.falling && !t.ringOut ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
   g.translate(0, -lift);
   if (viewK < 1) {
     const wob = (1 - t.spin) * 0.25;
@@ -4255,8 +4269,8 @@ function render() {
     g.restore();
   }
   drawHalftones(g);
+  drawNearWall(g); // tops ride in front of the near wall (they sit on the floor inside it, the camera looks down over the rim)
   for (const t of [...G.tops].sort((a, b) => a.y - b.y)) drawTopWorld(g, t); // farther first
-  drawNearWall(g);
   for (const w of G.waves) {
     const k = w.t / w.max, r = 8 + (1 - k) * w.R1;
     g.strokeStyle = `rgba(${w.col},${k})`; g.lineWidth = w.w * k + 1; g.beginPath(); g.arc(w.x, w.y, r, 0, TAU); g.stroke();
