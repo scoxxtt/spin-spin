@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.11.1</title>
+<title>SPIN! SPIN! v0.11.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -533,7 +533,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 <div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
-  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後自己挑 2 張同陣營、同品階的 3★ 卡當素材</div>
+  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：10連抽+1 必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後自己挑 2 張同陣營、同品階的 3★ 卡當素材</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <div class="gmG">資源</div>
@@ -543,7 +543,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div class="gmRow"><button class="btn" data-gm="mat">全部 +3 素材</button><button class="btn" data-gm="star3">全部升到 3★</button></div>
   <div class="gmRow"><button class="btn" data-gm="fodder">補齊升階材料</button><button class="btn" data-gm="cat">取得機甲貓咪</button></div>
   <div class="gmG">抽卡</div>
-  <div class="gmRow"><button class="btn" data-gm="pyel">下次必出紫</button><button class="btn" data-gm="pcat">下次必出貓咪</button></div>
+  <div class="gmRow"><button class="btn" data-gm="pyel">下次必出紫</button></div>
   <div class="gmG">任務與獎勵</div>
   <div class="gmRow"><button class="btn" data-gm="quest">任務全部完成</button><button class="btn" data-gm="vault">保險箱填滿</button></div>
   <div class="gmRow"><button class="btn" data-gm="gift">重置新手禮</button><button class="btn" data-gm="win">對戰：立即勝利</button></div>
@@ -627,10 +627,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.10.0 RING OUT +2: a big hit that slams a top into the wall fast enough can launch it over the rim into the crowd (chance grows with speed); tops coasting after a round now stay inside the walls; tops are drawn in front of the near wall so they no longer look sunk into it
  v0.11.0 SURVIVE +1: the top that keeps spinning longer scores 1 (both stopping on the same tick is still a draw); scoring tutorial lists SURVIVE and RING OUT
  v0.11.1 tutorial text brought up to date: coins 60/15/150, ASSIST after 3 s, 10連抽+1, camera gestures, RING OUT on the stage page and strategy page, SURVIVE / RING OUT labels in the scoring animation
+ v0.11.2 text audit: removed leftover hidden-card text (profile tag, gacha banner, part tag, GM pity button), gold rarity named 金 everywhere, 10連 naming unified, daily first-win shown as +150, difficulty line reads 電腦裝備, purple cards get their own reveal flash
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.11.1';
+const GAME_VERSION = 'v0.11.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -663,7 +664,6 @@ document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; 
     else if (k === 'gift') { INV.gift1 = 0; msg('下一場打完會再送新手禮'); }
     else if (k === 'win') { if (G && G.phase !== 'final') { G.score = [9, 0]; document.getElementById('gmPanel').classList.remove('show'); finish(); return; } msg('目前不在對戰中'); }
     else if (k === 'mat') { for (const k2 of 'cwa') for (const id in INV[k2]) if (INV[k2][id].s < 3) INV[k2][id].n += 3; msg('全部零件 +3 素材（可測試升星）'); }
-    else if (k === 'pcat') { INV.pity.cat = 39; msg('下一次付費抽必出貓咪'); }
     else if (k === 'pyel') { INV.pity.r = 9; msg('下一次付費抽必出紫色'); }
     if (k !== 'close' && typeof paintQuestDot === 'function') paintQuestDot();
     if (k !== 'close') { save(); if (screens.team.classList.contains('show')) renderTeam(); }
@@ -1169,7 +1169,7 @@ const ORE = '<svg class="ore" viewBox="0 0 32 32" aria-label="金幣"><g stroke=
   + '<path d="M9 10 L13 11 L16 30 L11 26 Z" fill="#e0b800"/><path d="M5 24 L27 24 L24 30 L8 30 Z" fill="#3a2a4a"/></g>'
   + '<circle cx="14" cy="8" r="1.4" fill="#fff"/><path d="M26 4 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1 -2.2 -2.2 -1 2.2 -1z" fill="#00f0ff"/></svg>';
 const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '角色卡', w: '武器', a: '鎧甲' };
-const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '黃', col: '#fcee0a' }];
+const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '金', col: '#fcee0a' }];
 const R_RATE = [0.85, 0.15, 0, 0], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
 const R_BASE = [0, 0.20, 0.44, 0.72], R_STEP = [0.06, 0.07, 0.08, 0.10], NEED = [1, 2, 3]; // each rarity starts above the previous one's 3-star
 const PRICE1 = 100, PRICE10 = 1000, WIN_COIN = 60, LOSE_COIN = 15, DAILY_COIN = 150;
@@ -1406,7 +1406,7 @@ function showPart(k, id) {
   const need = e.s < 3 ? Math.max(0, NEED[e.s] - e.n) : 0;
   infoPop.innerHTML = `<div class="ipCard" style="border-color:${RARITY[e.r].col}">
     <div class="ipRow" style="border:0">${k === 'c' ? `<img src="${PORTRAIT_SRC[bid]}" style="width:5em;height:5em;object-fit:cover;border-radius:4px">` : iconHTML(k, bid, 'xl')}
-      <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}${P.hidden ? '<span class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏角色</span>' : ''}</div>
+      <div><div class="n" style="font-size:1.15em">${P.name}${rarityTag(e.r)}</div>
       <div style="color:${RARITY[e.r].col};font-size:1.1em;letter-spacing:.1em">${starStr(e.s)}</div>
       <div class="k">${KIND_NAME[k]}${slot >= 0 ? `・出戰第 ${slot + 1} 格` : '・未裝備'}</div></div></div>
     <div class="ipRow"><div><div class="d">${body}</div>
@@ -1636,9 +1636,9 @@ function openProfile() {
     <div class="pfSec">戰績</div>
     <div class="pfGrid">${cell('對戰場數', S.matches)}${cell('勝場', S.wins)}${cell('勝率', rate + '%')}${cell('最高連勝', S.best)}${cell('目前連勝', S.streak)}${cell('隊伍戰力', '+' + Math.round(teamPower() * 100) + '%')}</div>
     <div class="pfSec">收藏</div>
-    <div class="pfGrid">${cell('角色', own('c') + '/' + tot('c'))}${cell('武器', own('w') + '/' + tot('w'))}${cell('鎧甲', own('a') + '/' + tot('a'))}${cell('黃色零件', golds)}${cell('抽卡次數', S.draws)}${cell('累積金幣', S.coins)}</div>
+    <div class="pfGrid">${cell('角色', own('c') + '/' + tot('c'))}${cell('武器', own('w') + '/' + tot('w'))}${cell('鎧甲', own('a') + '/' + tot('a'))}${cell('金色零件', golds)}${cell('抽卡次數', S.draws)}${cell('累積金幣', S.coins)}</div>
     <div class="pfSec">最常使用</div>
-    <div class="pfFav"><img src="${PORTRAIT_SRC[favC]}"><b>${CLASSES[favC].name}</b><span>${fav ? `出戰 ${fav[1]} 場` : '還沒有對戰紀錄'}</span>${INV.c.mechcat ? '<em class="tag" style="background:linear-gradient(90deg,#fcee0a,#ff9f1a)">隱藏角色已解鎖</em>' : ''}</div>
+    <div class="pfFav"><img src="${PORTRAIT_SRC[favC]}"><b>${CLASSES[favC].name}</b><span>${fav ? `出戰 ${fav[1]} 場` : '還沒有對戰紀錄'}</span></div>
     <div class="ipClose">點其他地方關閉</div></div>`;
   profilePop.classList.add('show'); SFX.init(); SFX.flip();
   document.getElementById('pfEdit').onclick = e => { e.stopPropagation(); document.getElementById('pfEditRow').style.display = 'flex'; const inp = document.getElementById('pfInput'); inp.focus(); inp.select(); };
@@ -1730,7 +1730,7 @@ function buy(n) {
   const price = n === 10 ? PRICE10 : PRICE1; if (INV.coins < price) return;
   shopPop.classList.remove('show');
   INV.coins -= price; SFX.init(); INV.stats.draws += n === 10 ? 11 : 1; qAdd('draw', 1, n === 10 ? 11 : 1);
-  startGacha(n === 10 ? 11 : 1, n === 10 ? '十連補給箱' : '補給箱', openTeam, { paid: true, ten: n === 10 });
+  startGacha(n === 10 ? 11 : 1, n === 10 ? '10連補給箱' : '補給箱', openTeam, { paid: true, ten: n === 10 });
 }
 function teamTap(idx) {
   invSel = null;
@@ -2057,14 +2057,11 @@ function drawPack(dt) {
         if (c.flip >= 1) {
           c.flipping = false; c.glow = 1; const sl = cardSlot(i, PK.cards.length); packFx(sl.x, sl.y, 40, null, 480); SFX.reveal();
           const tr = c.b.r ? Math.max(c.b.r.c, c.b.r.w, c.b.r.a) : 0;
-          if (CLASSES[c.b.c].hidden) { // hidden class: gold flash, long shake, big banner
-            PK.flash = 1.4; PK.flashCol = '255,215,90'; PK.shake = 0.9; PK.banner = { t: 2.4, max: 2.4, text: `隱藏角色出現！${CLASSES[c.b.c].name}` };
-            packFx(sl.x, sl.y, 220, '#ffd75a', 1000); packFx(sl.x, sl.y, 60, '#ffffff', 700); SFX.burst(); SFX.ex(); SFX.reveal();
-            if (navigator.vibrate) navigator.vibrate([60, 60, 120, 60, 200]);
-          } else if (tr >= 2) { // red / yellow: flash, shake, a shower in the rarity colour
+          if (tr >= 1) { // purple / red / gold: flash, shake, a shower in the rarity colour
+            if (tr === 1) { PK.flash = 0.5; PK.flashCol = '176,102,255'; PK.shake = 0.25; packFx(sl.x, sl.y, 60, RARITY[1].col, 600); SFX.ex(); if (navigator.vibrate) navigator.vibrate(25); } else { // red / yellow: flash, shake, a shower in the rarity colour
             PK.flash = tr === 3 ? 1 : 0.6; PK.flashCol = tr === 3 ? '252,238,10' : '255,42,85'; PK.shake = tr === 3 ? 0.6 : 0.35;
             packFx(sl.x, sl.y, tr === 3 ? 140 : 70, RARITY[tr].col, tr === 3 ? 900 : 650); SFX.ex(); if (tr === 3) SFX.burst();
-            if (navigator.vibrate) navigator.vibrate(tr === 3 ? [40, 60, 80] : 30);
+            if (navigator.vibrate) navigator.vibrate(tr === 3 ? [40, 60, 80] : 30); }
           }
         }
       }
@@ -2221,7 +2218,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2441,7 +2438,7 @@ const DIFF = {
 const curDiff = () => DIFF[SETTINGS.diff] || DIFF.normal;
 function paintDiff() {
   document.querySelectorAll('#diffSeg [data-d]').forEach(b => b.classList.toggle('on', b.dataset.d === (SETTINGS.diff || 'normal')));
-  const D = curDiff(); document.getElementById('diffInfo').innerHTML = `${D.note}・裝備約 <b>${D.gear}</b>・獎勵金幣 <b>×${D.coin}</b>`;
+  const D = curDiff(); document.getElementById('diffInfo').innerHTML = `${D.note}・電腦裝備：<b>${D.gear}</b>・獎勵金幣 <b>×${D.coin}</b>`;
 }
 document.querySelectorAll('#diffSeg [data-d]').forEach(b => b.onclick = () => { SETTINGS.diff = b.dataset.d; saveJSON('topSettings', SETTINGS); paintDiff(); SFX.init(); SFX.attach(); });
 function fight() {
@@ -3712,7 +3709,7 @@ function finish() {
   { const S = INV.stats; S.matches++; if (win) { S.wins++; S.streak++; S.best = Math.max(S.best, S.streak); } else { S.losses++; S.streak = 0; } S.coins += got;
     for (const b of collection) S.use[b.c] = (S.use[b.c] || 0) + 1; }
   save();
-  document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? '（含每日首勝 +50）' : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? `（含每日首勝 +${DAILY_COIN}）` : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
   if (gift) document.getElementById('finalScore').insertAdjacentHTML('beforeend', `<div class="coinGot" style="margin-top:.4em;color:#fcee0a;font-weight:900">🎁 新手禮：${ORE} +10000，快去抽補給箱！</div>`);
   const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）';
