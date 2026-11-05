@@ -279,7 +279,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .cxFilter button{font-size:.72em;padding:.25em .7em;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.4);color:#cfd8e6;font-weight:900;font-family:inherit;cursor:pointer}
 .cxFilter button.on{background:#fcee0a;color:#000;border-color:#fcee0a}
 .cxHd{width:100%;font-weight:900;font-size:.82em;margin:.4em 0 .2em;padding-left:.4em;border-left:4px solid;text-align:left}
-.cxGrid{width:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:.3em}
+.cxGrid{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.3em}
 .cxT{position:relative;background:rgba(0,0,0,.45);border:2px solid;padding:.15em;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .cxT img,.cxT .cxI{width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none}
 .cxT .cxI .ico{width:100%;height:100%}
@@ -311,6 +311,22 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .mergeAll{font-family:inherit;font-weight:900;font-size:.7em;padding:.15em .6em;border:2px solid #05060a;background:#3a4250;color:#9fb0c0;cursor:pointer;letter-spacing:0}
 .mergeAll.on{background:#ff2a55;color:#fff;box-shadow:0 0 .6em rgba(255,42,85,.7)}
 .shardTag{color:#7fdfff;font-size:.8em;font-weight:900;font-style:normal}
+.nm2{display:flex;flex-direction:column;justify-content:center;height:2.35em;line-height:1.15;white-space:normal !important;overflow:hidden}
+.nm2 i{font-style:normal;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile,.cxT,.slot{min-width:0}
+.tile.shard{background:linear-gradient(160deg,rgba(127,223,255,.16),rgba(255,122,217,.16));border:2px solid #7fdfff !important}
+.tile.shard .bigIco{align-items:center;justify-content:center}
+.tile.shard .tst{color:#7fdfff;font-weight:900}
+.rkHd{font-weight:900;font-size:1.05em;margin-bottom:.3em}
+.rkGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35em;margin:.5em 0;max-height:46vh;overflow:auto}
+.rkT{position:relative;border:2px solid #555;background:rgba(255,255,255,.05);padding:.15em;cursor:pointer;min-width:0}
+.rkT img,.rkT .bigIco{width:100%;aspect-ratio:1;object-fit:cover;display:flex}
+.rkT .nm2{font-size:.55em;text-align:center;font-weight:900}
+.rkT .rf{font-size:.5em;text-align:center;color:#9fb0c0;white-space:nowrap;overflow:hidden}
+.rkT b{position:absolute;font-size:.5em;padding:0 .3em;font-style:normal;z-index:2}
+.rkT .rec{left:0;top:0;background:#fcee0a;color:#000}.rkT .use{right:0;top:0;background:#ff2a55;color:#fff}
+.rkT.on{border-color:#fcee0a;box-shadow:0 0 .8em rgba(252,238,10,.7)}
+.rkT.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2em;font-weight:900;color:#fcee0a;background:rgba(0,0,0,.45);text-shadow:2px 2px 0 #000}
 .pageWrap{position:relative;flex:1;min-height:0;display:flex}
 .pageWrap .invPages{flex:1}
 .pArrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:2.1em;height:3.6em;border:3px solid #05060a;background:#fcee0a;color:#05060a;font-size:.9em;font-weight:900;cursor:pointer;box-shadow:0 0 0 2px #fcee0a55,0 0 1em rgba(252,238,10,.6);display:flex;align-items:center;justify-content:center;padding:0}
@@ -511,7 +527,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 <div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
-  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後吃 2 張同陣營、同品階的 3★ 卡<br>付費抽卡每抽 2% 出現隱藏角色（40 抽保底）</div>
+  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：十連必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後吃 2 張同陣營、同品階的 3★ 卡</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <div class="gmG">資源</div>
@@ -596,10 +612,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.66 longer rounds: HP x2.3, single-hit cap 24%, knockback x0.72, exit step needs more speed, weaker launch knockback, slower spin decay, ASSIST ready after 3 s (median round ~4.6 s -> ~13 s in CPU-vs-CPU sims)
  v0.67 lineup slot names stay on one line (ellipsis) so long card names no longer grow the slot; auto EX also triggers ASSIST
  v0.68 auto-lineup button red until used (grey again only while the lineup is the auto one); shard count labelled 萬用碎片 in the inventory header
+ v0.7.0 three-part version numbers from here on; card names capped at 4+4 characters and shown on two fixed lines (inventory columns no longer stretch); purple ribbon on card backs, no hidden card any more (mech-cat is a regular very rare 元森域 card); shard card in the inventory; rank-up asks you to pick the 2 materials; ASSIST cut-in panel; balance pass on cards, coins and the vault
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.68';
+const GAME_VERSION = 'v0.7.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -628,7 +645,7 @@ document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`;
           const nk = pick(pool) + '~gm' + Math.random().toString(36).slice(2, 6); INV[k2][nk] = { id: nk.split('~')[0], r: e.r, s: 3, n: 0, isNew: 1, t: Date.now() }; n++; } }
       msg(`已補 ${n} 份升階材料`); }
     else if (k === 'quest') { const q = questState(); for (const [kq, , t] of DQ) q.d[kq] = Math.max(q.d[kq] || 0, t); for (const [kq, , t] of WQ) q.w[kq] = Math.max(q.w[kq] || 0, t); q.dayDone = 1; msg('每日／每週任務全部完成'); }
-    else if (k === 'vault') { const v = vaultState().v; v.from = Date.now() - VAULT_CAP * 1000; v.last = 0; msg('保險箱已填滿'); }
+    else if (k === 'vault') { const v = vaultState().v; v.from = Date.now() - VAULT_CAP / VAULT_RATE * 1000; v.last = 0; msg('保險箱已填滿'); }
     else if (k === 'gift') { INV.gift1 = 0; msg('下一場打完會再送新手禮'); }
     else if (k === 'win') { if (G && G.phase !== 'final') { G.score = [9, 0]; document.getElementById('gmPanel').classList.remove('show'); finish(); return; } msg('目前不在對戰中'); }
     else if (k === 'mat') { for (const k2 of 'cwa') for (const id in INV[k2]) if (INV[k2][id].s < 3) INV[k2][id].n += 3; msg('全部零件 +3 素材（可測試升星）'); }
@@ -737,33 +754,33 @@ function counterMult(att, def) {
   return c === f.beats ? COUNTER_UP : c === f.weak ? COUNTER_DOWN : 1;
 }
 const CLASSES = {
-  berserker: { name: '狂戰士', ch: '狂', color: '#ff4d5e', speed: 1.25, decay: 1.3, hp: 0.95, gain: 1, ex: 'dash', exName: '狂暴衝鋒', exDesc: '連撞三次，傷害遞增' },
+  berserker: { name: '狂戰士', ch: '狂', color: '#ff4d5e', speed: 1.18, decay: 1.3, hp: 0.95, gain: 1, ex: 'dash', exName: '狂暴衝鋒', exDesc: '連撞三次，傷害遞增' },
   guardian:  { name: '守護者', ch: '守', color: '#4da3ff', speed: 0.8, decay: 0.9, hp: 1.15, gain: 1, ex: 'shield', exName: '聖域壁壘', exDesc: '3 秒護盾反彈撞擊', pull: 1.7 },
   assassin:  { name: '刺客', ch: '刺', color: '#b066ff', speed: 1.15, decay: 1.0, hp: 0.85, gain: 1, ex: 'shadow', exName: '影襲', exDesc: '瞬移背後往 DEAD 出口撞' },
-  mage:      { name: '術士', ch: '術', color: '#29e0d0', speed: 1.0, decay: 1.0, hp: 0.95, gain: 1.5, ex: 'warp', exName: '環域扭曲', exDesc: '把對手強制彈開並暈眩' },
+  mage:      { name: '術士', ch: '術', color: '#29e0d0', speed: 1.05, decay: 1.0, hp: 0.95, gain: 1.5, ex: 'warp', exName: '環域扭曲', exDesc: '把對手強制彈開並暈眩' },
   hunter:    { name: '獵人', ch: '獵', color: '#ffa53d', speed: 1.05, decay: 1.0, hp: 1.0, gain: 1, ex: 'mark', exName: '鎖定標記', exDesc: '5 秒增傷且封鎖對手 EX', homing: true },
-  mechcat:   { name: '機甲貓咪', ch: '貓', color: '#ff9f1a', speed: 1.2, decay: 0.9, hp: 1.1, gain: 1.1, ex: 'zoomies', exName: '半夜暴衝', exDesc: '3 秒隨機折線暴衝，撞牆越撞越快，撞擊傷害 +30%', hidden: true },
+  mechcat:   { name: '機甲貓咪', ch: '貓', color: '#ff9f1a', speed: 1.2, decay: 0.9, hp: 1.1, gain: 1.1, ex: 'zoomies', exName: '半夜暴衝', exDesc: '3 秒隨機折線暴衝，撞牆越撞越快，撞擊傷害 +30%' },
   // ---- v0.61 new cards. fac = faction, tier = draw weight group (1 common, 2 rare, 3 very rare), philo = drawn purple ----
-  rat:     { name: '螺栓鼠・咔啦', ch: '鼠', color: '#ff6b6b', speed: 1.3, decay: 1.1, hp: 0.85, gain: 1.1, ex: 'shadow', exName: '鑽地突襲', exDesc: '鑽進地下，從對手背後往出口撞', fac: '鐵心幫', tier: 1, lore: '小隻又閃，全身螺栓的改造鼠。速度最快的鐵心幫成員。' },
-  rex:     { name: '鐵拳・雷克斯', ch: '拳', color: '#ff4d5e', speed: 0.9, decay: 0.9, hp: 1.15, gain: 1, ex: 'quake', exName: '鐵拳重砸', exDesc: '原地重砸地面，附近的對手被大力震飛', fac: '鐵心幫', tier: 2, lore: '一隻巨大液壓義手的硬漢。耐打，適合壓軸。' },
-  octo:    { name: '義肢章魚・八爪', ch: '爪', color: '#29e0ff', speed: 1.0, decay: 1.0, hp: 1.05, gain: 1, ex: 'grab', exName: '纏繞', exDesc: '機械觸手抓住對手 1.5 秒並拉到身邊', fac: '鐵心幫', tier: 2, lore: '八隻機械觸手的工程章魚，抓到就不放。' },
-  rider:   { name: '重機騎士・轟天', ch: '轟', color: '#ffb000', speed: 1.3, decay: 1.05, hp: 1.0, gain: 1, ex: 'dash', exName: '油門全開', exDesc: '連撞三次，傷害一次比一次高', fac: '鐵心幫', tier: 2, lore: '上半身和重機合體的飆仔，速度與衝撞都很兇。' },
-  tesla:   { name: '磁暴機兵 TESLA-9', ch: '磁', color: '#7fdfff', speed: 1.0, decay: 0.95, hp: 1.1, gain: 1.1, ex: 'pull', exName: '磁暴', exDesc: '用磁力把對手吸向最近的出口', fac: '鐵心幫', tier: 3, lore: '全身改造的機兵，會用磁場把對手拖向出口。' },
+  rat:     { name: '螺栓鼠・咔啦', ch: '鼠', color: '#ff6b6b', speed: 1.2, decay: 1.1, hp: 0.85, gain: 1.1, ex: 'shadow', exName: '鑽地突襲', exDesc: '鑽進地下，從對手背後往出口撞', fac: '鐵心幫', tier: 1, lore: '小隻又閃，全身螺栓的改造鼠。速度最快的鐵心幫成員。' },
+  rex:     { name: '鐵拳・雷克斯', ch: '拳', color: '#ff4d5e', speed: 0.95, decay: 0.9, hp: 1.2, gain: 1, ex: 'quake', exName: '鐵拳重砸', exDesc: '原地重砸地面，附近的對手被大力震飛', fac: '鐵心幫', tier: 2, lore: '一隻巨大液壓義手的硬漢。耐打，適合壓軸。' },
+  octo:    { name: '義肢章魚・八爪', ch: '爪', color: '#29e0ff', speed: 1.05, decay: 1.0, hp: 1.05, gain: 1, ex: 'grab', exName: '纏繞', exDesc: '機械觸手抓住對手 1.5 秒並拉到身邊', fac: '鐵心幫', tier: 2, lore: '八隻機械觸手的工程章魚，抓到就不放。' },
+  rider:   { name: '重機騎士・轟天', ch: '轟', color: '#ffb000', speed: 1.12, decay: 1.05, hp: 1.0, gain: 1, ex: 'dash', exName: '油門全開', exDesc: '連撞三次，傷害一次比一次高', fac: '鐵心幫', tier: 2, lore: '上半身和重機合體的飆仔，速度與衝撞都很兇。' },
+  tesla:   { name: '磁暴機兵・T-9', ch: '磁', color: '#7fdfff', speed: 1.08, decay: 0.95, hp: 1.1, gain: 1.1, ex: 'pull', exName: '磁暴', exDesc: '用磁力把對手吸向最近的出口', fac: '鐵心幫', tier: 3, lore: '全身改造的機兵，會用磁場把對手拖向出口。' },
   cactus:  { name: '仙人掌・刺球', ch: '刺', color: '#59f2a1', speed: 0.85, decay: 0.9, hp: 1.2, gain: 1, ex: 'shield', exName: '爆刺', exDesc: '3 秒尖刺護盾，撞上來的對手被彈開', fac: '元森域', tier: 1, lore: '圓滾滾的盆栽仙人掌，很耐打，碰到會痛。' },
   erin:    { name: '重盾・艾琳', ch: '盾', color: '#fcee0a', speed: 0.85, decay: 0.85, hp: 1.2, gain: 1, ex: 'dash', exName: '盾牆衝鋒', exDesc: '舉盾連撞三次，傷害一次比一次高', fac: '元森域', tier: 2, lore: '拿著鎮暴盾的前線隊長，穩又耐撞。', pull: 1.4 },
-  jack:    { name: '賞金獵人・傑克', ch: '賞', color: '#ffa53d', speed: 1.1, decay: 1.0, hp: 0.95, gain: 1, ex: 'mark', exName: '懸賞鎖定', exDesc: '5 秒增傷，並封鎖對手 EX', fac: '元森域', tier: 2, lore: '鉤索加霰彈槍的賞金獵人，會追著目標跑。', homing: true },
-  dj:      { name: '街頭 DJ・節拍', ch: '拍', color: '#ff7ad9', speed: 1.15, decay: 1.0, hp: 0.95, gain: 1.2, ex: 'quake', exName: '重低音', exDesc: '音波環把附近的對手震飛', fac: '元森域', tier: 2, lore: '背著巨型喇叭的街頭 DJ，EX 累積快。' },
-  spam:    { name: '垃圾郵件・SPAM', ch: '郵', color: '#fcee0a', speed: 1.05, decay: 1.0, hp: 0.95, gain: 1.3, ex: 'slow', exP: 1.2, exName: '洗版', exDesc: '彈窗洗版，對手幾乎停住 1.2 秒', fac: '虛駭組', tier: 1, lore: '由彈出視窗組成的電子生物，很煩但很可愛。' },
-  nova:    { name: '電路巫師・諾娃', ch: '諾', color: '#00f0ff', speed: 1.0, decay: 1.0, hp: 0.95, gain: 1.4, ex: 'warp', exName: '電路陷阱', exDesc: '把對手強制彈開並暈眩', fac: '虛駭組', tier: 2, lore: '用全息電路施法的少女駭客，EX 累積非常快。' },
+  jack:    { name: '賞金獵人・傑克', ch: '賞', color: '#ffa53d', speed: 1.15, decay: 1.0, hp: 0.95, gain: 1, ex: 'mark', exName: '懸賞鎖定', exDesc: '5 秒增傷，並封鎖對手 EX', fac: '元森域', tier: 2, lore: '鉤索加霰彈槍的賞金獵人，會追著目標跑。', homing: true },
+  dj:      { name: '街頭 DJ・節拍', ch: '拍', color: '#ff7ad9', speed: 1.15, decay: 1.0, hp: 1.05, gain: 1.3, ex: 'quake', exName: '重低音', exDesc: '音波環把附近的對手震飛', fac: '元森域', tier: 2, lore: '背著巨型喇叭的街頭 DJ，EX 累積快。' },
+  spam:    { name: '垃圾信・彈彈', ch: '郵', color: '#fcee0a', speed: 1.12, decay: 1.0, hp: 1.0, gain: 1.45, ex: 'slow', exP: 1.8, exName: '洗版', exDesc: '彈窗洗版，對手幾乎停住 1.8 秒', fac: '虛駭組', tier: 1, lore: '由彈出視窗組成的電子生物，很煩但很可愛。' },
+  nova:    { name: '電路巫師・諾娃', ch: '諾', color: '#00f0ff', speed: 1.05, decay: 1.0, hp: 0.95, gain: 1.5, ex: 'warp', exName: '電路陷阱', exDesc: '把對手強制彈開並暈眩', fac: '虛駭組', tier: 2, lore: '用全息電路施法的少女駭客，EX 累積非常快。' },
   raven:   { name: '霓影・夜鴉', ch: '鴉', color: '#b066ff', speed: 1.2, decay: 1.0, hp: 0.85, gain: 1, ex: 'shadow', exName: '全息分身', exDesc: '化成全息影像瞬移到對手背後往出口撞', fac: '虛駭組', tier: 2, lore: '全息羽翼的刺客，神出鬼沒。' },
-  twins:   { name: '雙生駭客・零與壹', ch: '駭', color: '#29e0d0', speed: 1.05, decay: 1.0, hp: 0.95, gain: 1.25, ex: 'drain', exName: '駭入', exDesc: '清空對手的 EX，並偷走一半', fac: '虛駭組', tier: 2, lore: '默契滿分的雙胞胎駭客，專偷對手的能量。' },
-  chrono:  { name: '時間竊賊・克羅諾', ch: '時', color: '#7fdfff', speed: 1.1, decay: 0.95, hp: 1.0, gain: 1.1, ex: 'slow', exP: 2.5, exName: '時間竊取', exDesc: '偷走對手的時間，2.5 秒幾乎停住', fac: '虛駭組', tier: 3, lore: '戴著數位高帽的優雅怪盜，能讓時間停下來。' },
-  david:   { name: '大理石・大衛', ch: '衛', color: '#e8edf2', speed: 1.0, decay: 0.9, hp: 1.3, gain: 1.05, ex: 'sling', exName: '投石擊巨', exDesc: '對手剩越多血傷害越高，並往出口擊飛', fac: '異哲團', philo: true, lore: '活過來的大理石雕像，以小搏大的象徵。' },
-  sheep:   { name: '電子羊・夢', ch: '夢', color: '#c9a7ff', speed: 1.0, decay: 0.85, hp: 1.25, gain: 1.25, ex: 'slow', exP: 2, exName: '入夢', exDesc: '讓對手進入夢境，2 秒幾乎停住', fac: '異哲團', philo: true, lore: '羊毛是光纖的電子羊，總是睡眼惺忪。' },
-  maiden:  { name: '鐵聖母・瑪登', ch: '聖', color: '#d8b46a', speed: 0.9, decay: 0.85, hp: 1.4, gain: 1.05, ex: 'grab', exDmg: 12, exName: '鐵之擁抱', exDesc: '抓住對手 1.5 秒並造成傷害', fac: '異哲團', philo: true, lore: '哥德式鐵像化身，沉默而堅固。' },
-  theseus: { name: '忒修斯', ch: '忒', color: '#ffb36b', speed: 1.05, decay: 0.95, hp: 1.2, gain: 1.1, ex: 'heal', exName: '重組', exDesc: '換上新零件，血量回滿（第二次起回三成）', fac: '異哲團', philo: true, lore: '全身零件都換過的戰士：他還是原本的他嗎？' },
-  proteus: { name: '擬態原生質・普羅透斯', ch: '擬', color: '#ff7ad9', speed: 1.1, decay: 0.95, hp: 1.15, gain: 1.15, ex: 'copy', exName: '擬態', exDesc: '模仿對手，使出對手的 EX', fac: '異哲團', philo: true, lore: '液態金屬加霓虹凝膠，能變成任何對手。' },
-  host:    { name: '寄生胚・宿主', ch: '胚', color: '#b066ff', speed: 1.05, decay: 0.95, hp: 1.15, gain: 1.15, ex: 'parasite', exName: '孵化', exDesc: '在對手身上種下 3 層寄生，持續掉血', fac: '異哲團', philo: true, lore: '發光種子孵化中的蛋型機體，帶著小無人機。' },
+  twins:   { name: '雙生駭客・零與壹', ch: '駭', color: '#29e0d0', speed: 1.15, decay: 1.0, hp: 1.1, gain: 1.35, ex: 'drain', exName: '駭入', exDesc: '清空對手的 EX，並偷走一半', fac: '虛駭組', tier: 2, lore: '默契滿分的雙胞胎駭客，專偷對手的能量。' },
+  chrono:  { name: '時間竊賊・克羅諾', ch: '時', color: '#7fdfff', speed: 1.15, decay: 0.95, hp: 1.1, gain: 1.1, ex: 'slow', exP: 2.5, exName: '時間竊取', exDesc: '偷走對手的時間，2.5 秒幾乎停住', fac: '虛駭組', tier: 3, lore: '戴著數位高帽的優雅怪盜，能讓時間停下來。' },
+  david:   { name: '大理石・大衛', ch: '衛', color: '#e8edf2', speed: 1.08, decay: 0.9, hp: 1.3, gain: 1.05, ex: 'sling', exName: '投石擊巨', exDesc: '對手剩越多血傷害越高，並往出口擊飛', fac: '異哲團', philo: true, lore: '活過來的大理石雕像，以小搏大的象徵。' },
+  sheep:   { name: '電子羊・夢', ch: '夢', color: '#c9a7ff', speed: 1.1, decay: 0.85, hp: 1.25, gain: 1.25, ex: 'slow', exP: 2, exName: '入夢', exDesc: '讓對手進入夢境，2 秒幾乎停住', fac: '異哲團', philo: true, lore: '羊毛是光纖的電子羊，總是睡眼惺忪。' },
+  maiden:  { name: '鐵聖母・瑪登', ch: '聖', color: '#d8b46a', speed: 1.0, decay: 0.85, hp: 1.4, gain: 1.05, ex: 'grab', exDmg: 12, exName: '鐵之擁抱', exDesc: '抓住對手 1.5 秒並造成傷害', fac: '異哲團', philo: true, lore: '哥德式鐵像化身，沉默而堅固。' },
+  theseus: { name: '忒修斯', ch: '忒', color: '#ffb36b', speed: 1.1, decay: 0.95, hp: 1.2, gain: 1.1, ex: 'heal', exName: '重組', exDesc: '換上新零件，血量回滿（第二次起回三成）', fac: '異哲團', philo: true, lore: '全身零件都換過的戰士：他還是原本的他嗎？' },
+  proteus: { name: '擬態體・普羅透斯', ch: '擬', color: '#ff7ad9', speed: 1.15, decay: 0.95, hp: 1.15, gain: 1.15, ex: 'copy', exName: '擬態', exDesc: '模仿對手，使出對手的 EX', fac: '異哲團', philo: true, lore: '液態金屬加霓虹凝膠，能變成任何對手。' },
+  host:    { name: '寄生胚・宿主', ch: '胚', color: '#b066ff', speed: 1.12, decay: 0.95, hp: 1.2, gain: 1.15, ex: 'parasite', exName: '孵化', exDesc: '在對手身上種下 3 層寄生，持續掉血', fac: '異哲團', philo: true, lore: '發光種子孵化中的蛋型機體，帶著小無人機。' },
   undead:    { name: '不死者', ch: '死', color: '#9aa3ad', speed: 0.95, decay: 0.75, hp: 1.0, gain: 1, ex: 'revive', exName: '亡者回魂', exDesc: '被動：首次爆甲以三成血復活' },
 };
 // factions of the starting classes and the cat; new cards carry their own
@@ -1117,6 +1134,8 @@ function drawTop(g, build, angle, opts = {}) {
 }
 
 // ---------- collection, lineup, gacha ----------
+// names are 稱號・名字 (max 4 + 4 characters); UI shows them as two fixed lines so boxes never change size
+const nameLines = n => { const i = n.indexOf('・'); return i < 0 ? `<i>${n}</i>` : `<i>${n.slice(0, i)}</i><i>${n.slice(i + 1)}</i>`; };
 const nameOf = b => `${CLASSES[b.c].name}・${WEAPONS[b.w].name}`;
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const BASIC_CLASSES = Object.keys(CLASSES).filter(k => !CLASSES[k].hidden);
@@ -1136,7 +1155,7 @@ const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '角色卡'
 const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '黃', col: '#fcee0a' }];
 const R_RATE = [0.85, 0.15, 0, 0], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
 const R_BASE = [0, 0.20, 0.44, 0.72], R_STEP = [0.06, 0.07, 0.08, 0.10], NEED = [1, 2, 3]; // each rarity starts above the previous one's 3-star
-const PRICE1 = 100, PRICE10 = 1000, WIN_COIN = 100, LOSE_COIN = 20, DAILY_COIN = 50;
+const PRICE1 = 100, PRICE10 = 1000, WIN_COIN = 60, LOSE_COIN = 15, DAILY_COIN = 150;
 const rollFrom = rates => { let x = Math.random(); for (let i = 0; i < rates.length; i++) { x -= rates[i]; if (x < 0) return i; } return 0; };
 const starStr = n => '★'.repeat(n) + '☆'.repeat(3 - n);
 let INV = loadJSON('topInv', null);
@@ -1224,16 +1243,18 @@ const canMerge = e => e.s < 3 && e.n >= NEED[e.s];
 // weapons of the same type, armors of the same type. Starting classes are the natural fodder, so they're picked first.
 const sameKind = (k, a, b) => k === 'c' ? (CLASSES[a].fac === CLASSES[b].fac || CLASSES[a].fac === '異哲團' || CLASSES[b].fac === '異哲團')
   : k === 'w' ? WEAPONS[a].fam === WEAPONS[b].fam : ARMORS[a].cls === ARMORS[b].cls;
-function rankFodder(k, key) {
+function rankCands(k, key) { // every legal material, recommended ones first (not in the lineup, starters, low tier)
   const e = INV[k][key]; if (!e) return [];
   const inUse = x => collection.some(b => kk(b, k) === x);
   return Object.keys(INV[k]).filter(x => x !== key && INV[k][x].s >= 3 && INV[k][x].r === e.r && sameKind(k, INV[k][x].id, e.id))
-    .sort((x, y) => inUse(x) - inUse(y) || (k === 'c' ? (STARTERS.includes(INV[k][y].id) - STARTERS.includes(INV[k][x].id)) || ((CLASSES[INV[k][x].id].tier || 1) - (CLASSES[INV[k][y].id].tier || 1)) : 0)).slice(0, 2);
+    .sort((x, y) => inUse(x) - inUse(y) || (k === 'c' ? (STARTERS.includes(INV[k][y].id) - STARTERS.includes(INV[k][x].id)) || ((CLASSES[INV[k][x].id].tier || 1) - (CLASSES[INV[k][y].id].tier || 1)) : 0));
 }
+const rankFodder = (k, key) => rankCands(k, key).slice(0, 2);
 const canRank = (k, key) => { const e = INV[k][key]; return !!e && e.s >= 3 && e.r < rankCap(k, e.id) && rankFodder(k, key).length >= 2; };
-function rankUp(k, key) {
+function rankUp(k, key, picks) {
   const e = INV[k][key]; if (!canRank(k, key)) return false;
-  for (const x of rankFodder(k, key)) { delete INV[k][x]; for (const b of collection) if (kk(b, k) === x) b[k + 'k'] = null; }
+  const ok = rankCands(k, key); picks = (picks || rankFodder(k, key)).filter(x => ok.includes(x)); if (picks.length !== 2) return false;
+  for (const x of picks) { delete INV[k][x]; for (const b of collection) if (kk(b, k) === x) b[k + 'k'] = null; }
   e.r++; e.s = 1; e.n = 0; qAdd('merge');
   const twin = k !== 'c' && Object.keys(INV[k]).find(x => x !== key && baseOf(k, x) === e.id && INV[k][x].s === 1);
   if (twin) { const t2 = INV[k][twin]; e.n += t2.n + 1; e.r = Math.max(e.r, t2.r); delete INV[k][twin]; for (const b of collection) if (kk(b, k) === twin) b[k + 'k'] = null; }
@@ -1280,10 +1301,10 @@ function toast(msg) {
   const t = document.createElement('div'); t.className = 'tipBubble'; t.textContent = msg; document.body.appendChild(t);
   setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 1500);
 }
-function starUpFx(k, id) {
+function starUpFx(k, id, rank) {
   const e = INV[k][id], bid = baseOf(k, id), P = KIND[k][bid], d = document.createElement('div'); d.className = 'starUp';
   const pic = k === 'c' ? `<img src="${PORTRAIT_SRC[bid]}">` : iconHTML(k, bid, 'xl');
-  d.innerHTML = `<div class="suIn" style="--rc:${RARITY[e.r].col}">${pic}<div class="suT">升星！</div><div class="suN">${P.name}</div>
+  d.innerHTML = `<div class="suIn" style="--rc:${RARITY[e.r].col}">${pic}<div class="suT">${rank ? `升階！${RARITY[e.r].n}卡` : '升星！'}</div><div class="suN">${P.name}</div>
     <div class="suS">${[0, 1, 2].map(i => `<i style="animation-delay:${0.25 + i * 0.15}s" class="${i < e.s ? 'on' : ''}">★</i>`).join('')}</div></div>`;
   document.body.appendChild(d); SFX.init(); SFX.reveal(); SFX.ex(); if (navigator.vibrate) navigator.vibrate([20, 40, 30]);
   const bye = () => { d.classList.add('out'); setTimeout(() => d.remove(), 300); }; d.onclick = bye; setTimeout(bye, 1800);
@@ -1377,18 +1398,43 @@ function showPart(k, id) {
     ${e.s < 3 ? `<button class="btn ipBtn" id="doMergeBtn" ${need ? 'disabled' : ''}>${need ? `合成升星（還差 ${need} 個素材）` : '合成升星！'}</button>
       ${need ? `<button class="btn ipBtn ghost" id="useShard" ${INV.shards >= need ? '' : 'disabled'}>用萬用碎片補足並升星（需 ${need}，持有 ${INV.shards}）</button>` : ''}` : ''}
     ${e.s >= 3 ? (e.r < rankCap(k, e.id) ? (() => { const fd = rankFodder(k, id), nm = x => KIND[k][INV[k][x].id].name, what = k === 'c' ? `同陣營${CLASSES[e.id].fac === '異哲團' ? '（異哲團可吃任何陣營）' : ''}` : `同類型（${k === 'w' ? FAMILY[P.fam].name : ARMOR_CLASS[P.cls].name}）`;
-      return fd.length >= 2 ? `<button class="btn ipBtn" id="rankBtn">升階 → ${RARITY[e.r + 1].n} 1★（吃掉 ${fd.map(nm).join('、')}）</button>` : `<div class="k" style="text-align:center;margin-top:.4em">升階需要 2 張${what}、${RARITY[e.r].n}色 3★ 的${KIND_NAME[k]}（目前 ${fd.length} 張）</div>`; })() : `<div class="k" style="text-align:center;margin-top:.4em">已達最高品階${rankCap(k, e.id) === 2 ? '（起始角色最高紅）' : ''}</div>`) : ''}
+      return fd.length >= 2 ? `<button class="btn ipBtn" id="rankBtn">升階 → ${RARITY[e.r + 1].n} 1★（選 2 張素材）</button>` : `<div class="k" style="text-align:center;margin-top:.4em">升階需要 2 張${what}、${RARITY[e.r].n}色 3★ 的${KIND_NAME[k]}（目前 ${fd.length} 張）</div>`; })() : `<div class="k" style="text-align:center;margin-top:.4em">已達最高品階${rankCap(k, e.id) === 2 ? '（起始角色最高紅）' : ''}</div>`) : ''}
     <div class="ipClose">點其他地方關閉</div></div>`;
   infoPop.classList.add('show'); SFX.init(); SFX.flip();
-  { const rb = document.getElementById('rankBtn'); if (rb) rb.onclick = ev => { ev.stopPropagation(); if (rankUp(k, id)) { save(); infoPop.classList.remove('show'); SFX.ex(); starUpFx(k, id); renderTeam(); } }; }
+  { const rb = document.getElementById('rankBtn'); if (rb) rb.onclick = ev => { ev.stopPropagation(); showRank(k, id); }; }
   const ub = document.getElementById('useShard');
   if (ub) ub.onclick = ev => { ev.stopPropagation(); if (INV.shards < need) return; INV.shards -= need; e.n += need; infoPop.classList.remove('show'); doMerge(k, id); };
   const mb = document.getElementById('doMergeBtn');
   if (mb) mb.onclick = ev => { ev.stopPropagation(); infoPop.classList.remove('show'); doMerge(k, id); };
 }
+// rank-up picker: shows every legal 3-star material; the player taps two, then confirms
+function showRank(k, id) {
+  const e = INV[k][id]; if (!e || !canRank(k, id)) return;
+  const P = KIND[k][e.id], C = rankCands(k, id), rec = C.slice(0, 2), sel = [];
+  const what = k === 'c' ? `同陣營（${CLASSES[e.id].fac}${CLASSES[e.id].fac === '異哲團' ? '，可吃任何陣營' : '，異哲團也可以'}）` : `同類型（${k === 'w' ? FAMILY[P.fam].name : ARMOR_CLASS[P.cls].name}）`;
+  const inUse = x => collection.findIndex(b => kk(b, k) === x);
+  const nm = x => KIND[k][INV[k][x].id].name;
+  const draw = () => {
+    infoPop.innerHTML = `<div class="ipCard rkCard" style="border-color:${RARITY[e.r + 1].col}">
+      <div class="ipRow" style="border:0">${k === 'c' ? `<img src="${PORTRAIT_SRC[e.id]}" style="width:4em;height:4em;object-fit:cover;border-radius:4px">` : iconHTML(k, e.id, 'xl')}
+        <div><div class="rkHd">${P.name}</div><div><span style="color:${RARITY[e.r].col}">${RARITY[e.r].n} ★★★</span> → <b style="color:${RARITY[e.r + 1].col}">${RARITY[e.r + 1].n} ★</b></div>
+        <div class="k">選 2 張${what}、${RARITY[e.r].n}色 3★ 的${KIND_NAME[k]}當素材，升階後素材會消失</div></div></div>
+      <div class="rkGrid">${C.map(x => { const q = INV[k][x], u = inUse(x), b2 = q.id;
+        return `<div class="rkT${sel.includes(x) ? ' on' : ''}" data-x="${x}" style="border-color:${sel.includes(x) ? '' : RARITY[q.r].col}">${k === 'c' ? `<img src="${PORTRAIT_SRC[b2]}" draggable="false">` : `<div class="bigIco">${iconHTML(k, b2)}</div>`}
+          ${rec.includes(x) ? '<b class="rec">推薦</b>' : ''}${u >= 0 ? `<b class="use">出戰${u + 1}</b>` : ''}<div class="nm2">${nameLines(KIND[k][b2].name)}</div><div class="rf">${k === 'c' ? CLASSES[b2].fac : '★★★'}</div></div>`; }).join('')}</div>
+      ${sel.some(x => inUse(x) >= 0) ? '<div class="k" style="color:#ff2a55;text-align:center">注意：選到出戰中的零件，升階後那一格會換成別的</div>' : ''}
+      <button class="btn ipBtn" id="rkGo" ${sel.length === 2 ? '' : 'disabled'}>${sel.length === 2 ? `確認升階（吃掉 ${sel.map(nm).join('、')}）` : `還要選 ${2 - sel.length} 張素材`}</button>
+      <button class="btn ipBtn ghost" id="rkRec">幫我選推薦素材</button>
+      <div class="ipClose">點外面空白處取消</div></div>`;
+    infoPop.querySelectorAll('.rkT').forEach(el => el.onclick = () => { const x = el.dataset.x, i = sel.indexOf(x); if (i >= 0) sel.splice(i, 1); else { if (sel.length >= 2) sel.shift(); sel.push(x); } SFX.flip(); draw(); });
+    document.getElementById('rkRec').onclick = ev => { ev.stopPropagation(); sel.length = 0; sel.push(...rec); SFX.flip(); draw(); };
+    document.getElementById('rkGo').onclick = ev => { ev.stopPropagation(); if (sel.length === 2 && rankUp(k, id, sel.slice())) { save(); infoPop.classList.remove('show'); SFX.ex(); starUpFx(k, id, true); renderTeam(); } };
+  };
+  draw(); infoPop.classList.add('show'); SFX.init(); SFX.flip();
+}
 // part detail card: whole top, with one part highlighted (k = 'w' / 'a' / 'c')
 const infoPop = document.getElementById('infoPop');
-infoPop.addEventListener('click', e => { if (e.target.closest('.ipBtn')) return; infoPop.classList.remove('show'); lpFired = false; });
+infoPop.addEventListener('click', e => { if (e.target.closest('.ipBtn, .rkCard')) return; infoPop.classList.remove('show'); lpFired = false; });
 function showInfo(b, focus) {
   const rs = k => { const it = INV[k][kk(b, k)], r = b.r ? b.r[k] : it ? it.r : 0, st = b.s ? b.s[k] : it ? it.s : 0; return rarityTag(r, st); };
   const w = WEAPONS[b.w], a = ARMORS[b.a], c = CLASSES[b.c], f = FAMILY[w.fam], ac = ARMOR_CLASS[a.cls];
@@ -1463,7 +1509,7 @@ function renderTeam() {
     const el = document.createElement('div'); el.className = 'slot' + (teamSel === i ? ' picked' : ''); el.dataset.idx = i;
     el.insertAdjacentHTML('beforeend', `<div class="snum">${i + 1}</div><img class="sface" draggable="false" src="${PORTRAIT_SRC[b.c]}">`);
     const pv = previewCanvas(b, 120); pv.className = 'stop'; el.appendChild(pv);
-    el.insertAdjacentHTML('beforeend', `<div class="nm">${nameOf(b)}</div>`);
+    el.insertAdjacentHTML('beforeend', `<div class="nm nm2">${nameLines(CLASSES[b.c].name)}</div>`);
     el.appendChild(partChips(b, i));
     el.insertAdjacentHTML('beforeend', `<div class="mini">EX「${CLASSES[b.c].exName}」</div>`);
     slots.appendChild(el);
@@ -1474,7 +1520,7 @@ function renderTeam() {
   const panel = document.createElement('div'); panel.className = 'invPanel';
   const hintTxt = invSel ? `已選「${KIND[invSel.k][baseOf(invSel.k, invSel.id)].name}」，點出戰格裡的${KIND_NAME[invSel.k]}換裝` : swapSel ? `點下方的${KIND_NAME[swapSel.k]}換裝，或點另一格互換` : '拖曳換裝・長按詳情';
   const anyMerge = ['c', 'w', 'a'].some(k2 => Object.values(INV[k2]).some(canMerge));
-  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <span class="shardTag" title="萬用碎片：可補足升星素材">◆ 萬用碎片 ${INV.shards}</span><button class="mergeAll${lineupSig() === autoSig ? '' : ' on'}" id="autoTeamBtn">自動上陣</button><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
+  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <button class="mergeAll${lineupSig() === autoSig ? '' : ' on'}" id="autoTeamBtn">自動上陣</button><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
   const tabs = document.createElement('div'); tabs.className = 'invTabs';
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
@@ -1486,7 +1532,11 @@ function renderTeam() {
   const pagesEl = document.createElement('div'); pagesEl.className = 'invPages';
   const k = invTab, PER = invCols * invRows; let grid = null, count = 0;
   const slotOf = id => { const q = collection.findIndex(b => kk(b, k) === id); return q < 0 ? 9 : q; }; // equipped parts first, in slot order
-  own(k).sort((x, y) => slotOf(x) - slotOf(y) || (SETTINGS.invSort === 'new' ? (INV[k][y].t || 0) - (INV[k][x].t || 0) : INV[k][y].r - INV[k][x].r || baseOf(k, x).localeCompare(baseOf(k, y)) || INV[k][y].s - INV[k][x].s)).forEach(id => {
+  const ordered = own(k).sort((x, y) => slotOf(x) - slotOf(y) || (SETTINGS.invSort === 'new' ? (INV[k][y].t || 0) - (INV[k][x].t || 0) : INV[k][y].r - INV[k][x].r || baseOf(k, x).localeCompare(baseOf(k, y)) || INV[k][y].s - INV[k][x].s));
+  ordered.splice(ordered.filter(x => slotOf(x) < 9).length, 0, '__shard'); // the shard card sits right after the equipped parts
+  const put = t => { if (count % PER === 0) { grid = document.createElement('div'); grid.className = 'invPage depot'; grid.style.gridTemplateColumns = `repeat(${invCols},minmax(0,1fr))`; pagesEl.appendChild(grid); } grid.appendChild(t); count++; };
+  ordered.forEach(id => {
+    if (id === '__shard') { put(shardTile()); return; }
     const e = INV[k][id], bid = baseOf(k, id), slot = collection.findIndex(b => kk(b, k) === id), t = document.createElement('div');
     t.className = 'tile r' + e.r + (slot >= 0 ? ' used' : '') + (invSel && invSel.k === k && invSel.id === id ? ' picked' : '') + (swapSel && swapSel.k === k ? ' target' : '');
     t.dataset.ik = k; t.dataset.iid = id; t.style.borderColor = RARITY[e.r].col;
@@ -1494,10 +1544,10 @@ function renderTeam() {
     const ready = canMerge(e); if (ready) t.classList.add('ready');
     const bar = e.s < 3 ? `<div class="pbar"><i style="width:${Math.min(100, e.n / NEED[e.s] * 100)}%"></i><span>${e.n}/${NEED[e.s]}</span></div>` : '<div class="pbar max"><span>MAX</span></div>';
     t.innerHTML = `${pic}${e.isNew ? '<b class="newTag">NEW</b>' : ''}${slot >= 0 ? `<b class="eqTag">出戰${slot + 1}</b>` : ''}${e.n && e.s < 3 ? `<b class="cntTag">×${e.n}</b>` : ''}
-      <div class="tn">${KIND[k][bid].name}</div><div class="tst" style="color:${RARITY[e.r].col}">${starStr(e.s)}</div>${bar}
+      <div class="tn nm2">${nameLines(KIND[k][bid].name)}</div><div class="tst" style="color:${RARITY[e.r].col}">${starStr(e.s)}</div>${bar}
       ${ready ? '<button class="mergeBtn">合成</button>' : canRank(k, id) ? '<button class="mergeBtn">升階</button>' : ''}`;
     if (ready) t.querySelector('.mergeBtn').onclick = ev => { ev.stopPropagation(); doMerge(k, id); };
-    else if (canRank(k, id)) t.querySelector('.mergeBtn').onclick = ev => { ev.stopPropagation(); if (rankUp(k, id)) { save(); SFX.ex(); starUpFx(k, id); renderTeam(); } };
+    else if (canRank(k, id)) t.querySelector('.mergeBtn').onclick = ev => { ev.stopPropagation(); showRank(k, id); };
     t.onclick = () => {
       if (lpFired || invDragged) { invDragged = false; return; }
       if (e.isNew) { e.isNew = 0; save(); }
@@ -1505,8 +1555,7 @@ function renderTeam() {
       else invSel = invSel && invSel.k === k && invSel.id === id ? null : { k, id };
       renderTeam();
     };
-    if (count % PER === 0) { grid = document.createElement('div'); grid.className = 'invPage depot'; grid.style.gridTemplateColumns = `repeat(${invCols},1fr)`; pagesEl.appendChild(grid); }
-    grid.appendChild(t); count++;
+    put(t);
   });
   const wrapP = document.createElement('div'); wrapP.className = 'pageWrap'; wrapP.appendChild(pagesEl);
   const nP = Math.max(1, Math.ceil(count / PER));
@@ -1538,6 +1587,17 @@ function renderTeam() {
   pagesEl.onscroll = () => { const p2 = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth)); invPage[k] = p2; mark(p2); };
   document.getElementById('drawDot').style.display = INV.coins >= PRICE1 ? '' : 'none';
   paintProfileBtn();
+}
+const SHARD_SVG = '<svg viewBox="0 0 64 64" style="width:100%;height:100%"><defs><linearGradient id="shG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fdfff"/><stop offset="1" stop-color="#ff7ad9"/></linearGradient></defs><path d="M32 4 50 22 40 60 24 60 14 22Z" fill="url(#shG)" stroke="#05060a" stroke-width="3" stroke-linejoin="round"/><path d="M14 22H50M32 4 24 22 32 60 40 22Z" fill="none" stroke="#05060a" stroke-width="2" stroke-linejoin="round" opacity=".55"/><path d="M22 14 26 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>';
+function shardTile() {
+  const t = document.createElement('div'); t.className = 'tile shard';
+  t.innerHTML = `<div class="bigIco">${SHARD_SVG}</div><div class="tn nm2"><i>萬用碎片</i></div><div class="tst">×${INV.shards}</div><div class="pbar max"><span>補星素材</span></div>`;
+  t.onclick = () => {
+    infoPop.innerHTML = `<div class="ipCard" style="border-color:#7fdfff"><div class="ipRow" style="border:0"><div style="width:4.5em;flex:none">${SHARD_SVG}</div><div><div class="n" style="font-size:1.15em">萬用碎片 ×${INV.shards}</div><div class="k">角色卡、武器、鎧甲都能用</div></div></div>
+      <div class="ipRow"><div class="d">・<b>怎麼來</b>：已經 3★ 的零件，再抽到同名的會自動變成萬用碎片。<br>・<b>怎麼用</b>：長按還沒滿星的零件，素材不夠時按「用萬用碎片補足並升星」。<br>・升階（換品階顏色）不吃碎片，要選 2 張同陣營／同類型的 3★ 當素材。</div></div><div class="ipClose">點其他地方關閉</div></div>`;
+    infoPop.classList.add('show'); SFX.init(); SFX.flip();
+  };
+  return t;
 }
 function paintProfileBtn() {
   const b = document.getElementById('profileBtn'), c = collection[0] ? collection[0].c : 'berserker';
@@ -1747,9 +1807,7 @@ function rollTop(base, opt) {
     INV.pity.r++;
     if (INV.pity.r >= 10 && b.r.c < 1) setR(1);
     if (b.r.c >= 1) INV.pity.r = 0;
-    INV.pity.cat = (INV.pity.cat || 0) + 1;
     if (!base || !b.c) b.c = b.r.c >= 1 ? purplePick() : whitePick();
-    if (Math.random() < 0.02 || INV.pity.cat >= 40) { b.c = 'mechcat'; INV.pity.cat = 0; }
   } else if (!base || !b.c) b.c = b.r.c >= 1 ? purplePick() : whitePick();
   return b;
 }
@@ -1769,7 +1827,7 @@ function startGacha(n, title, done, opt) {
   for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
   if (collection.length < 3) { collection = builds.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a })); fixTeam(); }
   save();
-  PK.best = builds.some(b => CLASSES[b.c].hidden) ? 4 : Math.max(...builds.map(b => b.r.c));
+  PK.best = Math.max(...builds.map(b => b.r.c));
   Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, banner: null, title, done, fx: [], emblem: randomTop(),
     cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })) });
   gachaBar.style.display = 'none';
@@ -1887,16 +1945,20 @@ function drawCard(g, card, sl, time, appear) {
   if (!face) {
     const bg = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); bg.addColorStop(0, '#0b0d10'); bg.addColorStop(1, '#0e3640');
     g.fillStyle = bg; g.fill();
-    const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0, hid = CLASSES[card.b.c].hidden;
-    if (hid) { g.save(); g.shadowColor = `hsl(${(time * 220) % 360},100%,60%)`; g.shadowBlur = 30; g.strokeStyle = '#ffd75a'; g.lineWidth = 8; g.stroke(); g.restore(); } else
-    if (hr >= 2) { g.save(); g.shadowColor = RARITY[hr].col; g.shadowBlur = 18 + 12 * Math.sin(time * (hr === 3 ? 9 : 6)); g.strokeStyle = RARITY[hr].col; g.lineWidth = 6; g.stroke(); g.restore(); }
+    const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0;
+    if (hr >= 1) { g.save(); g.shadowColor = RARITY[hr].col; g.shadowBlur = 18 + 12 * Math.sin(time * (hr === 3 ? 9 : 6)); g.strokeStyle = RARITY[hr].col; g.lineWidth = 6; g.stroke(); g.restore(); }
     else { g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.stroke(); }
     g.save(); g.clip();
     for (let i = -8; i < 10; i++) { g.strokeStyle = 'rgba(0,240,255,.09)'; g.lineWidth = 6; g.beginPath(); g.moveTo(-w / 2 + i * 22, -h / 2); g.lineTo(-w / 2 + i * 22 + 160, h / 2); g.stroke(); }
     g.restore();
     const pulse = 0.75 + 0.25 * Math.sin(time * 5);
-    g.strokeStyle = `rgba(252,238,10,${pulse})`; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, w * 0.28, 0, TAU); g.stroke();
-    g.fillStyle = '#fcee0a'; g.font = `900 ${Math.round(w * 0.32)}px Rajdhani, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('?', 0, 2);
+    g.strokeStyle = hr >= 1 ? RARITY[hr].col : `rgba(252,238,10,${pulse})`; g.globalAlpha = hr >= 1 ? pulse : 1; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, w * 0.28, 0, TAU); g.stroke(); g.globalAlpha = 1;
+    g.fillStyle = hr >= 1 ? RARITY[hr].col : '#fcee0a'; g.font = `900 ${Math.round(w * 0.32)}px Rajdhani, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('?', 0, 2);
+    if (hr >= 1) { // rarity ribbon on the back so you can see the purple before flipping
+      const rb = h * 0.13, ry = h * 0.3; g.fillStyle = RARITY[hr].col; g.fillRect(-w / 2 + 6, ry - rb / 2, w - 12, rb);
+      g.font = `900 ${Math.round(w * 0.1)}px Rajdhani, sans-serif`; g.fillStyle = '#fff'; g.lineJoin = 'round'; g.lineWidth = 4; g.strokeStyle = '#05060a';
+      const tx = `${RARITY[hr].n}卡！`; g.strokeText(tx, 0, ry + 1); g.fillText(tx, 0, ry + 1);
+    }
   } else {
     const b = card.b, c = CLASSES[b.c];
     const fg = g.createLinearGradient(0, -h / 2, 0, h / 2); fg.addColorStop(0, shade(c.color, -0.35)); fg.addColorStop(1, '#0d0c1e');
@@ -2142,7 +2204,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（十連必出 1 紫）。<b>升階</b>：3 星後吃掉 2 張<b>同陣營、同品階的 3 星角色卡</b>，升到下一品階 1 星（武器、鎧甲吃同類型）；起始 6 角色最適合當升階材料，最高只到紅<br>・<b>陣營羈絆</b>：隊伍裡同陣營 2 隻以上有加成（鐵心幫耐打、元森域速度、虛駭組 EX），異哲團可算任一陣營；3 隻都不同陣營全能力 +4%<br>・<b>ASSIST 支援</b>：2 號上場時 1 號來支援、3 號上場時 2 號來支援；開打 5 秒後可以叫隊友衝進來撞一下（每回合一次），同陣營（含異哲團）會變成更強的<b>連攜</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬用碎片<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（十連必出 1 紫）。<b>升階</b>：3 星後按「升階」，自己挑 2 張<b>同陣營、同品階的 3 星角色卡</b>當素材，升到下一品階 1 星（武器、鎧甲吃同類型）；起始 6 角色最適合當升階材料，最高只到紅<br>・<b>陣營羈絆</b>：隊伍裡同陣營 2 隻以上有加成（鐵心幫耐打、元森域速度、虛駭組 EX），異哲團可算任一陣營；3 隻都不同陣營全能力 +4%<br>・<b>ASSIST 支援</b>：2 號上場時 1 號來支援、3 號上場時 2 號來支援；開打 5 秒後可以叫隊友衝進來撞一下（每回合一次），同陣營（含異哲團）會變成更強的<b>連攜</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2181,7 +2243,7 @@ document.getElementById('tutSkip').onclick = () => { SFX.init(); endTutorial(); 
 // daily quests reset at local midnight, weekly ones on Monday. Progress lives in INV.quest.
 const DQ = [['m', '對戰 3 場', 3, 300], ['ex', '使用 EX 5 次', 5, 200], ['draw', '抽卡 1 次', 1, 100], ['merge', '合成 1 次', 1, 200], ['vault', '領取數位保險箱 1 次', 1, 100]], DQ_BONUS = 500;
 const WQ = [['days', '完成全部每日任務 5 天', 5, 'purple'], ['win', '贏得 10 場對戰', 10, 1000], ['dead', '把對手撞進 DEAD 出口 5 次', 5, 800], ['draw', '開補給箱 20 次', 20, 800], ['merge', '合成升星 5 次', 5, 600]];
-const VAULT_RATE = 1, VAULT_CAP = 3600, VAULT_CD = 30 * 60; // coins per second, max stored, seconds between claims
+const VAULT_RATE = 0.05, VAULT_CAP = 1440, VAULT_CD = 30 * 60; // coins per second, max stored, seconds between claims
 const weekKey = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.toDateString(); };
 function questState() {
   const q = INV.quest = INV.quest || {}, today = new Date().toDateString(), wk = weekKey();
@@ -2207,7 +2269,7 @@ let qTab = 'd', vaultTimer = null;
 function renderVault() {
   { const ca = document.getElementById('claimAll'); if (ca) ca.disabled = !canClaimAny(); }
   const { stored, wait } = vaultState(), ok = wait === 0 && stored > 0;
-  document.getElementById('vaultBox').innerHTML = `<div class="vt">🔐 數位保險箱</div><div class="vs">每秒自動存入 ${ORE}1，最多存 ${VAULT_CAP}（約 1 小時）。領取後 30 分鐘才能再領。</div>
+  document.getElementById('vaultBox').innerHTML = `<div class="vt">🔐 數位保險箱</div><div class="vs">每 20 秒自動存入 ${ORE}1（每小時 180），最多存 ${VAULT_CAP}（約 8 小時）。領取後 30 分鐘才能再領。</div>
     <div class="vrow"><div class="vbar"><i style="width:${stored / VAULT_CAP * 100}%"></i></div><div class="vn">${ORE}${stored}</div><button class="qBtn" id="vaultBtn" ${ok ? '' : 'disabled'}>${ok ? '領取' : wait ? mmss(wait) + ' 後可領' : '存款中'}</button></div>`;
   document.getElementById('vaultBtn').onclick = () => { const st = vaultState(); if (st.wait || !st.stored) return;
     INV.coins += st.stored; st.v.from = st.v.last = Date.now(); qAdd('vault'); save(); SFX.ex && SFX.ex(); renderQuest(); };
@@ -2259,7 +2321,7 @@ const CX_LORE = {
   mage: ['虛駭組', '用程式碼施法的駭客法師，EX 累積最快，擅長把對手彈開控場。'],
   hunter: ['元森域', '只用弓和陷阱等實體獵具，會追蹤對手。適合 2 號主力追擊。'],
   undead: ['鐵心幫', '死後被改造重啟的機體，第一次爆甲會復活。適合壓軸保分。'],
-  mechcat: ['元森域', '駕駛圓滾滾機甲的貓，半夜最有精神。隱藏角色，付費抽卡才會出現。'],
+  mechcat: ['元森域', '駕駛圓滾滾機甲的貓，半夜最有精神。元森域裡最稀有的角色，速度快又耐打。'],
 };
 let cxTab = 'c';
 function openCodex(back) {
@@ -2303,7 +2365,7 @@ function renderCodex() {
   fl.innerHTML = ['all', ...groups].map(g => `<button data-f="${g}" class="${cxFilter === g ? 'on' : ''}">${g === 'all' ? '全部' : g}</button>`).join('');
   fl.querySelectorAll('button').forEach(b => b.onclick = () => { cxFilter = b.dataset.f; renderCodex(); SFX.flip(); });
   if (cxFilter !== 'all' && !groups.includes(cxFilter)) cxFilter = 'all';
-  const tile = (e, i) => `<div class="cxT${e.has ? '' : ' no'}" data-i="${i}" style="border-color:${e.col}">${e.src ? `<img src="${e.src}" draggable="false">` : `<div class="cxI">${e.icon}</div>`}${e.soon ? '<b class="soon">SOON</b>' : ''}<div class="n">${e.has ? e.name : '？？？'}</div></div>`;
+  const tile = (e, i) => `<div class="cxT${e.has ? '' : ' no'}" data-i="${i}" style="border-color:${e.col}">${e.src ? `<img src="${e.src}" draggable="false">` : `<div class="cxI">${e.icon}</div>`}${e.soon ? '<b class="soon">SOON</b>' : ''}<div class="n nm2">${e.has ? nameLines(e.name) : '<i>？？？</i>'}</div></div>`;
   list.innerHTML = groups.filter(g => cxFilter === 'all' || g === cxFilter).map(g => {
     const items = all.map((e, i) => [e, i]).filter(([e]) => e.tag === g);
     return `<div class="cxHd" style="border-color:${items[0] ? items[0][0].col : '#fff'};color:${items[0] ? items[0][0].col : '#fff'}">${k === 'c' ? facBadge(g) + ' ' : ''}${g}　${items.filter(([e]) => e.has).length}/${items.length}</div><div class="cxGrid">${items.map(([e, i]) => tile(e, i)).join('')}</div>`;
@@ -2352,10 +2414,10 @@ document.getElementById('startBtn').onclick = () => {
 document.getElementById('backBtn').onclick = () => { show('team'); renderTeam(); };
 // CPU strength: how its gear compares to yours, how sharp it plays, and how many coins a match pays
 const DIFF = {
-  easy:   { name: '簡單', mul: 0.6, add: -0.1, skill: 0.6,  coin: 0.6, gear: '白色等級', note: '電腦反應慢、裝備較弱' },
+  easy:   { name: '簡單', mul: 0.6, add: -0.1, skill: 0.6,  coin: 0.6, gear: '比你弱一截', note: '電腦反應慢、裝備較弱' },
   normal: { name: '普通', mul: 0.95, add: 0,   skill: 0.82, coin: 1,   gear: '跟你差不多', note: '跟你的隊伍戰力相當' },
-  hard:   { name: '困難', mul: 1.1, add: 0.15, skill: 0.97, coin: 1.5, gear: '紅色等級', note: '電腦更積極、裝備更好' },
-  hell:   { name: '地獄', mul: 1.25, add: 0.35, skill: 1.12, coin: 2.2, gear: '黃色滿星等級', note: '電腦全力追殺、EX 充更快' },
+  hard:   { name: '困難', mul: 1.1, add: 0.15, skill: 0.97, coin: 1.5, gear: '比你強一些', note: '電腦更積極、裝備更好' },
+  hell:   { name: '地獄', mul: 1.25, add: 0.35, skill: 1.12, coin: 2.2, gear: '比你強很多', note: '電腦全力追殺、EX 充更快' },
 };
 const curDiff = () => DIFF[SETTINGS.diff] || DIFF.normal;
 function paintDiff() {
@@ -2751,6 +2813,7 @@ function doAssist(side) {
   const foe = G.tops[1 - side]; if (!foe || foe.dead || foe.falling) return;
   const fromL = Math.random() < 0.5, sx = fromL ? CX - AX - 40 : CX + AX + 40, sy = foe.y - 60;
   G.assistFx = { x0: sx, y0: sy, x1: foe.x, y1: foe.y, t: 0.5, c: A.prev.c, col: facCol(A.fac) };
+  G.acut = { cls: A.prev.c, side, link: A.link, col: facCol(A.fac), t: 0.95, max: 0.95, hold: 0.32 };
   const P = A.link ? 1.4 : 1; if (A.link) addText(foe.x, foe.y - 76, '連攜！', '#ff7ad9', 20);
   const ng = nearestGate(foe.x, foe.y), gd = norm(ng.x - foe.x, ng.y - foe.y), hurt = d0 => { const d = d0 * P; foe.hp = Math.max(1, foe.hp - d); foe.flash = 0.15; addText(foe.x, foe.y - 30, Math.round(d).toString(), '#ff7ad9', 20); };
   if (A.fac === '鐵心幫') { foe.vx += gd.x * 560 * P / Math.sqrt(foe.s.mass); foe.vy += gd.y * 560 * P / Math.sqrt(foe.s.mass); hurt(6); comicPop(foe.x, foe.y - 50, 'SLAM!!', 36, '#ff2a55', '#fcee0a', 0.8); }
@@ -2759,6 +2822,41 @@ function doAssist(side) {
   detach(foe, 0.8); sparks(foe.x, foe.y, 26, facCol(A.fac), 320); wave(foe.x, foe.y, '255,122,217', 130, 9, 0.4);
   addText(G.tops[side].x, G.tops[side].y - 64, `${CLASSES[A.prev.c].name} 支援！`, '#ff7ad9', 16);
   G.shake = Math.max(G.shake, 8); SFX.ex(); camPunch('hit', foe.x, foe.y); paintAssist();
+}
+function drawAssistCut(ac) {
+  const g = ctx;
+  const e = ac.max - ac.t, inK = easeOut(Math.min(1, e / 0.16)), outK = Math.min(1, ac.t / 0.2), k = Math.min(inK, outK), dir = ac.side === 0 ? 1 : -1;
+  const pw = 290, ph = 176, cx0 = CX + dir * -40, cy0 = CY - 175;
+  const ox = (1 - inK) * -dir * 340, oy = (1 - inK) * -200 - (1 - outK) * 160;
+  g.save(); g.translate(cx0 + ox, cy0 + oy); g.rotate(-0.09 * dir); g.globalAlpha = Math.max(0, k);
+  const panel = () => { g.beginPath(); g.moveTo(-pw / 2, -ph / 2 + 16); g.lineTo(pw / 2, -ph / 2); g.lineTo(pw / 2 - 12, ph / 2 - 14); g.lineTo(-pw / 2 + 10, ph / 2); g.closePath(); };
+  g.save(); g.translate(8, 9); panel(); g.fillStyle = '#05060a'; g.fill(); g.restore(); // comic drop shadow
+  panel(); const gr = g.createLinearGradient(-pw / 2, -ph / 2, pw / 2, ph / 2); gr.addColorStop(0, '#9fe8ff'); gr.addColorStop(1, '#ff8fdc'); g.fillStyle = gr; g.fill();
+  g.save(); panel(); g.clip();
+  g.fillStyle = 'rgba(5,6,10,.14)'; for (let y = -ph / 2; y < ph / 2; y += 9) for (let x = -pw / 2; x < pw / 2; x += 9) { g.beginPath(); g.arc(x + ((y / 9) & 1 ? 4.5 : 0), y, 1.6, 0, TAU); g.fill(); }
+  const px = -dir * 72, py = 2;
+  g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 3; // burst lines behind the portrait
+  for (let i = 0; i < 18; i++) { const a = i / 18 * TAU + G.time * 1.5, r1 = 70, r2 = 170; g.beginPath(); g.moveTo(px + Math.cos(a) * r1, py + Math.sin(a) * r1); g.lineTo(px + Math.cos(a) * r2, py + Math.sin(a) * r2); g.stroke(); }
+  if (e < 0.1) { g.fillStyle = `rgba(255,255,255,${1 - e / 0.1})`; g.fillRect(-pw, -ph, pw * 2, ph * 2); }
+  g.restore();
+  panel(); g.lineJoin = 'round'; g.lineWidth = 6; g.strokeStyle = '#05060a'; g.stroke(); g.lineWidth = 2; g.strokeStyle = '#fff'; g.stroke();
+  // round portrait, same shape as the ASSIST button
+  const pr = 60, z = 1 + 0.25 * Math.pow(Math.max(0, 1 - e / 0.3), 2), sh = 4 * Math.max(0, 1 - e / 0.25), qx = px + rnd(-sh, sh), qy = py + rnd(-sh, sh);
+  g.save(); g.beginPath(); g.arc(qx, qy, pr, 0, TAU); g.fillStyle = '#05060a'; g.fill(); g.clip(); drawPortrait(g, ac.cls, qx - pr * z, qy - pr * z * 0.9, pr * 2 * z, pr * 2 * z); g.restore();
+  g.lineWidth = 8; g.strokeStyle = '#05060a'; g.beginPath(); g.arc(qx, qy, pr + 2, 0, TAU); g.stroke();
+  g.lineWidth = 5; g.strokeStyle = ac.col; g.beginPath(); g.arc(qx, qy, pr + 2, 0, TAU); g.stroke();
+  g.lineWidth = 4; g.strokeStyle = '#ff7ad9'; g.setLineDash([14, 10]); g.lineDashOffset = -G.time * 60; g.beginPath(); g.arc(qx, qy, pr + 10, 0, TAU); g.stroke(); g.setLineDash([]);
+  // words
+  const tx = px + dir * (pr + 14), mw = pw / 2 - Math.abs(px) - pr - 10 + pw / 2 - 8;
+  g.textAlign = dir > 0 ? 'left' : 'right'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  const big = ac.link ? 'LINK!!' : 'ASSIST!';
+  g.font = 'italic 900 44px Rajdhani, sans-serif'; g.lineWidth = 9; g.strokeStyle = '#05060a';
+  g.strokeText(big, tx + 4, -18 + 4, mw); g.fillStyle = '#05060a'; g.fillText(big, tx + 4, -18 + 4, mw); g.strokeText(big, tx, -18, mw); g.fillStyle = '#fff'; g.fillText(big, tx, -18, mw);
+  g.font = '900 17px Rajdhani, sans-serif'; g.lineWidth = 5; g.strokeStyle = '#fff';
+  const nm = CLASSES[ac.cls].name; g.strokeText(nm, tx, 22, mw); g.fillStyle = '#05060a'; g.fillText(nm, tx, 22, mw);
+  g.font = '900 14px Rajdhani, sans-serif'; const sub = ac.link ? '連攜進場！傷害 ×1.4' : '前棒支援進場！';
+  g.strokeText(sub, tx, 46, mw); g.fillStyle = ac.link ? '#c2186b' : '#05060a'; g.fillText(sub, tx, 46, mw);
+  g.restore();
 }
 function paintAssist() {
   const b = document.getElementById('assistBtn'); if (!G || !G.tops) { b.style.display = 'none'; return; }
@@ -2772,7 +2870,7 @@ function paintAssist() {
 }
 document.getElementById('assistBtn').addEventListener('pointerdown', e => { e.stopPropagation(); SFX.init(); doAssist(0); });
 function startRound() {
-  if (G) { G.cam = null; G.exFreeze = null; G.slowT = 0; G.assist = { t: 0, used: [false, false], ai: rnd(0, 4) }; G.assistFx = null; }
+  if (G) { G.cam = null; G.exFreeze = null; G.slowT = 0; G.assist = { t: 0, used: [false, false], ai: rnd(0, 4) }; G.assistFx = null; G.acut = null; }
   const idx = G.sudden ? 0 : G.round - 1;
   G.pb = G.lineup[idx]; G.ab = G.aiLineup[idx];
   G.tops = [makeTop(G.pb, 0), makeTop(G.ab, 1)];
@@ -3556,6 +3654,8 @@ function update(dt) {
   if (G.flash > 0) G.flash -= dt;
   for (const w of G.waves) w.t -= dt; G.waves = G.waves.filter(w => w.t > 0);
   if (G.hitStop > 0) { G.hitStop -= dt; for (const s of G.texts) s.age += dt; return; } // freeze-frame on big hits
+  if (G.acut && G.acut.hold > 0) { G.acut.hold -= dt; G.acut.t -= dt; for (const s2 of G.texts) s2.age += dt; return; } // ASSIST freeze
+  if (G.acut) { G.acut.t -= dt; if (G.acut.t <= 0) G.acut = null; }
   if (G.exFreeze && G.exFreeze.t > 0) { G.exFreeze.t -= dt; if (G.exFreeze.t <= 0) G.exFreeze = null; if (G.cutin) G.cutin.t -= dt; for (const s2 of G.texts) s2.age += dt; return; } // EX freeze
   if (G.phase === 'battle' && SETTINGS.autoEx && canEx(G.tops[0])) useEx(G.tops[0]);
   if (G.phase === 'battle' && SETTINGS.autoEx && G.assist && !G.assist.used[0] && G.assist.t >= ASSIST_T) doAssist(0); // auto EX also calls in the ASSIST
@@ -4209,6 +4309,7 @@ function render() {
     g.fillStyle = '#fcee0a'; g.fillText(ci.c.exName, tx, y0 + 92);
     g.restore();
   }
+  if (G.acut) drawAssistCut(G.acut);
   if (G.banner) {
     const b = G.banner, k = clamp(Math.min(b.t, b.max - b.t) * 4, 0, 1);
     g.globalAlpha = k;
@@ -4240,7 +4341,7 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openTeam();
 })();
 </script>
