@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.11.0</title>
+<title>SPIN! SPIN! v0.11.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -307,7 +307,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .cxRow .t small{font-weight:700;font-size:.7em;margin-left:.5em;padding:.05em .4em;background:#05060a}
 .cxRow .d{font-size:.78em;line-height:1.55;color:#cfd8e6}
 .cxRow .d b{color:#fcee0a}
-.tutRules{text-align:left;font-size:.82em;line-height:1.55}
+.tutRules{max-height:40vh;overflow-y:auto;touch-action:pan-y;text-align:left;font-size:.82em;line-height:1.55}
 .chip .st{font-style:normal;background:#05060a;border-radius:.7em;padding:0 .35em;margin-left:.3em;text-shadow:none}
 .mergeAll{font-family:inherit;font-weight:900;font-size:.7em;padding:.15em .6em;border:2px solid #05060a;background:#3a4250;color:#9fb0c0;cursor:pointer;letter-spacing:0}
 .mergeAll.on{background:#ff2a55;color:#fff;box-shadow:0 0 .6em rgba(255,42,85,.7)}
@@ -626,10 +626,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.9.0 auto tilt tied to zoom: the closer the camera, the lower the angle (0.95 full arena -> 0.85 follow -> 0.70 close-up), eased; pinching zoom tilts too; two fingers take over the camera (auto follow and punches pause while pinching); player tilt acts as an offset; settings toggle 視角自動傾斜 (on by default) next to 鏡頭特效 / 動態運鏡
  v0.10.0 RING OUT +2: a big hit that slams a top into the wall fast enough can launch it over the rim into the crowd (chance grows with speed); tops coasting after a round now stay inside the walls; tops are drawn in front of the near wall so they no longer look sunk into it
  v0.11.0 SURVIVE +1: the top that keeps spinning longer scores 1 (both stopping on the same tick is still a draw); scoring tutorial lists SURVIVE and RING OUT
+ v0.11.1 tutorial text brought up to date: coins 60/15/150, ASSIST after 3 s, 10連抽+1, camera gestures, RING OUT on the stage page and strategy page, SURVIVE / RING OUT labels in the scoring animation
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.11.0';
+const GAME_VERSION = 'v0.11.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2190,7 +2191,7 @@ const TUT = [
       tLabel(g, `${Math.round(e * 100)}%`, bx, by - 4, '#fcee0a', 18); g.fillStyle = '#fcee0a'; g.font = '700 10px Rajdhani, sans-serif'; g.fillText('EX', bx, by + 15);
       tFinger(g, bx + 8, by + 6, (t * 6) % 1 < 0.5);
   } },
-  { title: '場地說明 STAGE', text: '<b style="color:#fcee0a">WORMHOLE</b>：上方兩段加速軌道，衝上去高速前進並累積 EX，出口直衝中心。<b style="color:#fcee0a">CORE</b>：中央圈，待在裡面 EX 累積更快、撞擊 +20%。<b style="color:#ff4fd8">BLOOD +2</b>：左右兩個窄出口。<b style="color:#ff2a55">DEAD +3</b>：正下方的寬出口。出口前有台階，被撞飛才會掉進去！', draw(g, t) {
+  { title: '場地說明 STAGE', text: '<b style="color:#fcee0a">WORMHOLE</b>：上方兩段加速軌道，衝上去高速前進並累積 EX，出口直衝中心。<b style="color:#fcee0a">CORE</b>：中央圈，待在裡面 EX 累積更快、撞擊 +20%。<b style="color:#ff4fd8">BLOOD +2</b>：左右兩個窄出口。<b style="color:#ff2a55">DEAD +3</b>：正下方的寬出口。出口前有台階，被撞飛才會掉進去！<b style="color:#7fdfff">牆壁</b>：剛被重擊的陀螺高速撞牆，有機會飛過牆頂 <b style="color:#7fdfff">RING OUT +2</b>！', draw(g, t) {
       tutArenaBg(g); drawArena(g, t);
       const Z = [['WORMHOLE', CX, CY - BY + 40, 120, '#fcee0a'], ['CORE', CX, CY, AX * CORE_Q + 10, '#fcee0a'], ['BLOOD +2', GATES[1].x, GATES[1].y - 10, 46, '#ff4fd8'], ['DEAD +3', GATES[0].x, GATES[0].y - 16, 62, '#ff2a55']];
       const i = Math.floor(t / 1.6) % Z.length, [txt, x, y, r, col] = Z[i], k = (t % 1.6) / 1.6;
@@ -2220,7 +2221,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝；出戰中的會變暗排最前面<br>・<b>同種裝備</b>：同一種武器或鎧甲在隊伍裡只能用一次，稀有度不同才能並用<br>・<b>升星</b>：抽到同名零件累積素材，夠了按「合成」或「一鍵合成」升星（最多 3 星），滿星後變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金。補給箱只開出白或紫（十連必出 1 紫）。<b>升階</b>：3 星後按「升階」，自己挑 2 張<b>同陣營、同品階的 3 星角色卡</b>當素材，升到下一品階 1 星（武器、鎧甲吃同類型）；起始 6 角色最適合當升階材料，最高只到紅<br>・<b>陣營羈絆</b>：隊伍裡同陣營 2 隻以上有加成（鐵心幫耐打、元森域速度、虛駭組 EX），異哲團可算任一陣營；3 隻都不同陣營全能力 +4%<br>・<b>ASSIST 支援</b>：2 號上場時 1 號來支援、3 號上場時 2 號來支援；開打 5 秒後可以叫隊友衝進來撞一下（每回合一次），同陣營（含異哲團）會變成更強的<b>連攜</b><br>・<b>金幣</b>：打贏 +100（每日首勝再 +50）、打輸 +20，對手越強倍率越高；單抽 100、十連 1000<br>・<b>自動按鈕</b>：AUTO 自動發射、EX 自動放技能、MOVE 自動移動（攻擊／防禦／佔點）<br>・<b>設定</b>：動態運鏡、頭上血條開關，還有<b>圖鑑</b>可以查所有零件</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2235,12 +2236,14 @@ const TUT = [
       tTop(g, TA, Ax, ay, t * 18);
       if (ph > 1.3) { tWave(g, GATE.x, GATE.y, (ph - 1.3) / 0.6, '255,90,40'); tLabel(g, 'DEAD +3', CX, CY + 40, '#ff6a4a', 34); }
       if (ph > 2.1) tLabel(g, '爆甲 +1', CX, CY - 40, '#fcee0a', 30);
+      if (ph > 2.5) tLabel(g, 'SURVIVE +1', CX, CY - 88, '#ffffff', 24);
+      if (ph > 2.9) tLabel(g, 'RING OUT +2', CX, CY - 130, '#7fdfff', 24);
   } },
 ];
 function showTutorial(done) { tutIdx = 0; tutT = 0; tutDone = done; renderTutStep(); show('tutorial'); }
 // strategy pages reuse the drag / lineup animations
 TUT.push(
-  { title: '攻略①・拖曳追擊', text: '<div class="tutRules">・<b>別站著不動</b>：開場後馬上<b>按住拖曳</b>追著對手跑，速度就是傷害<br>・<b>從側面撞</b>：繞到對手側後方，朝<b>出口方向</b>撞，最容易撞出 BLOOD／DEAD<br>・<b>對手靠近出口</b>：從反方向全速衝過去補一下<br>・<b>被逼到牆邊</b>：往中央 CORE 拖回來，CORE 裡撞擊 +20%、EX 累積更快<br>・<b>EX 留著用</b>：等對手靠近出口或剛撞完牆再放<br>・<b>另一隻手</b>點畫面充能，邊追邊集 EX</div>', draw: TUT[2].draw },
+  { title: '攻略①・拖曳追擊', text: '<div class="tutRules">・<b>別站著不動</b>：開場後馬上<b>按住拖曳</b>追著對手跑，速度就是傷害<br>・<b>從側面撞</b>：繞到對手側後方，朝<b>出口方向</b>撞，最容易撞出 BLOOD／DEAD<br>・<b>對手靠近出口</b>：從反方向全速衝過去補一下<br>・<b>撞牆大招</b>：對手貼牆時全速重擊，有機會直接撞飛過牆 <b>RING OUT +2</b><br>・<b>耐力也能贏</b>：對手先停轉，你就拿 <b>SURVIVE +1</b><br>・<b>被逼到牆邊</b>：往中央 CORE 拖回來，CORE 裡撞擊 +20%、EX 累積更快<br>・<b>EX 留著用</b>：等對手靠近出口或剛撞完牆再放<br>・<b>另一隻手</b>點畫面充能，邊追邊集 EX</div>', draw: TUT[2].draw },
   { title: '攻略②・角色配置', text: '<div class="tutRules">・<b>1 號先鋒</b>：狂戰士或刺客，配<b>近戰武器</b>，開場搶攻拿分<br>・<b>2 號主力</b>：獵人或術士，配<b>遠距武器＋衣服</b>，速度快、追得上人<br>・<b>3 號壓軸</b>：守護者或不死者，配<b>中距武器＋外甲</b>，耐打又能把人炸出場<br>・<b>同陣營排一起</b>：2 隻以上有羈絆，前一棒還能 ASSIST 支援下一棒<br>・<b>看對手換裝</b>：對手外甲多帶中距、衣服多帶遠距、護具多帶近戰<br>・<b>集中培養</b>：先把一顆主力升到 3 星，比平均培養更容易贏<br>・<b>打不贏？</b>先降低對手強度，或開 MOVE 攻擊模式看電腦怎麼走位</div>', draw: TUT[5].draw },
 );
 function renderTutStep() {
