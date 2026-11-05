@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.7.3</title>
+<title>SPIN! SPIN! v0.8.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -160,6 +160,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #settings.show{display:flex}
 .spanel{width:78%;background:#0b1114;border:1px solid #00f0ff;box-shadow:0 0 1.5em rgba(0,240,255,.25);padding:1em 1.2em 1.3em;clip-path:polygon(0 0,100% 0,100% 92%,94% 100%,0 100%);display:flex;flex-direction:column;align-items:stretch}
 .spanel h2{margin:.1em 0 .6em;color:#fcee0a;font-family:Rajdhani,"Noto Sans TC",sans-serif;letter-spacing:.15em;text-shadow:2px 0 #00f0ff,-2px 0 #ff2a55}
+.vRange{width:42%;accent-color:#ff7ad9}.optS{display:block;font-size:.7em;opacity:.65;font-weight:400}
 .opt{display:flex;align-items:center;justify-content:space-between;padding:.6em 0;border-bottom:1px solid rgba(0,240,255,.15);font-size:.95em}
 .tog{font-family:inherit;min-width:4.2em;padding:.35em .6em;border:none;font-weight:700;background:#333;color:#999;clip-path:polygon(0 0,100% 0,100% 70%,88% 100%,0 100%)}
 .tog.on{background:#fcee0a;color:#000}
@@ -458,6 +459,9 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
       <div class="opt"><span>音效</span><button class="tog" data-k="sfx"></button></div>
       <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
       <div class="opt"><span>動態運鏡</span><button class="tog" data-k="camFollow"></button></div>
+      <div class="opt"><span>視角傾斜<small class="optS">（對戰中雙指上下滑也能調）</small></span><input type="range" id="viewKIn" min="0" max="100" class="vRange"></div>
+      <div class="opt"><span>場地縮放<small class="optS">（雙指捏合／滾輪）</small></span><input type="range" id="viewZIn" min="0" max="100" class="vRange"></div>
+      <div class="opt"><span>視角</span><button class="sbtn" id="viewReset">重設視角</button></div>
       <div class="opt"><span>頭上血條</span><button class="tog" data-k="hpPct"></button></div>
       <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
       <div class="opt setBtns"><button class="sbtn" id="tutBtn">玩法教學</button><button class="sbtn" id="codexBtn">圖鑑</button><button class="sbtn warn" id="resetBtn">重置進度</button></div>
@@ -617,10 +621,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.7.1 ten-pull labelled 10連抽+1 with purple pity everywhere; result screen gets a 開始下一局 button (no wait) with a separate 自動 toggle for the countdown
  v0.7.2 萬用碎片 renamed 萬能卡 with a card icon (fills star-up material only; rank-up still needs same-faction 3-star cards)
  v0.7.3 browser tab title follows GAME_VERSION automatically (it was stuck at v0.68)
+ v0.8.0 player camera: pinch to zoom, two-finger slide up/down to tilt (0.65 flat-ish side view .. 1.0 top-down), mouse wheel / shift+wheel on desktop; saved per player, sliders and reset in settings; default tilt 0.85 (was 0.9); a quick second-finger tap still charges EX
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.7.3';
+const GAME_VERSION = 'v0.8.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -667,7 +672,8 @@ const AX = 228, BY = 228, R = AX; // round arena (AX = BY)
 const GW = 60; // hell gate half-width (px) at the bottom of the ellipse
 // 2.5D view: the floor is squashed vertically by VIEW_K (≈ looking down at 45°), walls are WALL_H screen px tall,
 // tops float TOP_LIFT px above their shadow and show a TOP_SIDE px thick body
-const VIEW_K = 0.9, WALL_H = 24, TOP_LIFT = 7, TOP_SIDE = 7;
+let VIEW_K = 0.85; const VIEW_K_MIN = 0.65, VIEW_K_MAX = 1, VIEW_Z_MIN = 0.85, VIEW_Z_MAX = 1.4; // VIEW_K is player-adjustable (pinch / settings)
+const WALL_H = 24, TOP_LIFT = 7, TOP_SIDE = 7;
 // framing: the arena is drawn BASE_Z times bigger, centred on screen y VIEW_CY; the follow camera may push in up to FOLLOW_ZMAX
 const BASE_Z = 1.03, VIEW_CY = 488, FOLLOW_ZMAX = 1.32;
 // auto camera: push-in amounts and timing (seconds). Tune here.
@@ -960,11 +966,11 @@ function buildEnvCache() {
   g.globalAlpha = 0.18; g.fillStyle = dotPattern(g); g.fillRect(x0, y0, x1 - x0, y1 - y0); g.globalAlpha = 1;
   const vg = g.createRadialGradient(ax, ay, 300, ax, ay, Math.max(x1 - x0, y1 - y0) * 0.7);
   vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.7)'); g.fillStyle = vg; g.fillRect(x0, y0, x1 - x0, y1 - y0);
-  ENV.cache = c;
+  ENV.cache = c; ENV.k = VIEW_K; ENV.bt = performance.now();
 }
 function drawEnv(time) {
   const g = envCtx, { d, s, l, t, M } = ENV;
-  if (!ENV.cache) buildEnvCache();
+  if (!ENV.cache || (ENV.k !== VIEW_K && performance.now() - (ENV.bt || 0) > 140)) buildEnvCache();
   const cam = G ? camNow() : { x: CX, y: CY, z: BASE_Z };
   const zz = 1 + (cam.z / BASE_Z - 1) * ENV_PAR;
   const Ax = l + CX * s, Ay = t + VIEW_CY * s;
@@ -2743,7 +2749,8 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal' }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1 }, loadJSON('topSettings', {}));
+VIEW_K = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
 function applySettings() {
@@ -2987,7 +2994,8 @@ function camFollowStep(dt) {
   const k = 1 - Math.exp(-dt * 2.6);
   f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k;
 }
-function camNow() {
+function camNow() { const c = camGame(), uz = clamp(+SETTINGS.viewZ || 1, VIEW_Z_MIN, VIEW_Z_MAX); return uz === 1 ? c : { x: c.x, y: c.y, z: c.z * uz }; }
+function camGame() {
   const base = G && G.fcam && SETTINGS.camFollow ? G.fcam : { x: CX, y: CY, z: BASE_Z };
   const c = G && G.cam;
   if (!c || c.t >= c.end) return base;
@@ -3039,11 +3047,36 @@ function toLogical(e) {
 }
 // screen point -> point on the tilted floor
 const toWorld = p => { const c = camNow(); return { x: c.x + (p.x - CX) / c.z, y: c.y + (p.y - VIEW_CY) / (c.z * VIEW_K) }; };
+// ---- player camera: two fingers pinch = zoom, slide up/down together = tilt; a quick second-finger tap still charges EX ----
+const ptrs = new Map(); let two = null, viewHintT = 0;
+function setView(k, z, save) {
+  VIEW_K = clamp(k, VIEW_K_MIN, VIEW_K_MAX); SETTINGS.viewK = Math.round(VIEW_K * 100) / 100;
+  SETTINGS.viewZ = Math.round(clamp(z, VIEW_Z_MIN, VIEW_Z_MAX) * 100) / 100; viewHintT = performance.now() + 1300;
+  if (save) saveJSON('topSettings', SETTINGS); paintViewOpts();
+}
+function paintViewOpts() {
+  const a = document.getElementById('viewKIn'), b = document.getElementById('viewZIn'); if (!a) return;
+  a.value = Math.round((1 - VIEW_K) / (1 - VIEW_K_MIN) * 100); b.value = Math.round((SETTINGS.viewZ - VIEW_Z_MIN) / (VIEW_Z_MAX - VIEW_Z_MIN) * 100);
+}
+function twoPinch() {
+  const [a, b] = [...ptrs.values()]; if (!a || !b) return;
+  const d = Math.max(20, len(a.x - b.x, a.y - b.y)), my = (a.y + b.y) / 2;
+  if (two.mode === 'pending' && (Math.abs(d - two.d0) > 18 || Math.abs(my - two.my0) > 14)) { two.mode = 'pinch'; if (G) { G.joy = null; G.drag = null; } }
+  if (two.mode === 'pinch') setView(two.k0 + (my - two.my0) * 0.0022, two.z0 * d / two.d0, false);
+}
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (e.shiftKey) setView(VIEW_K + Math.sign(e.deltaY || e.deltaX) * 0.02, SETTINGS.viewZ, true);
+  else setView(VIEW_K, SETTINGS.viewZ * (e.deltaY > 0 ? 0.96 : 1.04), true);
+}, { passive: false });
 cv.addEventListener('pointerdown', e => {
   SFX.init();
   if (!G) return;
   const p = toLogical(e);
-  cv.setPointerCapture(e.pointerId);
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  ptrs.set(e.pointerId, p);
+  if (ptrs.size === 2 && !two) { const [a, b] = [...ptrs.values()]; two = { mode: 'pending', t0: performance.now(), d0: Math.max(20, len(a.x - b.x, a.y - b.y)), my0: (a.y + b.y) / 2, k0: VIEW_K, z0: SETTINGS.viewZ || 1, ids: [...ptrs.keys()], at: p }; return; }
+  if (ptrs.size > 2) return;
   if (G.phase === 'launch' && G.banner && G.banner.t > 0.4 && /^(ROUND|SUDDEN)/.test(G.banner.text)) G.banner.t = 0.4;
   if (G.phase === 'launch') {
     // press = drop point (top jumps there), pull back = aim, release = launch (all measured on the tilted floor)
@@ -3062,6 +3095,8 @@ cv.addEventListener('pointerdown', e => {
 cv.addEventListener('pointermove', e => {
   if (!G) return;
   const p = toLogical(e);
+  if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, p);
+  if (two && two.ids.includes(e.pointerId)) { twoPinch(); if (two.mode === 'pinch') return; }
   if (G.drag && G.drag.id === e.pointerId) { const wp = toWorld(p); G.drag.x = wp.x; G.drag.y = wp.y; }
   if (G.joy && G.joy.id === e.pointerId) {
     G.joy.x = p.x; G.joy.y = p.y;
@@ -3071,7 +3106,18 @@ cv.addEventListener('pointermove', e => {
     if (l > 90) { G.joy.sx = G.joy.x - dx / l * 90; G.joy.sy = G.joy.y - dy / l * 90; }
   }
 });
+document.getElementById('viewKIn').oninput = e => setView(1 - e.target.value / 100 * (1 - VIEW_K_MIN), SETTINGS.viewZ, true);
+document.getElementById('viewZIn').oninput = e => setView(VIEW_K, VIEW_Z_MIN + e.target.value / 100 * (VIEW_Z_MAX - VIEW_Z_MIN), true);
+document.getElementById('viewReset').onclick = () => { setView(0.85, 1, true); SFX.attach && SFX.attach(); };
+paintViewOpts();
 function endPointer(e) {
+  ptrs.delete(e.pointerId);
+  if (two && two.ids.includes(e.pointerId)) {
+    const t2 = two; two = null;
+    if (t2.mode === 'pinch') { saveJSON('topSettings', SETTINGS); if (G) { G.joy = null; G.drag = null; } return; }
+    // a quick second finger that barely moved = the old "second finger taps EX"
+    if (G && G.phase === 'battle' && performance.now() - t2.t0 < 300 && e.pointerId === t2.ids[1]) { pressEx(true); tapFx(t2.at.x, t2.at.y); G.didTap = true; return; }
+  }
   if (!G) return;
   if (G.drag && G.drag.id === e.pointerId && G.phase === 'launch') {
     const dx = G.drag.sx - G.drag.x, dy = G.drag.sy - G.drag.y, l = len(dx, dy);
@@ -4315,6 +4361,9 @@ function render() {
     g.restore();
   }
   if (G.acut) drawAssistCut(G.acut);
+  if (performance.now() < viewHintT) { const a = Math.min(1, (viewHintT - performance.now()) / 300); g.save(); g.globalAlpha = a; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    const tx = `視角 傾斜 ${Math.round((1 - VIEW_K) / (1 - VIEW_K_MIN) * 100)}%｜縮放 ${Math.round(SETTINGS.viewZ * 100)}%`;
+    g.font = '900 17px Rajdhani, sans-serif'; g.fillStyle = 'rgba(5,6,10,.75)'; g.fillRect(CX - 150, 238, 300, 30); g.strokeStyle = '#7fdfff'; g.lineWidth = 2; g.strokeRect(CX - 150, 238, 300, 30); g.fillStyle = '#fff'; g.fillText(tx, CX, 254); g.restore(); }
   if (G.banner) {
     const b = G.banner, k = clamp(Math.min(b.t, b.max - b.t) * 4, 0, 1);
     g.globalAlpha = k;
