@@ -2607,7 +2607,7 @@ const rewardText = r => !r ? '—' : [r.coins ? `${ORE}${r.coins}` : '', r.box ?
 function grant(r, out, label) { if (!r) return; if (r.coins) INV.coins += r.coins; if (r.box) storyData().boxes.push(r.box); out.push(`${label}：${rewardText(r)}`); }
 function stageTags(st) {
   const S = Object.assign({}, STD_STAGE, st || {}), t = [];
-  t.push(S.wallH <= 16 ? '低牆・容易 RING OUT' : S.wallH >= 36 || S.ringOut === 0 ? '高牆・不會 RING OUT' : '標準牆');
+  t.push(S.ringOut === 0 ? (S.wallH >= 36 ? '高牆・不會 RING OUT' : '不會 RING OUT') : S.wallH <= 16 ? '低牆・容易 RING OUT' : S.wallH >= 36 ? '高牆・很難 RING OUT' : '標準牆');
   t.push(S.exits === 'std' ? '標準出口' : !S.exits.length ? '沒有出口' : S.exits.map(e => e.type || 'DEAD').join('＋') + ' 出口');
   if (!S.rails) t.push('沒有 WORMHOLE');
   const PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區' }, cnt = {};
