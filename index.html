@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.12.0</title>
+<title>SPIN! SPIN! v0.13.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -535,7 +535,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <div class="chHead" id="storyHead"></div>
     <button class="btn" id="storyBoxBtn" style="display:none"></button>
     <div class="lvList" id="storyList"></div>
-    <div class="sub" style="margin-top:.6em">使用目前排陣的 3 隻陀螺出戰，要換人先回排陣</div>
+    <div class="sub" style="margin-top:.6em">排陣的 3 隻陀螺＝3 條命，照 1→2→3 號順序上場</div>
     <button class="btn" id="storyBack">返回</button>
   </div>
   <div id="lvPop"><div class="in" id="lvPopIn"></div></div>
@@ -663,10 +663,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.11.1 tutorial text brought up to date: coins 60/15/150, ASSIST after 3 s, 10連抽+1, camera gestures, RING OUT on the stage page and strategy page, SURVIVE / RING OUT labels in the scoring animation
  v0.11.2 text audit: removed leftover hidden-card text (profile tag, gacha banner, part tag, GM pity button), gold rarity named 金 everywhere, 10連 naming unified, daily first-win shown as +150, difficulty line reads 電腦裝備, purple cards get their own reveal flash
  v0.12.0 chapter/level skeleton: stage settings (wall height, exits, WORMHOLE, CORE, floor colour), 4 props (bumper, boost pad, moving bar, spike zone), CHAPTERS data, story screen, unlocks, 3-star conditions, rewards, chapter 1 (4 levels)
+ v0.13.0 track levels: vertical pinball-style road (pull to launch, bounce off walls, drag to nudge), wall gaps and pits, 3 lineup tops = 3 lives with respawn where the last fell, road enemies (guard / rush), seamless BOSS arena at the top (3 phases, charge that stuns itself on walls), chapter 1 rebuilt as track level 1-1
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.12.0';
+const GAME_VERSION = 'v0.13.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -941,12 +942,14 @@ const PROP_DEF = {
   bumper: { r: 22 },                                                   // r: pillar radius
   boost: { l: 70, w: 44, power: 1 },                                   // l: length along the arrow, w: width, power: speed multiplier
   mover: { len: 110, rot: 3, move: 'spin', speed: 0.2, span: 50, period: 3 }, // spin: turns speed rev/s; slide: rocks span px every period s
-  spikes: { r: 50, on: 0, off: 0 },                                    // on/off seconds (0 = always out)
+  spikes: { r: 50, on: 0, off: 0 },
+  pit: { r: 44 },                                                      // 陷阱洞：掉進去扣一條命（只對玩家有效）                                    // on/off seconds (0 = always out)
 };
 function makeProp(p) {
   const P = Object.assign({}, PROP_DEF[p.type] || {}, p), a = clockAng(p.at == null ? 12 : p.at), d = p.d == null ? 0.5 : p.d;
   P.x = CX + Math.cos(a) * AX * d; P.y = CY + Math.sin(a) * BY * d; P.hitAt = -9;
-  if (P.type === 'boost') { const da = P.dir === 'cw' ? a + Math.PI / 2 : P.dir === 'ccw' ? a - Math.PI / 2 : P.dir == null ? a + Math.PI : clockAng(P.dir); P.dx = Math.cos(da); P.dy = Math.sin(da); }
+  if (p.px != null) { P.x = p.px; P.y = p.py; } // track props use track coordinates (startTrack converts them)
+  if (P.type === 'boost') { const da = P.dir === 'cw' ? a + Math.PI / 2 : P.dir === 'ccw' ? a - Math.PI / 2 : P.dir == null ? (p.px != null ? -Math.PI / 2 : a + Math.PI) : clockAng(P.dir); P.dx = Math.cos(da); P.dy = Math.sin(da); }
   return P;
 }
 function applyStage(def) {
@@ -2278,7 +2281,7 @@ const TUT = [
       tLabel(g, `${Math.round(e * 100)}%`, bx, by - 4, '#fcee0a', 18); g.fillStyle = '#fcee0a'; g.font = '700 10px Rajdhani, sans-serif'; g.fillText('EX', bx, by + 15);
       tFinger(g, bx + 8, by + 6, (t * 6) % 1 < 0.5);
   } },
-  { title: '場地說明 STAGE', text: '<b style="color:#fcee0a">WORMHOLE</b>：上方兩段加速軌道，衝上去高速前進並累積 EX，出口直衝中心。<b style="color:#fcee0a">CORE</b>：中央圈，待在裡面 EX 累積更快、撞擊 +20%。<b style="color:#ff4fd8">BLOOD +2</b>：左右兩個窄出口。<b style="color:#ff2a55">DEAD +3</b>：正下方的寬出口。出口前有台階，被撞飛才會掉進去！<b style="color:#7fdfff">牆壁</b>：剛被重擊的陀螺高速撞牆，有機會飛過牆頂 <b style="color:#7fdfff">RING OUT +2</b>！<br><span style="opacity:.8">章節關卡的場地會變：低牆、沒有出口、彈力柱、加速帶、移動擋板、地刺區</span>', draw(g, t) {
+  { title: '場地說明 STAGE', text: '<b style="color:#fcee0a">WORMHOLE</b>：上方兩段加速軌道，衝上去高速前進並累積 EX，出口直衝中心。<b style="color:#fcee0a">CORE</b>：中央圈，待在裡面 EX 累積更快、撞擊 +20%。<b style="color:#ff4fd8">BLOOD +2</b>：左右兩個窄出口。<b style="color:#ff2a55">DEAD +3</b>：正下方的寬出口。出口前有台階，被撞飛才會掉進去！<b style="color:#7fdfff">牆壁</b>：剛被重擊的陀螺高速撞牆，有機會飛過牆頂 <b style="color:#7fdfff">RING OUT +2</b>！<br><span style="opacity:.8">章節賽道上有彈力柱、加速帶、移動擋板、地刺區、陷阱洞，牆的缺口會出界；BOSS 衝撞撞牆會暈眩</span>', draw(g, t) {
       tutArenaBg(g); drawArena(g, t);
       const Z = [['WORMHOLE', CX, CY - BY + 40, 120, '#fcee0a'], ['CORE', CX, CY, AX * CORE_Q + 10, '#fcee0a'], ['BLOOD +2', GATES[1].x, GATES[1].y - 10, 46, '#ff4fd8'], ['DEAD +3', GATES[0].x, GATES[0].y - 16, 62, '#ff2a55']];
       const i = Math.floor(t / 1.6) % Z.length, [txt, x, y, r, col] = Z[i], k = (t % 1.6) / 1.6;
@@ -2308,7 +2311,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：排陣畫面按「章節」挑戰關卡，贏了就過關、解鎖下一關；每關有 3 顆星條件和獎勵</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射；衝進終點把 <b>BOSS 打到爆甲</b>才過關</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2556,38 +2559,41 @@ document.getElementById('fightBtn').onclick = fight;
 //   stars   三個星星條件，第一個固定 ['win']：['flawless'] 對手 0 分、['by', 'DEAD'] 用某種方式得分過（DEAD／BLOOD／RING OUT／BREAK／SURVIVE）、
 //           ['ex', 3] 用 EX 3 次以上、['assist'] 叫出 ASSIST 支援。全部都要「過關時」達成，可以重打補星。
 //   reward  first 首次過關、star3 三顆星都拿到：{ coins: 金幣, box: 'white' 或 'purple' 補給箱 }
+// 賽道關（v0.13.0）：關卡寫 track 與 boss 兩塊（不用寫 stage／foe）
+//   track   len 賽道長度（像素）、mobLv 小兵裝備等級、floor 地板三色、signs 地面招牌 [{ y, txt, col }]
+//           gaps 牆上的缺口＝出界 [{ side: 'L' 或 'R', from, to }]、props 機關（位置改用 x：-1 左牆～1 右牆、y：離起點幾像素；多一種 pit 陷阱洞）
+//           mobs 途中敵人 [{ type: 'guard' 守門型（左右巡邏）或 'rush' 衝撞型（靠近就衝過來）, x, y, c, w, a, hp 血量倍率（預設 0.4） }]
+//   boss    name、c／w／a、diff 強度、lv 裝備等級、hp 血量倍率、size 體型倍率、lives 幾條血、stage BOSS 場的場地設定（同對戰關 stage，預設標準出口）
+//           phase2（血量 70% 以下）／phase3（35% 以下，同時暴走）：{ props: 新增機關（用時鐘位置 at／d）, mobs: 叫出小兵 }
+//   stars   多一種 ['lives', 2]：剩 2 隻以上陀螺過關（3＝一隻都沒倒下）
 // 章節 bonus：整章全三星的獎勵。下一章的第一關，要前一章最後一關過關才解鎖。
 // ===================================================================================
 const CHAPTERS = [
-  { id: 'c1', no: 1, name: '第一章・霓虹新人賽', desc: '夜之城地下陀螺聯賽的新人選拔。四個場地，四種打法。', bonus: { coins: 1500, box: 'purple' }, levels: [
-    { id: '1-1', name: '開幕賽', desc: '標準場地。先熟悉出口：把對手往正下方的 DEAD 撞，一次就 +3。',
-      stage: {},
-      foe: { name: '菜鳥・小強', diff: 'easy', lv: 0, team: [{ c: 'berserker', w: 'chainaxe', a: 'carbonvest' }, { c: 'guardian', w: 'grenade', a: 'exoskeleton' }, { c: 'hunter', w: 'gatling', a: 'hover' }] },
-      stars: [['win'], ['by', 'DEAD'], ['flawless']],
-      reward: { first: { coins: 300 }, star3: { coins: 200 } } },
-    { id: '1-2', name: '天台低牆', desc: '大樓天台的臨時場：牆只有一半高，重擊後很容易飛出場外。只剩一個比較窄的 DEAD 出口，兩旁的加速帶會把陀螺往牆邊送。',
-      stage: { wallH: 12, exits: [{ at: 6, type: 'DEAD', w: 46 }], floor: ['#5b4d8f', '#3f3473', '#251d4b'],
-        props: [{ type: 'boost', at: 3, d: 0.42, dir: 3 }, { type: 'boost', at: 9, d: 0.42, dir: 9 }] },
-      foe: { name: '天台王・飛仔', diff: 'normal', lv: 0.06, team: [{ c: 'assassin', w: 'shotgun', a: 'hover' }, { c: 'jack', w: 'railgun', a: 'opticamo' }, { c: 'raven', w: 'smartpistol', a: 'afterimage' }] },
-      stars: [['win'], ['by', 'RING OUT'], ['ex', 3]],
-      reward: { first: { coins: 400 }, star3: { coins: 300 } } },
-    { id: '1-3', name: '鐵籠死鬥', desc: '高牆鐵籠，沒有出口、不會 RING OUT、也沒有 WORMHOLE。只能靠爆甲或比耐轉。四根彈力柱會把人彈來彈去，中央地刺會間歇冒出來。',
-      stage: { wallH: 44, exits: [], rails: false, ringOut: 0, core: 0.42, floor: ['#4f555e', '#353a42', '#1e2126'],
-        props: [{ type: 'bumper', at: 2, d: 0.6 }, { type: 'bumper', at: 4, d: 0.6 }, { type: 'bumper', at: 8, d: 0.6 }, { type: 'bumper', at: 10, d: 0.6 }, { type: 'spikes', at: 12, d: 0, r: 46, on: 2, off: 3 }] },
-      foe: { name: '籠中獸・鐵牙', diff: 'normal', lv: 0.12, team: [{ c: 'cactus', w: 'hydrohammer', a: 'titanium' }, { c: 'erin', w: 'vibrosword', a: 'powerarmor' }, { c: 'undead', w: 'flamer', a: 'reactive' }] },
-      stars: [['win'], ['by', 'BREAK'], ['flawless']],
-      reward: { first: { coins: 500 }, star3: { box: 'white' } } },
-    { id: '1-4', name: '齒輪工廠', boss: true, desc: 'BOSS 關。廢棄工廠的輸送帶場：中央大擋板一直旋轉，左右兩片擋板來回推，下方加速帶直通 DEAD。鐵心幫三人組全力追殺！',
-      stage: { floor: ['#6e5c3c', '#4f412a', '#2f2718'],
-        props: [{ type: 'mover', at: 12, d: 0, len: 150, move: 'spin', speed: 0.15 }, { type: 'mover', at: 3, d: 0.56, len: 90, rot: 12, move: 'slide', span: 40, period: 3 }, { type: 'mover', at: 9, d: 0.56, len: 90, rot: 12, move: 'slide', span: 40, period: 3.6 },
-          { type: 'boost', at: 5, d: 0.62, dir: 6 }, { type: 'boost', at: 7, d: 0.62, dir: 6 }] },
-      foe: { name: '廠長・齒輪', diff: 'hard', lv: 0.22, team: [{ c: 'rex', w: 'hydrohammer', a: 'exoskeleton' }, { c: 'octo', w: 'chainaxe', a: 'powerarmor' }, { c: 'tesla', w: 'emp', a: 'forcefield' }] },
-      stars: [['win'], ['assist'], ['by', 'DEAD']],
-      reward: { first: { coins: 800, box: 'purple' }, star3: { coins: 600 } } },
+  { id: 'c1', no: 1, name: '第一章・霓虹新人賽', desc: '夜之城地下陀螺聯賽的新人選拔。衝過高架賽道，打爆守在終點的 BOSS。', bonus: { coins: 1500, box: 'purple' }, levels: [
+    // ---- 賽道關（track）：直條地圖往上衝，終點無縫接 BOSS 圓形場。位置用 x（-1 左牆～1 右牆）與 y（離起點幾像素）----
+    { id: '1-1', name: '霓虹高架', boss: true, desc: '拉彈發射、自動彈牆，飛行中拖曳微調方向。爆甲、出界、掉進陷阱或停轉就換下一隻陀螺，在倒下的地方重新發射。衝進終點的圓形場，把 BOSS 打到爆甲才算過關！BOSS 衝撞撞到牆會暈眩，那時候傷害 ×1.5。',
+      track: { len: 2700, mobLv: -0.05, floor: ['#3d4f86', '#2b3766', '#1a2144'],
+        signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'BUMPER ALLEY' }, { y: 1160, txt: 'DANGER GAP', col: '#ff2a55' }, { y: 1700, txt: 'SPIKE ROAD', col: '#ff2a55' }, { y: 1900, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2290, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1230, to: 1400 }, { side: 'R', from: 1450, to: 1620 }],
+        props: [
+          { type: 'boost', x: 0, y: 300 },
+          { type: 'bumper', x: -0.5, y: 620 }, { type: 'bumper', x: 0.5, y: 620 }, { type: 'bumper', x: 0, y: 760 }, { type: 'bumper', x: -0.55, y: 900 }, { type: 'bumper', x: 0.55, y: 900 },
+          { type: 'mover', x: 0.2, y: 1315, len: 90, rot: 12, move: 'slide', span: 60, period: 2.8 }, { type: 'mover', x: -0.2, y: 1535, len: 90, rot: 12, move: 'slide', span: 60, period: 3.3 },
+          { type: 'spikes', x: -0.5, y: 1820, r: 52, on: 2, off: 2 }, { type: 'spikes', x: 0.5, y: 1820, r: 52, on: 2, off: 2 }, { type: 'pit', x: 0.4, y: 2000, r: 40 }, { type: 'spikes', x: -0.3, y: 2210, r: 48, on: 1.5, off: 2.5 },
+          { type: 'boost', x: -0.32, y: 2350 }, { type: 'boost', x: 0.32, y: 2350 } ],
+        mobs: [
+          { type: 'guard', x: 0, y: 1060, c: 'rat', w: 'gatling', a: 'hover' },
+          { type: 'rush', x: -0.45, y: 2090, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: 0.45, y: 2150, c: 'rider', w: 'chainaxe', a: 'carbonvest' } ] },
+      boss: { name: '廠長・齒輪', c: 'rex', w: 'hydrohammer', a: 'exoskeleton', diff: 'normal', lv: 0.05, hp: 1.8, size: 1.6, lives: 1,
+        stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#6e5c3c', '#4f412a', '#2f2718'] },
+        phase2: { props: [{ type: 'mover', at: 12, d: 0, len: 120, move: 'spin', speed: 0.12 }], mobs: [{ type: 'guard', at: 9.5, d: 0.5, c: 'rat', w: 'gatling', a: 'hover' }, { type: 'guard', at: 2.5, d: 0.5, c: 'rat', w: 'gatling', a: 'hover' }] },
+        phase3: { props: [{ type: 'spikes', at: 4.5, d: 0.5, r: 42, on: 2, off: 2.5 }, { type: 'spikes', at: 7.5, d: 0.5, r: 42, on: 2, off: 2.5 }] } },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 600, box: 'purple' }, star3: { coins: 600 } } },
   ] },
 ];
 
-const storyData = () => { const S = INV.story = INV.story || {}; S.lv = S.lv || {}; S.ch = S.ch || {}; S.boxes = S.boxes || []; return S; };
+const storyData = () => { const S = INV.story = INV.story || {}; S.lv = S.lv || {}; S.ch = S.ch || {}; S.boxes = S.boxes || []; if (S.v !== 2) { S.lv = {}; S.ch = {}; S.v = 2; } return S; }; // v2: chapter 1 became track levels, old stars reset
 const allLevels = () => CHAPTERS.flatMap(c => c.levels);
 const lvStars = id => storyData().lv[id] || [0, 0, 0];
 const lvCleared = id => !!lvStars(id)[0];
@@ -2595,11 +2601,11 @@ const full3 = a => a.length > 0 && a.every(Boolean);
 function lvUnlocked(lv) { const L = allLevels(), i = L.indexOf(lv); return i <= 0 || lvCleared(L[i - 1].id); }
 const chUnlocked = ch => lvUnlocked(ch.levels[0]);
 const chapterOf = lv => CHAPTERS.find(c => c.levels.includes(lv));
-const STAR_TEXT = { win: () => '過關', flawless: () => '對手 0 分過關', by: r => `用 ${r} 得分並過關`, ex: n => `使用 EX ${n} 次以上並過關`, assist: () => '叫出 ASSIST 支援並過關' };
+const STAR_TEXT = { win: () => '過關', flawless: () => '對手 0 分過關', by: r => `用 ${r} 得分並過關`, ex: n => `使用 EX ${n} 次以上並過關`, assist: () => '叫出 ASSIST 支援並過關', lives: n => n >= 3 ? '一隻陀螺都沒倒下就過關' : `剩 ${n} 隻以上陀螺過關` };
 const starText = s => (STAR_TEXT[s[0]] || (() => '？'))(s[1]);
 function starMet(s) {
   const L = G.log;
-  switch (s[0]) { case 'win': return true; case 'flawless': return G.score[1] === 0; case 'by': return (L.by[s[1]] || 0) > 0; case 'ex': return L.ex >= (s[1] || 1); case 'assist': return L.assist > 0; }
+  switch (s[0]) { case 'win': return true; case 'flawless': return G.score[1] === 0; case 'by': return (L.by[s[1]] || 0) > 0; case 'ex': return L.ex >= (s[1] || 1); case 'assist': return L.assist > 0; case 'lives': return !G.track || G.lineup.length - G.track.idx >= s[1]; }
   return false;
 }
 const BOX_NAME = { white: '補給箱', purple: '紫色補給箱' };
@@ -2643,18 +2649,18 @@ function renderStory() {
   document.getElementById('storyHead').innerHTML = `<div class="t">${ch.name}</div><div class="s">${ch.desc}</div><div class="s">★ <b>${got} / ${max}</b>・全三星獎勵：${rewardText(ch.bonus)}${S.ch[ch.id] ? '（已領取）' : ''}</div>`;
   const list = document.getElementById('storyList');
   list.innerHTML = ch.levels.map((l, i) => { const st = lvStars(l.id), open = lvUnlocked(l);
-    return `<div class="lvCard${open ? '' : ' lock'}${l.boss ? ' boss' : ''}" data-i="${i}"><div class="lvNo">${l.id}</div><div class="lvMid"><div class="lvName">${open ? '' : '🔒 '}${l.name}${l.boss ? '<span class="bossTag">BOSS</span>' : ''}</div><div class="lvTags">${stageTags(l.stage).join('・')}</div></div><div class="lvStar">${st.map(x => x ? '★' : '<i>★</i>').join('')}</div></div>`; }).join('');
+    return `<div class="lvCard${open ? '' : ' lock'}${l.boss ? ' boss' : ''}" data-i="${i}"><div class="lvNo">${l.id}</div><div class="lvMid"><div class="lvName">${open ? '' : '🔒 '}${l.name}${l.boss ? '<span class="bossTag">BOSS</span>' : ''}</div><div class="lvTags">${levelTags(l).join('・')}</div></div><div class="lvStar">${st.map(x => x ? '★' : '<i>★</i>').join('')}</div></div>`; }).join('');
   list.querySelectorAll('.lvCard').forEach(c => c.onclick = () => openLevel(ch.levels[+c.dataset.i]));
   paintBoxBtn(); paintStoryDot();
 }
 function openLevel(lv) {
   if (!lvUnlocked(lv)) { toast('先過前一關才能挑戰'); return; }
   SFX.flip();
-  const st = lvStars(lv.id), D = DIFF[lv.foe.diff || 'normal'], R = lv.reward || {};
+  const F = levelFoe(lv), st = lvStars(lv.id), D = DIFF[F.diff || 'normal'], R = lv.reward || {};
   document.getElementById('lvPopIn').innerHTML = `<div class="lvT"><b>${lv.id}</b>${lv.name}${lv.boss ? '<span class="bossTag">BOSS</span>' : ''}</div>
-    <div class="lvD">${lv.desc}</div><div class="lvTagRow">${stageTags(lv.stage).map(x => `<span>${x}</span>`).join('')}</div>
-    <div class="lvH">對手：${lv.foe.name}・${D.name}</div>
-    <div class="lvFoe">${lv.foe.team.map((b, i) => `<div><img src="${PORTRAIT_SRC[b.c]}" alt=""><i>${i + 1} 號</i><i>${CLASSES[b.c].name}</i></div>`).join('')}</div>
+    <div class="lvD">${lv.desc}</div><div class="lvTagRow">${levelTags(lv).map(x => `<span>${x}</span>`).join('')}</div>
+    <div class="lvH">${lv.track ? 'BOSS' : '對手'}：${F.name}・${D.name}</div>
+    <div class="lvFoe">${F.team.map((b, i) => `<div><img src="${PORTRAIT_SRC[b.c]}" alt=""><i>${F.tags ? F.tags[i] : (i + 1) + ' 號'}</i><i>${CLASSES[b.c].name}</i></div>`).join('')}</div>
     <div class="lvH">星星條件</div>${lv.stars.map((x, i) => `<div class="lvRow${st[i] ? ' ok' : ''}">${st[i] ? '★' : '☆'} ${starText(x)}</div>`).join('')}
     <div class="lvH">獎勵</div><div class="lvRow${st[0] ? ' ok' : ''}">首次過關：${rewardText(R.first)}${st[0] ? '（已領）' : ''}</div>${R.star3 ? `<div class="lvRow${full3(st) ? ' ok' : ''}">三顆星：${rewardText(R.star3)}${full3(st) ? '（已領）' : ''}</div>` : ''}
     <div class="lvRow">每場另有一般勝敗金幣（${D.name} ×${D.coin}）</div>
@@ -2667,6 +2673,7 @@ document.getElementById('lvPop').addEventListener('click', e => { if (e.target.i
 let storyNext = null;
 function startLevel(lv) {
   SFX.init(); stopNext(); document.getElementById('lvPop').classList.remove('show');
+  if (lv.track) { storyCtx = lv; storyNext = null; return startTrack(lv); }
   const f = lv.foe, D = DIFF[f.diff || 'normal'], pw = teamPower();
   applyStage(lv.stage); storyCtx = lv; storyNext = null;
   aiName = f.name; aiLineup = f.team.map(b => ({ ...b }));
@@ -3074,8 +3081,10 @@ function assistInfo(side) {
 }
 function doAssist(side) {
   const A = assistInfo(side), st = G.assist; if (!A || !A.ok || st.used[side] || st.t < ASSIST_T || G.phase !== 'battle') return;
+  let foe = G.tops[1 - side];
+  if (G.track && side === 0 && (!foe || foe.dead)) foe = trackNearMob(G.tops[0], 520); // on the track the helper goes for the nearest enemy
+  if (!foe || foe.dead || foe.falling) { if (G.track && side === 0) noCharge(G.tops[0], '附近沒有敵人'); return; }
   st.used[side] = true; if (side === 0) G.log.assist++;
-  const foe = G.tops[1 - side]; if (!foe || foe.dead || foe.falling) return;
   const fromL = Math.random() < 0.5, sx = fromL ? CX - AX - 40 : CX + AX + 40, sy = foe.y - 60;
   G.assistFx = { x0: sx, y0: sy, x1: foe.x, y1: foe.y, t: 0.5, c: A.prev.c, col: facCol(A.fac) };
   G.acut = { cls: A.prev.c, side, link: A.link, col: facCol(A.fac), t: 0.95, max: 0.95, hold: 0.32 };
@@ -3236,8 +3245,9 @@ function camPunch(kind, x, y) {
 function camFollowStep(dt) {
   if (!G.fcam) G.fcam = { x: CX, y: CY, z: BASE_Z };
   const f = G.fcam, a = G.tops[0], b = G.tops[1];
-  let tx = CX, ty = CY, tz = BASE_Z;
-  if (SETTINGS.camFollow && G.phase === 'battle' && a && b && !a.dead && !b.dead && !a.falling && !b.falling) {
+  let tx = CX, ty = CY, tz = BASE_Z, kf = 2.6;
+  if (onTrack() && a) { ty = Math.min(G.track.y0 - 300, a.y - 120 + (G.phase === 'battle' ? clamp(a.vy * 0.14, -130, 50) : 0)); tz = 1; kf = 7; } // scroll with the player, looking ahead
+  else if (SETTINGS.camFollow && G.phase === 'battle' && a && b && !a.dead && !b.dead && !a.falling && !b.falling) {
     const fit = Math.min(470 / (Math.abs(a.x - b.x) + 220), 560 / ((Math.abs(a.y - b.y) + 220) * VIEW_K));
     const edgeK = clamp((Math.max(qOf(a.x, a.y), qOf(b.x, b.y)) - 0.6) / 0.3, 0, 1);
     tz = clamp(fit, BASE_Z, FOLLOW_ZMAX); tz += (BASE_Z - tz) * edgeK;
@@ -3245,7 +3255,7 @@ function camFollowStep(dt) {
     tx = CX + ((a.x + b.x) / 2 - CX) * pull; ty = CY + ((a.y + b.y) / 2 - CY) * pull;
   }
   const pinching = two && two.mode === 'pinch';
-  const k = 1 - Math.exp(-dt * 2.6);
+  const k = 1 - Math.exp(-dt * kf);
   if (!pinching) { f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k; } // two fingers on screen = the player drives the camera
   // auto tilt: closer camera -> lower angle; the player's tilt setting is an offset on top
   const base = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
@@ -3257,7 +3267,7 @@ function camFollowStep(dt) {
 function tiltCurve(zr) { return zr <= 1 ? 0.95 : zr <= 1.12 ? 0.95 - (zr - 1) / 0.12 * 0.10 : zr <= 1.45 ? 0.85 - (zr - 1.12) / 0.33 * 0.15 : 0.70; }
 function camNow() { const c = camGame(), uz = clamp(+SETTINGS.viewZ || 1, VIEW_Z_MIN, VIEW_Z_MAX); return uz === 1 ? c : { x: c.x, y: c.y, z: c.z * uz }; }
 function camGame() {
-  const base = G && G.fcam && SETTINGS.camFollow ? G.fcam : { x: CX, y: CY, z: BASE_Z };
+  const base = G && G.fcam && (SETTINGS.camFollow || onTrack()) ? G.fcam : { x: CX, y: CY, z: BASE_Z };
   const c = G && G.cam;
   if (!c || c.t >= c.end) return base;
   let e;
@@ -3345,7 +3355,7 @@ cv.addEventListener('pointerdown', e => {
     const me = G.tops[0], foe = G.tops[1], wp = toWorld(p);
     let q = clampDrop(wp.x, wp.y);
     const dd = len(q.x - foe.x, q.y - foe.y);
-    me.x = q.x; me.y = q.y; G.placed = true;
+    if (!G.track) { me.x = q.x; me.y = q.y; } G.placed = true; // on the track the top stays where it is: press anywhere and pull back
     G.drag = { sx: wp.x, sy: wp.y, x: wp.x, y: wp.y, id: e.pointerId };
   }
   else if (G.phase === 'battle') {
@@ -3383,7 +3393,7 @@ function endPointer(e) {
   if (!G) return;
   if (G.drag && G.drag.id === e.pointerId && G.phase === 'launch') {
     const dx = G.drag.sx - G.drag.x, dy = G.drag.sy - G.drag.y, l = len(dx, dy);
-    if (l > 18) startCount(dx, dy, clamp(l / 170, 0.15, 1));
+    if (l > 18) { const pw = clamp(l / 170, 0.15, 1); G.track && G.track.started ? doLaunch(dx, dy, pw) : startCount(dx, dy, pw); }
     G.drag = null;
   }
   if (G.joy && G.joy.id === e.pointerId) {
@@ -3449,7 +3459,7 @@ function updateCount(dt) {
     if (step < 3) { comicPop(CX, CY - 30, ['3', '2', '1'][step], 64 + step * 8, '#ffffff', ['#00f0ff', '#fcee0a', '#ff2a55'][step], 0.42); SFX.countHit(step); G.shake = Math.max(G.shake, 3 + step * 2); }
     else {
       const me = G.tops[0], a = G.tops[1]; // CPU never lands on top of you
-      for (let k = 0; k < 20 && len(a.x - me.x, a.y - me.y) < TR * 2 + 14; k++) { const q = randomDrop(me); a.x = q.x; a.y = q.y; }
+      for (let k = 0; !G.track && k < 20 && len(a.x - me.x, a.y - me.y) < TR * 2 + 14; k++) { const q = randomDrop(me); a.x = q.x; a.y = q.y; }
       const L = G.pendingLaunch; doLaunch(L.dx, L.dy, L.power);
       comicPop(CX, CY - 40, 'SPIN! SPIN!', 54, '#fcee0a', '#ff2a55', 1.2); focusLines(CX, CY, 'rgba(255,255,255,.75)', 0.5); SFX.spinCall(); G.shake = Math.max(G.shake, 10);
     }
@@ -3459,6 +3469,7 @@ function updateCount(dt) {
 function doLaunch(dx, dy, power) {
   const [p, a] = G.tops;
   launch(p, dx, dy, power);
+  if (G.track) return trackLaunched(p);
   // AI: random drop point (set at round start); half the time it aims at you, otherwise somewhere random
   let aim = Math.random() < 0.5 ? norm(p.x - a.x, p.y - a.y) : norm(CX - a.x, CY - a.y);
   const rot = Math.random() < 0.5 ? rnd(-0.35, 0.35) : rnd(-1.2, 1.2);
@@ -3540,6 +3551,7 @@ document.getElementById('autoMoveBtn').addEventListener('pointerdown', e => {
 // auto-move while your finger is off the screen: attack hunts the foe from the far side of the nearest exit,
 // defense keeps its distance and circles away from the rim, core sits on CORE and strikes anyone who comes in
 function playerAutoInput(me, foe) {
+  if (onTrack()) return trackAuto(me);
   const m = SETTINGS.autoMove; if (!m || m === 'off' || foe.dead || foe.falling) return null;
   let tx, ty;
   if (m === 'atk') { const ng = nearestGate(foe.x, foe.y), gd = norm(ng.x - foe.x, ng.y - foe.y); tx = foe.x + foe.vx * 0.15 - gd.x * 16; ty = foe.y + foe.vy * 0.15 - gd.y * 16; }
@@ -3562,6 +3574,7 @@ function playerAutoInput(me, foe) {
 function autoLaunchStep(dt) {
   if (!SETTINGS.autoLaunch || G.drag || G.phase !== 'launch') { if (G) G.autoT = 0; return; }
   G.autoT = (G.autoT || 0) + dt; if (G.autoT < 0.8) return;
+  if (G.track) return trackAutoLaunch();
   const me = G.tops[0], q = randomDrop(G.tops[1]); me.x = q.x; me.y = q.y; G.placed = true;
   const d = norm(CX - me.x, CY - me.y), r = rnd(-0.6, 0.6);
   startCount(d.x * Math.cos(r) - d.y * Math.sin(r), d.x * Math.sin(r) + d.y * Math.cos(r), rnd(0.65, 1));
@@ -3661,6 +3674,7 @@ function defense(t) {
 }
 
 function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
+  if (def.invT > 0) return; // just respawned
   if (def.shieldT > 0) {
     att.vx -= nx * 360 / att.s.mass; att.vy -= ny * 360 / att.s.mass; att.hitT = 0.7;
     addText(def.x, def.y - 30, '反彈！', '#8fd0ff', 18); SFX.shield();
@@ -3680,7 +3694,9 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   if (def.markT > 0) mult *= 1.5;
   let dmg = spd * 0.03 * (0.6 + att.s.w.atk * 0.25) * bf * mult / defense(def) * (def.bond ? def.bond.dmgIn : 1) * (att.bond ? att.bond.all : 1);
   if (att.bond && att.bond.crit && attN > 260 && Math.random() < 0.25) { dmg *= 1.5; addText(att.x, att.y - 58, '暴擊！', '#fcee0a', 18); }
-  dmg = Math.min(dmg, def.s.maxHp * HIT_CAP); // no single hit breaks a full-health top; big hits knock you away instead
+  if (def.weakT > 0) dmg *= 1.5; // stunned BOSS
+  if (att.dmgOut) dmg *= att.dmgOut;
+  dmg = Math.min(dmg, def.s.maxHp * (def.hitCap || HIT_CAP)); // no single hit breaks a full-health top; big hits knock you away instead
   let evaded = false;
   if (Math.random() < def.s.evade) { dmg *= 0.3; evaded = true; }
   if (def.s.w.special === 'deflect') dmg *= 0.85;
@@ -3709,7 +3725,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
     if (big && !(att.hopT > 0)) { att.hopT = 0.25; att.hopH = 7; }
   }
   // knockback
-  let kb = KB_SCALE * (0.5 + att.s.w.kb * 0.22) * bf * (sameDir ? 1 : 1.2) * att.kbMult * (40 + Math.min(900, vrel) * 0.25 + Math.min(900, Math.max(0, attN)) * 0.35) * (att.launchedT > 0 ? 1.1 : 1);
+  let kb = KB_SCALE * (0.5 + att.s.w.kb * 0.22) * bf * (sameDir ? 1 : 1.2) * att.kbMult * (att.kbOut || 1) * (40 + Math.min(900, vrel) * 0.25 + Math.min(900, Math.max(0, attN)) * 0.35) * (att.launchedT > 0 ? 1.1 : 1);
   if (def.s.a.special === 'shell') kb *= 0.5;
   if (def.s.a.special === 'deflectA') kb *= 0.7;
   if (fam === 'blast' && !evaded) { // blast: big knock on the target, recoil on yourself
@@ -3747,6 +3763,278 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   }
 }
 
+// ===================================================================================
+// TRACK MODE（賽道關，v0.13.0）
+// A long corridor runs from the start line up into the bottom (6 o'clock) of the BOSS arena. World layout: the arena keeps its
+// normal place (centre CX, CY); the corridor hangs below it, from y = TRK.ENT_Y (entrance) down to y = T.y0 (start wall).
+// G.track.zone is 'track' on the corridor and 'boss' once the player is inside the arena (normal arena physics from then on).
+// The 3 lineup tops are the 3 lives: when one is lost the next launches from where it fell.
+// ===================================================================================
+const TRK = { HW: 190, FUN: 260, ENT_Y: CY + 218 }; // corridor half-width, length of the funnel before the entrance, entrance y
+const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT'];
+const onTrack = () => !!(G && G.track && G.track.zone === 'track');
+const trkHalf = (T, sv) => sv <= T.len - TRK.FUN ? TRK.HW : TRK.HW + (T.gw - TRK.HW) * Math.min(1, (sv - (T.len - TRK.FUN)) / TRK.FUN);
+const LOSE_TEXT = { BREAK: '爆甲', SURVIVE: '停轉', '停轉': '停轉', OUT: '出界', TRAP: '掉進陷阱', DEAD: '掉進 DEAD', BLOOD: '掉進 BLOOD', 'RING OUT': 'RING OUT' };
+
+function makeMob(def, lv, x, y) {
+  const t = makeTop({ c: def.c, w: def.w, a: def.a, bc: lv, bw: lv, ba: lv }, 1);
+  t.mob = def.type || 'guard'; t.s.maxHp *= def.hp || 0.4; t.hp = t.s.maxHp; t.hitCap = 0.6; t.rad = 24;
+  t.x = t.hx = x; t.y = t.hy = y; t.cd = rnd(0.5, 1.5); t.ph = rnd(0, TAU); t.range = def.range || 110;
+  return t;
+}
+function startTrack(lv) {
+  const tr = lv.track, bs = lv.boss, D = DIFF[bs.diff || 'normal'];
+  const bb = { c: bs.c, w: bs.w, a: bs.a, bc: bs.lv || 0, bw: bs.lv || 0, ba: bs.lv || 0 };
+  aiName = bs.name; aiLineup = [bb, bb, bb].map(b => ({ ...b }));
+  applyStage(Object.assign({}, bs.stage, { exits: [], rails: false, core: 0, ringOut: 0, props: [] }));
+  newMatch(collection.map(withBonus), aiLineup);
+  G.aiSkill = D.skill; G.diff = bs.diff || 'normal'; G.level = lv; G.aBond = bondOf([bb]);
+  const T = G.track = { lv, len: tr.len, y0: TRK.ENT_Y + tr.len, gw: GW, signs: tr.signs || [], floor: tr.floor || ['#3d4f86', '#2b3766', '#1a2144'],
+    gaps: (tr.gaps || []).map(gp => ({ side: gp.side === 'L' ? -1 : 1, from: gp.from, to: gp.to })),
+    zone: 'track', idx: 0, started: false, mobs: [], phase: 1, bossLives: bs.lives || 1, best: 0, safe: null, kills: 0 };
+  GATES = [{ door: true, a: Math.PI / 2, half: GATE_HALF, pts: 0, name: 'GATE', col: '0,240,255', txt: '#00f0ff', x: CX, y: CY + BY }];
+  PROPS = (tr.props || []).map(p => makeProp({ ...p, px: CX + (p.x || 0) * TRK.HW, py: T.y0 - p.y }));
+  arenaCache = null;
+  T.mobs = (tr.mobs || []).map(m => makeMob(m, tr.mobLv || 0, CX + (m.x || 0) * TRK.HW, T.y0 - m.y));
+  const b = T.boss = makeTop(bb, 1); b.boss = true; b.rad = TR * (bs.size || 1.6); b.s.maxHp *= bs.hp || 3; b.hp = b.s.maxHp; b.s.mass *= 1.5; b.kbOut = 0.5; b.dmgOut = bs.dmg || 0.62; b.s.decay = 0; b.s.accel *= 0.85; // heavy, but its hits push less than its size suggests so one bump is not a ring-out
+  b.x = CX; b.y = CY - 50; b.chargeCD = 4;
+  const gh = T.ghost = makeTop(bb, 1); gh.dead = true; gh.ghost = true; // stand-in "foe" while no enemy is near
+  const p = G.tops[0]; p.x = CX; p.y = T.y0 - 110; gh.x = p.x; gh.y = p.y - 150; G.tops[1] = gh;
+  G.placed = true; G.assist.used[1] = true; G.fcam = { x: CX, y: p.y - 200, z: 1 }; T.safe = { x: p.x, y: p.y };
+  showBanner(`STAGE ${lv.id}`, 1.6, '#fcee0a');
+}
+function trackLaunched(p) {
+  const T = G.track; G.phase = 'battle'; G.banner = null; sparks(p.x, p.y, 14, '#00f0ff'); SFX.launch();
+  if (T.started) p.invT = 1.5; // a respawned top is safe for a moment
+  T.started = true;
+}
+function trackAutoLaunch() {
+  const me = G.tops[0], foe = G.tops[1];
+  const d = onTrack() ? { x: rnd(-0.25, 0.25), y: -1 } : norm(foe.x - me.x, foe.y - me.y), pw = rnd(0.8, 1);
+  G.placed = true; G.track.started ? doLaunch(d.x, d.y, pw) : startCount(d.x, d.y, pw);
+}
+function trackNearMob(p, R0) { let best = null, bd = R0; for (const m of G.track.mobs) if (!m.dead) { const d = len(m.x - p.x, m.y - p.y); if (d < bd) { bd = d; best = m; } } return best; }
+// MOVE auto on the track: head up the road, go for a nearby enemy, steer round pits, live spikes and wall gaps
+function trackAuto(me) {
+  const m = SETTINGS.autoMove; if (!m || m === 'off') return null;
+  const T = G.track, foe = G.tops[1]; let tx = CX, ty = me.y - 220;
+  if (m !== 'def' && foe && !foe.dead && len(foe.x - me.x, foe.y - me.y) < 240) { tx = foe.x; ty = foe.y; }
+  const d = norm(tx - me.x, ty - me.y); let ux = d.x, uy = d.y;
+  for (const P of PROPS) if (P.type === 'pit' || (P.type === 'spikes' && spikesOn(P, G.time))) { const dx = me.x - P.x, dy = me.y - P.y, dd = len(dx, dy) || 1, R0 = P.r + 130; if (dd < R0) { const k = (R0 - dd) / R0 * 2.6; ux += dx / dd * k + (dx >= 0 ? 1 : -1) * k; uy += dy / dd * k * 0.5; } } // slip round the side, do not just brake
+  const sv = T.y0 - me.y;
+  for (const gp of T.gaps) if (sv > gp.from - 80 && sv < gp.to + 80) { const dist = Math.abs(me.x - (CX + gp.side * TRK.HW)); if (dist < 170) ux -= gp.side * (170 - dist) / 170 * 2.4; }
+  const l = len(ux, uy); if (l > 1) { ux /= l; uy /= l; }
+  return { x: ux, y: uy };
+}
+// corridor walls: bounce off them; where a wall has a gap the player flies out instead
+function trackBounds(t, h) {
+  const T = G.track, m = (t.rad || TR) * 0.6, isP = t.side === 0;
+  let sv = T.y0 - t.y;
+  if (sv < m) { t.y = T.y0 - m; if (t.vy > 0) { if (isP && t.vy > 80) { sparks(t.x, t.y + m, 8, '#a8fbff', 200); SFX.wall(t.vy); } t.vy *= -0.9; } sv = m; }
+  if (sv > T.len) return;
+  const hw = trkHalf(T, sv), fun = sv > T.len - TRK.FUN;
+  for (const sd of [-1, 1]) {
+    const over = (t.x - CX) * sd - (hw - m); if (over <= 0) continue;
+    if (isP && !fun && !(t.invT > 0) && T.gaps.some(gp => gp.side === sd && sv > gp.from && sv < gp.to)) {
+      if (over > m + 4) { t.falling = 0.9; t.fellIn = { pts: 0, name: 'OUT' }; t.onRing = false;
+        addText(t.x, t.y - 50, '出界！', '#ff2a55', 28); comicPop(t.x, t.y - 100, 'OUT!!', 44, '#ffffff', '#ff2a55', 1); SFX.gate(); G.shake = 12; focusLines(t.x, t.y, 'rgba(255,42,85,.8)', 0.4); }
+      continue;
+    }
+    let nx = sd, ny = 0; if (fun) { const l = Math.hypot(TRK.FUN, TRK.HW - T.gw); nx = sd * TRK.FUN / l; ny = -(TRK.HW - T.gw) / l; }
+    t.x = CX + sd * (hw - m);
+    const vn = t.vx * nx + t.vy * ny;
+    if (vn > 0) {
+      t.vx -= 1.92 * vn * nx; t.vy -= 1.92 * vn * ny;
+      if (isP && vn > 80) { sparks(t.x + nx * TR, t.y, Math.min(20, 4 + vn / 28), '#a8fbff', 120 + vn * 0.5); SFX.wall(vn);
+        if (vn > 420 && G.comicCD <= 0) { comicPop(t.x - nx * 20, t.y - 24, pick(['CLANG!', 'KLANG!', 'PING!']), 24, '#ffffff', '#00b8d4', 0.55); G.comicCD = 0.3; } }
+    }
+  }
+}
+// small enemies: guard = patrols side to side around its post, rush = charges when the player comes close
+function mobStep(m, p, h) {
+  for (const k of TOP_TIMERS) if (m[k] > 0) m[k] -= h;
+  if (m.poisonT > 0) { m.poisonT -= h; if (m.poisonT <= 0) m.poison = 0; }
+  m.angle += m.s.w.dir * 26 * h; m.cd -= h;
+  if (m.stunT <= 0) {
+    const dist = len(p.x - m.x, p.y - m.y), live = !p.dead && !p.falling;
+    if (m.mob === 'rush' && live && dist < 290 && m.cd <= 0) { const d = norm(p.x - m.x, p.y - m.y); m.vx = d.x * 540; m.vy = d.y * 540; m.cd = 2.4; m.launchedT = 0.5; addText(m.x, m.y - 44, '！', '#ff2a55', 26); }
+    const tx = m.mob === 'guard' ? m.hx + Math.sin(G.time * 1.5 + m.ph) * m.range : m.hx, kp = m.mob === 'guard' ? 26 : 5;
+    if (m.mob === 'guard' || m.cd < 1.5) { m.vx += ((tx - m.x) * kp - m.vx * 6) * h; m.vy += ((m.hy - m.y) * kp - m.vy * 6) * h; }
+  }
+  m.vx *= 1 - 0.6 * h; m.vy *= 1 - 0.6 * h; m.x += m.vx * h; m.y += m.vy * h;
+  if (G.track.zone === 'track') trackBounds(m, h);
+  else if (qOf(m.x, m.y, 16) > 1) { const n = eNormal(m.x, m.y), c = eClamp(m.x, m.y, 16), vn = m.vx * n.x + m.vy * n.y; m.x = c.x; m.y = c.y; if (vn > 0) { m.vx -= 1.8 * vn * n.x; m.vy -= 1.8 * vn * n.y; } }
+}
+// BOSS: three phases by health, and a telegraphed charge. If the charge ends in a wall the BOSS is stunned and takes extra damage
+function bossBrain(b, p, h) {
+  if (b.dead) return; const T = G.track, B = T.lv.boss, f = b.hp / b.s.maxHp;
+  const add = ph => { if (!ph) return; for (const q of ph.props || []) PROPS.push(makeProp(q));
+    for (const q of ph.mobs || []) { const a = clockAng(q.at == null ? 12 : q.at), d = q.d == null ? 0.5 : q.d, m = makeMob(q, T.lv.track.mobLv || 0, CX + Math.cos(a) * AX * d, CY + Math.sin(a) * BY * d); m.range = 60; T.mobs.push(m); sparks(m.x, m.y, 20, '#ff3b5c', 260); } };
+  if (T.phase < 2 && f <= 0.7) { T.phase = 2; add(B.phase2); comicPop(CX, CY - 60, 'PHASE 2!', 50, '#fcee0a', '#ff2a55', 1.2); addText(b.x, b.y - 80, '機關啟動！小兵出現！', '#fcee0a', 20); G.shake = 10; SFX.round(); }
+  if (T.phase < 3 && f <= 0.35) { T.phase = 3; add(B.phase3); b.s.accel *= 1.3; b.s.maxSpeed *= 1.2; b.enraged = true; comicPop(CX, CY - 60, 'RAGE!!', 56, '#ffffff', '#ff2a55', 1.2); addText(b.x, b.y - 80, 'BOSS 暴走！', '#ff2a55', 22); G.shake = 14; SFX.round(); }
+  if (b.stunT > 0 || b.falling) return;
+  if (b.teleT > 0) { b.vx *= 1 - 6 * h; b.vy *= 1 - 6 * h; b.flash = 0.1;
+    if (b.teleT <= h * 1.01) { const d = norm(p.x - b.x, p.y - b.y), sp = b.enraged ? 860 : 780; b.teleT = 0; b.vx = d.x * sp; b.vy = d.y * sp; b.chargeT = 0.9; b.boostT = 0.9; b.dashMult = 1.4; b.kbMult = 1; b.launchedT = 0.9; detach(b, 1.2);
+      comicPop(b.x, b.y - 70, 'CHARGE!!', 34, '#ff2a55', '#fcee0a', 0.7); SFX.boost(); } }
+  else if (!(b.chargeT > 0)) { b.chargeCD -= h;
+    if (b.chargeCD <= 0 && !p.dead && !p.falling && !b.onRing && !b.ex) { b.teleT = 0.75; b.chargeCD = b.enraged ? 3.4 : 5; addText(b.x, b.y - 84, '衝撞預備！快閃開！', '#ff2a55', 20); wave(b.x, b.y, '255,42,85', 150, 8, 0.7); } }
+}
+function bossCrash(t) {
+  t.chargeT = 0; t.boostT = 0; t.stunT = 1.6; t.weakT = 1.6; t.vx *= 0.35; t.vy *= 0.35;
+  comicPop(t.x, t.y - 70, 'CRASH!!', 46, '#ffffff', '#fcee0a', 1); addText(t.x, t.y - 110, '暈眩！現在打傷害 ×1.5', '#fcee0a', 20);
+  sparks(t.x, t.y, 30, '#fcee0a', 380, true); G.shake = Math.max(G.shake, 12); SFX.burst && SFX.wall(900);
+}
+// one physics sub-step in track mode (replaces the two-top arena step)
+function trackPhysics(h) {
+  const T = G.track, p = G.tops[0];
+  if (T.zone === 'track') { // the "foe" slot is the nearest enemy, or a stand-in just ahead when none is near
+    const m = trackNearMob(p, 340); if (m) G.tops[1] = m; else { T.ghost.x = p.x; T.ghost.y = p.y - 150; G.tops[1] = T.ghost; }
+    stepTop(p, G.tops[1], h); if (G.phase !== 'battle') return;
+  } else {
+    const b = G.tops[1]; bossBrain(b, p, h);
+    stepTop(p, b, h); if (G.phase !== 'battle') return;
+    stepTop(b, p, h); if (G.phase !== 'battle') return;
+    collide(p, b, h); if (G.phase !== 'battle') return;
+  }
+  for (const m of T.mobs) if (!m.dead) { mobStep(m, p, h); collide(p, m, h); if (G.phase !== 'battle') return; }
+  if (p.dead || p.falling) return;
+  if (T.zone === 'track') {
+    const sv = T.y0 - p.y; T.best = Math.max(T.best, sv);
+    if (Math.abs(p.x - CX) < trkHalf(T, sv) - 46 && !PROPS.some(P => (P.type === 'pit' || P.type === 'spikes') && len(p.x - P.x, p.y - P.y) < P.r + 46)) T.safe = { x: p.x, y: p.y };
+    if (p.y < TRK.ENT_Y - 8) trackEnterBoss();
+  } else if (qOf(p.x, p.y) < 0.66 && !inGateZone(p.x, p.y)) T.safe = { x: p.x, y: p.y };
+}
+// through the doorway: the entrance slams shut and becomes a DEAD exit, the BOSS wakes up
+function trackEnterBoss() {
+  const T = G.track, p = G.tops[0], b = T.boss;
+  T.zone = 'boss'; T.best = T.len; T.mobs = [];
+  applyStage(Object.assign({ exits: 'std' }, T.lv.boss.stage));
+  G.tops[1] = b; T.safe = { x: CX, y: CY + 90 };
+  p.spin = Math.min(1, p.spin + 0.4); p.hitT = 0; p.ringCD = Math.max(p.ringCD, 0.6);
+  const d = norm(p.x - b.x, p.y - b.y); b.vx = d.x * 420; b.vy = d.y * 420; b.launchedT = 0.6;
+  comicPop(CX, CY - 40, 'BOSS BATTLE!', 50, '#ff2a55', '#fcee0a', 1.4); addText(p.x, p.y - 60, '閘門關閉！轉速回復', '#7fdfff', 20);
+  focusLines(CX, CY, 'rgba(255,42,85,.8)', 0.6); G.shake = Math.max(G.shake, 12); SFX.round(); SFX.gate();
+}
+// every "round end" in track mode lands here: an enemy broke, the BOSS broke, or the player's top was lost
+function trackEnd(winner, pts, reason) {
+  const T = G.track, p = G.tops[0];
+  if (winner === 0) {
+    const b = G.tops[1];
+    if (T.zone === 'boss' && b.boss && b.dead) {
+      if (--T.bossLives > 0) { b.dead = false; b.hp = b.s.maxHp; b.stunT = 1.2; T.phase = 1; b.enraged = false; comicPop(CX, CY - 60, 'ONE MORE!', 46, '#ff2a55', '#fcee0a', 1.2); addText(b.x, b.y - 80, `BOSS 還有 ${T.bossLives} 條血！`, '#ff2a55', 22); return; }
+      G.score = [1, 0]; G.phase = 'trackEnd'; T.endT = 2.4; G.joy = null; showBanner('BOSS BREAK!! STAGE CLEAR', 2.4, '#fcee0a'); updateExBtn(); return;
+    }
+    for (const m of T.mobs) if (m.dead && !m.counted) { m.counted = true; T.kills++; p.spin = Math.min(1, p.spin + 0.2); if (p.markT <= 0) p.energy = Math.min(100, p.energy + 20); addText(p.x, p.y - 66, '轉速回復！', '#7fdfff', 18); }
+    G.slowT = 0; return; // an enemy on the road is not a round: keep rolling
+  }
+  if (!p.dead && p.spin > 0) return;
+  // lost this top
+  const why = LOSE_TEXT[reason] || reason, fell = ['OUT', 'TRAP', 'DEAD', 'BLOOD', 'RING OUT'].includes(reason);
+  let rp = fell || !isFinite(p.x) ? T.safe : { x: p.x, y: p.y };
+  if (T.zone === 'track') { const sv = clamp(T.y0 - rp.y, 40, T.len - 10), hw = trkHalf(T, sv) - 40; rp = { x: clamp(rp.x, CX - hw, CX + hw), y: T.y0 - sv }; if (PROPS.some(P => P.type === 'pit' && len(rp.x - P.x, rp.y - P.y) < P.r + 30)) rp = T.safe; }
+  else rp = clampDrop(rp.x, rp.y);
+  (T.lost = T.lost || []).push({ why: reason, zone: T.zone, at: Math.round(T.best), t: Math.round(G.time) });
+  T.resp = rp; T.idx++; G.joy = null; p.dead = true; SFX.draw && SFX.draw();
+  if (T.idx >= G.lineup.length) { G.score = [0, 1]; G.phase = 'trackEnd'; T.endT = 2.2; showBanner(`${why}… GAME OVER`, 2.2, '#ff3b5c'); }
+  else { G.phase = 'respawn'; T.endT = 1.5; showBanner(`${why}！換 ${T.idx + 1} 號上場`, 1.5, '#ff3b5c'); }
+  updateExBtn();
+}
+function trackWait(dt) {
+  const T = G.track; T.endT -= dt;
+  for (const t of [G.tops[1], ...T.mobs]) if (t && !t.dead) t.angle += t.s.w.dir * 14 * dt;
+  if (T.endT > 0) return;
+  if (G.phase === 'trackEnd') return finish();
+  // next top in the lineup, at the spot the last one fell; the player aims and launches again
+  G.round = T.idx + 1; G.pb = G.lineup[T.idx];
+  const np = makeTop(G.pb, 0); np.x = T.resp.x; np.y = T.resp.y; G.tops[0] = np;
+  G.assist = { t: 0, used: [false, true], ai: 0 }; G.assistFx = null; G.acut = null; G.cam = null; G.exFreeze = null; G.slowT = 0;
+  G.phase = 'launch'; G.placed = true; G.drag = null; G.autoT = 0;
+  showBanner(`${T.idx + 1} 號出擊！剩 ${G.lineup.length - T.idx} 隻`, 1.2, '#00f0ff'); SFX.round(); updateExBtn(); paintAssist();
+}
+// ---------- track drawing ----------
+function trackBackdrop(g, cam) { // far from the arena the stadium gives way to a night-city grid sliding past
+  const k = clamp((cam.y - CY - 150) / 260, 0, 1); if (k <= 0) return;
+  g.setTransform(scale, 0, 0, scale, 0, 0); g.globalAlpha = k;
+  g.fillStyle = '#070912'; g.fillRect(-W, -H, W * 3, H * 3);
+  g.lineWidth = 1;
+  for (let i = 0; i < 13; i++) { const y = ((i * 80 - cam.y * 0.45) % H + H) % H; g.strokeStyle = `rgba(127,223,255,${0.05 + 0.08 * (y / H)})`; g.beginPath(); g.moveTo(-W, y); g.lineTo(W * 2, y); g.stroke(); }
+  g.strokeStyle = 'rgba(255,154,230,.07)'; for (let x = -W; x <= W * 2; x += 60) { g.beginPath(); g.moveTo(x, -H); g.lineTo(x, H * 2); g.stroke(); }
+  let seed = 11; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 26; i++) { const x = rr() * W * 1.4 - W * 0.2, y0 = rr() * 2400, w = 16 + rr() * 50, y = ((y0 - cam.y * 0.25) % 1200 + 1200) % 1200 - 120; if (x > 40 && x < W - 60) continue;
+    g.fillStyle = i % 3 ? 'rgba(127,223,255,.16)' : 'rgba(255,154,230,.16)'; g.fillRect(x, y, w, 3); g.fillRect(x, y + 9, w * 0.6, 3); }
+  g.globalAlpha = 1;
+}
+function drawTrack(g, time, cam) {
+  const T = G.track, y0 = T.y0, top = TRK.ENT_Y, HW = TRK.HW, gw = T.gw, sF = T.len - TRK.FUN, yF = y0 - sF;
+  const v0 = cam.y - 640, v1 = cam.y + 640; if (v1 < top - 30) return;
+  const yOf = sv => y0 - sv, dz = WALL_H / VIEW_K, ya = Math.max(v0, top), yb = Math.min(v1, y0);
+  const floor = () => { g.beginPath(); g.moveTo(CX - HW, y0); g.lineTo(CX - HW, yF); g.lineTo(CX - gw, top); g.lineTo(CX + gw, top); g.lineTo(CX + HW, yF); g.lineTo(CX + HW, y0); g.closePath(); };
+  floor(); g.fillStyle = T.floor[1]; g.fill();
+  g.save(); floor(); g.clip();
+  g.fillStyle = T.floor[0]; g.globalAlpha = 0.35; g.fillRect(CX - 70, ya, 140, yb - ya); g.globalAlpha = 1;          // lit centre lane
+  g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(CX - HW, ya, 40, yb - ya); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(CX + HW - 26, ya, 26, yb - ya); // cel shadow under the left wall
+  g.fillStyle = 'rgba(0,0,0,.4)';                                                                                  // halftone fading out of the shadow
+  for (let y = Math.ceil(ya / 12) * 12; y < yb; y += 12) for (let c = 0; c < 4; c++) { g.beginPath(); g.arc(CX - HW + 46 + c * 11 + ((y / 12) & 1 ? 5 : 0), y, 2.6 - c * 0.6, 0, TAU); g.fill(); }
+  g.lineWidth = 2;
+  for (let sv = Math.max(0, Math.floor((y0 - yb) / 120) * 120); sv <= Math.min(T.len, y0 - ya); sv += 120) { g.strokeStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.moveTo(CX - HW, yOf(sv) + 2); g.lineTo(CX + HW, yOf(sv) + 2); g.stroke(); g.strokeStyle = 'rgba(127,223,255,.16)'; g.beginPath(); g.moveTo(CX - HW, yOf(sv)); g.lineTo(CX + HW, yOf(sv)); g.stroke(); }
+  g.strokeStyle = 'rgba(252,238,10,.35)'; g.lineWidth = 4; g.setLineDash([26, 26]); g.lineDashOffset = time * 90; g.beginPath(); g.moveTo(CX, yb); g.lineTo(CX, ya); g.stroke(); g.setLineDash([]);
+  for (let k = 0; k < 10; k++) { g.fillStyle = k % 2 ? '#05060a' : '#e8edf2'; g.fillRect(CX - HW + k * (HW / 5), yOf(150), HW / 5, 10); g.fillStyle = k % 2 ? '#e8edf2' : '#05060a'; g.fillRect(CX - HW + k * (HW / 5), yOf(150) + 10, HW / 5, 10); } // start line
+  g.restore();
+  floor(); g.strokeStyle = '#030405'; g.lineWidth = 6; g.stroke();
+  for (const sg of T.signs) { const y = yOf(sg.y); if (y > v0 && y < v1) signPlate(g, CX, y, 0, sg.txt, sg.col || '#fcee0a', 20, 0.9); }
+  { const pu = 0.5 + 0.5 * Math.sin(time * 6); g.save(); g.fillStyle = `rgba(0,240,255,${0.5 + 0.5 * pu})`; // arrows into the BOSS doorway
+    for (let i = 0; i < 3; i++) { const y = top + 70 - i * 18 - pu * 5; g.beginPath(); g.moveTo(CX - 12, y); g.lineTo(CX, y - 10); g.lineTo(CX + 12, y); g.lineTo(CX, y - 4); g.closePath(); g.fill(); } g.restore(); }
+  // gaps: no wall, the floor just ends
+  for (const gp of T.gaps) { const y1 = yOf(gp.to), y2 = yOf(gp.from), x = CX + gp.side * HW; if (y2 < v0 || y1 > v1) continue;
+    g.fillStyle = 'rgba(255,42,85,.14)'; g.fillRect(gp.side > 0 ? x : x - 80, y1, 80, y2 - y1);
+    g.strokeStyle = '#ff2a55'; g.lineWidth = 4; g.setLineDash([12, 8]); g.lineDashOffset = -time * 30; g.beginPath(); g.moveTo(x, y1); g.lineTo(x, y2); g.stroke(); g.setLineDash([]);
+    for (let k = 0; k < 3; k++) { const ph = (time * 1.4 + k / 3) % 1, cx2 = x + gp.side * (10 + ph * 44), cy2 = (y1 + y2) / 2; g.save(); g.translate(cx2, cy2); g.rotate(gp.side > 0 ? -Math.PI / 2 : Math.PI / 2); g.globalAlpha = Math.sin(ph * Math.PI);
+      g.fillStyle = '#ff2a55'; g.beginPath(); g.moveTo(-10, -5); g.lineTo(0, 4); g.lineTo(10, -5); g.lineTo(10, 0); g.lineTo(0, 9); g.lineTo(-10, 0); g.closePath(); g.fill(); g.restore(); }
+    signPlate(g, x - gp.side * 46, y1 - 16, 0, 'OUT', '#ff2a55', 13, 0.95); }
+  // walls: only the rim shows on the straight sides (they are edge-on to the camera); the funnel and the start wall show a face
+  const stripes = (x, y, w, hh) => { g.save(); g.beginPath(); g.rect(x, y, w, hh); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x, y, w, hh); g.fillStyle = '#0b0b0b'; for (let k = Math.floor(y / 18) - 1; k * 18 < y + hh + 18; k++) { g.beginPath(); g.moveTo(x, k * 18); g.lineTo(x + w, k * 18 - 8); g.lineTo(x + w, k * 18 + 1); g.lineTo(x, k * 18 + 9); g.closePath(); g.fill(); } g.restore(); };
+  for (const sd of [-1, 1]) {
+    let segs = [[0, sF]];
+    for (const gp of T.gaps) if (gp.side === sd) segs = segs.flatMap(([a, b]) => gp.to <= a || gp.from >= b ? [[a, b]] : [[a, gp.from], [gp.to, b]].filter(q => q[1] > q[0]));
+    const x = CX + sd * HW, x0 = sd > 0 ? x : x - 24;
+    for (const [a, b] of segs) { const y1 = Math.max(yOf(b), v0 - 40), y2 = Math.min(yOf(a), v1 + 40); if (y2 <= y1) continue;
+      g.fillStyle = '#0d1013'; g.fillRect(x0, y2 - dz, 24, dz); g.strokeStyle = '#030405'; g.lineWidth = 3; g.strokeRect(x0, y2 - dz, 24, dz);   // end face
+      g.fillStyle = '#14181c'; g.fillRect(x0, y1 - dz, 24, y2 - y1); g.strokeRect(x0, y1 - dz, 24, y2 - y1);
+      stripes(sd > 0 ? x + 15 : x - 22, y1 - dz, 7, y2 - y1);
+      g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y1 - dz); g.lineTo(x, y2 - dz); g.stroke(); }
+    const fx = CX + sd * gw, quad = (p1, p2, p3, p4, col) => { g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.lineTo(p3[0], p3[1]); g.lineTo(p4[0], p4[1]); g.closePath(); g.fillStyle = col; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = 3; g.stroke(); };
+    quad([x, yF], [fx, top], [fx, top - dz], [x, yF - dz], '#1f272d');                                             // funnel inner face
+    quad([x, yF - dz], [fx, top - dz], [fx + sd * 24, top - dz], [x + sd * 24, yF - dz], '#14181c');               // funnel rim
+    g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, yF - dz); g.lineTo(fx, top - dz); g.stroke();
+  }
+  if (y0 < v1 + 60) { g.fillStyle = '#14181c'; g.fillRect(CX - HW - 24, y0 - dz, HW * 2 + 48, 24); g.strokeStyle = '#030405'; g.lineWidth = 3; g.strokeRect(CX - HW - 24, y0 - dz, HW * 2 + 48, 24);
+    g.fillStyle = '#0d1013'; g.fillRect(CX - HW - 24, y0 - dz + 24, HW * 2 + 48, dz); g.strokeRect(CX - HW - 24, y0 - dz + 24, HW * 2 + 48, dz); }
+}
+// HUD centre plate in track mode: the three lives (lineup order) and progress up the road / BOSS health
+function trackHudPlate(g, T0) {
+  const T = G.track, n = G.lineup.length;
+  for (let i = 0; i < n; i++) { const x = CX + (i - (n - 1) / 2) * 36, y = T0 + 64, lost = i < T.idx, cur = i === T.idx;
+    g.beginPath(); g.arc(x, y, 13, 0, TAU); g.fillStyle = lost ? '#1a1e26' : cur ? '#fcee0a' : 'rgba(252,238,10,.35)'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = lost ? '#3a4250' : cur ? '#00f0ff' : '#fcee0a'; g.lineWidth = 2; g.stroke();
+    g.font = 'italic 900 14px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillStyle = lost ? '#59606c' : '#05060a'; g.fillText(lost ? '×' : String(i + 1), x, y + 1); }
+  const b = T.boss, txt = T.zone === 'boss' ? `BOSS ${Math.max(0, Math.ceil(b.hp / b.s.maxHp * 100))}%` : `${Math.round(T.best / T.len * 100)}%`;
+  g.font = 'italic 900 17px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText(txt, CX, T0 + 94); g.fillStyle = T.zone === 'boss' ? '#ff2a55' : '#7fdfff'; g.fillText(txt, CX, T0 + 94);
+}
+// story screen helpers for track levels
+function levelFoe(lv) {
+  if (!lv.track) return lv.foe;
+  const seen = {}, mobs = (lv.track.mobs || []).filter(m => !seen[m.c] && (seen[m.c] = 1)).slice(0, 2), bs = lv.boss;
+  return { name: bs.name, diff: bs.diff || 'normal', team: [...mobs, bs], tags: [...mobs.map(m => m.type === 'rush' ? '衝撞型小兵' : '守門型小兵'), 'BOSS'] };
+}
+function levelTags(lv) {
+  if (!lv.track) return stageTags(lv.stage);
+  const tr = lv.track, t = ['賽道關・3 條命'], PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區', pit: '陷阱洞' }, cnt = {};
+  if ((tr.gaps || []).length) t.push('牆有缺口');
+  for (const p of tr.props || []) cnt[p.type] = 1;
+  for (const k in cnt) t.push(PN[k]);
+  if ((tr.mobs || []).length) t.push('敵人 ×' + tr.mobs.length);
+  t.push('終點 BOSS'); return t;
+}
+
 // ---------- props (機關) physics ----------
 const PROP_TR = TR * 0.75;
 function propHit(t, P, nx, ny, vn, e, px, py) { // vn: approach speed, e: how much of it bounces back
@@ -3758,6 +4046,10 @@ function propHit(t, P, nx, ny, vn, e, px, py) { // vn: approach speed, e: how mu
 function propStep(t, h) {
   const T = G.time;
   for (const P of PROPS) {
+    if (P.type === 'pit') {
+      if (t.side === 0 && !t.mob && !(t.invT > 0) && !t.falling && len(t.x - P.x, t.y - P.y) < P.r - 8) { t.falling = 0.7; t.fellIn = { pts: 0, name: 'TRAP' }; t.vx *= 0.25; t.vy *= 0.25; addText(t.x, t.y - 50, '掉進陷阱！', '#ff2a55', 26); comicPop(t.x, t.y - 100, 'TRAP!!', 40, '#ffffff', '#ff2a55', 1); SFX.gate(); G.shake = 10; return; }
+      continue;
+    }
     if (P.type === 'bumper') {
       const dx = t.x - P.x, dy = t.y - P.y, d = len(dx, dy), R0 = P.r + PROP_TR;
       if (d < R0 && d > 0) { const nx = dx / d, ny = dy / d, vn = -(t.vx * nx + t.vy * ny); t.x = P.x + nx * R0; t.y = P.y + ny * R0;
@@ -3806,7 +4098,7 @@ function stepTop(t, foe, h) {
   }
   // timers
   if (t.s.a.special === 'regen' && t.hp > 0) t.hp = Math.min(t.s.maxHp, t.hp + t.s.maxHp * 0.012 * h);
-  for (const k of ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT']) if (t[k] > 0) t[k] -= h;
+  for (const k of TOP_TIMERS) if (t[k] > 0) t[k] -= h;
   if (t.poisonT > 0) { t.poisonT -= h; if (t.poisonT <= 0) t.poison = 0; }
   if (t.boostT <= 0 && !t.ex) { t.dashMult = 1; t.kbMult = 1; }
 
@@ -3814,6 +4106,9 @@ function stepTop(t, foe, h) {
   let u = { x: 0, y: 0 };
   if (t.stunT <= 0) { if (t.side === 0) { u = playerInput(t); if (!u.x && !u.y && !G.joy) { const a = playerAutoInput(t, foe); if (a) u = a; } } else u = aiInput(t, foe, h); }
   if (PROPS.length && t.side === 1) u = propAvoid(t, u);
+  if (t.chargeT > 0 || t.teleT > 0) u = { x: 0, y: 0 };
+  const inTrack = onTrack();
+  if (inTrack && t.side === 0) u = { ...u, x: u.x * 0.5, y: u.y * 0.5 }; // on the track dragging only nudges; the walls do the steering
   if ((t.s.c.homing || t.s.w.special === 'homing') && !foe.dead && t.side === 0 && (u.x || u.y)) {
     const d = norm(foe.x - t.x, foe.y - t.y); u = { x: u.x + d.x * 0.18, y: u.y + d.y * 0.18 };
   }
@@ -3870,12 +4165,12 @@ function stepTop(t, foe, h) {
       addText(t.x, t.y - 34, '直衝中心！', '#00f0ff', 24); SFX.boost(); sparks(t.x, t.y, 24, '#00f0ff', 320, true); G.shake = Math.max(G.shake, 5); wave(t.x, t.y, '0,240,255', 80, 6, 0.35);
     }
   } else {
-    const pull = BASIN_PULL * (t.s.c.pull || 1);
+    const pull = inTrack ? 0 : BASIN_PULL * (t.s.c.pull || 1);
     let ax = u.x * t.s.accel * ctrl - (t.x - CX) * pull;
     let ay = u.y * t.s.accel * ctrl - (t.y - CY) * pull;
     t.vx += ax * h; t.vy += ay * h;
     const sp = len(t.vx, t.vy);
-    const fr = sp > t.s.maxSpeed ? (t.launchedT > 0 ? 0.5 : 1.3) : 0.4;
+    const fr = sp > t.s.maxSpeed ? (t.launchedT > 0 ? 0.5 : 1.3) : (inTrack ? 0.12 : 0.4);
     t.vx *= 1 - fr * h; t.vy *= 1 - fr * h;
     t.x += t.vx * h; t.y += t.vy * h;
     // attach to the rail
@@ -3892,8 +4187,9 @@ function stepTop(t, foe, h) {
       }
     }
     // walls (ellipse) & hell gate
-    const m = TR * 0.6, q = qOf(t.x, t.y, m);
-    const gz = gateZone(t.x, t.y);
+    if (inTrack) trackBounds(t, h);
+    const m = (t.rad || TR) * 0.6, q = inTrack ? 0 : qOf(t.x, t.y, m);
+    const gz = inTrack ? null : gateZone(t.x, t.y);
     if (gz) {
       // each exit sits below a raised step: the floor slopes up toward it, and only a top that was
       // just knocked (hitT) and is flying outward fast enough clears the step and drops in
@@ -3901,13 +4197,14 @@ function stepTop(t, foe, h) {
       if (qOf(t.x, t.y) > 0.62) { t.vx -= nx * GATE_SLOPE * h; t.vy -= ny * GATE_SLOPE * h; }
       if (q > 1) {
         const vn = t.vx * nx + t.vy * ny;
-        if (t.hitT > 0 && vn > GATE_SPEED) {
+        if (t.hitT > 0 && vn > GATE_SPEED && !t.boss && !(t.invT > 0)) {
           t.falling = 0.7; t.onRing = false; t.fellIn = gz;
           addText(t.x, t.y - 50, `${gz.name}！+${gz.pts}`, gz.txt, 32); SFX.gate(); comicPop(t.x, t.y - 105, gz.pts >= 3 ? 'KA-BOOOM!!' : 'OUT!!', gz.pts >= 3 ? 50 : 42, '#ffffff', '#ff2a55', 1.2); focusLines(t.x, t.y, 'rgba(255,42,85,.8)', 0.5); sparks(t.x, t.y, 40, `rgb(${gz.col})`, 300, true); G.shake = 14;
           wave(t.x, t.y, gz.col, 160, 10, 0.6); G.hitStop = 0.12; G.flash = 0.25; G.flashCol = gz.col; camPunch('ko', t.x, t.y); G.slowT = CAM.slowT;
         } else {
           const c = eClamp(t.x, t.y, m); t.x = c.x; t.y = c.y;
           if (vn > 0) {
+            if (t.boss && t.chargeT > 0 && vn > 300) bossCrash(t);
             t.vx -= 1.4 * vn * nx; t.vy -= 1.4 * vn * ny;
             if (vn > 90) { sparks(t.x + nx * TR, t.y + ny * TR, 6, '#ff9a5a', 150); SFX.wall(vn); }
             if (vn > 140 && t.nearT <= 0) { addText(t.x, t.y - 44, '台階擋下！', '#ffb38a', 16); t.nearT = 1.2; }
@@ -3918,7 +4215,7 @@ function stepTop(t, foe, h) {
       const n = eNormal(t.x, t.y), nx = n.x, ny = n.y;
       const c = eClamp(t.x, t.y, m); t.x = c.x; t.y = c.y;
       const vn = t.vx * nx + t.vy * ny;
-      if (vn > RO_SPEED && t.hitT > 0 && t.bigT > 0 && Math.random() < Math.min(RO_MAX, (vn - RO_SPEED) / RO_SPAN)) {
+      if (!t.boss && !(t.invT > 0) && vn > RO_SPEED && t.hitT > 0 && t.bigT > 0 && Math.random() < Math.min(RO_MAX, (vn - RO_SPEED) / RO_SPAN)) {
         t.falling = 1.0; t.ringOut = true; t.onRing = false; t.fellIn = RINGOUT; t.vx = nx * vn * 0.9 + t.vx * 0.2; t.vy = ny * vn * 0.9 + t.vy * 0.2;
         addText(t.x, t.y - 50, 'RING OUT！+2', RINGOUT.txt, 32); SFX.gate(); SFX.wall(vn);
         comicPop(t.x, t.y - 105, 'SKY HIGH!!', 46, '#ffffff', '#00f0ff', 1.2); focusLines(t.x, t.y, 'rgba(127,223,255,.8)', 0.5);
@@ -3927,6 +4224,7 @@ function stepTop(t, foe, h) {
         return;
       }
       if (vn > 0) {
+        if (t.boss && t.chargeT > 0 && vn > 300) bossCrash(t);
         t.vx -= 1.95 * vn * nx; t.vy -= 1.95 * vn * ny; t.spin -= vn / 40000;
         // tangential kick from the spin, so tops ricochet along the rim instead of just stopping
         t.vx += -ny * t.s.w.dir * vn * 0.25; t.vy += nx * t.s.w.dir * vn * 0.25;
@@ -3951,9 +4249,10 @@ function stepTop(t, foe, h) {
 function collide(a, b, h) {
   if (a.dead || b.dead || a.falling || b.falling) return;
   const dx = b.x - a.x, dy = b.y - a.y, d = len(dx, dy);
-  if (d >= TR * 2 || d === 0) return;
+  const RR = (a.rad || TR) + (b.rad || TR);
+  if (d >= RR || d === 0) return;
   const nx = dx / d, ny = dy / d;
-  const ov = TR * 2 - d, ma = a.s.mass, mb = b.s.mass;
+  const ov = RR - d, ma = a.s.mass, mb = b.s.mass;
   if (!a.onRing) { a.x -= nx * ov * mb / (ma + mb); a.y -= ny * ov * mb / (ma + mb); }
   if (!b.onRing) { b.x += nx * ov * ma / (ma + mb); b.y += ny * ov * ma / (ma + mb); }
   const vrel = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
@@ -3971,6 +4270,7 @@ function collide(a, b, h) {
 
 function endRound(winner, pts, reason) {
   if (G.phase !== 'battle') return;
+  if (G.track) return trackEnd(winner, pts, reason);
   G.phase = 'roundEnd'; G.joy = null;
   if (winner !== null) G.score[winner] += pts;
   if (winner === 0) G.log.by[reason] = (G.log.by[reason] || 0) + 1;
@@ -4009,7 +4309,7 @@ function finish() {
   { const S = INV.stats; S.matches++; if (win) { S.wins++; S.streak++; S.best = Math.max(S.best, S.streak); } else { S.losses++; S.streak = 0; } S.coins += got;
     for (const b of collection) S.use[b.c] = (S.use[b.c] || 0) + 1; }
   save();
-  document.getElementById('finalScore').innerHTML = `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br><span class="coinGot">${ORE} +${got}${daily ? `（含每日首勝 +${DAILY_COIN}）` : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  document.getElementById('finalScore').innerHTML = `<b class="fsc">${G.track ? (win ? 'STAGE CLEAR!' : 'GAME OVER') : `YOU ${G.score[0]} : ${G.score[1]} CPU`}</b><br><span class="coinGot">${ORE} +${got}${daily ? `（含每日首勝 +${DAILY_COIN}）` : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
   if (gift) document.getElementById('finalScore').insertAdjacentHTML('beforeend', `<div class="coinGot" style="margin-top:.4em;color:#fcee0a;font-weight:900">🎁 新手禮：${ORE} +10000，快去抽補給箱！</div>`);
   const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）';
@@ -4046,6 +4346,7 @@ function update(dt) {
     const steps = 4, h = dt / steps;
     for (let i = 0; i < steps && G.phase === 'battle'; i++) {
       if (G.pairCD > 0) G.pairCD -= h;
+      if (G.track) { trackPhysics(h); continue; }
       stepTop(G.tops[0], G.tops[1], h);
       if (G.phase !== 'battle') break;
       stepTop(G.tops[1], G.tops[0], h);
@@ -4064,6 +4365,7 @@ function update(dt) {
     for (const t of G.tops) t.angle += t.s.w.dir * 4 * dt;
     autoLaunchStep(dt);
   } else if (G.phase === 'count') updateCount(dt);
+  else if (G.phase === 'respawn' || G.phase === 'trackEnd') trackWait(dt);
   for (const t of G.tops) {
     const fast = t.onRing || len(t.vx, t.vy) > 380;
     if (fast && !t.dead && !t.falling) { t.trail.push({ x: t.x, y: t.y }); if (t.trail.length > 16) t.trail.shift(); }
@@ -4164,6 +4466,7 @@ function drawArenaStatic(g, noWall, noBack) {
   g.restore();
   // hell-gate pit cut through the wall
   for (const gt of GATES) {
+    if (gt.door) continue; // track entrance: an open doorway until the player is inside
     g.beginPath(); ell(30, gt.a - gt.half, gt.a + gt.half); ell(-3, gt.a + gt.half, gt.a - gt.half, true); g.closePath();
     const pit = g.createRadialGradient(gt.x, gt.y + 10, 2, gt.x, gt.y + 10, 70);
     pit.addColorStop(0, `rgba(${gt.col},.25)`); pit.addColorStop(1, '#070102');
@@ -4210,6 +4513,7 @@ function drawArena(g, time) {
   }
   const pulse = 0.6 + 0.4 * Math.sin(time * 4);
   for (const gt of GATES) {
+    if (gt.door) continue;
     // exit glow + embers
     g.save();
     g.beginPath(); g.moveTo(CX, CY); ell(30, gt.a - gt.half, gt.a + gt.half); g.closePath(); g.clip();
@@ -4329,12 +4633,12 @@ function drawHUD(g) {
   const nameAt = (txt, x, align, col) => { g.textAlign = align; const tw = Math.min(150, g.measureText(txt).width); g.save(); g.translate(x, T + 16); if (g.measureText(txt).width > 150) g.scale(150 / g.measureText(txt).width, 1); g.strokeText(txt, 0, 0); g.fillStyle = col; g.fillText(txt, 0, 0); g.restore(); };
   nameAt(playerName(), 24, 'left', '#00f0ff'); nameAt(aiName, W - 24, 'right', '#ff3b5c');
   g.textAlign = 'center'; g.font = 'italic 900 13px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.75)';
-  g.fillText(G.sudden ? 'SUDDEN DEATH' : `ROUND ${G.round} / 3`, CX, T + 16);
+  g.fillText(G.track ? `STAGE ${G.level.id}` : G.sudden ? 'SUDDEN DEATH' : `ROUND ${G.round} / 3`, CX, T + 16);
   // score plate
   g.beginPath(); g.moveTo(CX - 62, T + 40); g.lineTo(CX + 70, T + 40); g.lineTo(CX + 62, T + 108); g.lineTo(CX - 70, T + 108); g.closePath();
   g.fillStyle = '#0b0e14'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = 'rgba(252,238,10,.7)'; g.lineWidth = 1.5; g.stroke();
   g.font = 'italic 900 44px Rajdhani, sans-serif';
-  { const sc = `${G.score[0]} : ${G.score[1]}`, sy = T + 76; g.lineWidth = 8; g.strokeStyle = '#05060a'; g.strokeText(sc, CX + 3, sy + 3); g.strokeText(sc, CX, sy); g.fillStyle = '#05060a'; g.fillText(sc, CX + 3, sy + 3); g.fillStyle = '#fcee0a'; g.fillText(sc, CX, sy); }
+  if (G.track) trackHudPlate(g, T); else { const sc = `${G.score[0]} : ${G.score[1]}`, sy = T + 76; g.lineWidth = 8; g.strokeStyle = '#05060a'; g.strokeText(sc, CX + 3, sy + 3); g.strokeText(sc, CX, sy); g.fillStyle = '#05060a'; g.fillText(sc, CX + 3, sy + 3); g.fillStyle = '#fcee0a'; g.fillText(sc, CX, sy); }
   // each side: portrait, card name, parts, bars, status tags
   const side = (t, align, col) => {
     const L = align === 'left', ps = 54, px = L ? 22 : W - 22 - ps, py = T + 40, x = L ? px + ps + 8 : px - 8 - 118, tw = 118;
@@ -4358,7 +4662,7 @@ function drawHUD(g) {
   // bottom hints
   g.textAlign = 'center'; g.font = '14px Rajdhani, sans-serif';
   const hint = (lines, y) => { const L = SETTINGS.exSide === 'left'; g.font = '13px Rajdhani, sans-serif'; g.textAlign = 'left'; const x = L ? 160 : 16; g.fillStyle = 'rgba(5,6,10,.7)'; g.fillRect(x, y - 16, 364, lines.length * 20 + 8); g.fillStyle = 'rgba(255,255,255,.85)'; lines.forEach((l, i) => g.fillText(l, x + 9, y + i * 20)); g.textAlign = 'center'; };
-  if (G.phase === 'launch') hint(['按下的位置就是落點・往後拉決定方向和力道・放開發射', '電腦落點是秘密！放開後 3、2、1、SPIN! SPIN! 一起發射'], 772);
+  if (G.phase === 'launch') hint(G.track ? ['按住往後拉決定方向和力道・放開發射！', '飛行中按住拖曳可以微調方向・點畫面充能 EX'] : ['按下的位置就是落點・往後拉決定方向和力道・放開發射', '電腦落點是秘密！放開後 3、2、1、SPIN! SPIN! 一起發射'], 772);
   else if (G.phase === 'battle' && !(G.coach && !(G.didDrag && G.didTap))) { g.fillStyle = 'rgba(255,255,255,.55)'; g.fillText('按住拖曳移動・點畫面任何地方充能 EX', CX - 50, 800); }
 }
 
@@ -4416,6 +4720,12 @@ function drawRim(g, A0, A1) {
 // ---------- props drawing (floor space, squashed by the 2.5D view) ----------
 function drawPropsFloor(g, time) {
   for (const P of PROPS) {
+    if (P.type === 'pit') {
+      g.save(); g.fillStyle = '#030305'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 6; g.stroke();
+      g.strokeStyle = `rgba(255,42,85,${0.6 + 0.4 * Math.sin(time * 6)})`; g.lineWidth = 3; g.stroke();
+      for (let k = 1; k <= 3; k++) { g.strokeStyle = `rgba(255,42,85,${0.3 - k * 0.07})`; g.lineWidth = 2; g.beginPath(); g.arc(P.x, P.y + k * 3, P.r * (1 - k * 0.24), 0, TAU); g.stroke(); }
+      g.restore(); continue;
+    }
     if (P.type === 'spikes') {
       const on = spikesOn(P, time), cyc = P.on + P.off, warn = !on && P.on && (time % cyc) > cyc - 0.7;
       g.save(); g.fillStyle = on ? 'rgba(255,42,85,.3)' : 'rgba(255,42,85,.08)'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill();
@@ -4525,9 +4835,11 @@ function drawExAnim(g, kind, t, foe, k) {
 }
 function drawTopWorld(g, t) {
   if (t.dead) return;
-  if (t.side === 1 && G && (G.phase === 'launch' || G.phase === 'count')) return; // the CPU's drop point stays secret until SPIN!
+  if (t.side === 1 && G && !G.track && (G.phase === 'launch' || G.phase === 'count')) return; // the CPU's drop point stays secret until SPIN!
   g.save();
   g.translate(t.x, t.y);
+  if (t.rad) g.scale(t.rad / TR, t.rad / TR); // BOSS / small enemies
+  if (t.invT > 0) g.globalAlpha = 0.5 + 0.4 * Math.sin(G.time * 40);
   let sc = 1;
   let roLift = 0;
   if (t.falling > 0 && t.ringOut) { const u = 1 - clamp(t.falling, 0, 1); roLift = Math.sin(Math.PI * Math.min(1, u * 1.15)) * 150 + u * 40; sc = 1 - u * 0.35; g.globalAlpha = Math.min(1, t.falling * 2.5); }
@@ -4600,8 +4912,10 @@ function render() {
   viewK = VIEW_K;
   const cam = camNow(), z = cam.z;
   const ex = scale * (CX - cam.x * z) + sx * scale, ey = scale * (VIEW_CY - cam.y * z * VIEW_K) + sy * scale;
+  if (G.track) trackBackdrop(g, cam);
   g.setTransform(z, 0, 0, z * VIEW_K, ex, ey); g.drawImage(arenaCache, 0, 0);
   g.setTransform(scale * z, 0, 0, scale * z * VIEW_K, ex, ey);
+  if (G.track) drawTrack(g, G.time, cam);
   drawArena(g, G.time);
   drawFarWall(g);
   if (G.rimFlash) {
@@ -4638,6 +4952,7 @@ function render() {
   drawNearWall(g); // tops ride in front of the near wall (they sit on the floor inside it, the camera looks down over the rim)
   { // tops and raised props (pillars, bars) drawn farther first
     const items = G.tops.map(t => ({ y: t.y, f: () => drawTopWorld(g, t) }));
+    if (G.track) { for (const m of G.track.mobs) if (!m.dead) items.push({ y: m.y, f: () => drawTopWorld(g, m) }); if (G.track.zone === 'track') items.push({ y: G.track.boss.y, f: () => drawTopWorld(g, G.track.boss) }); }
     for (const P of PROPS) if (P.type === 'bumper' || P.type === 'mover') { const S = P.type === 'mover' ? moverSeg(P, G.time) : null; items.push({ y: S ? (S.y1 + S.y2) / 2 : P.y, f: () => drawPropRaised(g, P) }); }
     items.sort((a, b) => a.y - b.y).forEach(it => it.f()); }
   for (const w of G.waves) {
@@ -4788,7 +5103,7 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openTeam();
 })();
 </script>
