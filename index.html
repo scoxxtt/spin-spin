@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.14.0</title>
+<title>SPIN! SPIN! v0.15.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -665,10 +665,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.12.0 chapter/level skeleton: stage settings (wall height, exits, WORMHOLE, CORE, floor colour), 4 props (bumper, boost pad, moving bar, spike zone), CHAPTERS data, story screen, unlocks, 3-star conditions, rewards, chapter 1 (4 levels)
  v0.13.0 track levels: vertical pinball-style road (pull to launch, bounce off walls, drag to nudge), wall gaps and pits, 3 lineup tops = 3 lives with respawn where the last fell, road enemies (guard / rush), seamless BOSS arena at the top (3 phases, charge that stuns itself on walls), chapter 1 rebuilt as track level 1-1
  v0.14.0 two more track levels: 1-2 rooftop (many wall gaps, sideways boost pads, low-wall BOSS arena) and 1-3 cage tunnel (bumper jungle, spike rows, BOSS with 2 lives); multi-life BOSS clears its phase props and minions when it gets back up
+ v0.15.0 BOSSes are controlled versions of existing characters (boss_* classes, darkened red-eye portraits with live glow), each with a signature move (triple slam, bounty, shield + chained charges); red alarm light in the BOSS arena
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.14.0';
+const GAME_VERSION = 'v0.15.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -863,6 +864,24 @@ const ICON_SRC = { w: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA
 const FACE = { berserker: [140, 108, 72], guardian: [128, 104, 68], assassin: [128, 112, 66], mage: [106, 104, 70], hunter: [126, 110, 72], undead: [130, 104, 72], mechcat: [128, 136, 80] };
 const PORTRAITS = {}; ICONS.w.src = ICON_SRC.w; ICONS.a.src = ICON_SRC.a;
 for (const id of ['rat', 'rex', 'octo', 'rider', 'tesla', 'cactus', 'erin', 'jack', 'dj', 'spam', 'nova', 'raven', 'twins', 'chrono', 'david', 'sheep', 'maiden', 'theseus', 'proteus', 'host']) PORTRAIT_SRC[id] = `art/portraits/${id}.jpg`;
+// BOSS versions of existing characters ("controlled": black forehead, red eyes — art/portraits/boss_*.jpg, made by a script from the normal portrait).
+// They are added non-enumerable so the codex, gacha pools and random line-ups never see them. eyes = pupil centres on the 256px portrait (for the live glow).
+// sig = signature move in the BOSS arena: quake3 連環重砸, bounty 全場通緝, wall 盾牆＋連續衝鋒
+function defBoss(id, base, o) { Object.defineProperty(CLASSES, id, { value: Object.assign({}, CLASSES[base], o, { bossOf: base }), enumerable: false }); PORTRAIT_SRC[id] = `art/portraits/${id}.jpg`; if (FACE[base]) FACE[id] = FACE[base]; }
+defBoss('boss_rex', 'rex', { name: '暴走鐵拳・雷克斯', sig: 'quake3', eyes: [[117.5, 111], [167, 113]], lore: '被不明訊號控制的雷克斯。液壓義手失去限制，連砸三下地板。' });
+defBoss('boss_jack', 'jack', { name: '黑化獵人・傑克', sig: 'bounty', eyes: [[91, 88], [132, 78.7]], lore: '被控制的傑克。把整個場子的人都當成懸賞目標。' });
+defBoss('boss_erin', 'erin', { name: '壞掉的盾・艾琳', sig: 'wall', eyes: [[108.8, 96.5], [151, 97.5]], lore: '被控制的艾琳。盾還舉著，只是不再分敵我。' });
+// live red glow on a BOSS portrait: mx/my map portrait pixels to canvas, k = canvas px per portrait px
+function eyeGlow(g, c, mx, my, k) {
+  const E = CLASSES[c] && CLASSES[c].eyes; if (!E) return;
+  const t = performance.now() / 1000, pu = (0.45 + 0.55 * Math.abs(Math.sin(t * 5.5))) * (Math.sin(t * 31) > 0.7 ? 0.55 : 1);
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const [ex, ey] of E) { const x = mx(ex), y = my(ey), r = 15 * k * (0.7 + 0.5 * pu), gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, `rgba(255,150,130,${0.95 * pu})`); gr.addColorStop(0.3, `rgba(255,30,50,${0.75 * pu})`); gr.addColorStop(1, 'rgba(255,0,40,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();
+    g.fillStyle = `rgba(255,60,70,${0.5 * pu})`; g.beginPath(); g.ellipse(x, y, 30 * k * pu, 2.2 * k, 0, 0, TAU); g.fill(); }
+  g.restore();
+}
 for (const k in PORTRAIT_SRC) { const im = new Image(); im.src = PORTRAIT_SRC[k]; PORTRAITS[k] = im; }
 const portraitOk = c => PORTRAITS[c] && PORTRAITS[c].complete && PORTRAITS[c].naturalWidth > 0;
 // draw a class face into a circle of radius r centred on (x, y)
@@ -872,6 +891,7 @@ function drawFace(g, c, x, y, r, rot) {
   g.save(); g.beginPath(); g.arc(x, y, r, 0, TAU); g.clip();
   if (rot) { g.translate(x, y); g.rotate(rot); g.translate(-x, -y); }
   g.drawImage(PORTRAITS[c], fx - fr, fy - fr, fr * 2, fr * 2, x - r, y - r, r * 2, r * 2);
+  eyeGlow(g, c, px => x - r + (px - fx + fr) * r / fr, py => y - r + (py - fy + fr) * r / fr, r / fr);
   g.restore();
   return true;
 }
@@ -880,6 +900,7 @@ function drawPortrait(g, c, x, y, w, h) {
   if (!portraitOk(c)) return false;
   const im = PORTRAITS[c], k = Math.max(w / 256, h / 256), sw = w / k, sh = h / k;
   g.drawImage(im, (256 - sw) / 2, Math.max(0, (256 - sh) * 0.3), sw, sh, x, y, w, h);
+  if (CLASSES[c] && CLASSES[c].eyes) { g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); eyeGlow(g, c, px => x + (px - (256 - sw) / 2) * k, py => y + (py - Math.max(0, (256 - sh) * 0.3)) * k, k); g.restore(); }
   return true;
 }
 const BUILDS = [
@@ -2564,7 +2585,7 @@ document.getElementById('fightBtn').onclick = fight;
 //   track   len 賽道長度（像素）、mobLv 小兵裝備等級、floor 地板三色、signs 地面招牌 [{ y, txt, col }]
 //           gaps 牆上的缺口＝出界 [{ side: 'L' 或 'R', from, to }]、props 機關（位置改用 x：-1 左牆～1 右牆、y：離起點幾像素；多一種 pit 陷阱洞）
 //           mobs 途中敵人 [{ type: 'guard' 守門型（左右巡邏）或 'rush' 衝撞型（靠近就衝過來）, x, y, c, w, a, hp 血量倍率（預設 0.4） }]
-//   boss    name、c／w／a、diff 強度、lv 裝備等級、hp 血量倍率、size 體型倍率、lives 幾條血、stage BOSS 場的場地設定（同對戰關 stage，預設標準出口）
+//   boss    name、c 用 BOSS 版角色（boss_rex／boss_jack／boss_erin，用 defBoss 新增；決定頭像與招牌技）、w／a、diff 強度、lv 裝備等級、hp 血量倍率、size 體型倍率、lives 幾條血、stage BOSS 場的場地設定（同對戰關 stage，預設標準出口）
 //           phase2（血量 70% 以下）／phase3（35% 以下，同時暴走）：{ props: 新增機關（用時鐘位置 at／d）, mobs: 叫出小兵 }
 //   stars   多一種 ['lives', 2]：剩 2 隻以上陀螺過關（3＝一隻都沒倒下）
 // 章節 bonus：整章全三星的獎勵。下一章的第一關，要前一章最後一關過關才解鎖。
@@ -2572,7 +2593,7 @@ document.getElementById('fightBtn').onclick = fight;
 const CHAPTERS = [
   { id: 'c1', no: 1, name: '第一章・霓虹新人賽', desc: '夜之城地下陀螺聯賽的新人選拔。三條賽道，三個 BOSS。', bonus: { coins: 2500, box: 'purple' }, levels: [
     // ---- 賽道關（track）：直條地圖往上衝，終點無縫接 BOSS 圓形場。位置用 x（-1 左牆～1 右牆）與 y（離起點幾像素）----
-    { id: '1-1', name: '霓虹高架', boss: true, desc: '拉彈發射、自動彈牆，飛行中拖曳微調方向。爆甲、出界、掉進陷阱或停轉就換下一隻陀螺，在倒下的地方重新發射。衝進終點的圓形場，把 BOSS 打到爆甲才算過關！BOSS 衝撞撞到牆會暈眩，那時候傷害 ×1.5。',
+    { id: '1-1', name: '霓虹高架', boss: true, desc: '拉彈發射、自動彈牆，飛行中拖曳微調方向。爆甲、出界、掉進陷阱或停轉就換下一隻陀螺，在倒下的地方重新發射。衝進終點的圓形場，把 BOSS 打到爆甲才算過關！BOSS 是被控制的鐵拳・雷克斯：他會連砸三下地板，砸完拳頭會卡住，那是進攻的好機會；衝撞撞到牆也會暈眩，傷害 ×1.5。',
       track: { len: 2700, mobLv: -0.05, floor: ['#3d4f86', '#2b3766', '#1a2144'],
         signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'BUMPER ALLEY' }, { y: 1160, txt: 'DANGER GAP', col: '#ff2a55' }, { y: 1700, txt: 'SPIKE ROAD', col: '#ff2a55' }, { y: 1900, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2290, txt: 'FINAL DASH', col: '#7fdfff' }],
         gaps: [{ side: 'L', from: 1230, to: 1400 }, { side: 'R', from: 1450, to: 1620 }],
@@ -2585,13 +2606,13 @@ const CHAPTERS = [
         mobs: [
           { type: 'guard', x: 0, y: 1060, c: 'rat', w: 'gatling', a: 'hover' },
           { type: 'rush', x: -0.45, y: 2090, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: 0.45, y: 2150, c: 'rider', w: 'chainaxe', a: 'carbonvest' } ] },
-      boss: { name: '廠長・齒輪', c: 'rex', w: 'hydrohammer', a: 'exoskeleton', diff: 'normal', lv: 0.05, hp: 1.8, size: 1.6, lives: 1,
+      boss: { name: '暴走鐵拳・雷克斯', c: 'boss_rex', w: 'hydrohammer', a: 'exoskeleton', diff: 'normal', lv: 0.05, hp: 1.6, size: 1.6, lives: 1,
         stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#6e5c3c', '#4f412a', '#2f2718'] },
         phase2: { props: [{ type: 'mover', at: 12, d: 0, len: 120, move: 'spin', speed: 0.12 }], mobs: [{ type: 'guard', at: 9.5, d: 0.5, c: 'rat', w: 'gatling', a: 'hover' }, { type: 'guard', at: 2.5, d: 0.5, c: 'rat', w: 'gatling', a: 'hover' }] },
         phase3: { props: [{ type: 'spikes', at: 4.5, d: 0.5, r: 42, on: 2, off: 2.5 }, { type: 'spikes', at: 7.5, d: 0.5, r: 42, on: 2, off: 2.5 }] } },
       stars: [['win'], ['lives', 2], ['lives', 3]],
       reward: { first: { coins: 600, box: 'purple' }, star3: { coins: 600 } } },
-    { id: '1-2', name: '天台飛車', boss: true, desc: '大樓天台的臨時賽道：牆的缺口變多，橫向加速帶會把你往缺口送，看準再發射。終點是低牆天台場，BOSS 體型小但速度快，被撞飛很容易 RING OUT。',
+    { id: '1-2', name: '天台飛車', boss: true, desc: '大樓天台的臨時賽道：牆的缺口變多，橫向加速帶會把你往缺口送，看準再發射。終點是低牆天台場，被撞飛很容易 RING OUT。BOSS 是被控制的賞金獵人・傑克：他會發動「全場通緝」封鎖你的 EX、叫小兵一起追你，把他引去撞牆可以提前解除。',
       track: { len: 3200, mobLv: 0, floor: ['#6a5aa6', '#463a7c', '#281f50'],
         signs: [{ y: 60, txt: 'START' }, { y: 560, txt: 'SIDE WIND', col: '#7fdfff' }, { y: 1250, txt: 'BROKEN WALL', col: '#ff2a55' }, { y: 2040, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2780, txt: 'FINAL DASH', col: '#7fdfff' }],
         gaps: [{ side: 'R', from: 700, to: 860 }, { side: 'L', from: 1000, to: 1160 }, { side: 'L', from: 1380, to: 1540 }, { side: 'R', from: 1760, to: 1900 }],
@@ -2605,13 +2626,13 @@ const CHAPTERS = [
         mobs: [
           { type: 'guard', x: 0, y: 620, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: 0.4, y: 1300, c: 'rider', w: 'chainaxe', a: 'carbonvest' },
           { type: 'guard', x: 0, y: 1960, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: 0.4, y: 2660, c: 'rider', w: 'chainaxe', a: 'carbonvest' } ] },
-      boss: { name: '天台王・飛仔', c: 'jack', w: 'railgun', a: 'opticamo', diff: 'normal', lv: 0.1, hp: 1.9, size: 1.35, lives: 1,
+      boss: { name: '黑化獵人・傑克', c: 'boss_jack', w: 'railgun', a: 'opticamo', diff: 'normal', lv: 0.1, hp: 1.9, size: 1.35, lives: 1,
         stage: { wallH: 12, exits: [{ at: 6, type: 'DEAD', w: 50 }], ringOut: 0.5, floor: ['#5b4d8f', '#3f3473', '#251d4b'] },
         phase2: { props: [{ type: 'boost', at: 3, d: 0.42, dir: 3 }, { type: 'boost', at: 9, d: 0.42, dir: 9 }], mobs: [{ type: 'rush', at: 10.5, d: 0.55, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', at: 1.5, d: 0.55, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
         phase3: { props: [{ type: 'bumper', at: 12, d: 0.45 }, { type: 'spikes', at: 6, d: 0.3, r: 40, on: 2, off: 2.5 }] } },
       stars: [['win'], ['lives', 2], ['assist']],
       reward: { first: { coins: 800 }, star3: { coins: 500, box: 'white' } } },
-    { id: '1-3', name: '鐵籠地道', boss: true, desc: '最長的一條：彈力柱叢林、整排地刺、三個陷阱洞，敵人也多。終點是高牆鐵籠，不會 RING OUT，但 BOSS 有兩條血——打爆一次還會滿血站起來。留好陀螺和助陣再進場。',
+    { id: '1-3', name: '鐵籠地道', boss: true, desc: '最長的一條：彈力柱叢林、整排地刺、三個陷阱洞，敵人也多。終點是高牆鐵籠，不會 RING OUT。BOSS 是被控制的重盾・艾琳，有兩條血：正面有盾幾乎打不動，要繞到背後；她會連續衝鋒，撞到牆就暈眩。',
       track: { len: 3700, mobLv: 0, floor: ['#59606c', '#3a4048', '#22252a'],
         signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'PINBALL JUNGLE' }, { y: 1380, txt: 'SPIKE WALL', col: '#ff2a55' }, { y: 2120, txt: 'GRINDER', col: '#ff2a55' }, { y: 2880, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 3290, txt: 'FINAL DASH', col: '#7fdfff' }],
         gaps: [{ side: 'L', from: 2190, to: 2310 }, { side: 'R', from: 2440, to: 2560 }],
@@ -2627,7 +2648,7 @@ const CHAPTERS = [
         mobs: [
           { type: 'guard', x: 0, y: 1340, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.45, y: 1960, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'rush', x: 0.45, y: 2040, c: 'rat', w: 'shotgun', a: 'hover' },
           { type: 'guard', x: 0, y: 2700, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'guard', x: 0, y: 3200, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 } ] },
-      boss: { name: '籠中獸・鐵牙', c: 'erin', w: 'hydrohammer', a: 'powerarmor', diff: 'normal', lv: 0.1, hp: 0.7, size: 1.7, lives: 2,
+      boss: { name: '壞掉的盾・艾琳', c: 'boss_erin', w: 'hydrohammer', a: 'powerarmor', diff: 'normal', lv: 0.1, hp: 0.55, size: 1.7, lives: 2,
         stage: { wallH: 44, exits: [{ at: 6, type: 'DEAD', w: 40 }], rails: false, ringOut: 0, core: 0.42, floor: ['#4f555e', '#353a42', '#1e2126'],
           props: [{ type: 'bumper', at: 2, d: 0.62 }, { type: 'bumper', at: 10, d: 0.62 }] },
         phase2: { props: [{ type: 'spikes', at: 12, d: 0, r: 44, on: 2, off: 3 }], mobs: [{ type: 'guard', at: 9, d: 0.5, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'guard', at: 3, d: 0.5, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }] },
@@ -3739,6 +3760,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   let dmg = spd * 0.03 * (0.6 + att.s.w.atk * 0.25) * bf * mult / defense(def) * (def.bond ? def.bond.dmgIn : 1) * (att.bond ? att.bond.all : 1);
   if (att.bond && att.bond.crit && attN > 260 && Math.random() < 0.25) { dmg *= 1.5; addText(att.x, att.y - 58, '暴擊！', '#fcee0a', 18); }
   if (def.weakT > 0) dmg *= 1.5; // stunned BOSS
+  if (def.shA != null && !(def.stunT > 0) && !(def.holdT > 0) && Math.cos(Math.atan2(att.y - def.y, att.x - def.x) - def.shA) > 0.42) { dmg *= 0.6; def.shHit = 0.25; if (G.comicCD <= 0) { addText(def.x, def.y - 84, '盾擋住了！繞到背後', '#fcee0a', 16); G.comicCD = 0.6; } } // hit on the shield side
   if (att.dmgOut) dmg *= att.dmgOut;
   dmg = Math.min(dmg, def.s.maxHp * (def.hitCap || HIT_CAP)); // no single hit breaks a full-health top; big hits knock you away instead
   let evaded = false;
@@ -3815,7 +3837,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
 // The 3 lineup tops are the 3 lives: when one is lost the next launches from where it fell.
 // ===================================================================================
 const TRK = { HW: 190, FUN: 260, ENT_Y: CY + 218 }; // corridor half-width, length of the funnel before the entrance, entrance y
-const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT'];
+const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT', 'holdT', 'shHit'];
 const onTrack = () => !!(G && G.track && G.track.zone === 'track');
 const trkHalf = (T, sv) => sv <= T.len - TRK.FUN ? TRK.HW : TRK.HW + (T.gw - TRK.HW) * Math.min(1, (sv - (T.len - TRK.FUN)) / TRK.FUN);
 const LOSE_TEXT = { BREAK: '爆甲', SURVIVE: '停轉', '停轉': '停轉', OUT: '出界', TRAP: '掉進陷阱', DEAD: '掉進 DEAD', BLOOD: '掉進 BLOOD', 'RING OUT': 'RING OUT' };
@@ -3841,7 +3863,7 @@ function startTrack(lv) {
   arenaCache = null;
   T.mobs = (tr.mobs || []).map(m => makeMob(m, tr.mobLv || 0, CX + (m.x || 0) * TRK.HW, T.y0 - m.y));
   const b = T.boss = makeTop(bb, 1); b.boss = true; b.rad = TR * (bs.size || 1.6); b.s.maxHp *= bs.hp || 3; b.hp = b.s.maxHp; b.s.mass *= 1.5; b.kbOut = 0.5; b.dmgOut = bs.dmg || 0.62; b.s.decay = 0; b.s.accel *= 0.85; // heavy, but its hits push less than its size suggests so one bump is not a ring-out
-  b.x = CX; b.y = CY - 50; b.chargeCD = 4;
+  b.x = CX; b.y = CY - 50; b.chargeCD = 4; b.sig = CLASSES[bs.c].sig || null; b.sigCD = 6; b.chain = 0;
   const gh = T.ghost = makeTop(bb, 1); gh.dead = true; gh.ghost = true; // stand-in "foe" while no enemy is near
   const p = G.tops[0]; p.x = CX; p.y = T.y0 - 110; gh.x = p.x; gh.y = p.y - 150; G.tops[1] = gh;
   G.placed = true; G.assist.used[1] = true; G.fcam = { x: CX, y: p.y - 200, z: 1 }; T.safe = { x: p.x, y: p.y };
@@ -3901,7 +3923,8 @@ function mobStep(m, p, h) {
   m.angle += m.s.w.dir * 26 * h; m.cd -= h;
   if (m.stunT <= 0) {
     const dist = len(p.x - m.x, p.y - m.y), live = !p.dead && !p.falling;
-    if (m.mob === 'rush' && live && dist < 290 && m.cd <= 0) { const d = norm(p.x - m.x, p.y - m.y); m.vx = d.x * 540; m.vy = d.y * 540; m.cd = 2.4; m.launchedT = 0.5; addText(m.x, m.y - 44, '！', '#ff2a55', 26); }
+    const hunt = G.track.bountyT > 0;
+    if ((m.mob === 'rush' || hunt) && live && dist < (hunt ? 620 : 290) && m.cd <= 0) { const d = norm(p.x - m.x, p.y - m.y); m.vx = d.x * 540; m.vy = d.y * 540; m.cd = hunt ? 1.6 : 2.4; m.launchedT = 0.5; addText(m.x, m.y - 44, '！', '#ff2a55', 26); }
     const tx = m.mob === 'guard' ? m.hx + Math.sin(G.time * 1.5 + m.ph) * m.range : m.hx, kp = m.mob === 'guard' ? 26 : 5;
     if (m.mob === 'guard' || m.cd < 1.5) { m.vx += ((tx - m.x) * kp - m.vx * 6) * h; m.vy += ((m.hy - m.y) * kp - m.vy * 6) * h; }
   }
@@ -3916,15 +3939,37 @@ function bossBrain(b, p, h) {
     for (const q of ph.mobs || []) { const a = clockAng(q.at == null ? 12 : q.at), d = q.d == null ? 0.5 : q.d, m = makeMob(q, T.lv.track.mobLv || 0, CX + Math.cos(a) * AX * d, CY + Math.sin(a) * BY * d); m.range = 60; T.mobs.push(m); sparks(m.x, m.y, 20, '#ff3b5c', 260); } };
   if (T.phase < 2 && f <= 0.7) { T.phase = 2; add(B.phase2); comicPop(CX, CY - 60, 'PHASE 2!', 50, '#fcee0a', '#ff2a55', 1.2); addText(b.x, b.y - 80, '機關啟動！小兵出現！', '#fcee0a', 20); G.shake = 10; SFX.round(); }
   if (T.phase < 3 && f <= 0.35) { T.phase = 3; add(B.phase3); if (!b.base) b.base = [b.s.accel, b.s.maxSpeed]; b.s.accel = b.base[0] * 1.3; b.s.maxSpeed = b.base[1] * 1.2; b.enraged = true; comicPop(CX, CY - 60, 'RAGE!!', 56, '#ffffff', '#ff2a55', 1.2); addText(b.x, b.y - 80, 'BOSS 暴走！', '#ff2a55', 22); G.shake = 14; SFX.round(); }
-  if (b.stunT > 0 || b.falling) return;
+  if (T.bountyT > 0) { T.bountyT -= h; if (T.bountyT <= 0) addText(p.x, p.y - 60, '通緝結束', '#7fdfff', 18); }
+  if (b.stunT > 0 || b.falling) { b.q = null; b.chain = 0; b.wasCh = false; return; }
+  if (b.sig === 'wall') { const ta = Math.atan2(p.y - b.y, p.x - b.x); if (b.shA == null) b.shA = ta; const d = ((ta - b.shA + Math.PI * 3) % TAU) - Math.PI; b.shA += clamp(d, -1.2 * h, 1.2 * h); } // the shield turns slowly: get behind it
+  if (b.q) { // 連環重砸: three slams, each wider, then the fist is stuck for a moment
+    const q = b.q; b.holdT = 0.2; b.vx *= 1 - 6 * h; b.vy *= 1 - 6 * h; q.t -= h;
+    if (q.t <= 0) { const R0 = QUAKE_R[q.n], last = q.n === 2, d = len(p.x - b.x, p.y - b.y);
+      wave(b.x, b.y, '255,42,85', R0, 16, 0.45); sparks(b.x, b.y, 26, '#fcee0a', 420, true); G.shake = Math.max(G.shake, 8 + q.n * 4); SFX.wall(900); if (last) SFX.gate();
+      comicPop(b.x, b.y - 70, last ? 'KA-SLAM!!' : 'SLAM!', last ? 44 : 32, '#ffffff', '#ff2a55', 0.6);
+      if (d < R0 + 18 && !p.dead && !p.falling && !(p.invT > 0)) { const n = norm(p.x - b.x, p.y - b.y), kb = (last ? 540 : 360) * (p.bond ? p.bond.kbIn : 1), dmg = p.s.maxHp * (last ? 0.1 : 0.06);
+        p.vx += n.x * kb; p.vy += n.y * kb; p.hitT = Math.max(p.hitT, 0.45); p.launchedT = Math.max(p.launchedT, 0.3); detach(p, 0.5); p.hp = Math.max(1, p.hp - dmg); p.flash = 0.2; addText(p.x, p.y - 44, '-' + Math.round(dmg), '#ff2a55', 22); }
+      q.n++; if (q.n >= 3) { b.q = null; b.holdT = 1.3; b.weakT = 1.3; addText(b.x, b.y - 96, '拳頭卡住了！快打！', '#fcee0a', 20); } else q.t = 0.8; }
+    return; }
+  if (b.holdT > 0) { b.vx *= 1 - 6 * h; b.vy *= 1 - 6 * h; return; }
   if (b.teleT > 0) { b.vx *= 1 - 6 * h; b.vy *= 1 - 6 * h; b.flash = 0.1;
     if (b.teleT <= h * 1.01) { const d = norm(p.x - b.x, p.y - b.y), sp = b.enraged ? 860 : 780; b.teleT = 0; b.vx = d.x * sp; b.vy = d.y * sp; b.chargeT = 0.9; b.boostT = 0.9; b.dashMult = 1.4; b.kbMult = 1; b.launchedT = 0.9; detach(b, 1.2);
       comicPop(b.x, b.y - 70, 'CHARGE!!', 34, '#ff2a55', '#fcee0a', 0.7); SFX.boost(); } }
-  else if (!(b.chargeT > 0)) { b.chargeCD -= h;
-    if (b.chargeCD <= 0 && !p.dead && !p.falling && !b.onRing && !b.ex) { b.teleT = 0.75; b.chargeCD = b.enraged ? 3.4 : 5; addText(b.x, b.y - 84, '衝撞預備！快閃開！', '#ff2a55', 20); wave(b.x, b.y, '255,42,85', 150, 8, 0.7); } }
+  else if (b.chargeT > 0) b.wasCh = true;
+  else {
+    if (b.wasCh) { b.wasCh = false; if (b.chain > 0 && !p.dead && !p.falling) { b.chain--; b.teleT = 0.45; addText(b.x, b.y - 84, '還沒完！', '#ff2a55', 20); wave(b.x, b.y, '255,42,85', 120, 6, 0.45); return; } }
+    const ok = !p.dead && !p.falling && !b.onRing && !b.ex;
+    b.chargeCD -= h; b.sigCD -= h;
+    if (b.sigCD <= 0 && ok && b.sig === 'quake3') { b.q = { n: 0, t: 0.8 }; b.sigCD = b.enraged ? 6.5 : 9; b.chargeCD = Math.max(b.chargeCD, 2.5); addText(b.x, b.y - 96, '連環重砸！離遠一點', '#ff2a55', 20); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'bounty') { b.sigCD = 12; T.bountyT = 6; p.markT = Math.max(p.markT, 6);
+      comicPop(p.x, p.y - 90, 'WANTED!!', 44, '#fcee0a', '#ff2a55', 1); addText(p.x, p.y - 56, '全場通緝！EX 被封鎖', '#ff2a55', 20); SFX.round();
+      if (T.mobs.filter(m => !m.dead).length < 2) { const q = (B.phase2 && B.phase2.mobs && B.phase2.mobs[0]) || { c: 'rider', w: 'chainaxe', a: 'carbonvest' }, c = eClamp(b.x + rnd(-80, 80), b.y + rnd(-80, 80), 40), m = makeMob({ ...q, type: 'rush' }, T.lv.track.mobLv || 0, c.x, c.y); T.mobs.push(m); sparks(m.x, m.y, 20, '#ff3b5c', 260); } }
+    else if (b.chargeCD <= 0 && ok) { b.teleT = 0.75; b.chargeCD = b.enraged ? 3.4 : 5; if (b.sig === 'wall') b.chain = T.bossLives < (B.lives || 1) ? 3 : 1; addText(b.x, b.y - 84, b.sig === 'wall' ? '盾牆衝鋒！連續好幾次' : '衝撞預備！快閃開！', '#ff2a55', 20); wave(b.x, b.y, '255,42,85', 150, 8, 0.7); } }
 }
+const QUAKE_R = [115, 155, 200];
 function bossCrash(t) {
-  t.chargeT = 0; t.boostT = 0; t.stunT = 1.6; t.weakT = 1.6; t.vx *= 0.35; t.vy *= 0.35;
+  t.chargeT = 0; t.boostT = 0; t.stunT = 1.6; t.weakT = 1.6; t.vx *= 0.35; t.vy *= 0.35; t.chain = 0; t.wasCh = false;
+  if (G.track.bountyT > 0) { G.track.bountyT = 0; G.tops[0].markT = 0; addText(G.tops[0].x, G.tops[0].y - 60, '通緝解除！', '#7fdfff', 20); }
   comicPop(t.x, t.y - 70, 'CRASH!!', 46, '#ffffff', '#fcee0a', 1); addText(t.x, t.y - 110, '暈眩！現在打傷害 ×1.5', '#fcee0a', 20);
   sparks(t.x, t.y, 30, '#fcee0a', 380, true); G.shake = Math.max(G.shake, 12); SFX.burst && SFX.wall(900);
 }
@@ -3965,7 +4010,7 @@ function trackEnd(winner, pts, reason) {
   if (winner === 0) {
     const b = G.tops[1];
     if (T.zone === 'boss' && b.boss && b.dead) {
-      if (--T.bossLives > 0) { b.dead = false; b.hp = b.s.maxHp; b.stunT = 1.2; T.phase = 1; b.enraged = false; if (b.base) { b.s.accel = b.base[0]; b.s.maxSpeed = b.base[1]; } PROPS = PROPS.filter(P => !P.ph); for (const m of T.mobs) m.dead = true; G.slowT = 0; b.chargeT = 0; b.teleT = 0; b.chargeCD = 3; sparks(b.x, b.y, 40, '#ff2a55', 420, true); p.spin = Math.min(1, p.spin + 0.3); comicPop(CX, CY - 60, 'ONE MORE!', 46, '#ff2a55', '#fcee0a', 1.2); addText(b.x, b.y - 80, `BOSS 還有 ${T.bossLives} 條血！`, '#ff2a55', 22); return; }
+      if (--T.bossLives > 0) { b.dead = false; b.hp = b.s.maxHp; b.stunT = 1.2; T.phase = 1; b.enraged = false; if (b.base) { b.s.accel = b.base[0]; b.s.maxSpeed = b.base[1]; } PROPS = PROPS.filter(P => !P.ph); for (const m of T.mobs) m.dead = true; G.slowT = 0; b.chargeT = 0; b.teleT = 0; b.chargeCD = 3; b.q = null; b.chain = 0; b.sigCD = 5; T.bountyT = 0; sparks(b.x, b.y, 40, '#ff2a55', 420, true); p.spin = Math.min(1, p.spin + 0.3); comicPop(CX, CY - 60, 'ONE MORE!', 46, '#ff2a55', '#fcee0a', 1.2); addText(b.x, b.y - 80, `BOSS 還有 ${T.bossLives} 條血！`, '#ff2a55', 22); return; }
       G.score = [1, 0]; G.phase = 'trackEnd'; T.endT = 2.4; G.joy = null; showBanner('BOSS BREAK!! STAGE CLEAR', 2.4, '#fcee0a'); updateExBtn(); return;
     }
     for (const m of T.mobs) if (m.dead && !m.counted) { m.counted = true; T.kills++; p.spin = Math.min(1, p.spin + 0.2); if (p.markT <= 0) p.energy = Math.min(100, p.energy + 20); addText(p.x, p.y - 66, '轉速回復！', '#7fdfff', 18); }
@@ -4053,6 +4098,34 @@ function drawTrack(g, time, cam) {
   }
   if (y0 < v1 + 60) { g.fillStyle = '#14181c'; g.fillRect(CX - HW - 24, y0 - dz, HW * 2 + 48, 24); g.strokeStyle = '#030405'; g.lineWidth = 3; g.strokeRect(CX - HW - 24, y0 - dz, HW * 2 + 48, 24);
     g.fillStyle = '#0d1013'; g.fillRect(CX - HW - 24, y0 - dz + 24, HW * 2 + 48, dz); g.strokeRect(CX - HW - 24, y0 - dz + 24, HW * 2 + 48, dz); }
+}
+// BOSS signature-move graphics on the floor: slam warning ring, shield arc, WANTED crosshair
+function drawBossFx(g) {
+  const T = G.track, b = T.boss, p = G.tops[0]; if (T.zone !== 'boss' || b.dead) return;
+  if (b.q) { const R0 = QUAKE_R[b.q.n], pr = clamp(1 - b.q.t / 0.8, 0, 1);
+    g.save(); g.fillStyle = `rgba(255,42,85,${0.1 + 0.16 * pr})`; g.beginPath(); g.arc(b.x, b.y, R0, 0, TAU); g.fill();
+    g.strokeStyle = '#ff2a55'; g.lineWidth = 4; g.setLineDash([14, 10]); g.lineDashOffset = -G.time * 60; g.stroke(); g.setLineDash([]);
+    g.strokeStyle = `rgba(252,238,10,${0.5 + 0.5 * pr})`; g.lineWidth = 5; g.beginPath(); g.arc(b.x, b.y, R0 * pr, 0, TAU); g.stroke(); g.restore(); }
+  if (b.shA != null) { const R0 = (b.rad || TR) + 10, off = b.stunT > 0 || b.holdT > 0;
+    g.save(); g.globalAlpha = off ? 0.25 : 1; g.lineCap = 'round';
+    g.strokeStyle = '#05060a'; g.lineWidth = 13; g.beginPath(); g.arc(b.x, b.y, R0, b.shA - 1.13, b.shA + 1.13); g.stroke();
+    g.strokeStyle = b.shHit > 0 ? '#ffffff' : '#fcee0a'; g.lineWidth = 7; g.stroke();
+    g.strokeStyle = '#ff2a55'; g.lineWidth = 2; g.beginPath(); g.arc(b.x, b.y, R0 + 1, b.shA - 1.0, b.shA + 1.0); g.stroke(); g.restore(); }
+  if (T.bountyT > 0 && !p.dead) { const r = 44 + 4 * Math.sin(G.time * 10);
+    g.save(); g.strokeStyle = '#05060a'; g.lineWidth = 6; g.setLineDash([18, 12]); g.lineDashOffset = G.time * 70; g.beginPath(); g.arc(p.x, p.y, r, 0, TAU); g.stroke(); g.strokeStyle = '#ff2a55'; g.lineWidth = 3; g.stroke(); g.setLineDash([]);
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + G.time; g.beginPath(); g.moveTo(p.x + Math.cos(a) * (r - 12), p.y + Math.sin(a) * (r - 12)); g.lineTo(p.x + Math.cos(a) * (r + 12), p.y + Math.sin(a) * (r + 12)); g.stroke(); }
+    g.restore(); upright(g, p.x, p.y - r - 6, () => { g.font = 'italic 900 15px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText(`WANTED ${Math.ceil(T.bountyT)}`, 0, 0); g.fillStyle = '#ff2a55'; g.fillText(`WANTED ${Math.ceil(T.bountyT)}`, 0, 0); }); }
+}
+// red alarm light over the whole screen while the BOSS is up: slow pulse, faster and stronger when it winds up or rages
+function bossAlarm(g) {
+  const T = G.track, b = T.boss; if (T.zone !== 'boss' || b.dead || G.phase === 'final') return;
+  const hot = b.enraged || b.teleT > 0 || b.q || T.bountyT > 0, pu = Math.pow(0.5 + 0.5 * Math.sin(G.time * (hot ? 7 : 4.2)), 2), a = (hot ? 0.36 : 0.2) * pu + 0.04;
+  g.save(); g.setTransform(scale, 0, 0, scale, 0, 0);
+  const gr = g.createRadialGradient(W / 2, H / 2, H * 0.26, W / 2, H / 2, H * 0.62); gr.addColorStop(0, 'rgba(255,20,50,0)'); gr.addColorStop(1, `rgba(255,20,50,${a})`);
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  for (const sd of [-1, 1]) { const ang = Math.PI / 2 + sd * (0.75 + 0.45 * Math.sin(G.time * 2.4 + (sd > 0 ? 0 : 1.7))), cx = sd > 0 ? 0 : W, L = 620; // two sweeping beacon beams from the top corners
+    g.fillStyle = `rgba(255,30,60,${0.05 + a * 0.3})`; g.beginPath(); g.moveTo(cx, 176); g.lineTo(cx + Math.cos(ang - 0.13) * L, 176 + Math.sin(ang - 0.13) * L); g.lineTo(cx + Math.cos(ang + 0.13) * L, 176 + Math.sin(ang + 0.13) * L); g.closePath(); g.fill(); }
+  g.restore();
 }
 // HUD centre plate in track mode: the three lives (lineup order) and progress up the road / BOSS health
 function trackHudPlate(g, T0) {
@@ -4150,7 +4223,7 @@ function stepTop(t, foe, h) {
   let u = { x: 0, y: 0 };
   if (t.stunT <= 0) { if (t.side === 0) { u = playerInput(t); if (!u.x && !u.y && !G.joy) { const a = playerAutoInput(t, foe); if (a) u = a; } } else u = aiInput(t, foe, h); }
   if (PROPS.length && t.side === 1) u = propAvoid(t, u);
-  if (t.chargeT > 0 || t.teleT > 0) u = { x: 0, y: 0 };
+  if (t.chargeT > 0 || t.teleT > 0 || t.holdT > 0) u = { x: 0, y: 0 };
   const inTrack = onTrack();
   if (inTrack && t.side === 0) u = { ...u, x: u.x * 0.5, y: u.y * 0.5 }; // on the track dragging only nudges; the walls do the steering
   if ((t.s.c.homing || t.s.w.special === 'homing') && !foe.dead && t.side === 0 && (u.x || u.y)) {
@@ -4999,6 +5072,7 @@ function render() {
     if (G.track) { for (const m of G.track.mobs) if (!m.dead) items.push({ y: m.y, f: () => drawTopWorld(g, m) }); if (G.track.zone === 'track') items.push({ y: G.track.boss.y, f: () => drawTopWorld(g, G.track.boss) }); }
     for (const P of PROPS) if (P.type === 'bumper' || P.type === 'mover') { const S = P.type === 'mover' ? moverSeg(P, G.time) : null; items.push({ y: S ? (S.y1 + S.y2) / 2 : P.y, f: () => drawPropRaised(g, P) }); }
     items.sort((a, b) => a.y - b.y).forEach(it => it.f()); }
+  if (G.track) drawBossFx(g);
   for (const w of G.waves) {
     const k = w.t / w.max, r = 8 + (1 - k) * w.R1;
     g.strokeStyle = `rgba(${w.col},${k})`; g.lineWidth = w.w * k + 1; g.beginPath(); g.arc(w.x, w.y, r, 0, TAU); g.stroke();
@@ -5040,6 +5114,7 @@ function render() {
       g.beginPath(); g.moveTo(CX + Math.cos(ang) * r0, CY + Math.sin(ang) * r0 * 1.5); g.lineTo(CX + Math.cos(ang) * (r0 + 70), CY + Math.sin(ang) * (r0 + 70) * 1.5); g.stroke();
     }
   }
+  if (G.track) bossAlarm(g);
   if (G.flash > 0) { g.fillStyle = `rgba(${G.flashCol || '255,255,255'},${Math.min(0.55, G.flash * 2)})`; g.fillRect(0, 0, W, H); if (G.flash <= 0.02) G.flashCol = null; }
   drawExArc(g); drawHUD(g);
   if (G.taps) for (const k of G.taps) {
