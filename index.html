@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.17.0</title>
+<title>SPIN! SPIN! v0.18.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -671,10 +671,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.16.1 countdown voice re-processed as a hacker voice changer (deep double, ring mod, bit-crush, stutter, dropouts, data noise)
  v0.16.2 the two SPIN! are separate beats: the first winds up (trembling, swelling word, screen shake building, tops revving), the launch happens on the second
  v0.17.0 chapter 1 has 10 levels: BOSS only on 5, 9, 10; the others end at a goal ring; new star 'kills'
+ v0.18.0 goal arenas: levels without a BOSS end in an obstacle arena with a door to break (HP bar, shockwave, respawning guards)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.17.0';
+const GAME_VERSION = 'v0.18.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -973,6 +974,7 @@ const PROP_DEF = {
   pit: { r: 44 },                                                      // 陷阱洞：掉進去扣一條命（只對玩家有效）                                    // on/off seconds (0 = always out)
 };
 function makeProp(p) {
+  if (p.type === 'wall') p = Object.assign({ len: 120 }, p, { type: 'mover', move: 'spin', speed: 0 }); // 固定牆＝不會動的擋板
   const P = Object.assign({}, PROP_DEF[p.type] || {}, p), a = clockAng(p.at == null ? 12 : p.at), d = p.d == null ? 0.5 : p.d;
   P.x = CX + Math.cos(a) * AX * d; P.y = CY + Math.sin(a) * BY * d; P.hitAt = -9;
   if (p.px != null) { P.x = p.px; P.y = p.py; } // track props use track coordinates (startTrack converts them)
@@ -2338,7 +2340,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射。衝進終點圓環就過關；每章第 5、9、10 關終點有 <b>BOSS</b>，要打到爆甲</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射。終點是圓形闖關場：<b>撞破最上面的門</b>衝進去就過關（撞越快扣越多，門會放衝擊波、有守衛）；每章第 5、9、10 關改成 <b>BOSS</b>，要打到爆甲</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2593,18 +2595,22 @@ document.getElementById('fightBtn').onclick = fight;
 //   boss    name、c 用 BOSS 版角色（boss_rex／boss_jack／boss_erin，用 defBoss 新增；決定頭像與招牌技）、w／a、diff 強度、lv 裝備等級、hp 血量倍率、size 體型倍率、lives 幾條血、stage BOSS 場的場地設定（同對戰關 stage，預設標準出口）
 //           phase2（血量 70% 以下）／phase3（35% 以下，同時暴走）：{ props: 新增機關（用時鐘位置 at／d）, mobs: 叫出小兵 }
 //   stars   多兩種：['lives', 2] 剩 2 隻以上陀螺過關（3＝一隻都沒倒下）、['kills', 3] 打爆 3 個途中敵人並過關
-//   不寫 boss＝衝進終點圓環就過關（可加 diff: 'easy'／'normal'… 決定勝敗金幣倍率，預設 easy）
+//   不寫 boss＝終點是闖關場，寫 goal：hp 門的血量、wave 衝擊波間隔秒數、respawn 守衛補上的秒數、guards 守衛（at／d 時鐘位置）、
+//           stage 場地與障礙（同對戰關 stage；多一種 { type: 'wall', at, d, len, rot } 固定牆）。門固定在 12 點鐘。
+//           goal 也不寫＝衝進終點圓環就直接過關。可加 diff: 'easy'／'normal'… 決定勝敗金幣倍率（預設 easy）
 // 章節 bonus：整章全三星的獎勵。下一章的第一關，要前一章最後一關過關才解鎖。
 // ===================================================================================
 const CHAPTERS = [
   // 每章 10 關：第 5、9、10 關終點有 BOSS（寫 boss 欄位），其他關衝到終點就過關（不寫 boss）
   { id: 'c1', no: 1, name: '第一章・霓虹新人賽', desc: '夜之城地下陀螺聯賽的新人選拔。有人駭進了賽場，選手一個個失控。', bonus: { coins: 4000, box: 'purple' }, levels: [
-    { id: '1-1', name: '霓虹高架', desc: '第一條賽道。往後拉、放開發射，自動彈牆，飛行中拖曳可以微調方向。衝進最上面的終點圓環就過關。',
+    { id: '1-1', name: '霓虹高架', desc: '第一條賽道。往後拉、放開發射，自動彈牆，飛行中拖曳可以微調方向。衝進終點的圓形場後，用力撞最上面的門（撞越快扣越多），門破了衝進去就過關。門每隔幾秒會放衝擊波把你彈開，還有守衛。',
       track: { len: 2200, mobLv: -0.1, floor: ['#3d4f86', '#2b3766', '#1a2144'],
         signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'BUMPER ALLEY' }, { y: 1880, txt: 'GOAL', col: '#7fdfff' }],
         props: [{ type: 'boost', x: 0, y: 300 }, { type: 'bumper', x: -0.5, y: 620 }, { type: 'bumper', x: 0.5, y: 620 }, { type: 'bumper', x: 0, y: 780 }, { type: 'bumper', x: -0.5, y: 940 }, { type: 'bumper', x: 0.5, y: 940 },
           { type: 'boost', x: 0, y: 1260 }, { type: 'mover', x: 0, y: 1500, len: 90, rot: 3, move: 'spin', speed: 0.1 }, { type: 'boost', x: -0.32, y: 1850 }, { type: 'boost', x: 0.32, y: 1850 }],
         mobs: [{ type: 'guard', x: 0, y: 1120, c: 'rat', w: 'gatling', a: 'hover' }, { type: 'guard', x: 0, y: 1690, c: 'rat', w: 'gatling', a: 'hover' }] },
+      goal: { hp: 110, wave: 6, respawn: 10, guards: [{ type: 'guard', at: 12, d: 0.5, c: 'rat', w: 'gatling', a: 'hover' }],
+        stage: { props: [{ type: 'boost', at: 6, d: 0.5, dir: 12 }, { type: 'bumper', at: 10, d: 0.5 }, { type: 'bumper', at: 2, d: 0.5 }] } },
       stars: [['win'], ['kills', 2], ['lives', 3]],
       reward: { first: { coins: 300 }, star3: { coins: 200 } } },
     { id: '1-2', name: '彈珠街', desc: '整條街都是彈力柱。第一次出現牆的缺口：缺口那一側沒有牆，衝出去就出界，換下一隻陀螺。',
@@ -2614,6 +2620,8 @@ const CHAPTERS = [
         props: [{ type: 'boost', x: 0, y: 280 }, { type: 'bumper', x: -0.5, y: 560 }, { type: 'bumper', x: 0.5, y: 560 }, { type: 'bumper', x: 0, y: 700 }, { type: 'bumper', x: -0.5, y: 840 }, { type: 'bumper', x: 0.5, y: 840 }, { type: 'bumper', x: 0, y: 980 }, { type: 'bumper', x: -0.5, y: 1120 }, { type: 'bumper', x: 0.5, y: 1120 },
           { type: 'boost', x: -0.3, y: 1750 }, { type: 'spikes', x: 0.4, y: 1900, r: 46, on: 2, off: 2 }, { type: 'boost', x: -0.32, y: 2150 }, { type: 'boost', x: 0.32, y: 2150 }],
         mobs: [{ type: 'guard', x: 0, y: 1280, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'guard', x: 0, y: 1690, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: -0.4, y: 1990, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+      goal: { hp: 90, wave: 6, respawn: 9, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'raven', w: 'smartpistol', a: 'afterimage' }],
+        stage: { props: [{ type: 'wall', at: 12, d: 0.2, len: 150, rot: 3 }, { type: 'boost', at: 8, d: 0.55, dir: 1.2 }, { type: 'boost', at: 4, d: 0.55, dir: 10.8 }, { type: 'bumper', at: 6, d: 0.35 }] } },
       stars: [['win'], ['lives', 2], ['kills', 3]],
       reward: { first: { coins: 350 }, star3: { coins: 250 } } },
     { id: '1-3', name: '斷橋', desc: '左右輪流出現缺口，還有會把你往外推的擋板。第一次出現陷阱洞，掉進去也算一條命。',
@@ -2624,6 +2632,8 @@ const CHAPTERS = [
           { type: 'mover', x: 0.2, y: 1425, len: 90, rot: 12, move: 'slide', span: 50, period: 3.3 }, { type: 'boost', x: -0.2, y: 1600 }, { type: 'pit', x: -0.45, y: 2000, r: 38 }, { type: 'pit', x: 0.45, y: 2180, r: 38 },
           { type: 'boost', x: -0.32, y: 2450 }, { type: 'boost', x: 0.32, y: 2450 }],
         mobs: [{ type: 'guard', x: 0, y: 900, c: 'rat', w: 'gatling', a: 'hover' }, { type: 'rush', x: 0.3, y: 1880, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2310, c: 'rat', w: 'gatling', a: 'hover' }] },
+      goal: { hp: 100, wave: 6, respawn: 9, guards: [{ type: 'guard', at: 12, d: 0.6, c: 'rat', w: 'gatling', a: 'hover' }],
+        stage: { props: [{ type: 'wall', at: 9.6, d: 0.5, len: 100, rot: 1.5 }, { type: 'wall', at: 2.4, d: 0.5, len: 100, rot: 10.5 }, { type: 'mover', at: 6, d: 0.25, len: 90, move: 'spin', speed: 0.12 }, { type: 'boost', at: 6, d: 0.62, dir: 12 }] } },
       stars: [['win'], ['lives', 2], ['lives', 3]],
       reward: { first: { coins: 400 }, star3: { coins: 300 } } },
     { id: '1-4', name: '地刺市場', desc: '滿地間歇冒出的地刺，踩在上面轉速會一直掉。看準收起來的時候衝過去，中段要在兩個陷阱洞之間蛇行。',
@@ -2632,9 +2642,11 @@ const CHAPTERS = [
         gaps: [{ side: 'R', from: 1150, to: 1290 }],
         props: [{ type: 'boost', x: 0, y: 300 }, { type: 'spikes', x: -0.5, y: 640, r: 50, on: 2, off: 2 }, { type: 'spikes', x: 0.5, y: 640, r: 50, on: 2, off: 2 }, { type: 'spikes', x: 0, y: 840, r: 50, on: 2, off: 2 },
           { type: 'spikes', x: -0.5, y: 1040, r: 48, on: 1.5, off: 2 }, { type: 'spikes', x: 0.5, y: 1040, r: 48, on: 1.5, off: 2 }, { type: 'boost', x: 0, y: 1040, l: 60, w: 36 },
-          { type: 'pit', x: 0.4, y: 1600, r: 40 }, { type: 'pit', x: -0.4, y: 1790, r: 40 }, { type: 'bumper', x: -0.5, y: 2250 }, { type: 'bumper', x: 0.5, y: 2250 }, { type: 'bumper', x: 0, y: 2400 },
+          { type: 'pit', x: 0.45, y: 1600, r: 36 }, { type: 'pit', x: -0.45, y: 1790, r: 36 }, { type: 'bumper', x: -0.5, y: 2250 }, { type: 'bumper', x: 0.5, y: 2250 }, { type: 'bumper', x: 0, y: 2400 },
           { type: 'boost', x: -0.32, y: 2650 }, { type: 'boost', x: 0.32, y: 2650 }],
         mobs: [{ type: 'guard', x: 0, y: 1340, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.4, y: 2110, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: 0.4, y: 2170, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2530, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }] },
+      goal: { hp: 90, wave: 5, respawn: 12, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'guard', at: 1, d: 0.64, c: 'rat', w: 'gatling', a: 'hover' }],
+        stage: { props: [{ type: 'spikes', at: 12, d: 0.42, r: 44, on: 2, off: 2 }, { type: 'bumper', at: 9, d: 0.5 }, { type: 'bumper', at: 3, d: 0.5 }, { type: 'boost', at: 7.3, d: 0.6, dir: 12.7 }, { type: 'boost', at: 4.7, d: 0.6, dir: 11.3 }] } },
       stars: [['win'], ['lives', 2], ['kills', 3]],
       reward: { first: { coins: 450 }, star3: { coins: 300 } } },
     { id: '1-5', name: '齒輪工廠', boss: true, desc: '第一個 BOSS 關。衝進終點的圓形場，把 BOSS 打到爆甲才過關！BOSS 是被控制的鐵拳・雷克斯：他會連砸三下地板，砸完拳頭會卡住，那是進攻的好機會；衝撞撞到牆也會暈眩，傷害 ×1.5。',
@@ -2670,6 +2682,8 @@ const CHAPTERS = [
         mobs: [
           { type: 'guard', x: 0, y: 620, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: 0.4, y: 1300, c: 'rider', w: 'chainaxe', a: 'carbonvest' },
           { type: 'guard', x: 0, y: 1960, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: 0.4, y: 2660, c: 'rider', w: 'chainaxe', a: 'carbonvest' } ] },
+      goal: { hp: 100, wave: 5, respawn: 12, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', at: 3, d: 0.6, c: 'rider', w: 'chainaxe', a: 'carbonvest' }],
+        stage: { props: [{ type: 'mover', at: 12, d: 0.36, len: 80, rot: 12, move: 'slide', span: 70, period: 2.8 }, { type: 'boost', at: 8, d: 0.6, dir: 1 }, { type: 'boost', at: 4, d: 0.6, dir: 11 }, { type: 'bumper', at: 10.4, d: 0.72 }, { type: 'bumper', at: 1.6, d: 0.72 }] } },
       stars: [['win'], ['lives', 2], ['kills', 3]],
       reward: { first: { coins: 500 }, star3: { coins: 350 } } },
     { id: '1-7', name: '絞肉機', desc: '一路都是旋轉擋板，被掃到會被打飛。中段的擋板旁邊就是缺口，後段要從兩個陷阱洞中間穿過去。',
@@ -2681,6 +2695,8 @@ const CHAPTERS = [
           { type: 'spikes', x: 0, y: 2160, r: 48, on: 2, off: 2 }, { type: 'pit', x: -0.5, y: 2400, r: 38 }, { type: 'pit', x: 0.5, y: 2400, r: 38 }, { type: 'mover', x: 0, y: 2660, len: 120, move: 'spin', speed: 0.13 },
           { type: 'boost', x: -0.32, y: 2950 }, { type: 'boost', x: 0.32, y: 2950 }],
         mobs: [{ type: 'guard', x: 0, y: 1790, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.4, y: 2250, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'rush', x: 0.4, y: 2530, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'guard', x: 0, y: 2830, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }] },
+      goal: { hp: 100, wave: 5, respawn: 12, guards: [{ type: 'guard', at: 11, d: 0.66, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'guard', at: 1, d: 0.66, c: 'rat', w: 'gatling', a: 'hover' }],
+        stage: { props: [{ type: 'mover', at: 9.5, d: 0.42, len: 110, move: 'spin', speed: 0.14 }, { type: 'mover', at: 2.5, d: 0.42, len: 110, move: 'spin', speed: -0.14 }, { type: 'spikes', at: 12, d: 0, r: 42, on: 2, off: 2 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }] } },
       stars: [['win'], ['lives', 2], ['lives', 3]],
       reward: { first: { coins: 550 }, star3: { coins: 400 } } },
     { id: '1-8', name: '鐵籠地道', desc: '最長的一條：彈力柱叢林、整排地刺、三個陷阱洞，敵人也多。過了這裡就是連續兩個 BOSS。',
@@ -2699,6 +2715,8 @@ const CHAPTERS = [
         mobs: [
           { type: 'guard', x: 0, y: 1340, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.45, y: 1960, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'rush', x: 0.45, y: 2040, c: 'rat', w: 'shotgun', a: 'hover' },
           { type: 'guard', x: 0, y: 2700, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'guard', x: 0, y: 3200, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 } ] },
+      goal: { hp: 110, wave: 4.5, respawn: 11, guards: [{ type: 'guard', at: 12, d: 0.66, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', at: 9, d: 0.6, c: 'rat', w: 'shotgun', a: 'hover' }],
+        stage: { props: [{ type: 'wall', at: 10.6, d: 0.4, len: 60, rot: 3 }, { type: 'wall', at: 1.4, d: 0.4, len: 60, rot: 3 }, { type: 'bumper', at: 9, d: 0.56 }, { type: 'bumper', at: 3, d: 0.56 }, { type: 'spikes', at: 7.6, d: 0.45, r: 40, on: 2, off: 2.5 }, { type: 'spikes', at: 4.4, d: 0.45, r: 40, on: 2, off: 2.5 }, { type: 'boost', at: 9.6, d: 0.74, dir: 1.6 }, { type: 'boost', at: 2.4, d: 0.74, dir: 10.4 }] } },
       stars: [['win'], ['lives', 2], ['kills', 4]],
       reward: { first: { coins: 600 }, star3: { coins: 400, box: 'white' } } },
     { id: '1-9', name: '天台追緝', boss: true, desc: '終點是低牆天台場，被撞飛很容易 RING OUT。BOSS 是被控制的賞金獵人・傑克：他會發動「全場通緝」封鎖你的 EX、叫小兵一起追你，把他引去撞牆可以提前解除。建議隊伍有紫卡 3 星的實力。',
@@ -3409,6 +3427,7 @@ function camFollowStep(dt) {
     tx = CX + ((a.x + b.x) / 2 - CX) * pull; ty = CY + ((a.y + b.y) / 2 - CY) * pull;
   }
   const pinching = two && two.mode === 'pinch';
+  if (G.track && G.track.zone === 'gate') ty -= 44; // keep the door at the top clear of the HUD
   const k = 1 - Math.exp(-dt * kf);
   if (!pinching) { f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k; } // two fingers on screen = the player drives the camera
   // auto tilt: closer camera -> lower angle; the player's tilt setting is an offset on top
@@ -3716,6 +3735,7 @@ document.getElementById('autoMoveBtn').addEventListener('pointerdown', e => {
 // defense keeps its distance and circles away from the rim, core sits on CORE and strikes anyone who comes in
 function playerAutoInput(me, foe) {
   if (onTrack()) return trackAuto(me);
+  if (G.track && G.track.zone === 'gate') return gateAuto(me);
   const m = SETTINGS.autoMove; if (!m || m === 'off' || foe.dead || foe.falling) return null;
   let tx, ty;
   if (m === 'atk') { const ng = nearestGate(foe.x, foe.y), gd = norm(ng.x - foe.x, ng.y - foe.y); tx = foe.x + foe.vx * 0.15 - gd.x * 16; ty = foe.y + foe.vy * 0.15 - gd.y * 16; }
@@ -4077,8 +4097,8 @@ function bossCrash(t) {
 // one physics sub-step in track mode (replaces the two-top arena step)
 function trackPhysics(h) {
   const T = G.track, p = G.tops[0];
-  if (T.zone === 'track') { // the "foe" slot is the nearest enemy, or a stand-in just ahead when none is near
-    const m = trackNearMob(p, 340); if (m) G.tops[1] = m; else { T.ghost.x = p.x; T.ghost.y = p.y - 150; G.tops[1] = T.ghost; }
+  if (T.zone === 'track' || T.zone === 'gate') { // the "foe" slot is the nearest enemy, or a stand-in (just ahead on the road, at the door in the gate arena) when none is near
+    const m = trackNearMob(p, T.gate ? 200 : 340); if (m) G.tops[1] = m; else { T.ghost.x = T.gate ? T.gate.x : p.x; T.ghost.y = T.gate ? T.gate.y + 30 : p.y - 150; G.tops[1] = T.ghost; }
     stepTop(p, G.tops[1], h); if (G.phase !== 'battle') return;
   } else {
     const b = G.tops[1]; bossBrain(b, p, h);
@@ -4091,10 +4111,85 @@ function trackPhysics(h) {
   if (T.zone === 'track') {
     const sv = T.y0 - p.y; T.best = Math.max(T.best, sv);
     if (Math.abs(p.x - CX) < trkHalf(T, sv) - 46 && !PROPS.some(P => (P.type === 'pit' || P.type === 'spikes') && len(p.x - P.x, p.y - P.y) < P.r + 46)) T.safe = { x: p.x, y: p.y };
-    if (p.y < TRK.ENT_Y - 8) T.noBoss ? trackGoal() : trackEnterBoss();
-  } else if (qOf(p.x, p.y) < 0.66 && !inGateZone(p.x, p.y)) T.safe = { x: p.x, y: p.y };
+    if (p.y < TRK.ENT_Y - 8) T.noBoss ? (T.lv.goal ? trackEnterGate() : trackGoal()) : trackEnterBoss();
+  } else if (T.zone === 'gate') gateStep(h);
+  else if (qOf(p.x, p.y) < 0.66 && !inGateZone(p.x, p.y)) T.safe = { x: p.x, y: p.y };
 }
-// a level without a BOSS ends the moment the top rolls into the goal ring
+// ---------- goal arena (終點闖關場, v0.18.0): levels without a BOSS end in a small obstacle arena. Ram the door at 12 o'clock until its bar is empty, then roll through ----------
+// the way in closes into plain wall; the door hits back with a shockwave every few seconds and has guards that come back
+const GATE_DMG = 1.0;
+function trackEnterGate() {
+  const T = G.track, p = G.tops[0], gl = T.lv.goal;
+  T.zone = 'gate'; T.best = T.len; T.mobs = []; T.gateAt = G.time;
+  applyStage(Object.assign({ exits: [], rails: false, core: 0, ringOut: 0, floor: T.floor }, gl.stage));
+  T.gate = { a: -Math.PI / 2, half: Math.asin((gl.w || 56) / AX), hp: gl.hp, max: gl.hp, x: CX, y: CY - BY, cd: gl.wave || 5, wave: gl.wave || 5, flash: 0, hitCD: 0, open: false };
+  T.gdefs = gl.guards || []; T.gslot = T.gdefs.map(() => null); T.respT = gl.respawn || 8;
+  T.gdefs.forEach((q, i) => gateGuard(i));
+  T.safe = { x: CX, y: CY + 90 }; p.spin = Math.min(1, p.spin + 0.4); p.hitT = 0; p.ringCD = Math.max(p.ringCD, 0.6);
+  comicPop(CX, CY - 40, 'BREAK THE GATE!', 44, '#fcee0a', '#ff2a55', 1.4); addText(p.x, p.y - 60, '入口關閉！撞破上面的門', '#7fdfff', 20); focusLines(CX, CY - BY, 'rgba(252,238,10,.8)', 0.6); G.shake = Math.max(G.shake, 8); SFX.round(); SFX.gate();
+}
+function gateGuard(i) {
+  const T = G.track, q = T.gdefs[i], a = clockAng(q.at == null ? 12 : q.at), d = q.d == null ? 0.6 : q.d, m = makeMob(q, T.lv.track.mobLv || 0, CX + Math.cos(a) * AX * d, CY + Math.sin(a) * BY * d);
+  m.range = q.range || 50; m.dmgOut = 0.6; T.gslot[i] = m; // door guards hit softer than road enemies: they are there to get in the way T.mobs.push(m); sparks(m.x, m.y, 16, '#ff3b5c', 240);
+}
+// a wall bounce inside the door's arc is a hit on the door: the faster the impact and the stronger the weapon, the more it takes
+function gateHit(t, vn) {
+  const gt = G.track.gate; if (!gt || gt.open || gt.hitCD > 0 || vn < 140) return;
+  const a = Math.atan2(t.y - CY, t.x - CX); if (Math.abs(((a - gt.a + Math.PI * 3) % TAU) - Math.PI) > gt.half + 0.05) return;
+  const dmg = vn * 0.03 * (0.6 + t.s.w.atk * 0.25) * (t.dashMult || 1) * (t.bond ? t.bond.all : 1) * GATE_DMG;
+  gt.hp -= dmg; gt.hitCD = 0.12; gt.flash = 0.16; t.spin = Math.min(1, t.spin + 0.03); // ramming the door keeps the top alive: attacking is the way through if (t.markT <= 0) t.energy = Math.min(100, t.energy + 5);
+  addText(t.x, t.y - 46, '-' + Math.round(dmg), '#fcee0a', 18 + Math.min(14, dmg * 0.4)); sparks(t.x, t.y - TR, Math.min(26, 6 + dmg), '#fcee0a', 200 + vn * 0.4, true); G.shake = Math.max(G.shake, Math.min(12, 3 + dmg * 0.3));
+  if (dmg > 14 && G.comicCD <= 0) { comicPop(t.x, t.y - 70, pick(['BANG!', 'WHAM!', 'KRAK!']), 26 + Math.min(18, dmg * 0.5), '#ffffff', '#ff2a55', 0.55); G.comicCD = 0.3; }
+  if (gt.hp <= 0) { gt.hp = 0; gt.open = true; G.hitStop = 0.14; G.slowT = 0.5; G.flash = 0.2; comicPop(gt.x, gt.y + 60, 'GATE BREAK!!', 54, '#fcee0a', '#ff2a55', 1.3); addText(t.x, t.y - 80, '門破了！衝進去！', '#7fdfff', 22); sparks(gt.x, gt.y + 10, 50, '#fcee0a', 460, true); G.shake = 16; SFX.gate(); SFX.round(); }
+}
+function gateStep(h) {
+  const T = G.track, gt = T.gate, p = G.tops[0];
+  if (gt.flash > 0) gt.flash -= h; if (gt.hitCD > 0) gt.hitCD -= h;
+  if (qOf(p.x, p.y) < 0.66) T.safe = { x: p.x, y: p.y };
+  if (gt.open) { // through the open door = clear
+    const a = Math.atan2(p.y - CY, p.x - CX);
+    if (qOf(p.x, p.y) > 0.8 && Math.abs(((a - gt.a + Math.PI * 3) % TAU) - Math.PI) < gt.half) trackGoal();
+    return;
+  }
+  gt.cd -= h; // shockwave: warning for the last 0.8 s, then anything close to the door is thrown back
+  if (gt.cd <= 0) { gt.cd = gt.wave; wave(gt.x, gt.y + 20, '255,42,85', GATE_WAVE_R, 16, 0.5); SFX.wall(700); G.shake = Math.max(G.shake, 6);
+    const d = len(p.x - gt.x, p.y - gt.y);
+    if (d < GATE_WAVE_R && !(p.invT > 0)) { const n = norm(p.x - gt.x, p.y - gt.y + 1), dmg = p.s.maxHp * 0.04; p.vx += n.x * 470; p.vy += n.y * 470; p.hitT = Math.max(p.hitT, 0.3); detach(p, 0.4); p.hp = Math.max(1, p.hp - dmg); p.flash = 0.2; addText(p.x, p.y - 44, '-' + Math.round(dmg), '#ff2a55', 20); comicPop(p.x, p.y - 80, 'ZAP!', 30, '#ffffff', '#ff2a55', 0.5); } }
+  if (T.gdefs.length) { const i = T.gslot.findIndex(m => !m || m.dead); if (i >= 0) { T.respT -= h; if (T.respT <= 0) { T.respT = T.lv.goal.respawn || 8; gateGuard(i); addText(T.gslot[i].x, T.gslot[i].y - 40, '守衛補上', '#ff2a55', 16); } } }
+}
+const GATE_WAVE_R = 165;
+// MOVE auto in the goal arena: deal with a guard that is in the way, otherwise take a run-up from the middle and ram the door, again and again
+function gateAuto(me) {
+  const m = SETTINGS.autoMove; if (!m || m === 'off') return null;
+  const T = G.track, gt = T.gate, foe = G.tops[1]; let tx = gt.x, ty = gt.y;
+  if (!gt.open) {
+    if (m !== 'def' && foe && !foe.dead && foe.mob && len(foe.x - me.x, foe.y - me.y) < 100) { tx = foe.x; ty = foe.y; }
+    else { if (me.y < gt.y + 110 && me.vy >= -40) me.back = 0.7; if (me.back > 0) { me.back -= 1 / 60; tx = CX + (me.x < CX ? -40 : 40); ty = CY + 70; } if (gt.cd < 0.9 && len(me.x - gt.x, me.y - gt.y) < GATE_WAVE_R + 30) { tx = CX; ty = CY + 80; } }
+  }
+  const u = norm(tx - me.x, ty - me.y); return propAvoid(me, { x: u.x, y: u.y });
+}
+function drawGate(g) {
+  const T = G.track, gt = T.gate, dz = (WALL_H + 30) / VIEW_K, a0 = gt.a - gt.half, a1 = gt.a + gt.half, R0 = AX + 2;
+  const shape = () => { g.beginPath(); g.arc(CX, CY, R0, a0, a1); g.arc(CX, CY - dz, R0, a1, a0, true); g.closePath(); };
+  g.save();
+  if (!gt.open && gt.cd < 0.8) { const k = 1 - gt.cd / 0.8; g.fillStyle = `rgba(255,42,85,${0.08 + 0.16 * k})`; g.beginPath(); g.arc(gt.x, gt.y + 20, GATE_WAVE_R, 0, TAU); g.fill(); g.strokeStyle = '#ff2a55'; g.lineWidth = 4; g.setLineDash([14, 10]); g.lineDashOffset = -G.time * 60; g.stroke(); g.setLineDash([]); }
+  if (gt.open) { const pu = 0.5 + 0.5 * Math.sin(G.time * 8);
+    shape(); g.fillStyle = '#05060a'; g.fill(); g.fillStyle = `rgba(0,240,255,${0.35 + 0.35 * pu})`; g.fill(); g.strokeStyle = '#fcee0a'; g.lineWidth = 5; g.stroke();
+    g.fillStyle = `rgba(0,240,255,${0.5 + 0.5 * pu})`; for (let i = 0; i < 3; i++) { const y = gt.y + 96 - i * 20 - pu * 6; g.beginPath(); g.moveTo(CX - 14, y); g.lineTo(CX, y - 12); g.lineTo(CX + 14, y); g.lineTo(CX, y - 5); g.closePath(); g.fill(); }
+    signPlate(g, CX, gt.y + 124, 0, 'GOAL', '#7fdfff', 18, 0.95);
+  } else { const f = gt.hp / gt.max;
+    shape(); g.fillStyle = gt.flash > 0 ? '#ffffff' : '#262e35'; g.fill();
+    g.save(); shape(); g.clip(); if (!(gt.flash > 0)) { g.fillStyle = '#fcee0a'; for (let k = -8; k <= 8; k++) { const x = CX + k * 22; g.beginPath(); g.moveTo(x, gt.y - dz - 10); g.lineTo(x + 9, gt.y - dz - 10); g.lineTo(x - 13, gt.y + 30); g.lineTo(x - 22, gt.y + 30); g.closePath(); g.fill(); }
+      g.fillStyle = 'rgba(5,6,10,.55)'; g.fillRect(CX - 200, gt.y - dz * 0.62, 400, dz * 0.3);
+      g.strokeStyle = '#05060a'; g.lineWidth = 2.5; let seed = 5; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647; // cracks spread as the door weakens
+      for (let i = 0; i < Math.round((1 - f) * 9); i++) { let x = CX + (rr() - 0.5) * 90, y = gt.y - dz * rr(); g.beginPath(); g.moveTo(x, y); for (let j = 0; j < 4; j++) { x += (rr() - 0.5) * 26; y += rr() * 14; g.lineTo(x, y); } g.stroke(); } }
+    g.restore(); shape(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke();
+    upright(g, CX, gt.y - dz - 12, () => { const w = 92; g.fillStyle = '#05060a'; g.fillRect(-w / 2 - 3, -8, w + 6, 14); g.fillStyle = '#3a1016'; g.fillRect(-w / 2, -5, w, 8); g.fillStyle = f > 0.35 ? '#fcee0a' : '#ff2a55'; g.fillRect(-w / 2, -5, w * f, 8);
+      g.font = 'italic 900 13px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText('GATE', 0, -13); g.fillStyle = '#fcee0a'; g.fillText('GATE', 0, -13); });
+  }
+  g.restore();
+}
+// a level without a goal arena ends the moment the top rolls into the goal ring; with one, when it rolls through the broken door
 function trackGoal() {
   const T = G.track, p = G.tops[0]; T.best = T.len; T.zone = 'goal'; G.score = [1, 0]; G.phase = 'trackEnd'; T.endT = 2.2; G.joy = null;
   showBanner('GOAL!! STAGE CLEAR', 2.2, '#fcee0a'); comicPop(p.x, p.y - 70, 'GOAL!!', 56, '#fcee0a', '#ff2a55', 1.4); focusLines(p.x, p.y, 'rgba(255,255,255,.8)', 0.6); sparks(p.x, p.y, 40, '#fcee0a', 420, true); G.shake = 12; SFX.win && SFX.round(); updateExBtn();
@@ -4240,8 +4335,8 @@ function trackHudPlate(g, T0) {
   for (let i = 0; i < n; i++) { const x = CX + (i - (n - 1) / 2) * 36, y = T0 + 64, lost = i < T.idx, cur = i === T.idx;
     g.beginPath(); g.arc(x, y, 13, 0, TAU); g.fillStyle = lost ? '#1a1e26' : cur ? '#fcee0a' : 'rgba(252,238,10,.35)'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = lost ? '#3a4250' : cur ? '#00f0ff' : '#fcee0a'; g.lineWidth = 2; g.stroke();
     g.font = 'italic 900 14px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillStyle = lost ? '#59606c' : '#05060a'; g.fillText(lost ? '×' : String(i + 1), x, y + 1); }
-  const b = T.boss, txt = T.zone === 'boss' ? `BOSS ${Math.max(0, Math.ceil(b.hp / b.s.maxHp * 100))}%` : `${Math.round(T.best / T.len * 100)}%`;
-  g.font = 'italic 900 17px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText(txt, CX, T0 + 94); g.fillStyle = T.zone === 'boss' ? '#ff2a55' : '#7fdfff'; g.fillText(txt, CX, T0 + 94);
+  const b = T.boss, txt = T.zone === 'boss' ? `BOSS ${Math.max(0, Math.ceil(b.hp / b.s.maxHp * 100))}%` : T.gate ? (T.gate.open ? 'GATE OPEN!' : `GATE ${Math.max(0, Math.ceil(T.gate.hp / T.gate.max * 100))}%`) : `${Math.round(T.best / T.len * 100)}%`;
+  g.font = 'italic 900 17px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText(txt, CX, T0 + 94); g.fillStyle = T.zone === 'boss' || (T.gate && !T.gate.open) ? '#ff2a55' : '#7fdfff'; g.fillText(txt, CX, T0 + 94);
 }
 // story screen helpers for track levels
 function levelFoe(lv) {
@@ -4257,7 +4352,7 @@ function levelTags(lv) {
   for (const p of tr.props || []) cnt[p.type] = 1;
   for (const k in cnt) t.push(PN[k]);
   if ((tr.mobs || []).length) t.push('敵人 ×' + tr.mobs.length);
-  t.push(lv.boss ? '終點 BOSS' : '衝到終點過關'); return t;
+  t.push(lv.boss ? '終點 BOSS' : lv.goal ? '終點破門' : '衝到終點過關'); return t;
 }
 
 // ---------- props (機關) physics ----------
@@ -4450,6 +4545,7 @@ function stepTop(t, foe, h) {
       }
       if (vn > 0) {
         if (t.boss && t.chargeT > 0 && vn > 300) bossCrash(t);
+        if (t.side === 0 && G.track && G.track.zone === 'gate') gateHit(t, vn);
         t.vx -= 1.95 * vn * nx; t.vy -= 1.95 * vn * ny; t.spin -= vn / 40000;
         // tangential kick from the spin, so tops ricochet along the rim instead of just stopping
         t.vx += -ny * t.s.w.dir * vn * 0.25; t.vy += nx * t.s.w.dir * vn * 0.25;
@@ -5143,6 +5239,7 @@ function render() {
   if (G.track) drawTrack(g, G.time, cam);
   drawArena(g, G.time);
   drawFarWall(g);
+  if (G.track && G.track.gate) drawGate(g);
   if (G.rimFlash) {
     const f = G.rimFlash; g.save(); g.shadowColor = '#cfd8ff'; g.shadowBlur = 20;
     g.strokeStyle = `rgba(0,240,255,${f.t * 4})`; g.lineWidth = 8;
