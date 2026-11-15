@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.16.2</title>
+<title>SPIN! SPIN! v0.17.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -442,9 +442,10 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #story.screen{justify-content:flex-start}
 .bottomBar #startBtn{flex:1.25}
 .storyTabs{margin:.2em 0 .3em}
-.chHead{width:100%;box-sizing:border-box;margin:.4em 0 .5em;padding:.55em .8em;border:3px solid #05060a;box-shadow:inset 0 0 0 2px #fcee0a;background:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.5px) 0 0/8px 8px,linear-gradient(90deg,rgba(127,223,255,.2),rgba(255,154,230,.2))}
+.chHead{width:100%;box-sizing:border-box;flex:none;margin:.4em 0 .5em;padding:.55em .8em;border:3px solid #05060a;box-shadow:inset 0 0 0 2px #fcee0a;background:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.5px) 0 0/8px 8px,linear-gradient(90deg,rgba(127,223,255,.2),rgba(255,154,230,.2))}
 .chHead .t{font-weight:900;font-size:1.15em;color:#fcee0a;text-shadow:2px 2px 0 #05060a}.chHead .s{font-size:.78em;opacity:.9;margin-top:.15em}.chHead .s b{color:#fcee0a}
-.lvList{width:100%;display:flex;flex-direction:column;gap:.45em}
+.lvList{width:100%;display:flex;flex-direction:column;gap:.4em;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
+.lvCard{flex:none}
 .lvCard{display:flex;align-items:center;gap:.6em;padding:.5em .75em;background:linear-gradient(90deg,rgba(127,223,255,.13),rgba(255,154,230,.13));border:2px solid #05060a;box-shadow:inset 0 0 0 2px #00f0ff;cursor:pointer;clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
 .lvCard.boss{box-shadow:inset 0 0 0 2px #ff2a55}.lvCard.lock{filter:grayscale(1) brightness(.45);cursor:default}
 .lvNo{font:italic 900 1.45em Rajdhani,sans-serif;color:#fcee0a;min-width:2.1em;text-shadow:2px 2px 0 #05060a}
@@ -457,7 +458,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .lvD{font-size:.82em;line-height:1.6;color:#cfd8e6;margin:.3em 0}
 .lvTagRow{display:flex;flex-wrap:wrap;gap:.3em;margin:.3em 0}.lvTagRow span{font-size:.72em;padding:.1em .5em;border:1px solid #7fdfff;color:#7fdfff}
 .lvH{font-weight:900;color:#fcee0a;font-size:.85em;margin:.55em 0 .2em}
-.lvFoe{display:flex;gap:.4em}.lvFoe>div{flex:1;text-align:center;font-size:.68em;line-height:1.25}.lvFoe img{width:100%;aspect-ratio:1;object-fit:cover;border:2px solid #ff2a55;display:block;margin-bottom:.2em}.lvFoe i{display:block;font-style:normal}
+.lvFoe{display:flex;gap:.4em}.lvFoe>div{flex:1;max-width:32%;text-align:center;font-size:.68em;line-height:1.25}.lvFoe img{width:100%;aspect-ratio:1;object-fit:cover;border:2px solid #ff2a55;display:block;margin-bottom:.2em}.lvFoe i{display:block;font-style:normal}
 .lvRow{font-size:.82em;padding:.12em 0;color:#8a93a3}.lvRow.ok{color:#fcee0a}
 .fStory{margin:.7em auto 0;width:fit-content;font-size:.62em;text-align:left;display:block;padding:.5em .8em;border:2px solid #fcee0a;background:rgba(5,6,10,.7)}
 .fStory .fsT{font-weight:900;color:#fcee0a;margin-bottom:.2em}.fStar{color:#8a93a3}.fStar.ok{color:#fcee0a}.fStar b{color:#ff4fd8;font-style:italic}
@@ -669,10 +670,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.16.0 countdown voice is the director's recording (processed, embedded mp3); 3-2-1 and the launch follow its word times; phone speech stays as fallback
  v0.16.1 countdown voice re-processed as a hacker voice changer (deep double, ring mod, bit-crush, stutter, dropouts, data noise)
  v0.16.2 the two SPIN! are separate beats: the first winds up (trembling, swelling word, screen shake building, tops revving), the launch happens on the second
+ v0.17.0 chapter 1 has 10 levels: BOSS only on 5, 9, 10; the others end at a goal ring; new star 'kills'
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.16.2';
+const GAME_VERSION = 'v0.17.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2336,7 +2338,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射；衝進終點把 <b>BOSS 打到爆甲</b>才過關</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射。衝進終點圓環就過關；每章第 5、9、10 關終點有 <b>BOSS</b>，要打到爆甲</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2590,13 +2592,52 @@ document.getElementById('fightBtn').onclick = fight;
 //           mobs 途中敵人 [{ type: 'guard' 守門型（左右巡邏）或 'rush' 衝撞型（靠近就衝過來）, x, y, c, w, a, hp 血量倍率（預設 0.4） }]
 //   boss    name、c 用 BOSS 版角色（boss_rex／boss_jack／boss_erin，用 defBoss 新增；決定頭像與招牌技）、w／a、diff 強度、lv 裝備等級、hp 血量倍率、size 體型倍率、lives 幾條血、stage BOSS 場的場地設定（同對戰關 stage，預設標準出口）
 //           phase2（血量 70% 以下）／phase3（35% 以下，同時暴走）：{ props: 新增機關（用時鐘位置 at／d）, mobs: 叫出小兵 }
-//   stars   多一種 ['lives', 2]：剩 2 隻以上陀螺過關（3＝一隻都沒倒下）
+//   stars   多兩種：['lives', 2] 剩 2 隻以上陀螺過關（3＝一隻都沒倒下）、['kills', 3] 打爆 3 個途中敵人並過關
+//   不寫 boss＝衝進終點圓環就過關（可加 diff: 'easy'／'normal'… 決定勝敗金幣倍率，預設 easy）
 // 章節 bonus：整章全三星的獎勵。下一章的第一關，要前一章最後一關過關才解鎖。
 // ===================================================================================
 const CHAPTERS = [
-  { id: 'c1', no: 1, name: '第一章・霓虹新人賽', desc: '夜之城地下陀螺聯賽的新人選拔。三條賽道，三個 BOSS。', bonus: { coins: 2500, box: 'purple' }, levels: [
-    // ---- 賽道關（track）：直條地圖往上衝，終點無縫接 BOSS 圓形場。位置用 x（-1 左牆～1 右牆）與 y（離起點幾像素）----
-    { id: '1-1', name: '霓虹高架', boss: true, desc: '拉彈發射、自動彈牆，飛行中拖曳微調方向。爆甲、出界、掉進陷阱或停轉就換下一隻陀螺，在倒下的地方重新發射。衝進終點的圓形場，把 BOSS 打到爆甲才算過關！BOSS 是被控制的鐵拳・雷克斯：他會連砸三下地板，砸完拳頭會卡住，那是進攻的好機會；衝撞撞到牆也會暈眩，傷害 ×1.5。',
+  // 每章 10 關：第 5、9、10 關終點有 BOSS（寫 boss 欄位），其他關衝到終點就過關（不寫 boss）
+  { id: 'c1', no: 1, name: '第一章・霓虹新人賽', desc: '夜之城地下陀螺聯賽的新人選拔。有人駭進了賽場，選手一個個失控。', bonus: { coins: 4000, box: 'purple' }, levels: [
+    { id: '1-1', name: '霓虹高架', desc: '第一條賽道。往後拉、放開發射，自動彈牆，飛行中拖曳可以微調方向。衝進最上面的終點圓環就過關。',
+      track: { len: 2200, mobLv: -0.1, floor: ['#3d4f86', '#2b3766', '#1a2144'],
+        signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'BUMPER ALLEY' }, { y: 1880, txt: 'GOAL', col: '#7fdfff' }],
+        props: [{ type: 'boost', x: 0, y: 300 }, { type: 'bumper', x: -0.5, y: 620 }, { type: 'bumper', x: 0.5, y: 620 }, { type: 'bumper', x: 0, y: 780 }, { type: 'bumper', x: -0.5, y: 940 }, { type: 'bumper', x: 0.5, y: 940 },
+          { type: 'boost', x: 0, y: 1260 }, { type: 'mover', x: 0, y: 1500, len: 90, rot: 3, move: 'spin', speed: 0.1 }, { type: 'boost', x: -0.32, y: 1850 }, { type: 'boost', x: 0.32, y: 1850 }],
+        mobs: [{ type: 'guard', x: 0, y: 1120, c: 'rat', w: 'gatling', a: 'hover' }, { type: 'guard', x: 0, y: 1690, c: 'rat', w: 'gatling', a: 'hover' }] },
+      stars: [['win'], ['kills', 2], ['lives', 3]],
+      reward: { first: { coins: 300 }, star3: { coins: 200 } } },
+    { id: '1-2', name: '彈珠街', desc: '整條街都是彈力柱。第一次出現牆的缺口：缺口那一側沒有牆，衝出去就出界，換下一隻陀螺。',
+      track: { len: 2500, mobLv: -0.05, floor: ['#2f7f86', '#215b63', '#143a40'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'PINBALL STREET' }, { y: 1380, txt: 'DANGER GAP', col: '#ff2a55' }, { y: 2170, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1450, to: 1600 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'bumper', x: -0.5, y: 560 }, { type: 'bumper', x: 0.5, y: 560 }, { type: 'bumper', x: 0, y: 700 }, { type: 'bumper', x: -0.5, y: 840 }, { type: 'bumper', x: 0.5, y: 840 }, { type: 'bumper', x: 0, y: 980 }, { type: 'bumper', x: -0.5, y: 1120 }, { type: 'bumper', x: 0.5, y: 1120 },
+          { type: 'boost', x: -0.3, y: 1750 }, { type: 'spikes', x: 0.4, y: 1900, r: 46, on: 2, off: 2 }, { type: 'boost', x: -0.32, y: 2150 }, { type: 'boost', x: 0.32, y: 2150 }],
+        mobs: [{ type: 'guard', x: 0, y: 1280, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'guard', x: 0, y: 1690, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: -0.4, y: 1990, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 350 }, star3: { coins: 250 } } },
+    { id: '1-3', name: '斷橋', desc: '左右輪流出現缺口，還有會把你往外推的擋板。第一次出現陷阱洞，掉進去也算一條命。',
+      track: { len: 2800, mobLv: -0.05, floor: ['#55508a', '#3a3666', '#222044'],
+        signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'BROKEN BRIDGE', col: '#ff2a55' }, { y: 1900, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2470, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 620, to: 770 }, { side: 'R', from: 990, to: 1140 }, { side: 'L', from: 1350, to: 1500 }, { side: 'R', from: 1650, to: 1780 }],
+        props: [{ type: 'boost', x: 0, y: 300 }, { type: 'bumper', x: 0.25, y: 870 }, { type: 'mover', x: -0.2, y: 1065, len: 90, rot: 12, move: 'slide', span: 50, period: 3 }, { type: 'bumper', x: -0.25, y: 1240 },
+          { type: 'mover', x: 0.2, y: 1425, len: 90, rot: 12, move: 'slide', span: 50, period: 3.3 }, { type: 'boost', x: -0.2, y: 1600 }, { type: 'pit', x: -0.45, y: 2000, r: 38 }, { type: 'pit', x: 0.45, y: 2180, r: 38 },
+          { type: 'boost', x: -0.32, y: 2450 }, { type: 'boost', x: 0.32, y: 2450 }],
+        mobs: [{ type: 'guard', x: 0, y: 900, c: 'rat', w: 'gatling', a: 'hover' }, { type: 'rush', x: 0.3, y: 1880, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2310, c: 'rat', w: 'gatling', a: 'hover' }] },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 400 }, star3: { coins: 300 } } },
+    { id: '1-4', name: '地刺市場', desc: '滿地間歇冒出的地刺，踩在上面轉速會一直掉。看準收起來的時候衝過去，中段要在兩個陷阱洞之間蛇行。',
+      track: { len: 3000, mobLv: 0, floor: ['#7a4a5c', '#573343', '#33202a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 500, txt: 'SPIKE MARKET', col: '#ff2a55' }, { y: 1500, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2050, txt: 'RUSH HOUR', col: '#ff2a55' }, { y: 2670, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1150, to: 1290 }],
+        props: [{ type: 'boost', x: 0, y: 300 }, { type: 'spikes', x: -0.5, y: 640, r: 50, on: 2, off: 2 }, { type: 'spikes', x: 0.5, y: 640, r: 50, on: 2, off: 2 }, { type: 'spikes', x: 0, y: 840, r: 50, on: 2, off: 2 },
+          { type: 'spikes', x: -0.5, y: 1040, r: 48, on: 1.5, off: 2 }, { type: 'spikes', x: 0.5, y: 1040, r: 48, on: 1.5, off: 2 }, { type: 'boost', x: 0, y: 1040, l: 60, w: 36 },
+          { type: 'pit', x: 0.4, y: 1600, r: 40 }, { type: 'pit', x: -0.4, y: 1790, r: 40 }, { type: 'bumper', x: -0.5, y: 2250 }, { type: 'bumper', x: 0.5, y: 2250 }, { type: 'bumper', x: 0, y: 2400 },
+          { type: 'boost', x: -0.32, y: 2650 }, { type: 'boost', x: 0.32, y: 2650 }],
+        mobs: [{ type: 'guard', x: 0, y: 1340, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.4, y: 2110, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: 0.4, y: 2170, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2530, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }] },
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 450 }, star3: { coins: 300 } } },
+    { id: '1-5', name: '齒輪工廠', boss: true, desc: '第一個 BOSS 關。衝進終點的圓形場，把 BOSS 打到爆甲才過關！BOSS 是被控制的鐵拳・雷克斯：他會連砸三下地板，砸完拳頭會卡住，那是進攻的好機會；衝撞撞到牆也會暈眩，傷害 ×1.5。',
       track: { len: 2700, mobLv: -0.05, floor: ['#3d4f86', '#2b3766', '#1a2144'],
         signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'BUMPER ALLEY' }, { y: 1160, txt: 'DANGER GAP', col: '#ff2a55' }, { y: 1700, txt: 'SPIKE ROAD', col: '#ff2a55' }, { y: 1900, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2290, txt: 'FINAL DASH', col: '#7fdfff' }],
         gaps: [{ side: 'L', from: 1230, to: 1400 }, { side: 'R', from: 1450, to: 1620 }],
@@ -2614,10 +2655,10 @@ const CHAPTERS = [
         phase2: { props: [{ type: 'mover', at: 12, d: 0, len: 120, move: 'spin', speed: 0.12 }], mobs: [{ type: 'guard', at: 9.5, d: 0.5, c: 'rat', w: 'gatling', a: 'hover' }, { type: 'guard', at: 2.5, d: 0.5, c: 'rat', w: 'gatling', a: 'hover' }] },
         phase3: { props: [{ type: 'spikes', at: 4.5, d: 0.5, r: 42, on: 2, off: 2.5 }, { type: 'spikes', at: 7.5, d: 0.5, r: 42, on: 2, off: 2.5 }] } },
       stars: [['win'], ['lives', 2], ['lives', 3]],
-      reward: { first: { coins: 600, box: 'purple' }, star3: { coins: 600 } } },
-    { id: '1-2', name: '天台飛車', boss: true, desc: '大樓天台的臨時賽道：牆的缺口變多，橫向加速帶會把你往缺口送，看準再發射。終點是低牆天台場，被撞飛很容易 RING OUT。BOSS 是被控制的賞金獵人・傑克：他會發動「全場通緝」封鎖你的 EX、叫小兵一起追你，把他引去撞牆可以提前解除。',
-      track: { len: 3200, mobLv: 0, floor: ['#6a5aa6', '#463a7c', '#281f50'],
-        signs: [{ y: 60, txt: 'START' }, { y: 560, txt: 'SIDE WIND', col: '#7fdfff' }, { y: 1250, txt: 'BROKEN WALL', col: '#ff2a55' }, { y: 2040, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2780, txt: 'FINAL DASH', col: '#7fdfff' }],
+      reward: { first: { coins: 800, box: 'purple' }, star3: { coins: 600 } } },
+    { id: '1-6', name: '天台飛車', desc: '大樓天台的臨時賽道：缺口變多，橫向加速帶會把你往缺口送，看準再發射。',
+      track: { len: 3200, mobLv: 0.1, floor: ['#6a5aa6', '#463a7c', '#281f50'],
+        signs: [{ y: 60, txt: 'START' }, { y: 560, txt: 'SIDE WIND', col: '#7fdfff' }, { y: 1250, txt: 'BROKEN WALL', col: '#ff2a55' }, { y: 2040, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2780, txt: 'GOAL', col: '#7fdfff' }],
         gaps: [{ side: 'R', from: 700, to: 860 }, { side: 'L', from: 1000, to: 1160 }, { side: 'L', from: 1380, to: 1540 }, { side: 'R', from: 1760, to: 1900 }],
         props: [
           { type: 'boost', x: 0, y: 300 },
@@ -2629,15 +2670,22 @@ const CHAPTERS = [
         mobs: [
           { type: 'guard', x: 0, y: 620, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: 0.4, y: 1300, c: 'rider', w: 'chainaxe', a: 'carbonvest' },
           { type: 'guard', x: 0, y: 1960, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: 0.4, y: 2660, c: 'rider', w: 'chainaxe', a: 'carbonvest' } ] },
-      boss: { name: '黑化獵人・傑克', c: 'boss_jack', w: 'railgun', a: 'opticamo', diff: 'normal', lv: 0.1, hp: 1.9, size: 1.35, lives: 1,
-        stage: { wallH: 12, exits: [{ at: 6, type: 'DEAD', w: 50 }], ringOut: 0.5, floor: ['#5b4d8f', '#3f3473', '#251d4b'] },
-        phase2: { props: [{ type: 'boost', at: 3, d: 0.42, dir: 3 }, { type: 'boost', at: 9, d: 0.42, dir: 9 }], mobs: [{ type: 'rush', at: 10.5, d: 0.55, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', at: 1.5, d: 0.55, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
-        phase3: { props: [{ type: 'bumper', at: 12, d: 0.45 }, { type: 'spikes', at: 6, d: 0.3, r: 40, on: 2, off: 2.5 }] } },
-      stars: [['win'], ['lives', 2], ['assist']],
-      reward: { first: { coins: 800 }, star3: { coins: 500, box: 'white' } } },
-    { id: '1-3', name: '鐵籠地道', boss: true, desc: '最長的一條：彈力柱叢林、整排地刺、三個陷阱洞，敵人也多。終點是高牆鐵籠，不會 RING OUT。BOSS 是被控制的重盾・艾琳，有兩條血：正面有盾幾乎打不動，要繞到背後；她會連續衝鋒，撞到牆就暈眩。',
-      track: { len: 3700, mobLv: 0, floor: ['#59606c', '#3a4048', '#22252a'],
-        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'PINBALL JUNGLE' }, { y: 1380, txt: 'SPIKE WALL', col: '#ff2a55' }, { y: 2120, txt: 'GRINDER', col: '#ff2a55' }, { y: 2880, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 3290, txt: 'FINAL DASH', col: '#7fdfff' }],
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 500 }, star3: { coins: 350 } } },
+    { id: '1-7', name: '絞肉機', desc: '一路都是旋轉擋板，被掃到會被打飛。中段的擋板旁邊就是缺口，後段要從兩個陷阱洞中間穿過去。',
+      track: { len: 3300, mobLv: 0.12, floor: ['#7a6038', '#564326', '#332716'],
+        signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'GRINDER', col: '#ff2a55' }, { y: 1490, txt: 'DANGER GAP', col: '#ff2a55' }, { y: 2290, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 2970, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1560, to: 1700 }, { side: 'R', from: 1880, to: 2020 }],
+        props: [{ type: 'boost', x: 0, y: 300 }, { type: 'mover', x: -0.35, y: 660, len: 110, move: 'spin', speed: 0.14 }, { type: 'mover', x: 0.35, y: 910, len: 110, move: 'spin', speed: -0.14 }, { type: 'mover', x: 0, y: 1160, len: 130, move: 'spin', speed: 0.12 },
+          { type: 'bumper', x: -0.55, y: 1360 }, { type: 'bumper', x: 0.55, y: 1360 }, { type: 'mover', x: 0.25, y: 1630, len: 90, rot: 12, move: 'slide', span: 50, period: 2.8 }, { type: 'mover', x: -0.25, y: 1950, len: 90, rot: 12, move: 'slide', span: 50, period: 3.2 },
+          { type: 'spikes', x: 0, y: 2160, r: 48, on: 2, off: 2 }, { type: 'pit', x: -0.5, y: 2400, r: 38 }, { type: 'pit', x: 0.5, y: 2400, r: 38 }, { type: 'mover', x: 0, y: 2660, len: 120, move: 'spin', speed: 0.13 },
+          { type: 'boost', x: -0.32, y: 2950 }, { type: 'boost', x: 0.32, y: 2950 }],
+        mobs: [{ type: 'guard', x: 0, y: 1790, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.4, y: 2250, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'rush', x: 0.4, y: 2530, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'guard', x: 0, y: 2830, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }] },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 550 }, star3: { coins: 400 } } },
+    { id: '1-8', name: '鐵籠地道', desc: '最長的一條：彈力柱叢林、整排地刺、三個陷阱洞，敵人也多。過了這裡就是連續兩個 BOSS。',
+      track: { len: 3700, mobLv: 0.15, floor: ['#59606c', '#3a4048', '#22252a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'PINBALL JUNGLE' }, { y: 1380, txt: 'SPIKE WALL', col: '#ff2a55' }, { y: 2120, txt: 'GRINDER', col: '#ff2a55' }, { y: 2880, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 3290, txt: 'GOAL', col: '#7fdfff' }],
         gaps: [{ side: 'L', from: 2190, to: 2310 }, { side: 'R', from: 2440, to: 2560 }],
         props: [
           { type: 'boost', x: 0, y: 280 },
@@ -2651,17 +2699,43 @@ const CHAPTERS = [
         mobs: [
           { type: 'guard', x: 0, y: 1340, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.45, y: 1960, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'rush', x: 0.45, y: 2040, c: 'rat', w: 'shotgun', a: 'hover' },
           { type: 'guard', x: 0, y: 2700, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'guard', x: 0, y: 3200, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 } ] },
-      boss: { name: '壞掉的盾・艾琳', c: 'boss_erin', w: 'hydrohammer', a: 'powerarmor', diff: 'normal', lv: 0.1, hp: 0.55, size: 1.7, lives: 2,
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 600 }, star3: { coins: 400, box: 'white' } } },
+    { id: '1-9', name: '天台追緝', boss: true, desc: '終點是低牆天台場，被撞飛很容易 RING OUT。BOSS 是被控制的賞金獵人・傑克：他會發動「全場通緝」封鎖你的 EX、叫小兵一起追你，把他引去撞牆可以提前解除。建議隊伍有紫卡 3 星的實力。',
+      track: { len: 3200, mobLv: 0.15, floor: ['#6a5aa6', '#463a7c', '#281f50'],
+        signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'CROSSWIND', col: '#7fdfff' }, { y: 1300, txt: 'BROKEN WALL', col: '#ff2a55' }, { y: 2050, txt: 'AMBUSH', col: '#ff2a55' }, { y: 2780, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 640, to: 790 }, { side: 'R', from: 1380, to: 1530 }, { side: 'L', from: 1700, to: 1840 }],
+        props: [{ type: 'boost', x: 0, y: 300 }, { type: 'boost', x: -0.1, y: 720, dir: 9, l: 60, power: 0.5 }, { type: 'bumper', x: 0.5, y: 900 }, { type: 'bumper', x: -0.5, y: 1100 }, { type: 'bumper', x: 0, y: 1240 },
+          { type: 'mover', x: -0.2, y: 1455, len: 90, rot: 12, move: 'slide', span: 55, period: 2.6 }, { type: 'spikes', x: 0.4, y: 1770, r: 44, on: 2, off: 2 }, { type: 'pit', x: 0.45, y: 2150, r: 38 }, { type: 'pit', x: -0.45, y: 2350, r: 38 },
+          { type: 'mover', x: 0, y: 2560, len: 120, move: 'spin', speed: 0.14 }, { type: 'boost', x: -0.32, y: 2830 }, { type: 'boost', x: 0.32, y: 2830 }],
+        mobs: [{ type: 'guard', x: 0, y: 1000, c: 'raven', w: 'smartpistol', a: 'afterimage' }, { type: 'rush', x: 0.4, y: 1610, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: -0.4, y: 2080, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: 0.4, y: 2260, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2700, c: 'raven', w: 'smartpistol', a: 'afterimage' }] },
+      boss: { name: '黑化獵人・傑克', c: 'boss_jack', w: 'railgun', a: 'opticamo', diff: 'normal', lv: 0.22, hp: 2.2, size: 1.35, lives: 1,
+        stage: { wallH: 12, exits: [{ at: 6, type: 'DEAD', w: 50 }], ringOut: 0.5, floor: ['#5b4d8f', '#3f3473', '#251d4b'] },
+        phase2: { props: [{ type: 'boost', at: 3, d: 0.42, dir: 3 }, { type: 'boost', at: 9, d: 0.42, dir: 9 }], mobs: [{ type: 'rush', at: 10.5, d: 0.55, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', at: 1.5, d: 0.55, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+        phase3: { props: [{ type: 'bumper', at: 12, d: 0.45 }, { type: 'spikes', at: 6, d: 0.3, r: 40, on: 2, off: 2.5 }] } },
+      stars: [['win'], ['lives', 2], ['assist']],
+      reward: { first: { coins: 1000, box: 'purple' }, star3: { coins: 700 } } },
+    { id: '1-10', name: '鐵籠終局', boss: true, desc: '第一章最終關。終點是高牆鐵籠，不會 RING OUT。BOSS 是被控制的重盾・艾琳，有兩條血：正面有盾幾乎打不動，要繞到背後；她會連續衝鋒，撞到牆就暈眩。建議隊伍裡至少有一張紅卡。',
+      track: { len: 3600, mobLv: 0.15, floor: ['#59606c', '#3a4048', '#22252a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 470, txt: 'GAUNTLET', col: '#ff2a55' }, { y: 1540, txt: 'GRINDER', col: '#ff2a55' }, { y: 2200, txt: 'SPIKE WALL', col: '#ff2a55' }, { y: 2760, txt: 'PIT AHEAD', col: '#ff2a55' }, { y: 3190, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 760, to: 900 }, { side: 'L', from: 1620, to: 1760 }, { side: 'R', from: 1900, to: 2040 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'bumper', x: -0.5, y: 560 }, { type: 'bumper', x: 0.5, y: 560 }, { type: 'bumper', x: 0, y: 700 }, { type: 'mover', x: -0.2, y: 830, len: 90, rot: 12, move: 'slide', span: 50, period: 2.6 },
+          { type: 'spikes', x: -0.5, y: 1080, r: 48, on: 2, off: 2 }, { type: 'spikes', x: 0.5, y: 1080, r: 48, on: 2, off: 2 }, { type: 'spikes', x: 0, y: 1270, r: 48, on: 1.5, off: 2.5 },
+          { type: 'mover', x: 0.3, y: 1690, len: 110, move: 'spin', speed: 0.13 }, { type: 'mover', x: -0.3, y: 1970, len: 110, move: 'spin', speed: -0.13 },
+          { type: 'spikes', x: -0.62, y: 2330, r: 48, on: 2, off: 2 }, { type: 'spikes', x: 0, y: 2330, r: 48, on: 2, off: 2 }, { type: 'spikes', x: 0.62, y: 2330, r: 48, on: 2, off: 2 }, { type: 'boost', x: -0.31, y: 2330, l: 60, w: 36 }, { type: 'boost', x: 0.31, y: 2330, l: 60, w: 36 },
+          { type: 'pit', x: -0.5, y: 2860, r: 38 }, { type: 'pit', x: 0.5, y: 2860, r: 38 }, { type: 'boost', x: -0.32, y: 3230 }, { type: 'boost', x: 0.32, y: 3230 }],
+        mobs: [{ type: 'guard', x: 0, y: 960, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: -0.4, y: 1400, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'rush', x: 0.4, y: 1460, c: 'rat', w: 'shotgun', a: 'hover' }, { type: 'guard', x: 0, y: 2130, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'rush', x: 0, y: 2600, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+      boss: { name: '壞掉的盾・艾琳', c: 'boss_erin', w: 'hydrohammer', a: 'powerarmor', diff: 'normal', lv: 0.18, hp: 0.62, size: 1.7, lives: 2,
         stage: { wallH: 44, exits: [{ at: 6, type: 'DEAD', w: 40 }], rails: false, ringOut: 0, core: 0.42, floor: ['#4f555e', '#353a42', '#1e2126'],
           props: [{ type: 'bumper', at: 2, d: 0.62 }, { type: 'bumper', at: 10, d: 0.62 }] },
         phase2: { props: [{ type: 'spikes', at: 12, d: 0, r: 44, on: 2, off: 3 }], mobs: [{ type: 'guard', at: 9, d: 0.5, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }, { type: 'guard', at: 3, d: 0.5, c: 'cactus', w: 'vibrosword', a: 'titanium', hp: 0.5 }] },
         phase3: { props: [{ type: 'bumper', at: 4.5, d: 0.5 }, { type: 'bumper', at: 7.5, d: 0.5 }] } },
       stars: [['win'], ['lives', 2], ['ex', 4]],
-      reward: { first: { coins: 1200, box: 'purple' }, star3: { coins: 800 } } },
+      reward: { first: { coins: 1500, box: 'purple' }, star3: { coins: 1000 } } },
   ] },
 ];
 
-const storyData = () => { const S = INV.story = INV.story || {}; S.lv = S.lv || {}; S.ch = S.ch || {}; S.boxes = S.boxes || []; if (S.v !== 2) { S.lv = {}; S.ch = {}; S.v = 2; } return S; }; // v2: chapter 1 became track levels, old stars reset
+const storyData = () => { const S = INV.story = INV.story || {}; S.lv = S.lv || {}; S.ch = S.ch || {}; S.boxes = S.boxes || []; if (S.v !== 3) { S.lv = {}; S.ch = {}; S.v = 3; } return S; }; // v3: chapter 1 rebuilt as 10 levels, old stars reset
 const allLevels = () => CHAPTERS.flatMap(c => c.levels);
 const lvStars = id => storyData().lv[id] || [0, 0, 0];
 const lvCleared = id => !!lvStars(id)[0];
@@ -2669,11 +2743,11 @@ const full3 = a => a.length > 0 && a.every(Boolean);
 function lvUnlocked(lv) { const L = allLevels(), i = L.indexOf(lv); return i <= 0 || lvCleared(L[i - 1].id); }
 const chUnlocked = ch => lvUnlocked(ch.levels[0]);
 const chapterOf = lv => CHAPTERS.find(c => c.levels.includes(lv));
-const STAR_TEXT = { win: () => '過關', flawless: () => '對手 0 分過關', by: r => `用 ${r} 得分並過關`, ex: n => `使用 EX ${n} 次以上並過關`, assist: () => '叫出 ASSIST 支援並過關', lives: n => n >= 3 ? '一隻陀螺都沒倒下就過關' : `剩 ${n} 隻以上陀螺過關` };
+const STAR_TEXT = { win: () => '過關', flawless: () => '對手 0 分過關', by: r => `用 ${r} 得分並過關`, ex: n => `使用 EX ${n} 次以上並過關`, assist: () => '叫出 ASSIST 支援並過關', lives: n => n >= 3 ? '一隻陀螺都沒倒下就過關' : `剩 ${n} 隻以上陀螺過關`, kills: n => `打爆 ${n} 個途中敵人並過關` };
 const starText = s => (STAR_TEXT[s[0]] || (() => '？'))(s[1]);
 function starMet(s) {
   const L = G.log;
-  switch (s[0]) { case 'win': return true; case 'flawless': return G.score[1] === 0; case 'by': return (L.by[s[1]] || 0) > 0; case 'ex': return L.ex >= (s[1] || 1); case 'assist': return L.assist > 0; case 'lives': return !G.track || G.lineup.length - G.track.idx >= s[1]; }
+  switch (s[0]) { case 'win': return true; case 'flawless': return G.score[1] === 0; case 'by': return (L.by[s[1]] || 0) > 0; case 'ex': return L.ex >= (s[1] || 1); case 'assist': return L.assist > 0; case 'lives': return !G.track || G.lineup.length - G.track.idx >= s[1]; case 'kills': return !!G.track && G.track.kills >= s[1]; }
   return false;
 }
 const BOX_NAME = { white: '補給箱', purple: '紫色補給箱' };
@@ -2727,7 +2801,7 @@ function openLevel(lv) {
   const F = levelFoe(lv), st = lvStars(lv.id), D = DIFF[F.diff || 'normal'], R = lv.reward || {};
   document.getElementById('lvPopIn').innerHTML = `<div class="lvT"><b>${lv.id}</b>${lv.name}${lv.boss ? '<span class="bossTag">BOSS</span>' : ''}</div>
     <div class="lvD">${lv.desc}</div><div class="lvTagRow">${levelTags(lv).map(x => `<span>${x}</span>`).join('')}</div>
-    <div class="lvH">${lv.track ? 'BOSS' : '對手'}：${F.name}・${D.name}</div>
+    <div class="lvH">${lv.boss ? 'BOSS：' + F.name + '・' + D.name : lv.track ? '途中敵人' : '對手：' + F.name + '・' + D.name}</div>
     <div class="lvFoe">${F.team.map((b, i) => `<div><img src="${PORTRAIT_SRC[b.c]}" alt=""><i>${F.tags ? F.tags[i] : (i + 1) + ' 號'}</i><i>${CLASSES[b.c].name}</i></div>`).join('')}</div>
     <div class="lvH">星星條件</div>${lv.stars.map((x, i) => `<div class="lvRow${st[i] ? ' ok' : ''}">${st[i] ? '★' : '☆'} ${starText(x)}</div>`).join('')}
     <div class="lvH">獎勵</div><div class="lvRow${st[0] ? ' ok' : ''}">首次過關：${rewardText(R.first)}${st[0] ? '（已領）' : ''}</div>${R.star3 ? `<div class="lvRow${full3(st) ? ' ok' : ''}">三顆星：${rewardText(R.star3)}${full3(st) ? '（已領）' : ''}</div>` : ''}
@@ -3874,7 +3948,9 @@ function makeMob(def, lv, x, y) {
   return t;
 }
 function startTrack(lv) {
-  const tr = lv.track, bs = lv.boss, D = DIFF[bs.diff || 'normal'];
+  const tr = lv.track, m0 = (tr.mobs || [])[0] || { c: 'rat', w: 'gatling', a: 'hover' };
+  const bs = lv.boss || { name: '途中敵人', c: m0.c, w: m0.w, a: m0.a, diff: lv.diff || 'easy', lv: tr.mobLv || 0 }; // no boss: the far end is a goal ring; this stand-in only feeds the HUD
+  const D = DIFF[bs.diff || 'normal'];
   const bb = { c: bs.c, w: bs.w, a: bs.a, bc: bs.lv || 0, bw: bs.lv || 0, ba: bs.lv || 0 };
   aiName = bs.name; aiLineup = [bb, bb, bb].map(b => ({ ...b }));
   applyStage(Object.assign({}, bs.stage, { exits: [], rails: false, core: 0, ringOut: 0, props: [] }));
@@ -3882,13 +3958,13 @@ function startTrack(lv) {
   G.aiSkill = D.skill; G.diff = bs.diff || 'normal'; G.level = lv; G.aBond = bondOf([bb]);
   const T = G.track = { lv, len: tr.len, y0: TRK.ENT_Y + tr.len, gw: GW, signs: tr.signs || [], floor: tr.floor || ['#3d4f86', '#2b3766', '#1a2144'],
     gaps: (tr.gaps || []).map(gp => ({ side: gp.side === 'L' ? -1 : 1, from: gp.from, to: gp.to })),
-    zone: 'track', idx: 0, started: false, mobs: [], phase: 1, bossLives: bs.lives || 1, best: 0, safe: null, kills: 0 };
+    noBoss: !lv.boss, zone: 'track', idx: 0, started: false, mobs: [], phase: 1, bossLives: bs.lives || 1, best: 0, safe: null, kills: 0 };
   GATES = [{ door: true, a: Math.PI / 2, half: GATE_HALF, pts: 0, name: 'GATE', col: '0,240,255', txt: '#00f0ff', x: CX, y: CY + BY }];
   PROPS = (tr.props || []).map(p => makeProp({ ...p, px: CX + (p.x || 0) * TRK.HW, py: T.y0 - p.y }));
   arenaCache = null;
   T.mobs = (tr.mobs || []).map(m => makeMob(m, tr.mobLv || 0, CX + (m.x || 0) * TRK.HW, T.y0 - m.y));
   const b = T.boss = makeTop(bb, 1); b.boss = true; b.rad = TR * (bs.size || 1.6); b.s.maxHp *= bs.hp || 3; b.hp = b.s.maxHp; b.s.mass *= 1.5; b.kbOut = 0.5; b.dmgOut = bs.dmg || 0.62; b.s.decay = 0; b.s.accel *= 0.85; // heavy, but its hits push less than its size suggests so one bump is not a ring-out
-  b.x = CX; b.y = CY - 50; b.chargeCD = 4; b.sig = CLASSES[bs.c].sig || null; b.sigCD = 6; b.chain = 0;
+  b.x = CX; b.y = CY - 50; b.dead = T.noBoss; b.chargeCD = 4; b.sig = CLASSES[bs.c].sig || null; b.sigCD = 6; b.chain = 0;
   const gh = T.ghost = makeTop(bb, 1); gh.dead = true; gh.ghost = true; // stand-in "foe" while no enemy is near
   const p = G.tops[0]; p.x = CX; p.y = T.y0 - 110; gh.x = p.x; gh.y = p.y - 150; G.tops[1] = gh;
   G.placed = true; G.assist.used[1] = true; G.fcam = { x: CX, y: p.y - 200, z: 1 }; T.safe = { x: p.x, y: p.y };
@@ -4015,8 +4091,13 @@ function trackPhysics(h) {
   if (T.zone === 'track') {
     const sv = T.y0 - p.y; T.best = Math.max(T.best, sv);
     if (Math.abs(p.x - CX) < trkHalf(T, sv) - 46 && !PROPS.some(P => (P.type === 'pit' || P.type === 'spikes') && len(p.x - P.x, p.y - P.y) < P.r + 46)) T.safe = { x: p.x, y: p.y };
-    if (p.y < TRK.ENT_Y - 8) trackEnterBoss();
+    if (p.y < TRK.ENT_Y - 8) T.noBoss ? trackGoal() : trackEnterBoss();
   } else if (qOf(p.x, p.y) < 0.66 && !inGateZone(p.x, p.y)) T.safe = { x: p.x, y: p.y };
+}
+// a level without a BOSS ends the moment the top rolls into the goal ring
+function trackGoal() {
+  const T = G.track, p = G.tops[0]; T.best = T.len; T.zone = 'goal'; G.score = [1, 0]; G.phase = 'trackEnd'; T.endT = 2.2; G.joy = null;
+  showBanner('GOAL!! STAGE CLEAR', 2.2, '#fcee0a'); comicPop(p.x, p.y - 70, 'GOAL!!', 56, '#fcee0a', '#ff2a55', 1.4); focusLines(p.x, p.y, 'rgba(255,255,255,.8)', 0.6); sparks(p.x, p.y, 40, '#fcee0a', 420, true); G.shake = 12; SFX.win && SFX.round(); updateExBtn();
 }
 // through the doorway: the entrance slams shut and becomes a DEAD exit, the BOSS wakes up
 function trackEnterBoss() {
@@ -4094,6 +4175,7 @@ function drawTrack(g, time, cam) {
   g.strokeStyle = 'rgba(252,238,10,.35)'; g.lineWidth = 4; g.setLineDash([26, 26]); g.lineDashOffset = time * 90; g.beginPath(); g.moveTo(CX, yb); g.lineTo(CX, ya); g.stroke(); g.setLineDash([]);
   for (let k = 0; k < 10; k++) { g.fillStyle = k % 2 ? '#05060a' : '#e8edf2'; g.fillRect(CX - HW + k * (HW / 5), yOf(150), HW / 5, 10); g.fillStyle = k % 2 ? '#e8edf2' : '#05060a'; g.fillRect(CX - HW + k * (HW / 5), yOf(150) + 10, HW / 5, 10); } // start line
   g.restore();
+  if (T.noBoss) for (let k = -3; k < 3; k++) { g.fillStyle = (k & 1) ? '#05060a' : '#fcee0a'; g.fillRect(CX + k * gw / 3, top + 8, gw / 3, 9); g.fillStyle = (k & 1) ? '#fcee0a' : '#05060a'; g.fillRect(CX + k * gw / 3, top + 17, gw / 3, 9); } // goal line
   floor(); g.strokeStyle = '#030405'; g.lineWidth = 6; g.stroke();
   for (const sg of T.signs) { const y = yOf(sg.y); if (y > v0 && y < v1) signPlate(g, CX, y, 0, sg.txt, sg.col || '#fcee0a', 20, 0.9); }
   { const pu = 0.5 + 0.5 * Math.sin(time * 6); g.save(); g.fillStyle = `rgba(0,240,255,${0.5 + 0.5 * pu})`; // arrows into the BOSS doorway
@@ -4164,8 +4246,9 @@ function trackHudPlate(g, T0) {
 // story screen helpers for track levels
 function levelFoe(lv) {
   if (!lv.track) return lv.foe;
-  const seen = {}, mobs = (lv.track.mobs || []).filter(m => !seen[m.c] && (seen[m.c] = 1)).slice(0, 2), bs = lv.boss;
-  return { name: bs.name, diff: bs.diff || 'normal', team: [...mobs, bs], tags: [...mobs.map(m => m.type === 'rush' ? '衝撞型小兵' : '守門型小兵'), 'BOSS'] };
+  const seen = {}, mobs = (lv.track.mobs || []).filter(m => !seen[m.c] && (seen[m.c] = 1)), bs = lv.boss, tag = m => m.type === 'rush' ? '衝撞型小兵' : '守門型小兵';
+  if (!bs) return { name: '途中敵人', diff: lv.diff || 'easy', team: mobs.slice(0, 3), tags: mobs.slice(0, 3).map(tag) };
+  return { name: bs.name, diff: bs.diff || 'normal', team: [...mobs.slice(0, 2), bs], tags: [...mobs.slice(0, 2).map(tag), 'BOSS'] };
 }
 function levelTags(lv) {
   if (!lv.track) return stageTags(lv.stage);
@@ -4174,7 +4257,7 @@ function levelTags(lv) {
   for (const p of tr.props || []) cnt[p.type] = 1;
   for (const k in cnt) t.push(PN[k]);
   if ((tr.mobs || []).length) t.push('敵人 ×' + tr.mobs.length);
-  t.push('終點 BOSS'); return t;
+  t.push(lv.boss ? '終點 BOSS' : '衝到終點過關'); return t;
 }
 
 // ---------- props (機關) physics ----------
