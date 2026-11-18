@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.18.0</title>
+<title>SPIN! SPIN! v0.18.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -672,10 +672,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.16.2 the two SPIN! are separate beats: the first winds up (trembling, swelling word, screen shake building, tops revving), the launch happens on the second
  v0.17.0 chapter 1 has 10 levels: BOSS only on 5, 9, 10; the others end at a goal ring; new star 'kills'
  v0.18.0 goal arenas: levels without a BOSS end in an obstacle arena with a door to break (HP bar, shockwave, respawning guards)
+ v0.18.1 track walls show their inner faces and grow/lean with the camera tilt; the road's default view is more tilted
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.18.0';
+const GAME_VERSION = 'v0.18.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3432,7 +3433,7 @@ function camFollowStep(dt) {
   if (!pinching) { f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k; } // two fingers on screen = the player drives the camera
   // auto tilt: closer camera -> lower angle; the player's tilt setting is an offset on top
   const base = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
-  const tgt = SETTINGS.autoTilt !== false ? clamp(tiltCurve(camNow().z / BASE_Z) + (base - 0.85), VIEW_K_MIN, VIEW_K_MAX) : base;
+  const tgt = SETTINGS.autoTilt !== false ? clamp((onTrack() ? 0.80 : tiltCurve(camNow().z / BASE_Z)) + (base - 0.85), VIEW_K_MIN, VIEW_K_MAX) : base; // on the road the default view is tilted so the corridor walls stand up
   G.vk = G.vk == null ? tgt : G.vk + (tgt - G.vk) * (1 - Math.exp(-dt * (pinching ? 14 : 3)));
   VIEW_K = G.vk;
 }
@@ -4256,8 +4257,10 @@ function trackBackdrop(g, cam) { // far from the arena the stadium gives way to 
 }
 function drawTrack(g, time, cam) {
   const T = G.track, y0 = T.y0, top = TRK.ENT_Y, HW = TRK.HW, gw = T.gw, sF = T.len - TRK.FUN, yF = y0 - sF;
-  const v0 = cam.y - 640, v1 = cam.y + 640; if (v1 < top - 30) return;
-  const yOf = sv => y0 - sv, dz = WALL_H / VIEW_K, ya = Math.max(v0, top), yb = Math.min(v1, y0);
+  const v0 = cam.y - 820, v1 = cam.y + 820; if (v1 < top - 30) return;
+  // corridor walls get taller and lean outward as the camera tilts (fake perspective), so the tilt reads on the long straight road
+  const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), dz = (14 + 40 * tk) / VIEW_K, lean = 5 + 24 * tk;
+  const yOf = sv => y0 - sv, ya = Math.max(v0, top), yb = Math.min(v1, y0);
   const floor = () => { g.beginPath(); g.moveTo(CX - HW, y0); g.lineTo(CX - HW, yF); g.lineTo(CX - gw, top); g.lineTo(CX + gw, top); g.lineTo(CX + HW, yF); g.lineTo(CX + HW, y0); g.closePath(); };
   floor(); g.fillStyle = T.floor[1]; g.fill();
   g.save(); floor(); g.clip();
@@ -4282,24 +4285,35 @@ function drawTrack(g, time, cam) {
     for (let k = 0; k < 3; k++) { const ph = (time * 1.4 + k / 3) % 1, cx2 = x + gp.side * (10 + ph * 44), cy2 = (y1 + y2) / 2; g.save(); g.translate(cx2, cy2); g.rotate(gp.side > 0 ? -Math.PI / 2 : Math.PI / 2); g.globalAlpha = Math.sin(ph * Math.PI);
       g.fillStyle = '#ff2a55'; g.beginPath(); g.moveTo(-10, -5); g.lineTo(0, 4); g.lineTo(10, -5); g.lineTo(10, 0); g.lineTo(0, 9); g.lineTo(-10, 0); g.closePath(); g.fill(); g.restore(); }
     signPlate(g, x - gp.side * 46, y1 - 16, 0, 'OUT', '#ff2a55', 13, 0.95); }
-  // walls: only the rim shows on the straight sides (they are edge-on to the camera); the funnel and the start wall show a face
+  // walls: inner face (seen because the top leans outward), rim with hazard stripes, and the near end cap where a wall stops at a gap
   const stripes = (x, y, w, hh) => { g.save(); g.beginPath(); g.rect(x, y, w, hh); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x, y, w, hh); g.fillStyle = '#0b0b0b'; for (let k = Math.floor(y / 18) - 1; k * 18 < y + hh + 18; k++) { g.beginPath(); g.moveTo(x, k * 18); g.lineTo(x + w, k * 18 - 8); g.lineTo(x + w, k * 18 + 1); g.lineTo(x, k * 18 + 9); g.closePath(); g.fill(); } g.restore(); };
+  const quad = (p1, p2, p3, p4, col, lw = 3) => { g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.lineTo(p3[0], p3[1]); g.lineTo(p4[0], p4[1]); g.closePath(); g.fillStyle = col; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = lw; g.stroke(); };
   for (const sd of [-1, 1]) {
     let segs = [[0, sF]];
     for (const gp of T.gaps) if (gp.side === sd) segs = segs.flatMap(([a, b]) => gp.to <= a || gp.from >= b ? [[a, b]] : [[a, gp.from], [gp.to, b]].filter(q => q[1] > q[0]));
-    const x = CX + sd * HW, x0 = sd > 0 ? x : x - 24;
+    const x = CX + sd * HW, xt = x + sd * lean, neon = sd < 0 ? '#7fdfff' : '#ff9ae6';
     for (const [a, b] of segs) { const y1 = Math.max(yOf(b), v0 - 40), y2 = Math.min(yOf(a), v1 + 40); if (y2 <= y1) continue;
-      g.fillStyle = '#0d1013'; g.fillRect(x0, y2 - dz, 24, dz); g.strokeStyle = '#030405'; g.lineWidth = 3; g.strokeRect(x0, y2 - dz, 24, dz);   // end face
-      g.fillStyle = '#14181c'; g.fillRect(x0, y1 - dz, 24, y2 - y1); g.strokeRect(x0, y1 - dz, 24, y2 - y1);
-      stripes(sd > 0 ? x + 15 : x - 22, y1 - dz, 7, y2 - y1);
-      g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y1 - dz); g.lineTo(x, y2 - dz); g.stroke(); }
-    const fx = CX + sd * gw, quad = (p1, p2, p3, p4, col) => { g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.lineTo(p3[0], p3[1]); g.lineTo(p4[0], p4[1]); g.closePath(); g.fillStyle = col; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = 3; g.stroke(); };
-    quad([x, yF], [fx, top], [fx, top - dz], [x, yF - dz], '#1f272d');                                             // funnel inner face
-    quad([x, yF - dz], [fx, top - dz], [fx + sd * 24, top - dz], [x + sd * 24, yF - dz], '#14181c');               // funnel rim
-    g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, yF - dz); g.lineTo(fx, top - dz); g.stroke();
+      quad([x, y1], [x, y2], [xt, y2 - dz], [xt, y1 - dz], '#232b33');                                                     // inner face
+      g.save(); g.beginPath(); g.moveTo(x, y1); g.lineTo(x, y2); g.lineTo(xt, y2 - dz); g.lineTo(xt, y1 - dz); g.closePath(); g.clip();
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.moveTo(x, y1); g.lineTo(x, y2); g.lineTo(x + sd * lean * 0.35, y2 - dz * 0.35); g.lineTo(x + sd * lean * 0.35, y1 - dz * 0.35); g.closePath(); g.fill(); // cel shadow at the foot
+      g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 2;
+      for (let sv = Math.ceil(a / 120) * 120; sv < b; sv += 120) { const y = yOf(sv); if (y < y1 || y > y2) continue; g.beginPath(); g.moveTo(x, y); g.lineTo(xt, y - dz); g.stroke(); } // panel seams
+      g.strokeStyle = neon; g.lineWidth = 3; g.globalAlpha = 0.55 + 0.45 * tk; g.beginPath(); g.moveTo(x + sd * lean * 0.62, y1 - dz * 0.62); g.lineTo(x + sd * lean * 0.62, y2 - dz * 0.62); g.stroke(); g.globalAlpha = 1; // neon strip
+      g.restore();
+      quad([xt, y1 - dz], [xt, y2 - dz], [xt + sd * 24, y2 - dz], [xt + sd * 24, y1 - dz], '#14181c');                      // rim
+      stripes(sd > 0 ? xt + 15 : xt - 22, y1 - dz, 7, y2 - y1);
+      g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(xt, y1 - dz); g.lineTo(xt, y2 - dz); g.stroke();
+      if (yOf(a) < v1 + 40) quad([x, y2], [x + sd * 24, y2], [xt + sd * 24, y2 - dz], [xt, y2 - dz], '#0d1013');          // near end cap
+    }
+    // funnel: the lean fades to nothing at the doorway so it meets the arena wall cleanly
+    const fx = CX + sd * gw;
+    quad([x, yF], [fx, top], [fx, top - WALL_H / VIEW_K], [xt, yF - dz], '#1f272d');
+    quad([xt, yF - dz], [fx, top - WALL_H / VIEW_K], [fx + sd * 24, top - WALL_H / VIEW_K], [xt + sd * 24, yF - dz], '#14181c');
+    g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(xt, yF - dz); g.lineTo(fx, top - WALL_H / VIEW_K); g.stroke();
   }
-  if (y0 < v1 + 60) { g.fillStyle = '#14181c'; g.fillRect(CX - HW - 24, y0 - dz, HW * 2 + 48, 24); g.strokeStyle = '#030405'; g.lineWidth = 3; g.strokeRect(CX - HW - 24, y0 - dz, HW * 2 + 48, 24);
-    g.fillStyle = '#0d1013'; g.fillRect(CX - HW - 24, y0 - dz + 24, HW * 2 + 48, dz); g.strokeRect(CX - HW - 24, y0 - dz + 24, HW * 2 + 48, dz); }
+  if (y0 < v1 + 60) { const xl = CX - HW - lean - 24, ww = (HW + lean + 24) * 2; // start wall: rim, then the face toward the camera
+    g.fillStyle = '#14181c'; g.fillRect(xl, y0 - dz, ww, 24); g.strokeStyle = '#030405'; g.lineWidth = 3; g.strokeRect(xl, y0 - dz, ww, 24);
+    g.fillStyle = '#0d1013'; g.fillRect(xl, y0 - dz + 24, ww, dz); g.strokeRect(xl, y0 - dz + 24, ww, dz); }
 }
 // BOSS signature-move graphics on the floor: slam warning ring, shield arc, WANTED crosshair
 function drawBossFx(g) {
