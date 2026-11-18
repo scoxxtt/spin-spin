@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.18.1</title>
+<title>SPIN! SPIN! v0.19.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -484,6 +484,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
       <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
       <div class="opt"><span>動態運鏡</span><button class="tog" data-k="camFollow"></button></div>
       <div class="opt"><span>視角自動傾斜<small class="optS">（拉近變斜、拉遠回正圓）</small></span><button class="tog" data-k="autoTilt"></button></div>
+      <div class="opt"><span>透視效果<small class="optS">（近大遠小，越斜越明顯；手機太卡可關掉）</small></span><button class="tog" data-k="persp"></button></div>
       <div class="opt"><span>視角傾斜（基準）<small class="optS">（對戰中雙指上下滑也能調）</small></span><input type="range" id="viewKIn" min="0" max="100" class="vRange"></div>
       <div class="opt"><span>場地縮放<small class="optS">（雙指捏合／滾輪）</small></span><input type="range" id="viewZIn" min="0" max="100" class="vRange"></div>
       <div class="opt"><span>視角</span><button class="sbtn" id="viewReset">重設視角</button></div>
@@ -673,10 +674,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.17.0 chapter 1 has 10 levels: BOSS only on 5, 9, 10; the others end at a goal ring; new star 'kills'
  v0.18.0 goal arenas: levels without a BOSS end in an obstacle arena with a door to break (HP bar, shockwave, respawning guards)
  v0.18.1 track walls show their inner faces and grow/lean with the camera tilt; the road's default view is more tilted
+ v0.19.0 real perspective (near big, far small) across the whole game: the world pass is drawn through a projecting canvas stand-in (PG), strength follows the tilt, on/off switch in settings
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.18.1';
+const GAME_VERSION = 'v0.19.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -736,7 +738,7 @@ const CAM = {
 };
 let viewK = 1; // the squash currently applied while drawing (1 for flat views like the tutorial)
 // draw text (or anything) un-squashed at a world point
-function upright(g, x, y, fn) { g.save(); g.translate(x, y); g.scale(1, 1 / viewK); fn(); g.restore(); }
+function upright(g, x, y, fn) { if (g.isProj) return g.upright(x, y, fn); g.save(); g.translate(x, y); g.scale(1, 1 / viewK); fn(); g.restore(); }
 // three exits on the lower wall: the wide hell gate (+3) at 6 o'clock and two narrow abyss mouths (+2) at the lower corners
 const STD_GATES = [
   { a: Math.PI / 2, half: Math.asin(GW / AX), pts: 3, name: 'DEAD', col: '255,0,60', txt: '#ff2a55' },
@@ -3181,7 +3183,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1, autoTilt: true }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ persp: true, music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1, autoTilt: true }, loadJSON('topSettings', {}));
 VIEW_K = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
@@ -3380,14 +3382,18 @@ function drawHalftones(g) {
   }
 }
 function drawFocus(g) {
-  const f = G.focus; if (!f) return;
+  const f0 = G.focus; if (!f0) return;
+  if (g.isProj) return g.upright(f0.x, f0.y, () => drawFocusAt(g, f0, 0, 0));
+  drawFocusAt(g, f0, f0.x, f0.y);
+}
+function drawFocusAt(g, f, fx, fy) {
   const a = f.t / f.max; let sd = f.seed;
   const rr = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
   g.save(); g.fillStyle = f.col; g.globalAlpha = Math.min(1, a * 1.6);
   for (let i = 0; i < 46; i++) {
     const an = rr() * TAU, w = 0.012 + rr() * 0.03, r0 = 70 + rr() * 90 + (1 - a) * 40, r1 = 700;
-    g.beginPath(); g.moveTo(f.x + Math.cos(an) * r0, f.y + Math.sin(an) * r0);
-    g.lineTo(f.x + Math.cos(an - w) * r1, f.y + Math.sin(an - w) * r1); g.lineTo(f.x + Math.cos(an + w) * r1, f.y + Math.sin(an + w) * r1); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(fx + Math.cos(an) * r0, fy + Math.sin(an) * r0);
+    g.lineTo(fx + Math.cos(an - w) * r1, fy + Math.sin(an - w) * r1); g.lineTo(fx + Math.cos(an + w) * r1, fy + Math.sin(an + w) * r1); g.closePath(); g.fill();
   }
   g.restore();
 }
@@ -3419,7 +3425,7 @@ function camFollowStep(dt) {
   if (!G.fcam) G.fcam = { x: CX, y: CY, z: BASE_Z };
   const f = G.fcam, a = G.tops[0], b = G.tops[1];
   let tx = CX, ty = CY, tz = BASE_Z, kf = 2.6;
-  if (onTrack() && a) { ty = Math.min(G.track.y0 - 300, a.y - 120 + (G.phase === 'battle' ? clamp(a.vy * 0.14, -130, 50) : 0)); tz = 1; kf = 7; } // scroll with the player, looking ahead
+  if (onTrack() && a) { const ah = 120 - (G.phase === 'battle' ? clamp(a.vy * 0.14, -130, 50) : 0); ty = Math.min(G.track.y0 - 300, a.y - (PSP.on ? ah / (1 + PSP.P * ah) : ah)); tz = 1; kf = 7; } // scroll with the player, looking ahead (with perspective the near half is magnified, so the same screen spot is fewer world units away)
   else if (SETTINGS.camFollow && G.phase === 'battle' && a && b && !a.dead && !b.dead && !a.falling && !b.falling) {
     const fit = Math.min(470 / (Math.abs(a.x - b.x) + 220), 560 / ((Math.abs(a.y - b.y) + 220) * VIEW_K));
     const edgeK = clamp((Math.max(qOf(a.x, a.y), qOf(b.x, b.y)) - 0.6) / 0.3, 0, 1);
@@ -3492,7 +3498,7 @@ function toLogical(e) {
   return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H };
 }
 // screen point -> point on the tilted floor
-const toWorld = p => { const c = camNow(); return { x: c.x + (p.x - CX) / c.z, y: c.y + (p.y - VIEW_CY) / (c.z * VIEW_K) }; };
+const toWorld = p => { if (PSP.on) return pspToWorld(p.x, p.y); const c = camNow(); return { x: c.x + (p.x - CX) / c.z, y: c.y + (p.y - VIEW_CY) / (c.z * VIEW_K) }; };
 // ---- player camera: two fingers pinch = zoom, slide up/down together = tilt; a quick second-finger tap still charges EX ----
 const ptrs = new Map(); let two = null, viewHintT = 0;
 function setView(k, z, save) {
@@ -3666,7 +3672,7 @@ function doLaunch(dx, dy, power) {
 function playerInput(top) {
   let ux = 0, uy = 0;
   if (G.joy) {
-    const dx = G.joy.x - G.joy.sx, dy = (G.joy.y - G.joy.sy) / VIEW_K, l = len(dx, dy); // screen drag -> floor direction
+    const dx = G.joy.x - G.joy.sx, dy = (G.joy.y - G.joy.sy) / VIEW_K * (PSP.on ? pspQ(top.y - PSP.camy) : 1), l = len(dx, dy); // screen drag -> floor direction (far away the floor is foreshortened more)
     if (l > 6) { const m = clamp(l / 70, 0, 1); ux = dx / l * m; uy = dy / l * m; }
   }
   const k = G.keys;
@@ -4257,7 +4263,7 @@ function trackBackdrop(g, cam) { // far from the arena the stadium gives way to 
 }
 function drawTrack(g, time, cam) {
   const T = G.track, y0 = T.y0, top = TRK.ENT_Y, HW = TRK.HW, gw = T.gw, sF = T.len - TRK.FUN, yF = y0 - sF;
-  const v0 = cam.y - 820, v1 = cam.y + 820; if (v1 < top - 30) return;
+  const v0 = PSP.on ? cam.y + PSP.uTop - 60 : cam.y - 820, v1 = PSP.on ? cam.y + PSP.uBot + 60 : cam.y + 820; if (v1 < top - 30) return;
   // corridor walls get taller and lean outward as the camera tilts (fake perspective), so the tilt reads on the long straight road
   const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), dz = (14 + 40 * tk) / VIEW_K, lean = 5 + 24 * tk;
   const yOf = sv => y0 - sv, ya = Math.max(v0, top), yb = Math.min(v1, y0);
@@ -5232,8 +5238,125 @@ function drawTopWorld(g, t) {
   }
 }
 
+// ===================================================================================
+// PERSPECTIVE（透視，v0.19.0）
+// The old camera is an affine squash: the whole floor is scaled the same, so far things are as big as near things.
+// With perspective on, the world pass draws through PG, a stand-in for the canvas that runs every point through a projection:
+//   u = world y - camera y (negative = farther up the screen), q = 1 - P·u (q > 1 far, q < 1 near)
+//   screen x = centre + (world x - camera x)·zoom / q,  screen y = VIEW_CY + zoom·tilt·u / q
+// Straight lines stay straight, so the road narrows toward a vanishing point. Each drawing call is placed with the local
+// "slope" of the projection at its point, so small things (tops, props, sparks) shrink with distance, and upright()
+// things (text, comic words, faces) are drawn flat-on at the right size. P grows with the tilt: top-down = no perspective.
+// Settings has an on/off switch (透視效果); off, or almost no tilt, uses the old renderer untouched.
+// ===================================================================================
+const PSP = { on: false, P: 0, camx: 0, camy: 0, zs: 1, zsK: 1, cx: 0, cy: 0, uTop: -600, uBot: 600, lz: 1, lK: 1 };
+function perspSetup(cam, sx, sy) {
+  const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), zK = cam.z * VIEW_K;
+  const Ytop = VIEW_CY / zK, Ybot = (H - VIEW_CY) / zK;            // affine distances (world units) from the centre line to the screen edges
+  PSP.P = SETTINGS.persp === false ? 0 : tk * 0.6 / Ytop;          // at full tilt the screen top sees q = 2.5 (things 40% size); default road tilt ≈ 1.5
+  PSP.on = PSP.P > 1e-5;
+  PSP.camx = cam.x; PSP.camy = cam.y; PSP.zs = cam.z * scale; PSP.zsK = zK * scale; PSP.lz = cam.z; PSP.lK = zK;
+  PSP.cx = scale * (CX + sx); PSP.cy = scale * (VIEW_CY + sy);
+  PSP.uTop = -Ytop / (1 - PSP.P * Ytop); PSP.uBot = Ybot / (1 + PSP.P * Ybot); // visible world range above / below the camera
+}
+const pspQ = u => Math.max(0.3, 1 - PSP.P * u);
+// screen (logical px) -> floor point, the inverse of the projection (touch input)
+function pspToWorld(px, py) { const Y = (py - VIEW_CY) / PSP.lK, u = Y / (1 + PSP.P * Y), q = pspQ(u); return { x: PSP.camx + (px - CX) * q / PSP.lz, y: PSP.camy + u }; }
+const PG = (() => {
+  // paths are built straight in device pixels (the real canvas sits at identity while points go in); fill / stroke / text / images
+  // switch the real canvas to the projection's local affine form at their point, so line widths, gradients and glyphs scale with depth
+  let R = null, M = [1, 0, 0, 1, 0, 0], pass = false, lx = 0, ly = 0, ident = false, started = false;
+  const stack = [];
+  const W = (x, y) => [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5]];
+  function at(x, y) { const u = y - PSP.camy, q = pspQ(u); return [PSP.cx + (x - PSP.camx) * PSP.zs / q, PSP.cy + PSP.zsK * u / q, q]; }
+  function local(x, y) {
+    const [wx, wy] = W(x, y), [X, Y, q] = at(wx, wy);
+    const j11 = PSP.zs / q, j12 = (wx - PSP.camx) * PSP.zs * PSP.P / (q * q), j22 = PSP.zsK / (q * q);
+    const a = j11 * M[0] + j12 * M[1], b = j22 * M[1], c = j11 * M[2] + j12 * M[3], d = j22 * M[3];
+    R.setTransform(a, b, c, d, X - (a * x + c * y), Y - (b * x + d * y)); ident = false;
+  }
+  const det = () => Math.sqrt(Math.abs(M[0] * M[3] - M[1] * M[2]));
+  function pt(x, y, move) { if (!ident) { R.setTransform(1, 0, 0, 1, 0, 0); ident = true; } const [X, Y] = at(...W(x, y)); if (move || !started) R.moveTo(X, Y); else R.lineTo(X, Y); started = true; lx = x; ly = y; }
+  function sweep(a0, a1, ccw) { let s = a1 - a0; if (!ccw) { if (s >= TAU) s = TAU; else { s %= TAU; if (s < 0) s += TAU; } } else { if (-s >= TAU) s = -TAU; else { s %= TAU; if (s > 0) s -= TAU; } } return s; }
+  function curve(cx, cy, rad, fx, fy, s) { // flatten a curve, segment count from its size on screen
+    const [, , q] = at(...W(cx, cy)), n = clamp(Math.ceil(Math.abs(s) * rad * det() * PSP.zs / q / 7), 6, 96);
+    for (let i = 0; i <= n; i++) { const t = i / n; pt(fx(t), fy(t)); }
+  }
+  function devRect(x, y, w, h) { const p = new Path2D(); [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].forEach(([px, py], i) => { const [X, Y] = at(...W(px, py)); i ? p.lineTo(X, Y) : p.moveTo(X, Y); }); p.closePath(); return p; }
+  const api = {
+    isProj: true,
+    begin(real) { R = real; M = [1, 0, 0, 1, 0, 0]; pass = false; stack.length = 0; ident = false; started = false; },
+    get canvas() { return R.canvas; },
+    save() { R.save(); stack.push([M.slice(), pass, ident]); },
+    restore() { R.restore(); const s = stack.pop(); if (s) { M = s[0]; pass = s[1]; ident = s[2]; } },
+    translate(x, y) { if (pass) return R.translate(x, y); M[4] += M[0] * x + M[2] * y; M[5] += M[1] * x + M[3] * y; },
+    scale(x, y) { if (pass) return R.scale(x, y); M[0] *= x; M[1] *= x; M[2] *= y; M[3] *= y; },
+    rotate(r) { if (pass) return R.rotate(r); const c = Math.cos(r), s = Math.sin(r), [a, b, cc, d] = M; M[0] = a * c + cc * s; M[1] = b * c + d * s; M[2] = cc * c - a * s; M[3] = d * c - b * s; },
+    transform(a, b, c, d, e, f) { if (pass) return R.transform(a, b, c, d, e, f); const [A, B, C, D, E, F] = M; M = [A * a + C * b, B * a + D * b, A * c + C * d, B * c + D * d, A * e + C * f + E, B * e + D * f + F]; },
+    setTransform(...a) { pass = true; ident = false; R.setTransform(...a); },   // an explicit transform inside the world pass = a screen-space overlay
+    resetTransform() { pass = true; ident = false; R.resetTransform(); },
+    getTransform() { return R.getTransform(); },
+    beginPath() { R.beginPath(); started = false; },
+    closePath() { R.closePath(); },
+    moveTo(x, y) { if (pass) return R.moveTo(x, y); pt(x, y, true); },
+    lineTo(x, y) { if (pass) return R.lineTo(x, y); pt(x, y); },
+    arc(x, y, r, a0, a1, ccw) { if (pass) return R.arc(x, y, r, a0, a1, ccw); const s = sweep(a0, a1, ccw); curve(x, y, r, t => x + r * Math.cos(a0 + s * t), t => y + r * Math.sin(a0 + s * t), s); },
+    ellipse(x, y, rx, ry, rot, a0, a1, ccw) {
+      if (pass) return R.ellipse(x, y, rx, ry, rot, a0, a1, ccw);
+      const s = sweep(a0, a1, ccw), cr = Math.cos(rot), sr = Math.sin(rot);
+      curve(x, y, Math.max(rx, ry), t => { const a = a0 + s * t; return x + rx * Math.cos(a) * cr - ry * Math.sin(a) * sr; }, t => { const a = a0 + s * t; return y + rx * Math.cos(a) * sr + ry * Math.sin(a) * cr; }, s);
+    },
+    rect(x, y, w, h) { if (pass) return R.rect(x, y, w, h); pt(x, y, true); pt(x + w, y); pt(x + w, y + h); pt(x, y + h); R.closePath(); },
+    arcTo(x1, y1, x2, y2, r) { if (pass) return R.arcTo(x1, y1, x2, y2, r); local(x1, y1); R.arcTo(x1, y1, x2, y2, r); lx = x2; ly = y2; started = true; },
+    quadraticCurveTo(cx, cy, x, y) { if (pass) return R.quadraticCurveTo(cx, cy, x, y); const x0 = lx, y0 = ly; for (let i = 1; i <= 8; i++) { const t = i / 8; pt((1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cx + t * t * x, (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * cy + t * t * y); } },
+    bezierCurveTo(c1x, c1y, c2x, c2y, x, y) { if (pass) return R.bezierCurveTo(c1x, c1y, c2x, c2y, x, y); const x0 = lx, y0 = ly, B = (a, b, c, d, t) => (1 - t) ** 3 * a + 3 * (1 - t) ** 2 * t * b + 3 * (1 - t) * t * t * c + t ** 3 * d; for (let i = 1; i <= 12; i++) { const t = i / 12; pt(B(x0, c1x, c2x, x, t), B(y0, c1y, c2y, y, t)); } },
+    fill(...a) { if (!pass) local(lx, ly); R.fill(...a); },
+    stroke(...a) { if (!pass) local(lx, ly); R.stroke(...a); },
+    clip(...a) { R.clip(...a); },
+    fillRect(x, y, w, h) {
+      if (pass) return R.fillRect(x, y, w, h);
+      local(x + w / 2, y + h / 2); if (Math.max(Math.abs(w), Math.abs(h)) * det() < 70) return R.fillRect(x, y, w, h);
+      const p = devRect(x, y, w, h); R.setTransform(1, 0, 0, 1, 0, 0); ident = true; R.fill(p);
+    },
+    strokeRect(x, y, w, h) {
+      if (pass) return R.strokeRect(x, y, w, h);
+      local(x + w / 2, y + h / 2); const t = R.getTransform(), k = Math.hypot(t.a, t.b), p = devRect(x, y, w, h), lw = R.lineWidth;
+      R.setTransform(1, 0, 0, 1, 0, 0); ident = true; R.lineWidth = lw * k; R.stroke(p); R.lineWidth = lw;
+    },
+    clearRect(x, y, w, h) { if (!pass) local(x, y); R.clearRect(x, y, w, h); },
+    fillText(t, x, y, mw) { if (!pass) local(x, y); mw == null ? R.fillText(t, x, y) : R.fillText(t, x, y, mw); },
+    strokeText(t, x, y, mw) { if (!pass) local(x, y); mw == null ? R.strokeText(t, x, y) : R.strokeText(t, x, y, mw); },
+    measureText(t) { return R.measureText(t); },
+    drawImage(img, ...a) { if (!pass) { const n = a.length, dx = n >= 8 ? a[4] : a[0], dy = n >= 8 ? a[5] : a[1], dw = n >= 8 ? a[6] : n >= 4 ? a[2] : img.width, dh = n >= 8 ? a[7] : n >= 4 ? a[3] : img.height; local(dx + dw / 2, dy + dh / 2); } R.drawImage(img, ...a); },
+    createLinearGradient(...a) { return R.createLinearGradient(...a); },
+    createRadialGradient(...a) { return R.createRadialGradient(...a); },
+    createPattern(...a) { return R.createPattern(...a); },
+    setLineDash(a) { R.setLineDash(a); },
+    getLineDash() { return R.getLineDash(); },
+    // flat-on drawing at a floor point: the same size as the floor there, never squashed or skewed
+    upright(x, y, fn) {
+      R.save(); stack.push([M.slice(), pass, ident]);
+      if (pass) R.translate(x, y);
+      else { const [wx, wy] = W(x, y), [X, Y, q] = at(wx, wy), s = PSP.zs / q; R.setTransform(s * M[0], s * M[1], s * M[2], s * M[3], X, Y); pass = true; }
+      try { fn(); } finally { const st = stack.pop(); M = st[0]; pass = st[1]; ident = false; R.restore(); }
+    },
+  };
+  for (const k of ['fillStyle', 'strokeStyle', 'lineWidth', 'globalAlpha', 'font', 'textAlign', 'textBaseline', 'lineCap', 'lineJoin', 'miterLimit', 'globalCompositeOperation', 'shadowColor', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY', 'lineDashOffset', 'filter', 'imageSmoothingEnabled'])
+    Object.defineProperty(api, k, { get() { return R[k]; }, set(v) { R[k] = v; } });
+  return api;
+})();
+// the cached arena floor is one big picture: draw it in thin horizontal bands, each band at its own depth scale
+function drawArenaCachePersp(R) {
+  R.save(); R.setTransform(1, 0, 0, 1, 0, 0);
+  const y0 = Math.max(CY - AX - 90, PSP.camy + PSP.uTop - 10), y1 = Math.min(CY + AX + 90, PSP.camy + PSP.uBot + 10), st = 5;
+  for (let y = Math.floor(y0 / st) * st; y < y1; y += st) {
+    const um = y + st / 2 - PSP.camy, q = pspQ(um), Ya = PSP.cy + PSP.zsK * (y - PSP.camy) / pspQ(y - PSP.camy), Yb = PSP.cy + PSP.zsK * (y + st - PSP.camy) / pspQ(y + st - PSP.camy);
+    R.drawImage(arenaCache, 0, y * scale, arenaCache.width, st * scale, PSP.cx - PSP.camx * PSP.zs / q, Ya, W * PSP.zs / q, Yb - Ya + 0.7);
+  }
+  R.restore();
+}
 function render() {
-  const g = ctx;
+  let g = ctx;
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, cv.width, cv.height);
   drawEnv(G ? G.time : performance.now() / 1000);
@@ -5248,8 +5371,12 @@ function render() {
   const cam = camNow(), z = cam.z;
   const ex = scale * (CX - cam.x * z) + sx * scale, ey = scale * (VIEW_CY - cam.y * z * VIEW_K) + sy * scale;
   if (G.track) trackBackdrop(g, cam);
-  g.setTransform(z, 0, 0, z * VIEW_K, ex, ey); g.drawImage(arenaCache, 0, 0);
-  g.setTransform(scale * z, 0, 0, scale * z * VIEW_K, ex, ey);
+  perspSetup(cam, sx, sy);
+  if (PSP.on) { drawArenaCachePersp(ctx); PG.begin(ctx); g = PG; } // perspective: the world pass goes through the projecting stand-in
+  else {
+    g.setTransform(z, 0, 0, z * VIEW_K, ex, ey); g.drawImage(arenaCache, 0, 0);
+    g.setTransform(scale * z, 0, 0, scale * z * VIEW_K, ex, ey);
+  }
   if (G.track) drawTrack(g, G.time, cam);
   drawArena(g, G.time);
   drawFarWall(g);
@@ -5321,7 +5448,7 @@ function render() {
     drawTopWorld(g, tp);
     drawExAnim(g, F.kind, tp, F.foe, k);
   }
-  viewK = 1;
+  viewK = 1; g = ctx;
   g.setTransform(scale, 0, 0, scale, 0, 0);
   // speed lines at the screen edges while your top is really flying
   const pt0 = G.tops[0], spd0 = pt0 ? len(pt0.vx, pt0.vy) : 0;
@@ -5441,7 +5568,7 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openTeam();
 })();
 </script>
