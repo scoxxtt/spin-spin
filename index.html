@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.27.0</title>
+<title>SPIN! SPIN! v0.27.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -349,6 +349,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .raRow.on{border-color:#fcee0a;background:rgba(252,238,10,.08)}.raRow.no{opacity:.45;cursor:default}
 .raRow .ck{flex:none;width:1.3em;height:1.3em;border:2px solid #fcee0a;display:flex;align-items:center;justify-content:center;font-weight:900;color:#05060a}.raRow.on .ck{background:#fcee0a}
 .raRow img,.raRow .ico{flex:none;width:2.6em;height:2.6em;object-fit:cover}.raRow .tx{flex:1;min-width:0;font-size:.82em;line-height:1.35}.raRow .tx b{color:#fff}.raRow .mt{color:#8f9bb0;font-size:.9em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.raRow .warn{color:#ff2a55}
+.raRow .up{color:#7fff9e;white-space:nowrap}.raRow .up b{color:#7fff9e}
 .raList{max-height:48vh;overflow:auto;margin:.4em 0}.raTop{display:flex;justify-content:space-between;align-items:center;gap:.5em;font-size:.85em}
 .rkGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35em;margin:.5em 0;max-height:46vh;overflow:auto}
 .rkT{position:relative;border:2px solid #555;background:rgba(255,255,255,.05);padding:.15em;cursor:pointer;min-width:0}
@@ -729,10 +730,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.26.2 nav: the battle button looks like the other five (no raised yellow circle)
  v0.26.3 UX pass: battle 選單 -> ✕ 離開 with confirm, versus buttons in one row (primary right), gacha 收下 on its own row, back buttons that repeat the nav hidden, 圖鑑 on every menu page, 0.45 s double-tap guard on buttons
  v0.27.0 一鍵升階: pick which parts to rank up, materials chosen automatically without conflicts
+ v0.27.1 一鍵培養 (star-up all + rank-up picker in one button), rank list shows the bonus before/after
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.27.0';
+const GAME_VERSION = 'v0.27.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1510,6 +1512,16 @@ function doMerge(k, key) {
   if (e.n < NEED[e.s]) { toast(`還差 ${NEED[e.s] - e.n} 個素材才能升星`); return; }
   mergeOne(k, key); save(); starUpFx(k, key); renderTeam();
 }
+// 一鍵培養: every possible star-up first (automatic), then the rank-up list where the player picks what to rank
+function growAll() {
+  let n = 0; for (let guard = 0; guard < 200; guard++) { let did = false; for (const k of 'cwa') for (const key of Object.keys(INV[k])) if (INV[k][key] && canMerge(INV[k][key])) { mergeOne(k, key); n++; did = true; } if (!did) break; }
+  if (n) { save(); renderTeam(); }
+  if (rankTargets().length) return showRankAll(n);
+  if (!n) { toast('目前沒有可以升星或升階的零件'); return; }
+  SFX.init(); const d = document.createElement('div'); d.className = 'starUp';
+  d.innerHTML = `<div class="suIn" style="--rc:#fcee0a"><div class="suT">一鍵培養！</div><div class="suN">升星 ×${n}</div><div class="suS">${[0, 1, 2].map(i => `<i class="on" style="animation-delay:${0.1 + i * 0.12}s">★</i>`).join('')}</div></div>`;
+  document.body.appendChild(d); SFX.reveal(); SFX.ex(); if (navigator.vibrate) navigator.vibrate([20, 40, 30]); const bye = () => { d.classList.add('out'); setTimeout(() => d.remove(), 300); }; d.onclick = bye; setTimeout(bye, 1600);
+}
 function mergeAll() {
   let n = 0; const ups = new Set();
   for (let guard = 0; guard < 200; guard++) {
@@ -1672,20 +1684,21 @@ function rankTargets() { const out = []; for (const k of 'cwa') for (const key o
 function planRanks(list, chosen) { const used = new Set(), tgt = new Set(list.filter((t, i) => chosen[i]).map(t => t.k + '|' + t.key));
   return list.map((t, i) => { const C = rankCands(t.k, t.key).filter(x => !used.has(t.k + '|' + x) && !tgt.has(t.k + '|' + x));
     if (C.length < 2) return { ok: false }; const picks = C.slice(0, 2); if (chosen[i]) picks.forEach(x => used.add(t.k + '|' + x)); return { ok: true, picks }; }); }
+const STAT_NAME = { c: '角色能力', w: '武器能力', a: '鎧甲能力' };
 const rankFits = (list, ch) => { const pl = planRanks(list, ch); return list.every((t, i) => !ch[i] || pl[i].ok); }; // every ticked part still has its two materials
-function showRankAll() {
+function showRankAll(starred) {
   const list = rankTargets(); if (!list.length) { toast('目前沒有可以升階的零件（要 3★，再加 2 張同陣營／同類型、同品階的 3★ 當素材）'); return; }
   const inUse = (k, x) => collection.findIndex(b => kk(b, k) === x), nm = (k, x) => KIND[k][INV[k][x].id].name;
   const chosen = list.map(() => false);
   const draw = () => {
     const P2 = planRanks(list, chosen), n = chosen.filter(Boolean).length, warn = list.some((t, i) => chosen[i] && P2[i].picks.some(x => inUse(t.k, x) >= 0));
-    infoPop.innerHTML = `<div class="ipCard rkCard"><div class="rkHd">一鍵升階</div>
+    infoPop.innerHTML = `<div class="ipCard rkCard"><div class="rkHd">一鍵培養・升階</div>${starred ? `<div class="k" style="color:#fcee0a">已自動升星 ${starred} 次 ★</div>` : ''}
       <div class="raTop"><span class="k">勾選要升階的零件，素材會自動挑（優先用沒出戰的、起始角色）</span><button class="sbtn" id="raAll">${n ? '全部取消' : '全選'}</button></div>
       <div class="raList">${list.map((t, i) => { const e = INV[t.k][t.key], p = P2[i], u = inUse(t.k, t.key);
         const pic = t.k === 'c' ? `<img src="${PORTRAIT_SRC[e.id]}">` : `<span class="ico">${iconHTML(t.k, e.id)}</span>`;
         const mats = p.ok ? '吃掉：' + p.picks.map(x => `<span class="${inUse(t.k, x) >= 0 ? 'warn' : ''}">${nm(t.k, x)}${inUse(t.k, x) >= 0 ? '（出戰中）' : ''}</span>`).join('、') : '素材被上面勾選的升階用掉了';
         return `<div class="raRow${chosen[i] ? ' on' : ''}${p.ok ? '' : ' no'}" data-i="${i}"><span class="ck">${chosen[i] ? '✓' : ''}</span>${pic}
-          <div class="tx"><b>${KIND[t.k][e.id].name}</b>${u >= 0 ? ` <span style="color:#00f0ff">出戰${u + 1}</span>` : ''}<br><span style="color:${RARITY[e.r].col}">${RARITY[e.r].n} ★★★</span> → <b style="color:${RARITY[e.r + 1].col}">${RARITY[e.r + 1].n} ★</b><div class="mt">${mats}</div></div></div>`; }).join('')}</div>
+          <div class="tx"><b>${KIND[t.k][e.id].name}</b>${u >= 0 ? ` <span style="color:#00f0ff">出戰${u + 1}</span>` : ''}<br><span style="color:${RARITY[e.r].col}">${RARITY[e.r].n} ★★★</span> → <b style="color:${RARITY[e.r + 1].col}">${RARITY[e.r + 1].n} ★</b>　<span class="up">${STAT_NAME[t.k]} +${Math.round((R_BASE[e.r] + 3 * R_STEP[e.r]) * 100)}% → <b>+${Math.round((R_BASE[e.r + 1] + R_STEP[e.r + 1]) * 100)}%</b></span><div class="mt">${mats}</div></div></div>`; }).join('')}</div>
       ${warn ? '<div class="k" style="color:#ff2a55;text-align:center">注意：有素材是出戰中的零件，升階後那一格會自動換成別的</div>' : ''}
       <div class="pairBtns"><button class="btn ghost ipBtn" id="raNo">取消</button><button class="btn ipBtn" id="raGo" ${n ? '' : 'disabled'}>${n ? `升階 ${n} 個` : '先勾選要升的'}</button></div></div>`;
     infoPop.querySelectorAll('.raRow').forEach(el => el.onclick = ev => { ev.stopPropagation(); const i = +el.dataset.i; if (!chosen[i]) { chosen[i] = true; if (!rankFits(list, chosen)) { chosen[i] = false; toast('這個會用到已勾選項目的素材，先取消其他的再選'); return; } } else chosen[i] = false; SFX.flip(); draw(); });
@@ -1788,7 +1801,7 @@ function renderTeam() {
   const panel = document.createElement('div'); panel.className = 'invPanel';
   const hintTxt = invSel ? `已選「${KIND[invSel.k][baseOf(invSel.k, invSel.id)].name}」，點出戰格裡的${KIND_NAME[invSel.k]}換裝` : swapSel ? `點下方的${KIND_NAME[swapSel.k]}換裝，或點另一格互換` : '拖曳換裝・長按詳情';
   const anyMerge = ['c', 'w', 'a'].some(k2 => Object.values(INV[k2]).some(canMerge)), anyRank = rankTargets().length > 0;
-  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <button class="mergeAll${lineupSig() === autoSig ? '' : ' on'}" id="autoTeamBtn">自動上陣</button><button class="mergeAll${anyMerge ? ' on' : ''}" id="mergeAllBtn">一鍵合成</button><button class="mergeAll${anyRank ? ' on' : ''}" id="rankAllBtn">一鍵升階</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
+  panel.insertAdjacentHTML('beforeend', `<div class="benchHd">零件庫 <button class="mergeAll${lineupSig() === autoSig ? '' : ' on'}" id="autoTeamBtn">自動上陣</button><button class="mergeAll${anyMerge || anyRank ? ' on' : ''}" id="mergeAllBtn">一鍵培養</button><button class="sortBtn" id="sortBtn">${SETTINGS.invSort === 'new' ? '最新獲得' : '稀有度'} ⇅</button><em class="invHint${invSel || swapSel ? ' on' : ''}">${hintTxt}</em></div>`);
   const tabs = document.createElement('div'); tabs.className = 'invTabs';
   for (const k of 'cwa') {
     const tb = document.createElement('button'); tb.className = 'invTab' + (invTab === k ? ' on' : '');
@@ -1837,8 +1850,7 @@ function renderTeam() {
   for (let i = 0; i < nP; i++) { const d = document.createElement('b'); d.className = 'pdot'; d.onclick = () => pagesEl.scrollTo({ left: i * pagesEl.clientWidth, behavior: 'smooth' }); dots.appendChild(d); }
   panel.appendChild(dots);
   list.appendChild(panel);
-  document.getElementById('mergeAllBtn').onclick = mergeAll;
-  document.getElementById('rankAllBtn').onclick = showRankAll;
+  document.getElementById('mergeAllBtn').onclick = growAll;
   document.getElementById('autoTeamBtn').onclick = autoTeam;
   document.getElementById('sortBtn').onclick = () => { SETTINGS.invSort = SETTINGS.invSort === 'new' ? 'rarity' : 'new'; saveJSON('topSettings', SETTINGS); invPage.c = invPage.w = invPage.a = 0; renderTeam(); SFX.flip(); };
   const cur = Math.min(invPage[k] || 0, nP - 1), mark = p2 => { [...dots.children].forEach((d, i) => d.classList.toggle('on', i === p2)); arrL.classList.toggle('off', p2 <= 0); arrR.classList.toggle('off', p2 >= nP - 1); };
@@ -2490,7 +2502,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>PERFECT 發射</b>：倒數喊第二聲 SPIN! 的瞬間點一下畫面，轉速、速度、EX 都有加成（開 AUTO 也可以自己點）<br>・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）；零件庫的<b>「一鍵升階」</b>可以一次勾選多個，素材自動挑<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射。終點是圓形闖關場：<b>撞破最上面的門</b>衝進去就過關（撞越快扣越多，門會放衝擊波、有守衛）；每章第 5、9、10 關改成 <b>BOSS</b>，要打到爆甲</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>PERFECT 發射</b>：倒數喊第二聲 SPIN! 的瞬間點一下畫面，轉速、速度、EX 都有加成（開 AUTO 也可以自己點）<br>・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）；零件庫的<b>「一鍵培養」</b>會先把能升星的全部升星，再列出可升階的讓你勾選，素材自動挑<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射。終點是圓形闖關場：<b>撞破最上面的門</b>衝進去就過關（撞越快扣越多，門會放衝擊波、有守衛）；每章第 5、9、10 關改成 <b>BOSS</b>，要打到爆甲</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
