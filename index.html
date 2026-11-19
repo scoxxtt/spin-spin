@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.20.1</title>
+<title>SPIN! SPIN! v0.21.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -677,10 +677,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.19.0 real perspective (near big, far small) across the whole game: the world pass is drawn through a projecting canvas stand-in (PG), strength follows the tilt, on/off switch in settings
  v0.20.0 chapter 2 (10 levels): new props portal / ice / breakable wall (crack), BOSSes 失控彈窗・彈彈 (popups), 暗黑雙子・零與壹 (decoys + hack), 逆時怪盜・克羅諾 (time stop, 2 lives)
  v0.20.1 BOSS red eyes re-aligned to the pupils (all six portraits re-made, live glow coordinates updated); tools/eye_check.py for checking
+ v0.21.0 chapters 3-5 (30 levels): new props wind / barrel / magnet / laser (+ spikes phase, fire skin), 9 controlled BOSSes with new signature moves (thorns, beat, pounce, trail, grab, storm, rebuild, sling, parasite), final BOSS with 3 lives
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.20.1';
+const GAME_VERSION = 'v0.21.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -877,13 +878,23 @@ const PORTRAITS = {}; ICONS.w.src = ICON_SRC.w; ICONS.a.src = ICON_SRC.a;
 for (const id of ['rat', 'rex', 'octo', 'rider', 'tesla', 'cactus', 'erin', 'jack', 'dj', 'spam', 'nova', 'raven', 'twins', 'chrono', 'david', 'sheep', 'maiden', 'theseus', 'proteus', 'host']) PORTRAIT_SRC[id] = `art/portraits/${id}.jpg`;
 // BOSS versions of existing characters ("controlled": black forehead, red eyes — art/portraits/boss_*.jpg, made by a script from the normal portrait).
 // They are added non-enumerable so the codex, gacha pools and random line-ups never see them. eyes = pupil centres on the 256px portrait (for the live glow).
-// sig = signature move in the BOSS arena: quake3 連環重砸, bounty 全場通緝, wall 盾牆＋連續衝鋒, popups 彈窗洗版, twin 分身＋駭入, timestop 時間停止
+// sig = signature move in the BOSS arena: quake3 連環重砸, bounty 全場通緝, wall 盾牆＋連續衝鋒, popups 彈窗洗版, twin 分身＋駭入, timestop 時間停止,
+//       thorns 撒刺, beat 音浪, pounce 連續撲殺, trail 火焰軌跡, grab 觸手拖拉, storm 落雷, rebuild 重組回血, sling 投石, parasite 寄生反轉＋孵化
 function defBoss(id, base, o) { Object.defineProperty(CLASSES, id, { value: Object.assign({}, CLASSES[base], o, { bossOf: base }), enumerable: false }); PORTRAIT_SRC[id] = `art/portraits/${id}.jpg`; if (FACE[base]) FACE[id] = FACE[base]; }
 defBoss('boss_rex', 'rex', { name: '暴走鐵拳・雷克斯', sig: 'quake3', eyes: [[117.5, 110.5], [165.4, 111]], lore: '被不明訊號控制的雷克斯。液壓義手失去限制，連砸三下地板。' });
 defBoss('boss_jack', 'jack', { name: '黑化獵人・傑克', sig: 'bounty', eyes: [[89.6, 88.6], [137, 79.5]], lore: '被控制的傑克。把整個場子的人都當成懸賞目標。' });
 defBoss('boss_spam', 'spam', { name: '失控彈窗・彈彈', sig: 'popups', eyes: [[24, 184], [114, 184]], lore: '被控制的彈彈。彈窗不再可愛，會把人整個圍起來。' });
 defBoss('boss_twins', 'twins', { name: '暗黑雙子・零與壹', sig: 'twin', eyes: [[25, 117], [65, 111.6], [210, 125], [251, 122]], lore: '被控制的雙胞胎駭客。場上的兩個，只有一個是真的。' });
 defBoss('boss_chrono', 'chrono', { name: '逆時怪盜・克羅諾', sig: 'timestop', eyes: [[105.6, 136], [146, 142]], lore: '被控制的克羅諾。偷走的不只是時間，還有你的回合。' });
+defBoss('boss_cactus', 'cactus', { name: '腐化荊棘・刺球', sig: 'thorns', eyes: [[83, 95], [155, 95]], lore: '被控制的刺球。滿地都是它撒出來的刺。' });
+defBoss('boss_dj', 'dj', { name: '失真音浪・節拍', sig: 'beat', eyes: [[170, 87], [214, 94]], lore: '被控制的節拍。重低音一圈一圈震出來，躲不過就被震飛。' });
+defBoss('boss_mechcat', 'mechcat', { name: '反噬利爪・機甲貓咪', sig: 'pounce', eyes: [[85, 98], [163, 98]], lore: '被控制的機甲貓咪。半夜暴衝變成了連續撲殺。' });
+defBoss('boss_rider', 'rider', { name: '失速狂飆・轟天', sig: 'trail', eyes: [[104, 87], [145, 87]], lore: '被控制的轟天。油門踩到底，衝過的地方一路起火。' });
+defBoss('boss_octo', 'octo', { name: '深淵觸手・八爪', sig: 'grab', eyes: [[98, 98], [171, 99]], lore: '被控制的八爪。觸手一伸，把人整個拖過去。' });
+defBoss('boss_tesla', 'tesla', { name: '過載核心・T-9', sig: 'storm', eyes: [[125, 95], [170, 96]], lore: '被控制的 T-9。核心過載，整個場子都在打雷。' });
+defBoss('boss_theseus', 'theseus', { name: '無限重組・忒修斯', sig: 'rebuild', eyes: [[96, 126], [126, 125]], lore: '被控制的忒修斯。零件換了又換，永遠修得好——除非你打斷它。' });
+defBoss('boss_david', 'david', { name: '墮落巨像・大衛', sig: 'sling', eyes: [[122, 90], [165, 92]], lore: '被控制的大衛。投石不再擊巨，而是瞄準你。' });
+defBoss('boss_host', 'host', { name: '幕後黑手・宿主', sig: 'parasite', eyes: [[77, 75], [155, 75]], lore: '一切的源頭。寄生在網路裡，操控了所有失控的選手。' });
 defBoss('boss_erin', 'erin', { name: '壞掉的盾・艾琳', sig: 'wall', eyes: [[106.3, 97.4], [152, 97.9]], lore: '被控制的艾琳。盾還舉著，只是不再分敵我。' });
 // live red glow on a BOSS portrait: mx/my map portrait pixels to canvas, k = canvas px per portrait px
 function eyeGlow(g, c, mx, my, k) {
@@ -981,7 +992,11 @@ const PROP_DEF = {
   spikes: { r: 50, on: 0, off: 0 },
   pit: { r: 44 },                                                      // 陷阱洞：掉進去扣一條命（只對玩家有效）
   portal: { r: 30 },                                                   // 傳送門（v0.20.0）：id 自己的名字、to 傳去哪一個門（不寫＝只是出口）；速度與方向保留
-  ice: { r: 0, l: 160, w: 200 },                                       // 冰面（v0.20.0）：寫 r 是圓形，否則 l 長（上下）× w 寬的方塊；在上面很滑、拖曳幾乎沒用                                    // on/off seconds (0 = always out)
+  ice: { r: 0, l: 160, w: 200 },
+  wind: { r: 0, l: 240, w: 380, dir: 3, power: 1 },                   // 強風區（v0.21.0）：區域內一直被往 dir（時鐘方向）吹；寫 r 是圓形
+  barrel: { r: 18 },                                                   // 炸藥桶（v0.21.0）：撞到就爆炸，把附近所有陀螺炸開並扣血，會連鎖引爆
+  magnet: { r: 140, power: 1 },                                        // 磁鐵（v0.21.0）：power 1 吸向中心、-1 往外推
+  laser: { len: 380, rot: 3, on: 1.6, off: 1.6, phase: 0, move: 'spin', speed: 0 },            // 雷射柵欄（v0.21.0）：on 秒亮、off 秒關；亮的時候碰到會被彈開扣血，關的時候可以穿過；len 長度（賽道全寬 380）         // 冰面（v0.20.0）：寫 r 是圓形，否則 l 長（上下）× w 寬的方塊；在上面很滑、拖曳幾乎沒用                                    // on/off seconds (0 = always out)
 };
 function makeProp(p) {
   if (p.type === 'wall') p = Object.assign({ len: 120 }, p, { type: 'mover', move: 'spin', speed: 0 }); // 固定牆＝不會動的擋板
@@ -990,6 +1005,7 @@ function makeProp(p) {
   const P = Object.assign({}, PROP_DEF[p.type] || {}, p), a = clockAng(p.at == null ? 12 : p.at), d = p.d == null ? 0.5 : p.d;
   P.x = CX + Math.cos(a) * AX * d; P.y = CY + Math.sin(a) * BY * d; P.hitAt = -9; if (P.hp != null) P.hp0 = P.hp;
   if (p.px != null) { P.x = p.px; P.y = p.py; } // track props use track coordinates (startTrack converts them)
+  if (P.type === 'spikes' && P.phase) P.t0 = -P.phase; // phase: shift the on/off cycle so neighbouring spikes take turns
   if (P.type === 'boost') { const da = P.dir === 'cw' ? a + Math.PI / 2 : P.dir === 'ccw' ? a - Math.PI / 2 : P.dir == null ? (p.px != null ? -Math.PI / 2 : a + Math.PI) : clockAng(P.dir); P.dx = Math.cos(da); P.dy = Math.sin(da); }
   return P;
 }
@@ -1010,7 +1026,7 @@ function withStd(fn) {
   const k = [STAGE, GATES, RAILS, PROPS, CORE_Q, WALL_H]; STAGE = STD_STAGE; GATES = STD_GATES; RAILS = STD_RAILS; PROPS = []; CORE_Q = 0.36; WALL_H = 24;
   try { fn(); } finally { [STAGE, GATES, RAILS, PROPS, CORE_Q, WALL_H] = k; }
 }
-const spikesOn = (P, T) => !P.on || (T % (P.on + P.off)) < P.on;
+const spikesOn = (P, T) => !P.dead && (!P.on || ((T - (P.t0 || 0)) % (P.on + P.off) + (P.on + P.off)) % (P.on + P.off) < P.on);
 function moverSeg(P, T) {
   let x = P.x, y = P.y, ang = clockAng(P.rot);
   if (P.move === 'spin') ang += T * P.speed * TAU;
@@ -2323,7 +2339,7 @@ const TUT = [
       tLabel(g, `${Math.round(e * 100)}%`, bx, by - 4, '#fcee0a', 18); g.fillStyle = '#fcee0a'; g.font = '700 10px Rajdhani, sans-serif'; g.fillText('EX', bx, by + 15);
       tFinger(g, bx + 8, by + 6, (t * 6) % 1 < 0.5);
   } },
-  { title: '場地說明 STAGE', text: '<b style="color:#fcee0a">WORMHOLE</b>：上方兩段加速軌道，衝上去高速前進並累積 EX，出口直衝中心。<b style="color:#fcee0a">CORE</b>：中央圈，待在裡面 EX 累積更快、撞擊 +20%。<b style="color:#ff4fd8">BLOOD +2</b>：左右兩個窄出口。<b style="color:#ff2a55">DEAD +3</b>：正下方的寬出口。出口前有台階，被撞飛才會掉進去！<b style="color:#7fdfff">牆壁</b>：剛被重擊的陀螺高速撞牆，有機會飛過牆頂 <b style="color:#7fdfff">RING OUT +2</b>！<br><span style="opacity:.8">章節賽道上有彈力柱、加速帶、移動擋板、地刺區、陷阱洞，牆的缺口會出界；第二章起還有冰面（很滑）、傳送門（WARP 進、EXIT 出）、防火牆（有血條，撞破才過得去）；BOSS 衝撞撞牆會暈眩</span>', draw(g, t) {
+  { title: '場地說明 STAGE', text: '<b style="color:#fcee0a">WORMHOLE</b>：上方兩段加速軌道，衝上去高速前進並累積 EX，出口直衝中心。<b style="color:#fcee0a">CORE</b>：中央圈，待在裡面 EX 累積更快、撞擊 +20%。<b style="color:#ff4fd8">BLOOD +2</b>：左右兩個窄出口。<b style="color:#ff2a55">DEAD +3</b>：正下方的寬出口。出口前有台階，被撞飛才會掉進去！<b style="color:#7fdfff">牆壁</b>：剛被重擊的陀螺高速撞牆，有機會飛過牆頂 <b style="color:#7fdfff">RING OUT +2</b>！<br><span style="opacity:.8">章節賽道上有彈力柱、加速帶、移動擋板、地刺區、陷阱洞，牆的缺口會出界；第二章起還有冰面（很滑）、傳送門（WARP 進、EXIT 出）、防火牆（有血條，撞破才過得去）；第三章起有強風（一直把你往箭頭方向吹）、炸藥桶（一撞就爆、會連鎖）；第四章起有磁鐵（MAGNET 吸、REPEL 推）、雷射柵欄（亮的時候撞到會被彈開扣血，旁邊留有缺口）；BOSS 衝撞撞牆會暈眩</span>', draw(g, t) {
       tutArenaBg(g); drawArena(g, t);
       const Z = [['WORMHOLE', CX, CY - BY + 40, 120, '#fcee0a'], ['CORE', CX, CY, AX * CORE_Q + 10, '#fcee0a'], ['BLOOD +2', GATES[1].x, GATES[1].y - 10, 46, '#ff4fd8'], ['DEAD +3', GATES[0].x, GATES[0].y - 16, 62, '#ff2a55']];
       const i = Math.floor(t / 1.6) % Z.length, [txt, x, y, r, col] = Z[i], k = (t % 1.6) / 1.6;
@@ -2895,6 +2911,399 @@ const CHAPTERS = [
         phase3: { props: [{ type: 'spikes', at: 6, d: 0.35, r: 40, on: 2, off: 2.5 }] } },
       stars: [['win'], ['lives', 2], ['ex', 4]],
       reward: { first: { coins: 2500, box: 'purple' }, star3: { coins: 1500 } } },
+  ] },  { id: 'c3', no: 3, name: '第三章・荒野訊號站', desc: '訊號源往城外移動，躲進了廢棄的荒野中繼站。這裡風很大，路邊堆滿了沒人管的炸藥桶。', bonus: { coins: 12000, box: 'purple' }, levels: [
+    { id: '3-1', name: '風口公路', desc: '第一次出現強風：地上有流動箭頭的區域會一直把你往箭頭方向吹，發射時要往反方向多抓一點角度。',
+      track: { len: 2800, mobLv: 0.55, floor: ['#7a6a3c', '#5a4c2a', '#3a301a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 420, txt: 'CROSSWIND', col: '#e9f2ff' }, { y: 1500, txt: 'CROSSWIND', col: '#e9f2ff' }, { y: 2470, txt: 'GOAL', col: '#7fdfff' }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'wind', x: 0, y: 700, l: 300, w: 380, dir: 3 }, { type: 'pit', x: 0.55, y: 760, r: 34 }, { type: 'bumper', x: -0.3, y: 1000 },
+          { type: 'boost', x: 0, y: 1250 }, { type: 'wind', x: 0, y: 1650, l: 300, w: 380, dir: 9 }, { type: 'pit', x: -0.55, y: 1720, r: 34 }, { type: 'bumper', x: 0.35, y: 1950 }, { type: 'spikes', x: -0.3, y: 2150, r: 44, on: 2, off: 2 },
+          { type: 'boost', x: -0.32, y: 2450 }, { type: 'boost', x: 0.32, y: 2450 }],
+        mobs: [{ type: 'guard', x: 0, y: 1100, c: 'cactus', w: 'grenade', a: 'reactive' }, { type: 'rush', x: 0.3, y: 1400, c: 'rex', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2280, c: 'cactus', w: 'grenade', a: 'reactive' }] },
+      goal: { hp: 150, wave: 5, respawn: 11, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'cactus', w: 'grenade', a: 'reactive' }],
+        stage: { floor: ['#7a6a3c', '#5a4c2a', '#3a301a'], props: [{ type: 'wind', at: 6, d: 0.3, r: 90, dir: 12 }, { type: 'bumper', at: 9, d: 0.55 }, { type: 'bumper', at: 3, d: 0.55 }, { type: 'boost', at: 6, d: 0.65, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 1000 }, star3: { coins: 600 } } },
+    { id: '3-2', name: '炸藥倉庫', desc: '第一次出現炸藥桶：紅色油桶一撞就爆，附近所有陀螺都會被炸飛扣血，旁邊的桶還會連鎖引爆。把桶撞向敵人，自己別站太近。',
+      track: { len: 2900, mobLv: 0.56, floor: ['#6e4a32', '#503522', '#322014'],
+        signs: [{ y: 60, txt: 'START' }, { y: 440, txt: 'EXPLOSIVE', col: '#ff2a55' }, { y: 1550, txt: 'CHAIN!', col: '#ff2a55' }, { y: 2570, txt: 'GOAL', col: '#7fdfff' }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'barrel', x: -0.4, y: 640 }, { type: 'barrel', x: 0.4, y: 640 }, { type: 'bumper', x: 0, y: 820 },
+          { type: 'barrel', x: -0.15, y: 1150 }, { type: 'barrel', x: 0.05, y: 1180 }, { type: 'barrel', x: 0.25, y: 1150 }, { type: 'boost', x: 0, y: 1400 },
+          { type: 'barrel', x: -0.5, y: 1700 }, { type: 'barrel', x: -0.3, y: 1740 }, { type: 'barrel', x: 0.5, y: 1700 }, { type: 'crack', x: 0, y: 2000, len: 380, rot: 3, hp: 50 }, { type: 'barrel', x: 0, y: 2060 },
+          { type: 'boost', x: -0.32, y: 2550 }, { type: 'boost', x: 0.32, y: 2550 }],
+        mobs: [{ type: 'guard', x: 0, y: 1050, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }, { type: 'guard', x: 0, y: 1600, c: 'cactus', w: 'grenade', a: 'reactive' }, { type: 'rush', x: 0, y: 2300, c: 'rex', w: 'chainaxe', a: 'powerarmor' }] },
+      goal: { hp: 150, wave: 5, respawn: 11, guards: [{ type: 'guard', at: 12, d: 0.6, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }],
+        stage: { floor: ['#6e4a32', '#503522', '#322014'], props: [{ type: 'barrel', at: 11, d: 0.45 }, { type: 'barrel', at: 1, d: 0.45 }, { type: 'barrel', at: 12, d: 0.3 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }, { type: 'bumper', at: 9, d: 0.55 }, { type: 'bumper', at: 3, d: 0.55 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 1050 }, star3: { coins: 650 } } },
+    { id: '3-3', name: '沙塵峽谷', desc: '兩段方向相反的強風夾著缺口：被吹出路面就會掉下去。順著風借力、逆著風就靠加速帶硬衝。',
+      track: { len: 3000, mobLv: 0.58, floor: ['#8a6b3e', '#674f2c', '#43331c'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'SANDSTORM', col: '#e9f2ff' }, { y: 1600, txt: 'DANGER GAP', col: '#ff2a55' }, { y: 2670, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 700, to: 860 }, { side: 'L', from: 1700, to: 1860 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'wind', x: 0, y: 780, l: 340, w: 380, dir: 3, power: 0.8 }, { type: 'bumper', x: -0.45, y: 1050 }, { type: 'boost', x: 0.2, y: 1250 },
+          { type: 'wind', x: 0, y: 1780, l: 340, w: 380, dir: 9, power: 0.8 }, { type: 'barrel', x: 0.4, y: 1500 }, { type: 'barrel', x: 0.5, y: 1540 }, { type: 'spikes', x: 0.3, y: 2100, r: 44, on: 2, off: 2 },
+          { type: 'mover', x: -0.2, y: 2350, len: 100, move: 'spin', speed: 0.13 }, { type: 'boost', x: -0.32, y: 2650 }, { type: 'boost', x: 0.32, y: 2650 }],
+        mobs: [{ type: 'guard', x: 0, y: 1150, c: 'hunter', w: 'railgun', a: 'opticamo' }, { type: 'rush', x: -0.3, y: 1550, c: 'rex', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2480, c: 'hunter', w: 'railgun', a: 'opticamo' }] },
+      goal: { hp: 160, wave: 5, respawn: 11, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'hunter', w: 'railgun', a: 'opticamo' }],
+        stage: { floor: ['#8a6b3e', '#674f2c', '#43331c'], props: [{ type: 'wind', at: 10, d: 0.45, r: 70, dir: 3 }, { type: 'wind', at: 2, d: 0.45, r: 70, dir: 9 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }, { type: 'barrel', at: 12, d: 0.32 }] } },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 1100 }, star3: { coins: 700 } } },
+    { id: '3-4', name: '油井連爆', desc: '整排炸藥桶貼著防火牆：一顆引爆就會整排連鎖，順便把牆炸掉一大截。找對時機衝過去。',
+      track: { len: 3100, mobLv: 0.6, floor: ['#5e4a36', '#443526', '#2a2017'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'OIL FIELD', col: '#fcee0a' }, { y: 1700, txt: 'FIREWALL', col: '#ff2a55' }, { y: 2770, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 2150, to: 2290 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'barrel', x: -0.5, y: 700 }, { type: 'barrel', x: -0.25, y: 700 }, { type: 'barrel', x: 0, y: 700 }, { type: 'crack', x: 0, y: 760, len: 380, rot: 3, hp: 55 },
+          { type: 'bumper', x: 0.4, y: 1050 }, { type: 'wind', x: 0, y: 1350, l: 260, w: 380, dir: 9, power: 0.7 }, { type: 'boost', x: 0.2, y: 1550 },
+          { type: 'barrel', x: 0.2, y: 1800 }, { type: 'barrel', x: 0.45, y: 1800 }, { type: 'crack', x: 0, y: 1860, len: 380, rot: 3, hp: 60 }, { type: 'spikes', x: 0.4, y: 2250, r: 44, on: 2, off: 2 },
+          { type: 'boost', x: -0.32, y: 2750 }, { type: 'boost', x: 0.32, y: 2750 }],
+        mobs: [{ type: 'guard', x: 0, y: 1150, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }, { type: 'rush', x: -0.3, y: 1650, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2450, c: 'cactus', w: 'grenade', a: 'reactive' }, { type: 'rush', x: 0.3, y: 2600, c: 'rex', w: 'chainaxe', a: 'powerarmor' }] },
+      goal: { hp: 160, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'cactus', w: 'grenade', a: 'reactive' }, { type: 'guard', at: 1, d: 0.64, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }],
+        stage: { floor: ['#5e4a36', '#443526', '#2a2017'], props: [{ type: 'barrel', at: 10.5, d: 0.4 }, { type: 'barrel', at: 1.5, d: 0.4 }, { type: 'crack', at: 12, d: 0.3, len: 110, rot: 3, hp: 45 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1150 }, star3: { coins: 700 } } },
+    { id: '3-5', name: '荊棘溫室', boss: true, desc: '第三章第一個 BOSS。被控制的刺球會「撒刺」：在你身邊撒出一片地刺，地刺冒出來前地上會閃，看到閃光就快離開。場邊的炸藥桶可以拿來炸它。建議紅卡 3 星以上。',
+      track: { len: 3100, mobLv: 0.62, floor: ['#3f6a3a', '#2d4d29', '#1c3119'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'THORNS', col: '#7fff9e' }, { y: 1600, txt: 'CROSSWIND', col: '#e9f2ff' }, { y: 2680, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1200, to: 1340 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'spikes', x: -0.4, y: 640, r: 44, on: 2, off: 2 }, { type: 'spikes', x: 0.4, y: 760, r: 44, on: 2, off: 2, phase: 1 }, { type: 'barrel', x: 0, y: 950 },
+          { type: 'bumper', x: -0.3, y: 1150 }, { type: 'wind', x: 0, y: 1700, l: 300, w: 380, dir: 3, power: 0.8 }, { type: 'pit', x: 0.55, y: 1760, r: 32 }, { type: 'barrel', x: -0.4, y: 2050 }, { type: 'barrel', x: -0.2, y: 2080 },
+          { type: 'crack', x: 0, y: 2300, len: 380, rot: 3, hp: 55 }, { type: 'boost', x: -0.32, y: 2730 }, { type: 'boost', x: 0.32, y: 2730 }],
+        mobs: [{ type: 'guard', x: 0, y: 1050, c: 'cactus', w: 'grenade', a: 'reactive' }, { type: 'rush', x: 0.3, y: 1450, c: 'rex', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2500, c: 'cactus', w: 'grenade', a: 'reactive' }] },
+      boss: { name: '腐化荊棘・刺球', c: 'boss_cactus', w: 'grenade', a: 'reactive', diff: 'normal', lv: 0.58, hp: 1.75, size: 1.5, lives: 1,
+        stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#3f6a3a', '#2d4d29', '#1c3119'], props: [{ type: 'barrel', at: 9, d: 0.6 }, { type: 'barrel', at: 3, d: 0.6 }] },
+        phase2: { props: [{ type: 'barrel', at: 12, d: 0.5 }, { type: 'barrel', at: 7.5, d: 0.55 }], mobs: [{ type: 'guard', at: 10, d: 0.5, c: 'cactus', w: 'grenade', a: 'reactive' }] },
+        phase3: { props: [{ type: 'wind', at: 6, d: 0.3, r: 80, dir: 9 }] } },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 1800, box: 'purple' }, star3: { coins: 1200 } } },
+    { id: '3-6', name: '風車田', desc: '巨大風車的葉片在路上轉（旋轉擋板），旁邊還有強風。風會把你推進葉片裡，先等葉片轉過去再衝。',
+      track: { len: 3200, mobLv: 0.64, floor: ['#6b7a3c', '#4e5a2a', '#323a1a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'WINDMILL', col: '#fcee0a' }, { y: 1700, txt: 'CROSSWIND', col: '#e9f2ff' }, { y: 2870, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1250, to: 1390 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'mover', x: 0, y: 700, len: 150, move: 'spin', speed: 0.12 }, { type: 'wind', x: 0, y: 1000, l: 220, w: 380, dir: 9, power: 0.7 },
+          { type: 'mover', x: -0.3, y: 1300, len: 120, move: 'spin', speed: -0.14 }, { type: 'boost', x: 0.3, y: 1500 }, { type: 'mover', x: 0.25, y: 1850, len: 130, move: 'spin', speed: 0.14 }, { type: 'wind', x: 0, y: 1850, l: 260, w: 380, dir: 3, power: 0.6 },
+          { type: 'barrel', x: -0.45, y: 2200 }, { type: 'barrel', x: -0.25, y: 2230 }, { type: 'spikes', x: 0.4, y: 2450, r: 44, on: 2, off: 2 },
+          { type: 'boost', x: -0.32, y: 2850 }, { type: 'boost', x: 0.32, y: 2850 }],
+        mobs: [{ type: 'guard', x: 0, y: 1150, c: 'hunter', w: 'railgun', a: 'opticamo' }, { type: 'rush', x: 0, y: 1650, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2350, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }, { type: 'rush', x: 0.3, y: 2650, c: 'rex', w: 'chainaxe', a: 'powerarmor' }] },
+      goal: { hp: 170, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'hunter', w: 'railgun', a: 'opticamo' }, { type: 'guard', at: 1, d: 0.64, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }],
+        stage: { floor: ['#6b7a3c', '#4e5a2a', '#323a1a'], props: [{ type: 'mover', at: 6, d: 0.25, len: 90, move: 'spin', speed: 0.12 }, { type: 'boost', at: 4.5, d: 0.62, dir: 11.4 }, { type: 'boost', at: 7.5, d: 0.62, dir: 12.6 }, { type: 'wind', at: 12, d: 0.35, r: 60, dir: 6, power: 0.6 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1250 }, star3: { coins: 750 } } },
+    { id: '3-7', name: '狩獵場', desc: '一大群衝撞型敵人藏在炸藥桶後面。把它們引到桶邊再撞桶，一次炸一群。',
+      track: { len: 3200, mobLv: 0.66, floor: ['#4f5e2e', '#3a4521', '#252c14'],
+        signs: [{ y: 60, txt: 'START' }, { y: 500, txt: 'HUNTING', col: '#ff2a55' }, { y: 1800, txt: 'EXPLOSIVE', col: '#ff2a55' }, { y: 2870, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1400, to: 1540 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'barrel', x: -0.35, y: 800 }, { type: 'barrel', x: 0.35, y: 800 }, { type: 'barrel', x: 0, y: 860 }, { type: 'bumper', x: -0.5, y: 1100 }, { type: 'bumper', x: 0.5, y: 1100 },
+          { type: 'barrel', x: -0.2, y: 1700 }, { type: 'barrel', x: 0.2, y: 1700 }, { type: 'wind', x: 0, y: 2050, l: 240, w: 380, dir: 3, power: 0.7 }, { type: 'pit', x: 0.5, y: 2100, r: 32 },
+          { type: 'barrel', x: 0, y: 2450 }, { type: 'boost', x: -0.32, y: 2850 }, { type: 'boost', x: 0.32, y: 2850 }],
+        mobs: [{ type: 'rush', x: -0.3, y: 950, c: 'rex', w: 'chainaxe', a: 'powerarmor' }, { type: 'rush', x: 0.3, y: 1000, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'rush', x: 0, y: 1300, c: 'rex', w: 'chainaxe', a: 'powerarmor' }, { type: 'rush', x: 0, y: 1900, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'rush', x: 0, y: 2650, c: 'rex', w: 'chainaxe', a: 'powerarmor' }] },
+      goal: { hp: 170, wave: 4.5, respawn: 10, guards: [{ type: 'rush', at: 11, d: 0.6, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'rush', at: 1, d: 0.6, c: 'rex', w: 'chainaxe', a: 'powerarmor' }],
+        stage: { floor: ['#4f5e2e', '#3a4521', '#252c14'], props: [{ type: 'barrel', at: 9, d: 0.5 }, { type: 'barrel', at: 3, d: 0.5 }, { type: 'bumper', at: 12, d: 0.35 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 5]],
+      reward: { first: { coins: 1300 }, star3: { coins: 800, box: 'white' } } },
+    { id: '3-8', name: '斷橋風暴', desc: '第三章最難的賽道：強風、缺口、炸藥桶和防火牆全部出現。過了這裡就是連續兩個 BOSS。',
+      track: { len: 3600, mobLv: 0.68, floor: ['#6a5a3a', '#4d4129', '#30291a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'STORM', col: '#e9f2ff' }, { y: 1400, txt: 'EXPLOSIVE', col: '#ff2a55' }, { y: 2350, txt: 'LINK LOST', col: '#ff2a55' }, { y: 3270, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 650, to: 790 }, { side: 'R', from: 2400, to: 2540 }, { side: 'L', from: 2750, to: 2890 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'wind', x: 0, y: 720, l: 300, w: 380, dir: 9, power: 0.75 }, { type: 'bumper', x: 0.3, y: 1000 }, { type: 'boost', x: 0, y: 1200 },
+          { type: 'barrel', x: -0.4, y: 1500 }, { type: 'barrel', x: -0.2, y: 1530 }, { type: 'barrel', x: 0.4, y: 1500 }, { type: 'crack', x: 0, y: 1580, len: 380, rot: 3, hp: 60 }, { type: 'mover', x: 0, y: 1900, len: 120, move: 'spin', speed: 0.13 },
+          { type: 'wind', x: 0, y: 2470, l: 280, w: 380, dir: 3, power: 0.75 }, { type: 'spikes', x: -0.3, y: 2200, r: 44, on: 2, off: 2 }, { type: 'pit', x: 0.4, y: 2650, r: 34 }, { type: 'bumper', x: -0.3, y: 3000 },
+          { type: 'boost', x: -0.32, y: 3250 }, { type: 'boost', x: 0.32, y: 3250 }],
+        mobs: [{ type: 'guard', x: 0, y: 1050, c: 'hunter', w: 'railgun', a: 'opticamo' }, { type: 'rush', x: 0.35, y: 1750, c: 'rex', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2100, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }, { type: 'rush', x: -0.3, y: 2600, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'guard', x: 0, y: 3100, c: 'cactus', w: 'grenade', a: 'reactive' }] },
+      goal: { hp: 180, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'hunter', w: 'railgun', a: 'opticamo' }, { type: 'guard', at: 1, d: 0.64, c: 'cactus', w: 'grenade', a: 'reactive' }],
+        stage: { floor: ['#6a5a3a', '#4d4129', '#30291a'], props: [{ type: 'wind', at: 6, d: 0.35, r: 70, dir: 12 }, { type: 'barrel', at: 10, d: 0.45 }, { type: 'barrel', at: 2, d: 0.45 }, { type: 'crack', at: 12, d: 0.3, len: 110, rot: 3, hp: 50 }, { type: 'boost', at: 4, d: 0.6, dir: 11 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1350 }, star3: { coins: 850, box: 'white' } } },
+    { id: '3-9', name: '低音炮營地', boss: true, desc: 'BOSS 是被控制的 DJ 節拍：他會「放重低音」，從身上一圈一圈震出音浪，碰到就被震飛扣血。音浪之間有空檔，抓節奏穿過去打他。建議紅卡 3 星或金卡。',
+      track: { len: 3300, mobLv: 0.7, floor: ['#5a2e5e', '#412144', '#28142a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 500, txt: 'BASS DROP', col: '#ff4fd8' }, { y: 1600, txt: 'CROSSWIND', col: '#e9f2ff' }, { y: 2880, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 950, to: 1090 }, { side: 'R', from: 2150, to: 2290 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'bumper', x: -0.45, y: 620 }, { type: 'bumper', x: 0.45, y: 620 }, { type: 'mover', x: 0, y: 900, len: 90, rot: 12, move: 'slide', span: 60, period: 2.6 },
+          { type: 'barrel', x: 0.3, y: 1250 }, { type: 'barrel', x: 0.5, y: 1280 }, { type: 'wind', x: 0, y: 1700, l: 300, w: 380, dir: 9, power: 0.8 }, { type: 'boost', x: 0.3, y: 1900 },
+          { type: 'spikes', x: 0, y: 2200, r: 46, on: 2, off: 2 }, { type: 'crack', x: 0, y: 2500, len: 380, rot: 3, hp: 60 }, { type: 'pit', x: -0.45, y: 2700, r: 34 },
+          { type: 'boost', x: -0.32, y: 2930 }, { type: 'boost', x: 0.32, y: 2930 }],
+        mobs: [{ type: 'guard', x: 0, y: 1100, c: 'dj', w: 'missilepod', a: 'deflector' }, { type: 'rush', x: 0.35, y: 1550, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2350, c: 'dj', w: 'missilepod', a: 'deflector' }, { type: 'rush', x: -0.35, y: 2800, c: 'rex', w: 'chainaxe', a: 'powerarmor' }] },
+      boss: { name: '失真音浪・節拍', c: 'boss_dj', w: 'missilepod', a: 'deflector', diff: 'normal', lv: 0.68, hp: 1.95, size: 1.5, lives: 1,
+        stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#5a2e5e', '#412144', '#28142a'], props: [{ type: 'bumper', at: 10, d: 0.55 }, { type: 'bumper', at: 2, d: 0.55 }] },
+        phase2: { mobs: [{ type: 'guard', at: 9, d: 0.5, c: 'dj', w: 'missilepod', a: 'deflector' }, { type: 'guard', at: 3, d: 0.5, c: 'dj', w: 'missilepod', a: 'deflector' }] },
+        phase3: { props: [{ type: 'barrel', at: 12, d: 0.5 }, { type: 'barrel', at: 4.5, d: 0.55 }, { type: 'barrel', at: 7.5, d: 0.55 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 2]],
+      reward: { first: { coins: 2200, box: 'purple' }, star3: { coins: 1400 } } },
+    { id: '3-10', name: '野貓之巢', boss: true, desc: '第三章最終關。BOSS 是被控制的機甲貓咪，有兩條血：「連續撲殺」會連撞兩三下，每次撲過來前會閃紅光，看到就橫向閃開，讓它撞牆暈眩。建議金卡或全紅卡 3 星。',
+      track: { len: 3700, mobLv: 0.72, floor: ['#6e5038', '#503a28', '#322419'],
+        signs: [{ y: 60, txt: 'START' }, { y: 470, txt: 'WILD ZONE', col: '#fcee0a' }, { y: 1500, txt: 'EXPLOSIVE', col: '#ff2a55' }, { y: 2400, txt: 'STORM', col: '#e9f2ff' }, { y: 3280, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1150, to: 1290 }, { side: 'R', from: 2650, to: 2790 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'mover', x: -0.3, y: 620, len: 110, move: 'spin', speed: 0.14 }, { type: 'mover', x: 0.3, y: 1000, len: 110, move: 'spin', speed: -0.14 },
+          { type: 'boost', x: 0, y: 1300 }, { type: 'barrel', x: -0.5, y: 1600 }, { type: 'barrel', x: -0.3, y: 1630 }, { type: 'crack', x: 0, y: 1680, len: 380, rot: 3, hp: 65 }, { type: 'barrel', x: 0.4, y: 1630 },
+          { type: 'spikes', x: 0, y: 1950, r: 46, on: 2, off: 2 }, { type: 'wind', x: 0, y: 2500, l: 320, w: 380, dir: 3, power: 0.85 }, { type: 'pit', x: 0.55, y: 2600, r: 34 }, { type: 'bumper', x: -0.2, y: 2900 },
+          { type: 'boost', x: -0.32, y: 3330 }, { type: 'boost', x: 0.32, y: 3330 }],
+        mobs: [{ type: 'guard', x: 0, y: 820, c: 'hunter', w: 'railgun', a: 'opticamo' }, { type: 'rush', x: 0.35, y: 1450, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2250, c: 'sheep', w: 'hydrohammer', a: 'exoskeleton' }, { type: 'rush', x: -0.35, y: 3050, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'guard', x: 0, y: 3150, c: 'hunter', w: 'railgun', a: 'opticamo' }] },
+      boss: { name: '反噬利爪・機甲貓咪', c: 'boss_mechcat', w: 'vibrosword', a: 'opticamo', diff: 'normal', lv: 0.72, hp: 0.8, size: 1.6, lives: 2,
+        stage: { exits: [{ at: 6, type: 'DEAD', w: 46 }], ringOut: 0.3, floor: ['#6e5038', '#503a28', '#322419'], props: [{ type: 'barrel', at: 9, d: 0.6 }, { type: 'barrel', at: 3, d: 0.6 }] },
+        phase2: { props: [{ type: 'wind', at: 12, d: 0.3, r: 70, dir: 6, power: 0.6 }], mobs: [{ type: 'rush', at: 10.5, d: 0.55, c: 'mechcat', w: 'vibrosword', a: 'carbonvest' }, { type: 'rush', at: 1.5, d: 0.55, c: 'rex', w: 'chainaxe', a: 'powerarmor' }] },
+        phase3: { props: [{ type: 'barrel', at: 12, d: 0.55 }, { type: 'barrel', at: 6, d: 0.3 }] } },
+      stars: [['win'], ['lives', 2], ['ex', 4]],
+      reward: { first: { coins: 3500, box: 'purple' }, star3: { coins: 2000 } } },
+  ] },
+  { id: 'c4', no: 4, name: '第四章・鐵心重工', desc: '訊號的硬體全部在鐵心幫的重工廠生產。磁鐵吊臂會把你吸過去，雷射柵欄一亮一滅，整座工廠都在加班。', bonus: { coins: 16000, box: 'purple' }, levels: [
+    { id: '4-1', name: '磁吸產線', desc: '第一次出現磁鐵：MAGNET 圈會把你往中心吸，REPEL 圈會把你推開。被吸住時往外大力拖曳才逃得掉。',
+      track: { len: 3000, mobLv: 0.74, floor: ['#5a5f68', '#41454c', '#272a2f'],
+        signs: [{ y: 60, txt: 'START' }, { y: 440, txt: 'MAGNET', col: '#ff2a55' }, { y: 1550, txt: 'REPEL', col: '#00f0ff' }, { y: 2670, txt: 'GOAL', col: '#7fdfff' }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'magnet', x: -0.45, y: 750, r: 130 }, { type: 'spikes', x: -0.45, y: 750, r: 34 }, { type: 'bumper', x: 0.4, y: 950 }, { type: 'boost', x: 0.2, y: 1200 },
+          { type: 'magnet', x: 0, y: 1650, r: 150, power: -1 }, { type: 'pit', x: -0.55, y: 1700, r: 32 }, { type: 'pit', x: 0.55, y: 1700, r: 32 }, { type: 'magnet', x: 0.45, y: 2150, r: 130 }, { type: 'barrel', x: 0.45, y: 2150 },
+          { type: 'boost', x: -0.32, y: 2650 }, { type: 'boost', x: 0.32, y: 2650 }],
+        mobs: [{ type: 'guard', x: 0, y: 1050, c: 'guardian', w: 'hydrohammer', a: 'titanium' }, { type: 'rush', x: -0.3, y: 1400, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2450, c: 'guardian', w: 'hydrohammer', a: 'titanium' }] },
+      goal: { hp: 190, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'guardian', w: 'hydrohammer', a: 'titanium' }],
+        stage: { floor: ['#5a5f68', '#41454c', '#272a2f'], props: [{ type: 'magnet', at: 9, d: 0.5, r: 90 }, { type: 'magnet', at: 3, d: 0.5, r: 90 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }, { type: 'bumper', at: 12, d: 0.32 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 1400 }, star3: { coins: 800 } } },
+    { id: '4-2', name: '雷射柵欄', desc: '第一次出現雷射柵欄：紅光一亮一滅，亮的時候撞到會被彈回去扣血。快亮之前會閃黃光。每道雷射旁邊都留了一個小缺口，可以抓空檔衝過去，也可以瞄準缺口鑽過去。',
+      track: { len: 3000, mobLv: 0.75, floor: ['#4a3a3a', '#362a2a', '#211919'],
+        signs: [{ y: 60, txt: 'START' }, { y: 440, txt: 'LASER GRID', col: '#ff2a55' }, { y: 1550, txt: 'LASER GRID', col: '#ff2a55' }, { y: 2670, txt: 'GOAL', col: '#7fdfff' }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'laser', x: 0.21, y: 650, len: 300, on: 1.1, off: 2.1 }, { type: 'bumper', x: -0.45, y: 900 }, { type: 'bumper', x: 0.45, y: 900 }, { type: 'boost', x: 0, y: 1100 },
+          { type: 'laser', x: -0.21, y: 1400, len: 300, on: 1.1, off: 2.1, phase: 0.8 }, { type: 'laser', x: 0.21, y: 1700, len: 300, on: 1.1, off: 2.1, phase: 1.6 }, { type: 'barrel', x: -0.4, y: 1950 }, { type: 'spikes', x: 0.35, y: 2100, r: 44, on: 2, off: 2 },
+          { type: 'boost', x: -0.32, y: 2650 }, { type: 'boost', x: 0.32, y: 2650 }],
+        mobs: [{ type: 'guard', x: 0, y: 1000, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.3, y: 1550, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2400, c: 'tesla', w: 'emp', a: 'forcefield' }] },
+      goal: { hp: 190, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'tesla', w: 'emp', a: 'forcefield' }],
+        stage: { floor: ['#4a3a3a', '#362a2a', '#211919'], props: [{ type: 'laser', at: 12, d: 0.32, len: 160, on: 1.4, off: 2 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }, { type: 'bumper', at: 9, d: 0.55 }, { type: 'bumper', at: 3, d: 0.55 }] } },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 1450 }, star3: { coins: 850 } } },
+    { id: '4-3', name: '吊臂倉庫', desc: '磁鐵吊臂把你往地刺上吸，斥力磁鐵會把你推向陷阱洞。旁邊的炸藥桶炸開時可以把你從磁場裡震出來。',
+      track: { len: 3100, mobLv: 0.77, floor: ['#5e5048', '#443a34', '#2a2420'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'CRANE', col: '#fcee0a' }, { y: 1650, txt: 'MAGNET', col: '#ff2a55' }, { y: 2770, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1250, to: 1390 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'magnet', x: 0.4, y: 700, r: 140 }, { type: 'spikes', x: 0.4, y: 700, r: 32 }, { type: 'barrel', x: 0.15, y: 760 }, { type: 'mover', x: -0.3, y: 1000, len: 110, move: 'spin', speed: 0.13 },
+          { type: 'magnet', x: -0.4, y: 1550, r: 140 }, { type: 'spikes', x: -0.4, y: 1550, r: 36 }, { type: 'laser', x: -0.21, y: 1850, len: 300, on: 1.1, off: 2.1 }, { type: 'boost', x: 0.2, y: 2050 },
+          { type: 'magnet', x: 0, y: 2350, r: 160, power: -1 }, { type: 'pit', x: -0.55, y: 2400, r: 32 }, { type: 'boost', x: -0.32, y: 2750 }, { type: 'boost', x: 0.32, y: 2750 }],
+        mobs: [{ type: 'guard', x: 0, y: 1150, c: 'octo', w: 'gatling', a: 'deflector' }, { type: 'rush', x: 0.3, y: 1700, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'guard', x: 0, y: 2550, c: 'guardian', w: 'hydrohammer', a: 'titanium' }] },
+      goal: { hp: 200, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'octo', w: 'gatling', a: 'deflector' }],
+        stage: { floor: ['#5e5048', '#443a34', '#2a2420'], props: [{ type: 'magnet', at: 6, d: 0.3, r: 80, power: -1 }, { type: 'barrel', at: 10, d: 0.45 }, { type: 'barrel', at: 2, d: 0.45 }, { type: 'boost', at: 4.5, d: 0.62, dir: 11.4 }, { type: 'boost', at: 7.5, d: 0.62, dir: 12.6 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 1500 }, star3: { coins: 900 } } },
+    { id: '4-4', name: '熔爐輸送帶', desc: '加速帶串成輸送帶，一路把你送進雷射和防火牆。速度越快撞牆扣越多血，但雷射亮著就只能等。',
+      track: { len: 3200, mobLv: 0.79, floor: ['#6b3e2a', '#4e2d1e', '#311c13'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'CONVEYOR', col: '#fcee0a' }, { y: 1700, txt: 'FIREWALL', col: '#ff2a55' }, { y: 2870, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 2250, to: 2390 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'boost', x: 0, y: 500 }, { type: 'boost', x: 0, y: 720 }, { type: 'laser', x: 0.21, y: 950, len: 300, on: 1.1, off: 2.2 }, { type: 'spikes', x: -0.45, y: 1150, r: 40, on: 2, off: 2, skin: 'fire' }, { type: 'spikes', x: 0.45, y: 1150, r: 40, on: 2, off: 2, skin: 'fire' },
+          { type: 'boost', x: 0, y: 1400 }, { type: 'boost', x: 0, y: 1600 }, { type: 'crack', x: 0, y: 1800, len: 380, rot: 3, hp: 70 }, { type: 'barrel', x: -0.3, y: 1860 }, { type: 'barrel', x: 0.3, y: 1860 },
+          { type: 'magnet', x: 0.35, y: 2300, r: 130 }, { type: 'laser', x: -0.21, y: 2550, len: 300, on: 1.1, off: 2.2, phase: 1 }, { type: 'boost', x: -0.32, y: 2850 }, { type: 'boost', x: 0.32, y: 2850 }],
+        mobs: [{ type: 'rush', x: 0, y: 1250, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 2050, c: 'guardian', w: 'hydrohammer', a: 'titanium' }, { type: 'rush', x: -0.3, y: 2450, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'guard', x: 0, y: 2700, c: 'tesla', w: 'emp', a: 'forcefield' }] },
+      goal: { hp: 200, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'guardian', w: 'hydrohammer', a: 'titanium' }, { type: 'rush', at: 1, d: 0.64, c: 'rider', w: 'chainaxe', a: 'carbonvest' }],
+        stage: { floor: ['#6b3e2a', '#4e2d1e', '#311c13'], props: [{ type: 'boost', at: 6, d: 0.62, dir: 12 }, { type: 'boost', at: 6, d: 0.3, dir: 12 }, { type: 'spikes', at: 9, d: 0.5, r: 38, on: 2, off: 2, skin: 'fire' }, { type: 'spikes', at: 3, d: 0.5, r: 38, on: 2, off: 2, skin: 'fire' }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1550 }, star3: { coins: 900 } } },
+    { id: '4-5', name: '狂飆試車場', boss: true, desc: '第四章第一個 BOSS。被控制的轟天衝撞特別頻繁，衝過的地方會一路燒起火焰地刺。別跟在它屁股後面，從側面打它。建議金卡。',
+      track: { len: 3200, mobLv: 0.8, floor: ['#3c3c44', '#2b2b31', '#1a1a1e'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'SPEEDWAY', col: '#fcee0a' }, { y: 1600, txt: 'LASER GRID', col: '#ff2a55' }, { y: 2780, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1100, to: 1240 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'boost', x: -0.3, y: 600 }, { type: 'spikes', x: 0.3, y: 650, r: 40, on: 2, off: 2, skin: 'fire' }, { type: 'boost', x: 0.3, y: 900 }, { type: 'spikes', x: -0.3, y: 950, r: 40, on: 2, off: 2, skin: 'fire' },
+          { type: 'magnet', x: -0.4, y: 1350, r: 130 }, { type: 'laser', x: 0.21, y: 1650, len: 300, on: 1.1, off: 2.2 }, { type: 'barrel', x: 0.4, y: 1900 }, { type: 'barrel', x: 0.2, y: 1930 },
+          { type: 'crack', x: 0, y: 2200, len: 380, rot: 3, hp: 70 }, { type: 'pit', x: -0.45, y: 2500, r: 34 }, { type: 'boost', x: -0.32, y: 2830 }, { type: 'boost', x: 0.32, y: 2830 }],
+        mobs: [{ type: 'rush', x: 0, y: 1150, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 1800, c: 'guardian', w: 'hydrohammer', a: 'titanium' }, { type: 'rush', x: 0.3, y: 2400, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+      boss: { name: '失速狂飆・轟天', c: 'boss_rider', w: 'chainaxe', a: 'carbonvest', diff: 'normal', lv: 0.74, hp: 1.85, size: 1.5, lives: 1,
+        stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#3c3c44', '#2b2b31', '#1a1a1e'], props: [{ type: 'bumper', at: 9, d: 0.5 }, { type: 'bumper', at: 3, d: 0.5 }] },
+        phase2: { props: [{ type: 'barrel', at: 12, d: 0.5 }], mobs: [{ type: 'rush', at: 10, d: 0.5, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+        phase3: { props: [{ type: 'magnet', at: 6, d: 0.3, r: 70, power: -1 }] } },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 2400, box: 'purple' }, star3: { coins: 1500 } } },
+    { id: '4-6', name: '電磁走廊', desc: '吸力和斥力的磁鐵交錯排列，中間還夾著雷射。斥力圈可以當成彈射板，把你推過雷射。',
+      track: { len: 3300, mobLv: 0.82, floor: ['#3a4a5e', '#2a3644', '#1a222b'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'EM FIELD', col: '#00f0ff' }, { y: 1700, txt: 'LASER GRID', col: '#ff2a55' }, { y: 2970, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1300, to: 1440 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'magnet', x: -0.4, y: 650, r: 130 }, { type: 'magnet', x: 0.4, y: 850, r: 130, power: -1 }, { type: 'magnet', x: -0.4, y: 1050, r: 130 }, { type: 'spikes', x: -0.4, y: 1050, r: 30 },
+          { type: 'laser', x: -0.21, y: 1300, len: 300, on: 1.1, off: 2.1 }, { type: 'boost', x: 0.2, y: 1500 }, { type: 'magnet', x: 0, y: 1800, r: 150, power: -1 }, { type: 'laser', x: 0.21, y: 2050, len: 300, on: 1.1, off: 2.1, phase: 1.2 },
+          { type: 'mover', x: 0.3, y: 2350, len: 110, move: 'spin', speed: 0.14 }, { type: 'barrel', x: -0.4, y: 2550 }, { type: 'spikes', x: 0, y: 2700, r: 44, on: 2, off: 2 },
+          { type: 'boost', x: -0.32, y: 2950 }, { type: 'boost', x: 0.32, y: 2950 }],
+        mobs: [{ type: 'guard', x: 0, y: 1150, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.35, y: 1650, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'guard', x: 0, y: 2250, c: 'octo', w: 'gatling', a: 'deflector' }, { type: 'rush', x: -0.3, y: 2800, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+      goal: { hp: 210, wave: 4.5, respawn: 10, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'guard', at: 1, d: 0.64, c: 'octo', w: 'gatling', a: 'deflector' }],
+        stage: { floor: ['#3a4a5e', '#2a3644', '#1a222b'], props: [{ type: 'magnet', at: 9, d: 0.5, r: 80 }, { type: 'magnet', at: 3, d: 0.5, r: 80, power: -1 }, { type: 'laser', at: 12, d: 0.32, len: 160, on: 1.4, off: 2 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1600 }, star3: { coins: 950 } } },
+    { id: '4-7', name: '暴動工廠', desc: '整座工廠的工人陀螺都暴動了：一大群衝撞型敵人，加上會連鎖引爆的炸藥桶。',
+      track: { len: 3300, mobLv: 0.84, floor: ['#5e3a30', '#442a22', '#2a1a15'],
+        signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'RIOT', col: '#ff2a55' }, { y: 1800, txt: 'EXPLOSIVE', col: '#ff2a55' }, { y: 2970, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1450, to: 1590 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'barrel', x: -0.4, y: 750 }, { type: 'barrel', x: -0.2, y: 780 }, { type: 'barrel', x: 0.4, y: 750 }, { type: 'bumper', x: 0, y: 1000 },
+          { type: 'laser', x: -0.21, y: 1250, len: 300, on: 1.1, off: 2.3 }, { type: 'magnet', x: 0.4, y: 1650, r: 130 }, { type: 'barrel', x: 0.4, y: 1650 }, { type: 'barrel', x: -0.3, y: 1950 }, { type: 'barrel', x: -0.1, y: 1980 },
+          { type: 'spikes', x: 0.3, y: 2250, r: 42, on: 2, off: 2, skin: 'fire' }, { type: 'pit', x: -0.45, y: 2500, r: 34 }, { type: 'boost', x: -0.32, y: 2950 }, { type: 'boost', x: 0.32, y: 2950 }],
+        mobs: [{ type: 'rush', x: -0.3, y: 900, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'rush', x: 0.3, y: 950, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: 0, y: 1450, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'rush', x: 0, y: 2100, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'rush', x: 0, y: 2750, c: 'berserker', w: 'vibrosword', a: 'reactive' }] },
+      goal: { hp: 210, wave: 4.5, respawn: 9, guards: [{ type: 'rush', at: 11, d: 0.6, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'rush', at: 1, d: 0.6, c: 'rider', w: 'chainaxe', a: 'carbonvest' }],
+        stage: { floor: ['#5e3a30', '#442a22', '#2a1a15'], props: [{ type: 'barrel', at: 9, d: 0.5 }, { type: 'barrel', at: 3, d: 0.5 }, { type: 'barrel', at: 12, d: 0.3 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 5]],
+      reward: { first: { coins: 1650 }, star3: { coins: 1000, box: 'white' } } },
+    { id: '4-8', name: '核心冷卻塔', desc: '第四章最難的賽道：磁鐵、雷射、防火牆、冰面全部出現。過了這裡就是連續兩個 BOSS。',
+      track: { len: 3700, mobLv: 0.86, floor: ['#2f4f5e', '#223944', '#15242b'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'COOLANT', col: '#a8fbff' }, { y: 1400, txt: 'EM FIELD', col: '#00f0ff' }, { y: 2400, txt: 'LASER GRID', col: '#ff2a55' }, { y: 3370, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 2500, to: 2640 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'ice', x: 0, y: 770, l: 320, w: 380 }, { type: 'bumper', x: 0.3, y: 770 }, { type: 'boost', x: 0, y: 1150 },
+          { type: 'magnet', x: -0.4, y: 1450, r: 140 }, { type: 'spikes', x: -0.4, y: 1450, r: 30 }, { type: 'magnet', x: 0.4, y: 1700, r: 140, power: -1 }, { type: 'crack', x: 0, y: 1950, len: 380, rot: 3, hp: 75 }, { type: 'barrel', x: 0.35, y: 2010 },
+          { type: 'laser', x: 0.21, y: 2300, len: 300, on: 1.1, off: 2.2 }, { type: 'laser', x: -0.21, y: 2550, len: 300, on: 1.1, off: 2.2, phase: 1.1 }, { type: 'spikes', x: 0.3, y: 2780, r: 42, on: 2, off: 2 }, { type: 'mover', x: -0.2, y: 3100, len: 110, move: 'spin', speed: 0.14 },
+          { type: 'boost', x: -0.32, y: 3350 }, { type: 'boost', x: 0.32, y: 3350 }],
+        mobs: [{ type: 'guard', x: 0, y: 1050, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.35, y: 1800, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'guard', x: 0, y: 2150, c: 'octo', w: 'gatling', a: 'deflector' }, { type: 'rush', x: -0.3, y: 2700, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 3200, c: 'guardian', w: 'hydrohammer', a: 'titanium' }] },
+      goal: { hp: 220, wave: 4, respawn: 9, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'guard', at: 1, d: 0.64, c: 'guardian', w: 'hydrohammer', a: 'titanium' }],
+        stage: { floor: ['#2f4f5e', '#223944', '#15242b'], props: [{ type: 'ice', at: 6, d: 0.35, r: 70 }, { type: 'laser', at: 12, d: 0.32, len: 160, on: 1.3, off: 2 }, { type: 'magnet', at: 9, d: 0.5, r: 80 }, { type: 'magnet', at: 3, d: 0.5, r: 80, power: -1 }, { type: 'boost', at: 4, d: 0.6, dir: 11 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1700 }, star3: { coins: 1050, box: 'white' } } },
+    { id: '4-9', name: '深海維修槽', boss: true, desc: 'BOSS 是被控制的八爪：它會伸出觸手，觸手伸到你身上就會把你一路拖過去。觸手伸出來時拉開距離就能閃過；被抓到就往反方向大力拖曳。建議金卡。',
+      track: { len: 3400, mobLv: 0.88, floor: ['#1f4a5e', '#163644', '#0d222b'],
+        signs: [{ y: 60, txt: 'START' }, { y: 500, txt: 'DEEP TANK', col: '#00f0ff' }, { y: 1600, txt: 'MAGNET', col: '#ff2a55' }, { y: 2980, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 950, to: 1090 }, { side: 'R', from: 2200, to: 2340 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'ice', x: 0, y: 650, l: 260, w: 380 }, { type: 'bumper', x: -0.4, y: 900 }, { type: 'magnet', x: 0.4, y: 1300, r: 140 }, { type: 'spikes', x: 0.4, y: 1300, r: 34 },
+          { type: 'laser', x: 0.21, y: 1650, len: 300, on: 1.1, off: 2.2 }, { type: 'magnet', x: -0.4, y: 1950, r: 140 }, { type: 'spikes', x: -0.4, y: 1950, r: 30 }, { type: 'boost', x: 0.2, y: 2150 },
+          { type: 'crack', x: 0, y: 2550, len: 380, rot: 3, hp: 75 }, { type: 'barrel', x: -0.3, y: 2610 }, { type: 'barrel', x: 0.3, y: 2610 }, { type: 'boost', x: -0.32, y: 3030 }, { type: 'boost', x: 0.32, y: 3030 }],
+        mobs: [{ type: 'guard', x: 0, y: 1100, c: 'octo', w: 'gatling', a: 'deflector' }, { type: 'rush', x: 0.35, y: 1800, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'guard', x: 0, y: 2400, c: 'octo', w: 'gatling', a: 'deflector' }, { type: 'rush', x: -0.35, y: 2850, c: 'rider', w: 'chainaxe', a: 'carbonvest' }] },
+      boss: { name: '深淵觸手・八爪', c: 'boss_octo', w: 'gatling', a: 'deflector', diff: 'normal', lv: 0.84, hp: 2.0, size: 1.5, lives: 1,
+        stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#1f4a5e', '#163644', '#0d222b'], props: [{ type: 'ice', at: 9, d: 0.55, r: 55 }, { type: 'ice', at: 3, d: 0.55, r: 55 }] },
+        phase2: { props: [{ type: 'magnet', at: 12, d: 0.45, r: 70, power: -1 }], mobs: [{ type: 'guard', at: 9.5, d: 0.5, c: 'octo', w: 'gatling', a: 'deflector' }] },
+        phase3: { props: [{ type: 'spikes', at: 4.5, d: 0.5, r: 40, on: 2, off: 2.5 }, { type: 'spikes', at: 7.5, d: 0.5, r: 40, on: 2, off: 2.5 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 2]],
+      reward: { first: { coins: 2800, box: 'purple' }, star3: { coins: 1700 } } },
+    { id: '4-10', name: '超載發電廠', boss: true, desc: '第四章最終關。BOSS 是被控制的 T-9，有兩條血：「落雷」會在你身邊畫出好幾個光圈，光圈縮完就劈下雷，被劈到會麻痺。看到光圈立刻離開。建議金卡 3 星。',
+      track: { len: 3800, mobLv: 0.9, floor: ['#2e2a5e', '#211e44', '#14122b'],
+        signs: [{ y: 60, txt: 'START' }, { y: 470, txt: 'HIGH VOLTAGE', col: '#7fdfff' }, { y: 1500, txt: 'EM FIELD', col: '#00f0ff' }, { y: 2400, txt: 'LASER GRID', col: '#ff2a55' }, { y: 3380, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1150, to: 1290 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'laser', x: -0.21, y: 600, len: 300, on: 1.1, off: 2.2 }, { type: 'mover', x: 0.3, y: 1000, len: 110, move: 'spin', speed: -0.14 },
+          { type: 'boost', x: 0, y: 1300 }, { type: 'magnet', x: -0.4, y: 1600, r: 140 }, { type: 'spikes', x: -0.4, y: 1600, r: 34 }, { type: 'magnet', x: 0.4, y: 1850, r: 140, power: -1 }, { type: 'crack', x: 0, y: 2100, len: 380, rot: 3, hp: 75 },
+          { type: 'laser', x: 0.21, y: 2400, len: 300, on: 1.1, off: 2.2 }, { type: 'laser', x: -0.21, y: 2600, len: 300, on: 1.1, off: 2.2, phase: 1 }, { type: 'barrel', x: -0.4, y: 2950 }, { type: 'barrel', x: -0.2, y: 2980 }, { type: 'pit', x: 0.45, y: 3050, r: 34 },
+          { type: 'boost', x: -0.32, y: 3430 }, { type: 'boost', x: 0.32, y: 3430 }],
+        mobs: [{ type: 'guard', x: 0, y: 820, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.35, y: 1450, c: 'berserker', w: 'vibrosword', a: 'reactive' }, { type: 'guard', x: 0, y: 2250, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'rush', x: -0.35, y: 3150, c: 'rider', w: 'chainaxe', a: 'carbonvest' }, { type: 'guard', x: 0, y: 3250, c: 'guardian', w: 'hydrohammer', a: 'titanium' }] },
+      boss: { name: '過載核心・T-9', c: 'boss_tesla', w: 'emp', a: 'forcefield', diff: 'normal', lv: 0.88, hp: 0.85, size: 1.6, lives: 2,
+        stage: { exits: [{ at: 6, type: 'DEAD', w: 46 }], ringOut: 0.3, floor: ['#2e2a5e', '#211e44', '#14122b'], props: [{ type: 'magnet', at: 9, d: 0.55, r: 70, power: -1 }, { type: 'magnet', at: 3, d: 0.55, r: 70, power: -1 }] },
+        phase2: { props: [{ type: 'laser', at: 12, d: 0.4, len: 140, on: 1.3, off: 2 }], mobs: [{ type: 'guard', at: 10.5, d: 0.55, c: 'tesla', w: 'emp', a: 'forcefield' }, { type: 'guard', at: 1.5, d: 0.55, c: 'tesla', w: 'emp', a: 'forcefield' }] },
+        phase3: { props: [{ type: 'barrel', at: 7.5, d: 0.55 }, { type: 'barrel', at: 4.5, d: 0.55 }] } },
+      stars: [['win'], ['lives', 2], ['ex', 4]],
+      reward: { first: { coins: 4500, box: 'purple' }, star3: { coins: 2500 } } },
+  ] },
+  { id: 'c5', no: 5, name: '第五章・異哲團聖所', desc: '所有線索都指向異哲團的地下聖所。控制訊號的源頭就在最深處——一個寄生在網路裡的東西。這裡會出現前面所有的機關。', bonus: { coins: 25000, box: 'purple' }, levels: [
+    { id: '5-1', name: '鏡廳入口', desc: '異哲團的聖所入口：冰面、傳送門和雷射一起出現。傳送門的出口剛好在雷射後面，抓好時機就能直接跳過。',
+      track: { len: 3100, mobLv: 0.85, floor: ['#4a2e5e', '#362244', '#21152a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 450, txt: 'SANCTUM', col: '#b84fff' }, { y: 1600, txt: 'WARP', col: '#ff9ae6' }, { y: 2770, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1250, to: 1390 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'ice', x: 0, y: 650, l: 280, w: 380 }, { type: 'laser', x: 0.21, y: 900, len: 300, on: 1.1, off: 2.2 }, { type: 'bumper', x: 0.4, y: 1100 },
+          { type: 'portal', id: 'a', x: -0.45, y: 1550, to: 'b' }, { type: 'portal', id: 'b', x: 0.4, y: 2050 }, { type: 'laser', x: -0.21, y: 1800, len: 300, on: 1.1, off: 1.9 }, { type: 'magnet', x: 0, y: 2300, r: 140, power: -1 },
+          { type: 'spikes', x: -0.4, y: 2500, r: 42, on: 2, off: 2 }, { type: 'boost', x: -0.32, y: 2750 }, { type: 'boost', x: 0.32, y: 2750 }],
+        mobs: [{ type: 'guard', x: 0, y: 1200, c: 'mage', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.3, y: 1650, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'guard', x: 0, y: 2450, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }] },
+      goal: { hp: 230, wave: 4, respawn: 9, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'mage', w: 'emp', a: 'forcefield' }],
+        stage: { floor: ['#4a2e5e', '#362244', '#21152a'], props: [{ type: 'portal', id: 'a', at: 7, d: 0.62, to: 'b' }, { type: 'portal', id: 'b', at: 11.2, d: 0.5 }, { type: 'laser', at: 12, d: 0.3, len: 140, on: 1.3, off: 2 }, { type: 'boost', at: 5, d: 0.6, dir: 11.5 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 3]],
+      reward: { first: { coins: 1800 }, star3: { coins: 1000 } } },
+    { id: '5-2', name: '風之迴廊', desc: '兩邊交錯吹的強風夾著磁鐵：風會把你推進磁場，磁場再把你吸到地刺上。順著風借力，盡量走中線。',
+      track: { len: 3200, mobLv: 0.86, floor: ['#3e3e6e', '#2d2d4f', '#1b1b31'],
+        signs: [{ y: 60, txt: 'START' }, { y: 450, txt: 'GALE', col: '#e9f2ff' }, { y: 1700, txt: 'MAGNET', col: '#ff2a55' }, { y: 2870, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 900, to: 1040 }, { side: 'L', from: 2000, to: 2140 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'wind', x: 0, y: 700, l: 260, w: 380, dir: 3, power: 0.8 }, { type: 'magnet', x: -0.45, y: 1200, r: 130 }, { type: 'spikes', x: -0.45, y: 1200, r: 34 },
+          { type: 'boost', x: 0.2, y: 1400 }, { type: 'wind', x: 0, y: 1750, l: 260, w: 380, dir: 9, power: 0.8 }, { type: 'magnet', x: 0.45, y: 1750, r: 120 }, { type: 'barrel', x: 0.25, y: 2300 }, { type: 'barrel', x: 0.45, y: 2330 },
+          { type: 'mover', x: -0.2, y: 2550, len: 110, move: 'spin', speed: 0.14 }, { type: 'boost', x: -0.32, y: 2850 }, { type: 'boost', x: 0.32, y: 2850 }],
+        mobs: [{ type: 'guard', x: 0, y: 1050, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }, { type: 'rush', x: 0, y: 1550, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2450, c: 'mage', w: 'emp', a: 'forcefield' }] },
+      goal: { hp: 230, wave: 4, respawn: 9, guards: [{ type: 'guard', at: 12, d: 0.62, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }],
+        stage: { floor: ['#3e3e6e', '#2d2d4f', '#1b1b31'], props: [{ type: 'wind', at: 10, d: 0.45, r: 70, dir: 3 }, { type: 'wind', at: 2, d: 0.45, r: 70, dir: 9 }, { type: 'magnet', at: 6, d: 0.3, r: 70, power: -1 }, { type: 'boost', at: 6, d: 0.62, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 1850 }, star3: { coins: 1050 } } },
+    { id: '5-3', name: '不死者墓園', desc: '不死陀螺擋在防火牆前面，牆邊埋著炸藥桶。先把不死者撞到桶邊引爆，順便炸開牆。',
+      track: { len: 3300, mobLv: 0.88, floor: ['#3a3a3a', '#2a2a2a', '#1a1a1a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 470, txt: 'GRAVEYARD', col: '#7fff9e' }, { y: 1700, txt: 'FIREWALL', col: '#ff2a55' }, { y: 2970, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1350, to: 1490 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'barrel', x: -0.3, y: 700 }, { type: 'barrel', x: 0.3, y: 700 }, { type: 'crack', x: 0, y: 760, len: 380, rot: 3, hp: 75 }, { type: 'pit', x: 0.45, y: 1050, r: 34 },
+          { type: 'laser', x: 0.21, y: 1250, len: 300, on: 1.1, off: 2.2 }, { type: 'boost', x: 0, y: 1550 }, { type: 'barrel', x: -0.45, y: 1800 }, { type: 'barrel', x: 0, y: 1800 }, { type: 'barrel', x: 0.45, y: 1800 }, { type: 'crack', x: 0, y: 1860, len: 380, rot: 3, hp: 80 },
+          { type: 'spikes', x: -0.3, y: 2250, r: 42, on: 2, off: 2, skin: 'fire' }, { type: 'spikes', x: 0.3, y: 2450, r: 42, on: 2, off: 2, skin: 'fire', phase: 1 }, { type: 'boost', x: -0.32, y: 2950 }, { type: 'boost', x: 0.32, y: 2950 }],
+        mobs: [{ type: 'rush', x: 0, y: 1100, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 1650, c: 'undead', w: 'hydrohammer', a: 'nanorepair' }, { type: 'rush', x: -0.3, y: 2100, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2700, c: 'mage', w: 'emp', a: 'forcefield' }] },
+      goal: { hp: 240, wave: 4, respawn: 9, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'undead', w: 'hydrohammer', a: 'nanorepair' }, { type: 'rush', at: 1, d: 0.64, c: 'undead', w: 'chainaxe', a: 'powerarmor' }],
+        stage: { floor: ['#3a3a3a', '#2a2a2a', '#1a1a1a'], props: [{ type: 'barrel', at: 10.5, d: 0.4 }, { type: 'barrel', at: 1.5, d: 0.4 }, { type: 'crack', at: 12, d: 0.3, len: 110, rot: 3, hp: 55 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1900 }, star3: { coins: 1100 } } },
+    { id: '5-4', name: '擬態迷宮', desc: '傳送門一個接一個，出口旁邊有雷射和磁鐵。走錯門會被送回前面，走對就能一路跳到終點。',
+      track: { len: 3400, mobLv: 0.90, floor: ['#2e5e5a', '#224441', '#152b28'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'MIMIC', col: '#29e0d0' }, { y: 1700, txt: 'WARP', col: '#ff9ae6' }, { y: 3070, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1100, to: 1240 }, { side: 'L', from: 2400, to: 2540 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'portal', id: 'a', x: -0.45, y: 700, to: 'b' }, { type: 'portal', id: 'b', x: 0.45, y: 1450 }, { type: 'portal', id: 'x', x: 0.45, y: 700, to: 'y' }, { type: 'portal', id: 'y', x: 0, y: 420 },
+          { type: 'laser', x: -0.21, y: 1000, len: 300, on: 1.1, off: 2.1 }, { type: 'magnet', x: -0.3, y: 1300, r: 130 }, { type: 'boost', x: 0.2, y: 1650 }, { type: 'ice', x: 0, y: 1950, l: 260, w: 380 }, { type: 'bumper', x: 0, y: 1950 },
+          { type: 'portal', id: 'c', x: -0.45, y: 2200, to: 'd' }, { type: 'portal', id: 'd', x: 0.3, y: 2750 }, { type: 'laser', x: 0.21, y: 2450, len: 300, on: 1.1, off: 2.1, phase: 0.9 }, { type: 'spikes', x: -0.35, y: 2850, r: 42, on: 2, off: 2 },
+          { type: 'boost', x: -0.32, y: 3050 }, { type: 'boost', x: 0.32, y: 3050 }],
+        mobs: [{ type: 'rush', x: 0, y: 1150, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'guard', x: 0, y: 1800, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }, { type: 'rush', x: 0.3, y: 2350, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'guard', x: 0, y: 2950, c: 'mage', w: 'emp', a: 'forcefield' }] },
+      goal: { hp: 240, wave: 4, respawn: 9, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }, { type: 'rush', at: 1, d: 0.64, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }],
+        stage: { floor: ['#2e5e5a', '#224441', '#152b28'], props: [{ type: 'portal', id: 'a', at: 8, d: 0.6, to: 'b' }, { type: 'portal', id: 'b', at: 10.6, d: 0.62 }, { type: 'laser', at: 12, d: 0.32, len: 140, on: 1.4, off: 2 }, { type: 'ice', at: 4, d: 0.5, r: 55 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 1950 }, star3: { coins: 1150 } } },
+    { id: '5-5', name: '重組工坊', boss: true, desc: '第五章第一個 BOSS。被控制的忒修斯會「重組」：身上冒綠光的時候在回血，這時候用力撞它就能打斷，打斷後它會暈眩一陣子——那是最好的輸出時機。建議金卡 3 星。',
+      track: { len: 3300, mobLv: 0.91, floor: ['#5e5a3a', '#44412a', '#2b291a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'WORKSHOP', col: '#fcee0a' }, { y: 1600, txt: 'LASER GRID', col: '#ff2a55' }, { y: 2880, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1150, to: 1290 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'mover', x: -0.3, y: 650, len: 110, move: 'spin', speed: 0.14 }, { type: 'mover', x: 0.3, y: 900, len: 110, move: 'spin', speed: -0.14 }, { type: 'barrel', x: 0, y: 1050 },
+          { type: 'magnet', x: -0.4, y: 1400, r: 130 }, { type: 'laser', x: -0.21, y: 1650, len: 300, on: 1.1, off: 2.2 }, { type: 'wind', x: 0, y: 2000, l: 240, w: 380, dir: 3, power: 0.7 }, { type: 'pit', x: 0.55, y: 2050, r: 32 },
+          { type: 'crack', x: 0, y: 2400, len: 380, rot: 3, hp: 80 }, { type: 'barrel', x: -0.3, y: 2460 }, { type: 'boost', x: -0.32, y: 2930 }, { type: 'boost', x: 0.32, y: 2930 }],
+        mobs: [{ type: 'guard', x: 0, y: 1200, c: 'theseus', w: 'vibrosword', a: 'nanorepair' }, { type: 'rush', x: 0.3, y: 1850, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2650, c: 'theseus', w: 'vibrosword', a: 'nanorepair' }] },
+      boss: { name: '無限重組・忒修斯', c: 'boss_theseus', w: 'hydrohammer', a: 'nanorepair', diff: 'normal', lv: 0.88, hp: 1.95, size: 1.5, lives: 1,
+        stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#5e5a3a', '#44412a', '#2b291a'], props: [{ type: 'barrel', at: 9, d: 0.6 }, { type: 'barrel', at: 3, d: 0.6 }] },
+        phase2: { props: [{ type: 'laser', at: 12, d: 0.42, len: 140, on: 1.3, off: 2 }], mobs: [{ type: 'guard', at: 9.5, d: 0.5, c: 'theseus', w: 'vibrosword', a: 'nanorepair' }] },
+        phase3: { props: [{ type: 'barrel', at: 7.5, d: 0.55 }, { type: 'barrel', at: 4.5, d: 0.55 }] } },
+      stars: [['win'], ['lives', 2], ['lives', 3]],
+      reward: { first: { coins: 3000, box: 'purple' }, star3: { coins: 1800 } } },
+    { id: '5-6', name: '雷射聖堂', desc: '一整排雷射柵欄輪流亮起，只留一條會移動的安全通道。旁邊的斥力磁鐵會把你推回雷射裡。',
+      track: { len: 3400, mobLv: 0.93, floor: ['#5e2e3e', '#44222d', '#2b151c'],
+        signs: [{ y: 60, txt: 'START' }, { y: 470, txt: 'LASER GRID', col: '#ff2a55' }, { y: 1800, txt: 'LASER GRID', col: '#ff2a55' }, { y: 3070, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1400, to: 1540 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'laser', x: 0.21, y: 600, len: 300, on: 1.1, off: 2.3 }, { type: 'laser', x: -0.21, y: 800, len: 300, on: 1.1, off: 2.3, phase: 0.6 }, { type: 'laser', x: 0.21, y: 1000, len: 300, on: 1.1, off: 2.3, phase: 1.2 },
+          { type: 'magnet', x: 0.4, y: 1300, r: 130, power: -1 }, { type: 'boost', x: -0.2, y: 1550 }, { type: 'laser', x: -0.21, y: 1850, len: 300, on: 1.1, off: 2.3 }, { type: 'laser', x: 0.21, y: 2050, len: 300, on: 1.1, off: 2.3, phase: 0.6 },
+          { type: 'barrel', x: -0.4, y: 2300 }, { type: 'barrel', x: -0.2, y: 2330 }, { type: 'spikes', x: 0.35, y: 2550, r: 42, on: 2, off: 2 }, { type: 'mover', x: 0, y: 2800, len: 110, move: 'spin', speed: 0.14 },
+          { type: 'boost', x: -0.32, y: 3050 }, { type: 'boost', x: 0.32, y: 3050 }],
+        mobs: [{ type: 'guard', x: 0, y: 1150, c: 'mage', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.3, y: 1700, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'guard', x: 0, y: 2200, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }, { type: 'rush', x: -0.3, y: 2900, c: 'undead', w: 'chainaxe', a: 'powerarmor' }] },
+      goal: { hp: 250, wave: 4, respawn: 9, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'mage', w: 'emp', a: 'forcefield' }, { type: 'guard', at: 1, d: 0.64, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }],
+        stage: { floor: ['#5e2e3e', '#44222d', '#2b151c'], props: [{ type: 'laser', at: 12, d: 0.32, len: 160, on: 1.2, off: 2 }, { type: 'laser', at: 6, d: 0.3, len: 120, on: 1.2, off: 2, phase: 1.6 }, { type: 'boost', at: 4.5, d: 0.62, dir: 11.4 }, { type: 'boost', at: 7.5, d: 0.62, dir: 12.6 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 2000 }, star3: { coins: 1200 } } },
+    { id: '5-7', name: '信徒狂潮', desc: '異哲團的信徒陀螺一湧而上：大群衝撞型敵人，夾在強風和炸藥桶之間。',
+      track: { len: 3400, mobLv: 0.95, floor: ['#3e2e5e', '#2d2244', '#1c152a'],
+        signs: [{ y: 60, txt: 'START' }, { y: 520, txt: 'ZEALOTS', col: '#ff2a55' }, { y: 1800, txt: 'GALE', col: '#e9f2ff' }, { y: 3070, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1500, to: 1640 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'barrel', x: -0.35, y: 800 }, { type: 'barrel', x: 0.35, y: 800 }, { type: 'barrel', x: 0, y: 850 }, { type: 'bumper', x: -0.5, y: 1100 }, { type: 'bumper', x: 0.5, y: 1100 },
+          { type: 'wind', x: 0, y: 1600, l: 300, w: 380, dir: 3, power: 0.8 }, { type: 'barrel', x: -0.3, y: 2000 }, { type: 'barrel', x: -0.1, y: 2030 }, { type: 'laser', x: -0.21, y: 2300, len: 300, on: 1.1, off: 2.3 },
+          { type: 'magnet', x: 0.4, y: 2600, r: 120 }, { type: 'spikes', x: 0.4, y: 2600, r: 30 }, { type: 'boost', x: -0.32, y: 3050 }, { type: 'boost', x: 0.32, y: 3050 }],
+        mobs: [{ type: 'rush', x: -0.3, y: 950, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'rush', x: 0.3, y: 1000, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'rush', x: 0, y: 1350, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'rush', x: 0, y: 1950, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'rush', x: 0, y: 2450, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'rush', x: 0, y: 2850, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }] },
+      goal: { hp: 250, wave: 4, respawn: 8, guards: [{ type: 'rush', at: 11, d: 0.6, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'rush', at: 1, d: 0.6, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }],
+        stage: { floor: ['#3e2e5e', '#2d2244', '#1c152a'], props: [{ type: 'barrel', at: 9, d: 0.5 }, { type: 'barrel', at: 3, d: 0.5 }, { type: 'wind', at: 12, d: 0.35, r: 60, dir: 6, power: 0.6 }, { type: 'boost', at: 6, d: 0.6, dir: 12 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 6]],
+      reward: { first: { coins: 2100 }, star3: { coins: 1250, box: 'white' } } },
+    { id: '5-8', name: '最終防線', desc: '全遊戲最難的賽道：冰面、傳送門、強風、炸藥桶、磁鐵、雷射、防火牆全部出現。過了這裡就是最後兩個 BOSS。',
+      track: { len: 3900, mobLv: 0.97, floor: ['#2a2a4a', '#1f1f36', '#131322'],
+        signs: [{ y: 60, txt: 'START' }, { y: 460, txt: 'LAST LINE', col: '#ff2a55' }, { y: 1400, txt: 'GALE', col: '#e9f2ff' }, { y: 2400, txt: 'LASER GRID', col: '#ff2a55' }, { y: 3570, txt: 'GOAL', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 1500, to: 1640 }, { side: 'L', from: 3050, to: 3190 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'ice', x: 0, y: 770, l: 300, w: 380 }, { type: 'bumper', x: 0.3, y: 770 }, { type: 'boost', x: 0, y: 1150 },
+          { type: 'wind', x: 0, y: 1570, l: 260, w: 380, dir: 9, power: 0.6 }, { type: 'barrel', x: -0.4, y: 1850 }, { type: 'barrel', x: -0.2, y: 1880 }, { type: 'crack', x: 0, y: 1950, len: 380, rot: 3, hp: 85 },
+          { type: 'magnet', x: -0.4, y: 2250, r: 130 }, { type: 'spikes', x: -0.4, y: 2250, r: 32 }, { type: 'laser', x: 0.21, y: 2500, len: 300, on: 1.1, off: 2.3 }, { type: 'portal', id: 'a', x: 0.45, y: 2650, to: 'b' }, { type: 'portal', id: 'b', x: 0, y: 3350 },
+          { type: 'laser', x: -0.21, y: 2900, len: 300, on: 1.1, off: 2.3, phase: 1 }, { type: 'mover', x: 0, y: 3150, len: 110, move: 'spin', speed: 0.15 }, { type: 'boost', x: -0.32, y: 3550 }, { type: 'boost', x: 0.32, y: 3550 }],
+        mobs: [{ type: 'guard', x: 0, y: 1050, c: 'mage', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.35, y: 1750, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2150, c: 'theseus', w: 'vibrosword', a: 'nanorepair' }, { type: 'rush', x: -0.3, y: 2750, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'guard', x: 0, y: 3400, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }] },
+      goal: { hp: 260, wave: 4, respawn: 8, guards: [{ type: 'guard', at: 11, d: 0.64, c: 'mage', w: 'emp', a: 'forcefield' }, { type: 'guard', at: 1, d: 0.64, c: 'theseus', w: 'vibrosword', a: 'nanorepair' }],
+        stage: { floor: ['#2a2a4a', '#1f1f36', '#131322'], props: [{ type: 'ice', at: 6, d: 0.35, r: 60 }, { type: 'laser', at: 12, d: 0.32, len: 160, on: 1.2, off: 2 }, { type: 'barrel', at: 10, d: 0.45 }, { type: 'barrel', at: 2, d: 0.45 }, { type: 'magnet', at: 4, d: 0.55, r: 70, power: -1 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 4]],
+      reward: { first: { coins: 2200 }, star3: { coins: 1300, box: 'white' } } },
+    { id: '5-9', name: '石像大廳', boss: true, desc: 'BOSS 是被控制的大衛：它會「投石」，先畫出一條紅色瞄準線，接著石頭沿著線飛過來，打中會被擊飛扣血。看到瞄準線就往旁邊閃。暴怒後一次丟三顆。建議金卡 3 星。',
+      track: { len: 3500, mobLv: 0.88, floor: ['#5e5e66', '#44444a', '#2b2b2f'],
+        signs: [{ y: 60, txt: 'START' }, { y: 500, txt: 'COLOSSUS', col: '#c9ced6' }, { y: 1700, txt: 'EM FIELD', col: '#00f0ff' }, { y: 3080, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'R', from: 2300, to: 2440 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'bumper', x: -0.45, y: 620 }, { type: 'bumper', x: 0.45, y: 620 }, { type: 'laser', x: 0.21, y: 850, len: 300, on: 1.1, off: 2.3 },
+          { type: 'barrel', x: 0.3, y: 1300 }, { type: 'barrel', x: 0.5, y: 1330 }, { type: 'magnet', x: -0.4, y: 1750, r: 130 }, { type: 'magnet', x: 0.4, y: 1950, r: 130, power: -1 }, { type: 'boost', x: 0, y: 2150 },
+          { type: 'crack', x: 0, y: 2600, len: 380, rot: 3, hp: 70 }, { type: 'bumper', x: -0.3, y: 2850 },
+          { type: 'boost', x: -0.32, y: 3130 }, { type: 'boost', x: 0.32, y: 3130 }],
+        mobs: [{ type: 'guard', x: 0, y: 1150, c: 'david', w: 'railgun', a: 'titanium' }, { type: 'rush', x: 0.35, y: 1600, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2450, c: 'david', w: 'railgun', a: 'titanium' }, { type: 'rush', x: -0.35, y: 2950, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }] },
+      boss: { name: '墮落巨像・大衛', c: 'boss_david', w: 'railgun', a: 'titanium', diff: 'normal', lv: 0.85, hp: 1.7, size: 1.55, lives: 1,
+        stage: { exits: [{ at: 6, type: 'DEAD' }], ringOut: 0.35, floor: ['#5e5e66', '#44444a', '#2b2b2f'], props: [{ type: 'bumper', at: 10, d: 0.5 }, { type: 'bumper', at: 2, d: 0.5 }] },
+        phase2: { props: [{ type: 'barrel', at: 12, d: 0.5 }], mobs: [{ type: 'guard', at: 9, d: 0.5, c: 'david', w: 'railgun', a: 'titanium' }, { type: 'guard', at: 3, d: 0.5, c: 'david', w: 'railgun', a: 'titanium' }] },
+        phase3: { props: [{ type: 'magnet', at: 6, d: 0.3, r: 70, power: -1 }] } },
+      stars: [['win'], ['lives', 2], ['kills', 2]],
+      reward: { first: { coins: 3500, box: 'purple' }, star3: { coins: 2000 } } },
+    { id: '5-10', name: '寄生核心', boss: true, desc: '最終關。BOSS 是一切的幕後黑手「宿主」，有三條血：它會輪流「寄生」你（幾秒內拖曳方向上下左右反轉、自動移動失效）和「孵化」小幼體。被寄生時頭上會顯示 REVERSED，拖曳方向反過來想。建議金卡 3 星，隊伍三隻都要強。',
+      track: { len: 4000, mobLv: 0.9, floor: ['#3a1f4a', '#2a1636', '#1a0e22'],
+        signs: [{ y: 60, txt: 'START' }, { y: 480, txt: 'INFECTED', col: '#7fff9e' }, { y: 1500, txt: 'GALE', col: '#e9f2ff' }, { y: 2500, txt: 'LASER GRID', col: '#ff2a55' }, { y: 3580, txt: 'FINAL DASH', col: '#7fdfff' }],
+        gaps: [{ side: 'L', from: 1150, to: 1290 }],
+        props: [{ type: 'boost', x: 0, y: 280 }, { type: 'mover', x: -0.3, y: 620, len: 110, move: 'spin', speed: 0.15 }, { type: 'mover', x: 0.3, y: 1000, len: 110, move: 'spin', speed: -0.15 },
+          { type: 'boost', x: 0, y: 1300 }, { type: 'wind', x: 0, y: 1600, l: 260, w: 380, dir: 3, power: 0.6 }, { type: 'barrel', x: 0.4, y: 1850 }, { type: 'barrel', x: 0.2, y: 1880 }, { type: 'crack', x: 0, y: 1950, len: 380, rot: 3, hp: 70 },
+          { type: 'magnet', x: -0.4, y: 2250, r: 130 }, { type: 'spikes', x: -0.4, y: 2250, r: 32 }, { type: 'laser', x: -0.21, y: 2650, len: 300, on: 1.1, off: 2.3 },
+          { type: 'ice', x: 0, y: 3150, l: 260, w: 380 }, { type: 'bumper', x: 0.35, y: 3250 }, { type: 'boost', x: -0.32, y: 3630 }, { type: 'boost', x: 0.32, y: 3630 }],
+        mobs: [{ type: 'guard', x: 0, y: 820, c: 'mage', w: 'emp', a: 'forcefield' }, { type: 'rush', x: 0.35, y: 1450, c: 'undead', w: 'chainaxe', a: 'powerarmor' }, { type: 'guard', x: 0, y: 2400, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }, { type: 'rush', x: -0.35, y: 3000, c: 'proteus', w: 'plasmascythe', a: 'afterimage' }, { type: 'guard', x: 0, y: 3450, c: 'theseus', w: 'vibrosword', a: 'nanorepair' }] },
+      boss: { name: '幕後黑手・宿主', c: 'boss_host', w: 'plasmascythe', a: 'plasmaplate', diff: 'normal', lv: 0.86, hp: 0.5, size: 1.7, lives: 3,
+        stage: { exits: [{ at: 6, type: 'DEAD', w: 46 }], ringOut: 0.3, floor: ['#3a1f4a', '#2a1636', '#1a0e22'], props: [{ type: 'barrel', at: 9, d: 0.6 }, { type: 'barrel', at: 3, d: 0.6 }] },
+        phase2: { props: [{ type: 'magnet', at: 12, d: 0.42, r: 70, power: -1 }], mobs: [{ type: 'guard', at: 10.5, d: 0.55, c: 'mage', w: 'emp', a: 'forcefield' }, { type: 'guard', at: 1.5, d: 0.55, c: 'maiden', w: 'missilepod', a: 'plasmaplate' }] },
+        phase3: { props: [{ type: 'laser', at: 6, d: 0.3, len: 140, on: 1.2, off: 2 }, { type: 'barrel', at: 7.5, d: 0.55 }, { type: 'barrel', at: 4.5, d: 0.55 }] } },
+      stars: [['win'], ['lives', 2], ['ex', 5]],
+      reward: { first: { coins: 6000, box: 'purple' }, star3: { coins: 3500 } } },
   ] },
 ];
 
@@ -2921,7 +3330,7 @@ function stageTags(st) {
   t.push(S.ringOut === 0 ? (S.wallH >= 36 ? '高牆・不會 RING OUT' : '不會 RING OUT') : S.wallH <= 16 ? '低牆・容易 RING OUT' : S.wallH >= 36 ? '高牆・很難 RING OUT' : '標準牆');
   t.push(S.exits === 'std' ? '標準出口' : !S.exits.length ? '沒有出口' : S.exits.map(e => e.type || 'DEAD').join('＋') + ' 出口');
   if (!S.rails) t.push('沒有 WORMHOLE');
-  const PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區', pit: '陷阱洞', wall: '固定牆', crack: '防火牆', portal: '傳送門', ice: '冰面' }, cnt = {};
+  const PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區', pit: '陷阱洞', wall: '固定牆', crack: '防火牆', portal: '傳送門', ice: '冰面', wind: '強風', barrel: '炸藥桶', magnet: '磁鐵', laser: '雷射柵欄' }, cnt = {};
   for (const p of S.props || []) cnt[p.type] = (cnt[p.type] || 0) + 1;
   for (const k in cnt) t.push(PN[k] + (cnt[k] > 1 ? ' ×' + cnt[k] : ''));
   return t;
@@ -3621,7 +4030,7 @@ function launch(top, dirx, diry, power) {
 function clampDrop(x, y) {
   let c = eClamp(x, y, 38);
   if (inGateZone(c.x, c.y)) { const q = qOf(c.x, c.y); if (q > 0.55) c = { x: CX + (c.x - CX) * 0.55 / q, y: CY + (c.y - CY) * 0.55 / q }; }
-  for (const P of PROPS) if ((P.type === 'bumper' || P.type === 'mover') && !P.dead) { const need = (P.type === 'bumper' ? P.r : P.len / 2 + (P.move === 'slide' ? P.span : 0)) + 34, d = len(c.x - P.x, c.y - P.y); if (d < need) { const n = d ? { x: (c.x - P.x) / d, y: (c.y - P.y) / d } : { x: 1, y: 0 }; c = eClamp(P.x + n.x * need, P.y + n.y * need, 38); } }
+  for (const P of PROPS) if ((P.type === 'bumper' || P.type === 'mover' || P.type === 'barrel') && !P.dead) { const need = (P.type !== 'mover' ? P.r : P.len / 2 + (P.move === 'slide' ? P.span : 0)) + 34, d = len(c.x - P.x, c.y - P.y); if (d < need) { const n = d ? { x: (c.x - P.x) / d, y: (c.y - P.y) / d } : { x: 1, y: 0 }; c = eClamp(P.x + n.x * need, P.y + n.y * need, 38); } }
   { const nr = railNearest(c.x, c.y); if (nr.d < 26) { const q = qOf(c.x, c.y); c = { x: CX + (c.x - CX) * 0.72 / q, y: CY + (c.y - CY) * 0.72 / q }; } }
   return c;
 }
@@ -4105,7 +4514,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
 // The 3 lineup tops are the 3 lives: when one is lost the next launches from where it fell.
 // ===================================================================================
 const TRK = { HW: 190, FUN: 260, ENT_Y: CY + 218 }; // corridor half-width, length of the funnel before the entrance, entrance y
-const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT', 'holdT', 'shHit', 'iceT', 'portCD', 'frzT'];
+const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT', 'holdT', 'shHit', 'iceT', 'portCD', 'frzT', 'lzCD', 'invCtl'];
 const onTrack = () => !!(G && G.track && G.track.zone === 'track');
 const trkHalf = (T, sv) => sv <= T.len - TRK.FUN ? TRK.HW : TRK.HW + (T.gw - TRK.HW) * Math.min(1, (sv - (T.len - TRK.FUN)) / TRK.FUN);
 const LOSE_TEXT = { BREAK: '爆甲', SURVIVE: '停轉', '停轉': '停轉', OUT: '出界', TRAP: '掉進陷阱', DEAD: '掉進 DEAD', BLOOD: '掉進 BLOOD', 'RING OUT': 'RING OUT' };
@@ -4156,6 +4565,7 @@ function trackAuto(me) {
   const T = G.track, foe = G.tops[1]; let tx = CX, ty = me.y - 220;
   if (m !== 'def' && foe && !foe.dead && len(foe.x - me.x, foe.y - me.y) < 240) { tx = foe.x; ty = foe.y; }
   const d = norm(tx - me.x, ty - me.y); let ux = d.x, uy = d.y;
+  for (const P of PROPS) if (P.type === 'laser' && (laserOn(P, G.time) || laserOn(P, G.time + 0.5))) { const S = moverSeg(P, 0), my = (S.y1 + S.y2) / 2, dyl = me.y - my; if (Math.abs(dyl) < 120 && Math.abs(me.x - (S.x1 + S.x2) / 2) < P.len / 2 + 30) { uy += (dyl >= 0 ? 1 : -1) * 2.2; } }
   for (const P of PROPS) if (P.type === 'pit' || (P.type === 'spikes' && spikesOn(P, G.time))) { const dx = me.x - P.x, dy = me.y - P.y, dd = len(dx, dy) || 1, R0 = P.r + 130; if (dd < R0) { const k = (R0 - dd) / R0 * 2.6; ux += dx / dd * k + (dx >= 0 ? 1 : -1) * k; uy += dy / dd * k * 0.5; } } // slip round the side, do not just brake
   const sv = T.y0 - me.y;
   for (const gp of T.gaps) if (sv > gp.from - 80 && sv < gp.to + 80) { const dist = Math.abs(me.x - (CX + gp.side * TRK.HW)); if (dist < 170) ux -= gp.side * (170 - dist) / 170 * 2.4; }
@@ -4220,7 +4630,20 @@ function bossBrain(b, p, h) {
         else addText(p.x, p.y - 56, '逃出時停圈！', '#fcee0a', 20);
         G.flash = 0.15; G.flashCol = '127,223,255'; SFX.round(); } }
     else if ((F.on -= h) <= 0) T.tsf = null; }
-  if (b.stunT > 0 || b.falling) { b.q = null; b.chain = 0; b.wasCh = false; return; }
+  if (T.rings) { for (const R of T.rings) { R.r += 300 * h; if (!R.hit && !p.dead && !(p.invT > 0) && Math.abs(len(p.x - R.x, p.y - R.y) - R.r) < 20) { R.hit = true; const n = norm(p.x - R.x, p.y - R.y + 0.1), dmg = p.s.maxHp * 0.035; p.vx += n.x * 420; p.vy += n.y * 420; p.hitT = Math.max(p.hitT, 0.35); detach(p, 0.3); p.hp = Math.max(1, p.hp - dmg); p.flash = 0.2; addText(p.x, p.y - 44, '-' + Math.round(dmg), '#ff4fd8', 20); comicPop(p.x, p.y - 80, 'BOOM!', 28, '#ffffff', '#ff4fd8', 0.4); } } T.rings = T.rings.filter(R => R.r < 330); if (!T.rings.length) T.rings = null; }
+  if (T.beatQ) { T.beatT += h; while (T.beatQ.length && T.beatT >= T.beatQ[0]) { T.beatQ.shift(); (T.rings = T.rings || []).push({ x: b.x, y: b.y, r: b.rad || TR, hit: false }); wave(b.x, b.y, '255,79,216', 80, 10, 0.3); G.shake = Math.max(G.shake, 6); SFX.wall(800); } if (!T.beatQ.length) T.beatQ = null; }
+  if (T.bolts) { for (const Z of T.bolts) if (Z.t > 0 && (Z.t -= h) <= 0) { Z.fx = 0.35; sparks(Z.x, Z.y, 24, '#7fdfff', 380, true); G.flash = 0.1; G.flashCol = '127,223,255'; G.shake = Math.max(G.shake, 8);
+        if (len(p.x - Z.x, p.y - Z.y) < Z.r && !p.dead && !(p.invT > 0)) { const dmg = p.s.maxHp * 0.08; p.hp = Math.max(1, p.hp - dmg); p.stunT = Math.max(p.stunT, 0.6); p.flash = 0.3; addText(p.x, p.y - 44, '-' + Math.round(dmg), '#7fdfff', 22); comicPop(p.x, p.y - 84, 'ZZZAP!!', 34, '#ffffff', '#00b8d4', 0.6); } }
+      for (const Z of T.bolts) if (Z.t <= 0) Z.fx -= h; T.bolts = T.bolts.filter(Z => Z.t > 0 || Z.fx > 0); if (!T.bolts.length) T.bolts = null; }
+  if (T.grab) { const Gb = T.grab; if (Gb.t > 0) { Gb.t -= h; if (Gb.t <= 0) { if (len(p.x - b.x, p.y - b.y) < 380 && !p.dead) { Gb.pull = 1.6; addText(p.x, p.y - 56, '被觸手抓住了！反方向拖曳！', '#ff4fd8', 20); comicPop(p.x, p.y - 90, 'GRAB!!', 36, '#ffffff', '#b84fff', 0.6); } else { addText(p.x, p.y - 56, '閃過觸手！', '#7fdfff', 20); T.grab = null; } } }
+    else if (Gb.pull > 0) { Gb.pull -= h; const n = norm(b.x - p.x, b.y - p.y), d = len(b.x - p.x, b.y - p.y); if (d > (b.rad || TR) + TR) { p.vx += n.x * 1250 * h; p.vy += n.y * 1250 * h; } b.holdT = Math.max(b.holdT, 0.1); if (Gb.pull <= 0) T.grab = null; } }
+  if (T.rebuild) { const Rb = T.rebuild; Rb.t -= h; b.holdT = Math.max(b.holdT, 0.1); Rb.dmg = (Rb.dmg || 0) + Math.max(0, Rb.hp0 - b.hp); if (Rb.dmg > b.s.maxHp * 0.03) { T.rebuild = null; b.stunT = 1.4; b.weakT = 1.4; comicPop(b.x, b.y - 80, 'INTERRUPT!', 40, '#fcee0a', '#ff2a55', 1); addText(b.x, b.y - 110, '重組被打斷！快攻擊', '#fcee0a', 20); SFX.round(); }
+    else { const add = b.s.maxHp * 0.12 / 2.4 * h; b.hp = Math.min(b.s.maxHp, b.hp + add); Rb.hp0 = b.hp; if (Math.random() < h * 20) sparks(b.x + rnd(-30, 30), b.y + rnd(-30, 30), 2, '#7fff9e', 120); if (Rb.t <= 0) { T.rebuild = null; addText(b.x, b.y - 96, '重組完成', '#7fff9e', 18); } } }
+  if (T.aim) { const A = T.aim; A.t -= h; if (A.t <= 0) { T.aim = null; const base = Math.atan2(A.y - b.y, A.x - b.x), n = b.enraged ? 3 : 1; T.shots = T.shots || [];
+      for (let i = 0; i < n; i++) { const a = base + (i - (n - 1) / 2) * 0.22; T.shots.push({ x: b.x + Math.cos(a) * (b.rad + 6), y: b.y + Math.sin(a) * (b.rad + 6), vx: Math.cos(a) * 820, vy: Math.sin(a) * 820, life: 1.6 }); }
+      comicPop(b.x, b.y - 80, 'FWOOSH!', 30, '#ffffff', '#59606c', 0.5); SFX.launch(); } }
+  if (T.trailT > 0 || b.chargeT > 0 && b.sig === 'trail') { T.trailT = (T.trailT || 0) - h; if (b.chargeT > 0 && T.trailT <= 0) { T.trailT = 0.07; const Q = makeProp({ type: 'spikes', px: b.x, py: b.y, r: 24, skin: 'fire', life: 3.2 }); Q.ph = true; PROPS.push(Q); } }
+  if (b.stunT > 0 || b.falling) { b.q = null; b.chain = 0; b.wasCh = false; if (T.rebuild) T.rebuild = null; if (T.grab && T.grab.pull > 0) T.grab = null; return; }
   if (b.sig === 'wall') { const ta = Math.atan2(p.y - b.y, p.x - b.x); if (b.shA == null) b.shA = ta; const d = ((ta - b.shA + Math.PI * 3) % TAU) - Math.PI; b.shA += clamp(d, -1.2 * h, 1.2 * h); } // the shield turns slowly: get behind it
   if (b.q) { // 連環重砸: three slams, each wider, then the fist is stuck for a moment
     const q = b.q; b.holdT = 0.2; b.vx *= 1 - 6 * h; b.vy *= 1 - 6 * h; q.t -= h;
@@ -4248,11 +4671,37 @@ function bossBrain(b, p, h) {
       const a0 = rnd(0, TAU), n = b.enraged ? 5 : 4;
       for (let i = 0; i < n; i++) { const a = a0 + i * TAU / n, c = eClamp(p.x + Math.cos(a) * 92, p.y + Math.sin(a) * 92, 46), Q = makeProp({ type: 'popup', px: c.x, py: c.y, rot: 3 + a / TAU * 12 + 3 }); Q.ph = true; PROPS.push(Q); sparks(c.x, c.y, 8, '#7fdfff', 160); }
       p.vx *= 0.4; p.vy *= 0.4; comicPop(p.x, p.y - 96, 'SPAM!!', 38, '#fcee0a', '#2b6cff', 0.8); addText(p.x, p.y - 58, '彈窗洗版！撞破它們', '#fcee0a', 20); SFX.round(); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'thorns') { b.sigCD = b.enraged ? 7 : 9; const n = b.enraged ? 6 : 4; // 撒刺: spike patches pop up around the player after a short warning
+      for (let i = 0; i < n; i++) { const a = rnd(0, TAU), rr = i ? rnd(60, 170) : 0, c = eClamp(p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr, 40), Q = makeProp({ type: 'spikes', px: c.x, py: c.y, r: 34, on: 5.2, off: 0.9, life: 6.1 }); Q.t0 = G.time - 5.2; Q.ph = true; PROPS.push(Q); }
+      comicPop(b.x, b.y - 80, 'SPIKE STORM!', 32, '#7fff9e', '#05060a', 0.8); addText(p.x, p.y - 58, '撒刺！看地上的閃光快閃開', '#7fff9e', 20); SFX.round(); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'beat') { b.sigCD = b.enraged ? 5.5 : 7; T.beatQ = [0, 0.55, 1.1].map(d => d); T.beatT = 0; b.holdT = 1.4; // 音浪: three rings of bass from the boss
+      comicPop(b.x, b.y - 80, 'DROP THE BASS!', 30, '#ff4fd8', '#05060a', 0.8); addText(p.x, p.y - 58, '重低音！看準音浪的空檔', '#ff4fd8', 20); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'pounce') { b.sigCD = b.enraged ? 6 : 8; b.teleT = 0.4; b.chain = b.enraged ? 3 : 2; b.chargeCD = Math.max(b.chargeCD, 3); // 連續撲殺
+      comicPop(b.x, b.y - 80, 'NYA!!', 36, '#fcee0a', '#ff2a55', 0.7); addText(p.x, p.y - 58, '連續撲殺！橫向閃開', '#fcee0a', 20); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'grab' && !T.grab) { b.sigCD = b.enraged ? 6.5 : 8.5; T.grab = { t: 0.9, pull: 0 }; addText(p.x, p.y - 58, '觸手來了！拉開距離', '#ff4fd8', 20); SFX.round(); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'storm' && !T.bolts) { b.sigCD = b.enraged ? 6 : 7.5; T.bolts = [{ x: p.x, y: p.y }]; for (let i = 0; i < (b.enraged ? 4 : 2); i++) { const c = eClamp(p.x + rnd(-150, 150), p.y + rnd(-110, 110), 40); T.bolts.push(c); }
+      T.bolts = T.bolts.map(c => ({ x: c.x, y: c.y, r: 58, t: 1.05, fx: 0 })); addText(p.x, p.y - 58, '落雷預告！離開光圈', '#7fdfff', 20); SFX.round(); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'rebuild' && !T.rebuild && b.hp < b.s.maxHp * 0.92) { b.sigCD = b.enraged ? 8 : 10; T.rebuild = { t: 2.4, hp0: b.hp }; comicPop(b.x, b.y - 80, 'REBUILD...', 32, '#7fff9e', '#05060a', 0.8); addText(b.x, b.y - 110, '重組中！快打斷它', '#7fff9e', 20); SFX.round(); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'sling' && !T.aim) { b.sigCD = b.enraged ? 4 : 5.5; T.aim = { t: 0.7, x: p.x, y: p.y }; b.holdT = 0.8; addText(b.x, b.y - 96, '瞄準中！', '#c9ced6', 18); }
+    else if (b.sigCD <= 0 && ok && b.sig === 'parasite') { b.sigCD = b.enraged ? 7.5 : 9.5; T.paraN = (T.paraN || 0) + 1;
+      if (T.paraN % 2) { p.invCtl = 3.5; comicPop(p.x, p.y - 90, 'PARASITE!', 36, '#7fff9e', '#05060a', 0.9); addText(p.x, p.y - 58, '被寄生！拖曳反轉、自動移動失效', '#7fff9e', 20); sparks(p.x, p.y, 24, '#7fff9e', 260, true); }
+      else { for (let i = 0; i < (b.enraged ? 4 : 3); i++) { const a = rnd(0, TAU), c = eClamp(b.x + Math.cos(a) * 90, b.y + Math.sin(a) * 90, 40), m = makeMob({ type: 'rush', c: 'host', w: 'flamer', a: 'hover', hp: 0.22 }, (T.lv.track.mobLv || 0), c.x, c.y); m.rad = 18; T.mobs.push(m); sparks(c.x, c.y, 14, '#7fff9e', 220); }
+        comicPop(b.x, b.y - 80, 'HATCH!', 36, '#7fff9e', '#05060a', 0.8); addText(b.x, b.y - 110, '孵化！幼體出現', '#7fff9e', 20); }
+      SFX.round(); }
     else if (b.sigCD <= 0 && ok && b.sig === 'twin' && !T.hack) { b.sigCD = b.enraged ? 7 : 9; T.hack = { t: 1.5 }; addText(p.x, p.y - 58, '駭入中！快拉開距離', '#ff2a55', 20); SFX.round(); }
     else if (b.sigCD <= 0 && ok && b.sig === 'timestop' && !T.tsf) { b.sigCD = b.enraged ? 7 : 9.5; T.tsf = { x: p.x, y: p.y, r: 140, t: 1.25, on: 0 }; addText(p.x, p.y - 58, '時停預告！快逃出圈外', '#7fdfff', 20); SFX.round(); }
-    else if (b.chargeCD <= 0 && ok) { b.teleT = 0.75; b.chargeCD = b.enraged ? 3.4 : 5; if (b.sig === 'wall') b.chain = T.bossLives < (B.lives || 1) ? 3 : 1; addText(b.x, b.y - 84, b.sig === 'wall' ? '盾牆衝鋒！連續好幾次' : '衝撞預備！快閃開！', '#ff2a55', 20); wave(b.x, b.y, '255,42,85', 150, 8, 0.7); } }
+    else if (b.chargeCD <= 0 && ok) { b.teleT = 0.75; b.chargeCD = b.sig === 'trail' ? (b.enraged ? 2.6 : 3.6) : b.enraged ? 3.4 : 5; if (b.sig === 'wall') b.chain = T.bossLives < (B.lives || 1) ? 3 : 1; addText(b.x, b.y - 84, b.sig === 'wall' ? '盾牆衝鋒！連續好幾次' : '衝撞預備！快閃開！', '#ff2a55', 20); wave(b.x, b.y, '255,42,85', 150, 8, 0.7); } }
 }
 const QUAKE_R = [115, 155, 200];
+// 投石: stones fly straight, hit the player once, stop at the arena wall
+function shotsStep(h) {
+  const T = G.track, p = G.tops[0];
+  for (const S of T.shots) { S.x += S.vx * h; S.y += S.vy * h; S.life -= h;
+    if (qOf(S.x, S.y, 14) > 1) { S.life = 0; sparks(S.x, S.y, 10, '#c9ced6', 200); continue; }
+    if (!p.dead && !(p.invT > 0) && len(p.x - S.x, p.y - S.y) < TR + 12) { S.life = 0; const n = norm(S.vx, S.vy), dmg = p.s.maxHp * 0.055; p.vx += n.x * 560; p.vy += n.y * 560; p.hitT = Math.max(p.hitT, 0.45); p.launchedT = Math.max(p.launchedT, 0.3); detach(p, 0.4); p.hp = Math.max(1, p.hp - dmg); p.flash = 0.25;
+      addText(p.x, p.y - 44, '-' + Math.round(dmg), '#ff2a55', 22); comicPop(p.x, p.y - 84, 'THONK!', 32, '#ffffff', '#59606c', 0.5); sparks(p.x, p.y, 16, '#c9ced6', 280); G.shake = Math.max(G.shake, 8); } }
+  T.shots = T.shots.filter(S => S.life > 0);
+}
 // 零與壹: a look-alike that hunts the player; it breaks in a few hits and is not the real one
 function twinDecoy(b) {
   const T = G.track, bs = T.lv.boss, c = eClamp(b.x + rnd(-120, 120), b.y + rnd(-40, 80), 50), m = makeMob({ type: 'rush', c: bs.c, w: bs.w, a: bs.a }, bs.lv || 0, c.x, c.y);
@@ -4278,7 +4727,8 @@ function trackPhysics(h) {
     collide(p, b, h); if (G.phase !== 'battle') return;
   }
   for (const m of T.mobs) if (!m.dead) { mobStep(m, p, h); collide(p, m, h); if (G.phase !== 'battle') return; }
-  if (T.zone !== 'track') for (const P of PROPS) if (P.life && !P.dead && (P.life -= h) <= 0) { P.dead = true; sparks(P.x, P.y, 10, '#7fdfff', 160); }
+  for (const P of PROPS) { if (P.fuse > 0 && (P.fuse -= h) <= 0) barrelBoom(P); if (P.life && !P.dead && (P.life -= h) <= 0) { P.dead = true; if (P.skin !== 'fire') sparks(P.x, P.y, 10, '#7fdfff', 160); } }
+  if (T.shots) shotsStep(h);
   if (p.dead || p.falling) return;
   if (T.zone === 'track') {
     const sv = T.y0 - p.y; T.best = Math.max(T.best, sv);
@@ -4383,7 +4833,7 @@ function trackEnd(winner, pts, reason) {
   if (winner === 0) {
     const b = G.tops[1];
     if (T.zone === 'boss' && b.boss && b.dead) {
-      if (--T.bossLives > 0) { b.dead = false; b.hp = b.s.maxHp; b.stunT = 1.2; T.phase = 1; b.enraged = false; if (b.base) { b.s.accel = b.base[0]; b.s.maxSpeed = b.base[1]; } PROPS = PROPS.filter(P => !P.ph); for (const m of T.mobs) m.dead = true; G.slowT = 0; b.chargeT = 0; b.teleT = 0; b.chargeCD = 3; b.q = null; b.chain = 0; b.sigCD = 5; T.bountyT = 0; T.hack = null; T.tsf = null; if (b.sig === 'twin') T.twinInit = 0; sparks(b.x, b.y, 40, '#ff2a55', 420, true); p.spin = Math.min(1, p.spin + 0.3); comicPop(CX, CY - 60, 'ONE MORE!', 46, '#ff2a55', '#fcee0a', 1.2); addText(b.x, b.y - 80, `BOSS 還有 ${T.bossLives} 條血！`, '#ff2a55', 22); return; }
+      if (--T.bossLives > 0) { b.dead = false; b.hp = b.s.maxHp; b.stunT = 1.2; T.phase = 1; b.enraged = false; if (b.base) { b.s.accel = b.base[0]; b.s.maxSpeed = b.base[1]; } PROPS = PROPS.filter(P => !P.ph); for (const m of T.mobs) m.dead = true; G.slowT = 0; b.chargeT = 0; b.teleT = 0; b.chargeCD = 3; b.q = null; b.chain = 0; b.sigCD = 5; T.bountyT = 0; T.hack = null; T.tsf = null; if (b.sig === 'twin') T.twinInit = 0; T.rings = T.beatQ = T.bolts = T.grab = T.rebuild = T.aim = null; T.shots = []; sparks(b.x, b.y, 40, '#ff2a55', 420, true); p.spin = Math.min(1, p.spin + 0.3); comicPop(CX, CY - 60, 'ONE MORE!', 46, '#ff2a55', '#fcee0a', 1.2); addText(b.x, b.y - 80, `BOSS 還有 ${T.bossLives} 條血！`, '#ff2a55', 22); return; }
       G.score = [1, 0]; G.phase = 'trackEnd'; T.endT = 2.4; G.joy = null; showBanner('BOSS BREAK!! STAGE CLEAR', 2.4, '#fcee0a'); updateExBtn(); return;
     }
     for (const m of T.mobs) if (m.dead && !m.counted) { m.counted = true; if (m.decoy) { comicPop(m.x, m.y - 70, 'FAKE!', 40, '#29e0d0', '#05060a', 0.9); addText(m.x, m.y - 40, '是分身！', '#29e0d0', 20); } T.kills++; p.spin = Math.min(1, p.spin + 0.2); if (p.markT <= 0) p.energy = Math.min(100, p.energy + 20); addText(p.x, p.y - 66, '轉速回復！', '#7fdfff', 18); }
@@ -4498,6 +4948,17 @@ function drawBossFx(g) {
     g.strokeStyle = '#05060a'; g.lineWidth = 13; g.beginPath(); g.arc(b.x, b.y, R0, b.shA - 1.13, b.shA + 1.13); g.stroke();
     g.strokeStyle = b.shHit > 0 ? '#ffffff' : '#fcee0a'; g.lineWidth = 7; g.stroke();
     g.strokeStyle = '#ff2a55'; g.lineWidth = 2; g.beginPath(); g.arc(b.x, b.y, R0 + 1, b.shA - 1.0, b.shA + 1.0); g.stroke(); g.restore(); }
+  if (T.rings) for (const R of T.rings) { g.save(); g.strokeStyle = '#05060a'; g.lineWidth = 12; g.beginPath(); g.arc(R.x, R.y, R.r, 0, TAU); g.stroke(); g.strokeStyle = '#ff4fd8'; g.lineWidth = 7; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.stroke(); g.restore(); }
+  if (T.bolts) for (const Z of T.bolts) { g.save();
+    if (Z.t > 0) { const k = 1 - Z.t / 1.05; g.fillStyle = `rgba(127,223,255,${0.1 + 0.2 * k})`; g.beginPath(); g.arc(Z.x, Z.y, Z.r, 0, TAU); g.fill(); g.strokeStyle = Math.sin(G.time * 30) > 0 ? '#ffffff' : '#7fdfff'; g.lineWidth = 3; g.setLineDash([8, 6]); g.stroke(); g.setLineDash([]); g.strokeStyle = '#fcee0a'; g.lineWidth = 4; g.beginPath(); g.arc(Z.x, Z.y, Z.r * (1 - k), 0, TAU); g.stroke(); }
+    else { g.strokeStyle = `rgba(255,255,255,${Z.fx / 0.35})`; g.lineWidth = 6; g.beginPath(); let x = Z.x, y = Z.y - 420; g.moveTo(x, y); for (let i = 0; i < 8; i++) { x = Z.x + rnd(-22, 22); y += 420 / 8; g.lineTo(x, y); } g.stroke(); g.strokeStyle = `rgba(127,223,255,${Z.fx / 0.35})`; g.lineWidth = 14; g.globalAlpha = 0.4; g.stroke(); }
+    g.restore(); }
+  if (T.grab) { const pr = T.grab.t > 0 ? 1 - T.grab.t / 0.9 : 1, ex = b.x + (p.x - b.x) * pr, ey = b.y + (p.y - b.y) * pr;
+    g.save(); g.lineCap = 'round'; g.strokeStyle = '#05060a'; g.lineWidth = 16; const wig = k => Math.sin(G.time * 12 + k * 6) * 10 * (1 - pr * 0.5); g.beginPath(); for (let i = 0; i <= 12; i++) { const k = i / 12, x = b.x + (ex - b.x) * k, y = b.y + (ey - b.y) * k, n = norm(-(ey - b.y), ex - b.x); i ? g.lineTo(x + n.x * wig(k), y + n.y * wig(k)) : g.moveTo(x, y); } g.stroke(); g.strokeStyle = '#b84fff'; g.lineWidth = 10; g.stroke(); g.strokeStyle = '#ff9ae6'; g.lineWidth = 3; g.stroke(); g.restore(); }
+  if (T.rebuild) { g.save(); g.strokeStyle = '#7fff9e'; g.lineWidth = 4; g.setLineDash([10, 8]); g.lineDashOffset = -G.time * 60; g.beginPath(); g.arc(b.x, b.y, (b.rad || TR) + 16, 0, TAU); g.stroke(); g.setLineDash([]); g.restore(); }
+  if (T.aim) { g.save(); g.strokeStyle = Math.sin(G.time * 30) > 0 ? '#ff2a55' : '#fcee0a'; g.lineWidth = 3; g.setLineDash([12, 8]); g.beginPath(); g.moveTo(b.x, b.y); const a = Math.atan2(T.aim.y - b.y, T.aim.x - b.x); g.lineTo(b.x + Math.cos(a) * 520, b.y + Math.sin(a) * 520); g.stroke(); g.setLineDash([]); g.restore(); }
+  if (T.shots) for (const S of T.shots) { g.save(); g.fillStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.arc(S.x + 3, S.y + 5, 13, 0, TAU); g.fill(); g.fillStyle = '#8a919c'; g.strokeStyle = '#05060a'; g.lineWidth = 3; g.beginPath(); g.arc(S.x, S.y - 10, 13, 0, TAU); g.fill(); g.stroke(); g.fillStyle = '#c9ced6'; g.beginPath(); g.arc(S.x - 4, S.y - 14, 4, 0, TAU); g.fill(); g.restore(); }
+  if (p.invCtl > 0 && !p.dead) upright(g, p.x, p.y - 58, () => { g.font = 'italic 900 14px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText(`REVERSED ${Math.ceil(p.invCtl)}`, 0, 0); g.fillStyle = '#7fff9e'; g.fillText(`REVERSED ${Math.ceil(p.invCtl)}`, 0, 0); });
   if (T.tsf) { const F = T.tsf, warn = F.t > 0, k = warn ? 1 - F.t / 1.25 : 1;
     g.save(); g.fillStyle = warn ? `rgba(127,223,255,${0.08 + 0.14 * k})` : 'rgba(127,223,255,.22)'; g.beginPath(); g.arc(F.x, F.y, F.r, 0, TAU); g.fill();
     g.strokeStyle = '#05060a'; g.lineWidth = 7; g.stroke(); g.strokeStyle = '#7fdfff'; g.lineWidth = 3.5; g.stroke();
@@ -4516,7 +4977,7 @@ function drawBossFx(g) {
 // red alarm light over the whole screen while the BOSS is up: slow pulse, faster and stronger when it winds up or rages
 function bossAlarm(g) {
   const T = G.track, b = T.boss; if (T.zone !== 'boss' || b.dead || G.phase === 'final') return;
-  const hot = b.enraged || b.teleT > 0 || b.q || T.bountyT > 0 || T.tsf || T.hack, pu = Math.pow(0.5 + 0.5 * Math.sin(G.time * (hot ? 7 : 4.2)), 2), a = (hot ? 0.36 : 0.2) * pu + 0.04;
+  const hot = b.enraged || b.teleT > 0 || b.q || T.bountyT > 0 || T.tsf || T.hack || T.rings || T.bolts || T.grab || T.rebuild || T.aim, pu = Math.pow(0.5 + 0.5 * Math.sin(G.time * (hot ? 7 : 4.2)), 2), a = (hot ? 0.36 : 0.2) * pu + 0.04;
   g.save(); g.setTransform(scale, 0, 0, scale, 0, 0);
   const gr = g.createRadialGradient(W / 2, H / 2, H * 0.26, W / 2, H / 2, H * 0.62); gr.addColorStop(0, 'rgba(255,20,50,0)'); gr.addColorStop(1, `rgba(255,20,50,${a})`);
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
@@ -4542,7 +5003,7 @@ function levelFoe(lv) {
 }
 function levelTags(lv) {
   if (!lv.track) return stageTags(lv.stage);
-  const tr = lv.track, t = ['賽道關・3 條命'], PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區', pit: '陷阱洞', wall: '固定牆', crack: '防火牆', portal: '傳送門', ice: '冰面' }, cnt = {};
+  const tr = lv.track, t = ['賽道關・3 條命'], PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區', pit: '陷阱洞', wall: '固定牆', crack: '防火牆', portal: '傳送門', ice: '冰面', wind: '強風', barrel: '炸藥桶', magnet: '磁鐵', laser: '雷射柵欄' }, cnt = {};
   if ((tr.gaps || []).length) t.push('牆有缺口');
   for (const p of tr.props || []) cnt[p.type] = 1;
   for (const k in cnt) t.push(PN[k]);
@@ -4575,6 +5036,22 @@ function propStep(t, h) {
       sparks(t.x, t.y, 14, '#7fdfff', 240, true); t.x = Q.x + d.x * (Q.r + 8); t.y = Q.y + d.y * (Q.r + 8); t.portCD = 0.8; t.onRing = false; t.vx = d.x * Math.max(sp, 360); t.vy = d.y * Math.max(sp, 360);
       P.hitAt = Q.hitAt = G.time; sparks(t.x, t.y, 18, '#ff9ae6', 280, true); wave(Q.x, Q.y, '255,154,230', 70, 5, 0.35);
       if (t.side === 0 && !t.mob) { addText(t.x, t.y - 40, 'WARP!', '#ff9ae6', 22); SFX.boost(); }
+    } else if (P.type === 'wind') {
+      const inside = P.r ? len(t.x - P.x, t.y - P.y) < P.r : Math.abs(t.x - P.x) < P.w / 2 && Math.abs(t.y - P.y) < P.l / 2;
+      if (inside && !t.mob) { const a = clockAng(P.dir), f = 900 * P.power * h; t.vx += Math.cos(a) * f; t.vy += Math.sin(a) * f; }
+    } else if (P.type === 'magnet') {
+      const dx = P.x - t.x, dy = P.y - t.y, d = len(dx, dy);
+      if (d < P.r && d > 4 && !t.mob) { const f = 1100 * P.power * (1 - d / P.r) * h; t.vx += dx / d * f; t.vy += dy / d * f; }
+    } else if (P.type === 'barrel') {
+      if (P.dead) continue;
+      const dx = t.x - P.x, dy = t.y - P.y, d = len(dx, dy), R0 = P.r + PROP_TR;
+      if (d < R0 && d > 0) { const nx = dx / d, ny = dy / d, vn = -(t.vx * nx + t.vy * ny); t.x = P.x + nx * R0; t.y = P.y + ny * R0; if (vn > 0) { t.vx += nx * vn * 1.6; t.vy += ny * vn * 1.6; } if (vn > 110 || t.chargeT > 0) barrelBoom(P); }
+    } else if (P.type === 'laser') {
+      if (!laserOn(P, T)) continue;
+      const S = moverSeg(P, 0), ex = S.x2 - S.x1, ey = S.y2 - S.y1, k = clamp(((t.x - S.x1) * ex + (t.y - S.y1) * ey) / (ex * ex + ey * ey), 0, 1), cx = S.x1 + ex * k, cy = S.y1 + ey * k;
+      const dx = t.x - cx, dy = t.y - cy, d = len(dx, dy), R0 = PROP_TR + 4;
+      if (d < R0 && d > 0) { const nx = dx / d, ny = dy / d, vn = -(t.vx * nx + t.vy * ny); t.x = cx + nx * R0; t.y = cy + ny * R0; t.vx += nx * (Math.max(vn, 0) * 1.7 + 260); t.vy += ny * (Math.max(vn, 0) * 1.7 + 260);
+        if (!(t.lzCD > 0) && !(t.invT > 0)) { t.lzCD = 0.5; const dmg = t.s.maxHp * (t.mob ? 0.2 : t.boss ? 0.02 : 0.04); t.hp = Math.max(t.mob ? 0 : 1, t.hp - dmg); t.flash = 0.2; sparks(cx, cy, 16, '#ff2a55', 300, true); if (t.side === 0 && !t.mob) { addText(t.x, t.y - 44, '-' + Math.round(dmg), '#ff2a55', 20); SFX.wall(700); } if (t.mob && t.hp <= 0) { t.dead = true; } } }
     } else if (P.type === 'ice') {
       const inside = P.r ? len(t.x - P.x, t.y - P.y) < P.r : Math.abs(t.x - P.x) < P.w / 2 && Math.abs(t.y - P.y) < P.l / 2;
       if (inside) { t.iceT = 0.1; if (t.side === 0 && !t.mob && !(t.iceTip > 0) && G.time - (t.iceAt || -9) > 3) { addText(t.x, t.y - 36, '好滑！', '#a8fbff', 18); t.iceAt = G.time; } }
@@ -4606,6 +5083,17 @@ function propStep(t, h) {
   }
   if (t.padT > 0) t.padT -= h; if (t.spikeT > 0) t.spikeT -= h;
 }
+const laserOn = (P, T) => ((T + P.phase) % (P.on + P.off) + (P.on + P.off)) % (P.on + P.off) < P.on;
+// explosive barrel: everything close is thrown outward and hurt; nearby barrels go off a moment later
+function barrelBoom(P) {
+  if (P.dead) return; P.dead = true; const R0 = 125, tops = G.track ? [G.tops[0], G.tops[1], ...G.track.mobs] : G.tops;
+  for (const t of tops) { if (!t || t.dead || t.ghost) continue; const dx = t.x - P.x, dy = t.y - P.y, d = len(dx, dy); if (d > R0) continue;
+    const n = d > 1 ? { x: dx / d, y: dy / d } : { x: 0, y: -1 }, k = 1 - d / R0, kb = 260 + 560 * k; t.vx += n.x * kb; t.vy += n.y * kb; t.hitT = Math.max(t.hitT, 0.4); t.launchedT = Math.max(t.launchedT, 0.3); detach(t, 0.4);
+    if (!(t.invT > 0)) { const dmg = t.s.maxHp * (t.mob ? 0.45 : t.boss ? 0.05 : 0.07) * (0.5 + 0.5 * k); t.hp = Math.max(t.mob ? 0 : 1, t.hp - dmg); t.flash = 0.25; if (t.mob && t.hp <= 0) t.dead = true; } }
+  sparks(P.x, P.y, 50, '#ff7a1a', 520, true); sparks(P.x, P.y, 30, '#fcee0a', 380, true); wave(P.x, P.y, '255,122,26', R0, 14, 0.5); comicPop(P.x, P.y - 60, 'KA-BOOM!!', 44, '#fcee0a', '#ff2a55', 0.9);
+  G.shake = Math.max(G.shake, 14); G.flash = 0.12; G.flashCol = '255,160,60'; SFX.gate(); SFX.wall(1000);
+  for (const Q of PROPS) if (Q.type === 'barrel' && !Q.dead && !(Q.fuse > 0) && len(Q.x - P.x, Q.y - P.y) < R0) Q.fuse = 0.15; // chain reaction a beat later
+}
 // breakable wall / popup: ram it hard enough and it takes damage like the goal door
 function crackHit(P, t, vn, cx, cy) {
   if (vn < 120 || P.dead) return;
@@ -4636,7 +5124,7 @@ function stepTop(t, foe, h) {
 
   // input
   let u = { x: 0, y: 0 };
-  if (t.stunT <= 0) { if (t.side === 0) { u = playerInput(t); if (!u.x && !u.y && !G.joy) { const a = playerAutoInput(t, foe); if (a) u = a; } } else u = aiInput(t, foe, h); }
+  if (t.stunT <= 0) { if (t.side === 0) { u = playerInput(t); if (t.invCtl > 0) u = { ...u, x: -u.x, y: -u.y }; else if (!u.x && !u.y && !G.joy) { const a = playerAutoInput(t, foe); if (a) u = a; } } else u = aiInput(t, foe, h); }
   if (PROPS.length && t.side === 1) u = propAvoid(t, u);
   if (t.chargeT > 0 || t.teleT > 0 || t.holdT > 0 || t.frzT > 0) u = { x: 0, y: 0 };
   if (t.frzT > 0) { t.vx *= 1 - Math.min(1, 9 * h); t.vy *= 1 - Math.min(1, 9 * h); } // caught in a time-stop field
@@ -5264,6 +5752,38 @@ function drawPropsFloor(g, time) {
       g.restore(); g.save(); g.beginPath(); if (P.r) g.arc(P.x, P.y, P.r, 0, TAU); else g.rect(P.x - P.w / 2, P.y - P.l / 2, P.w, P.l);
       g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = '#a8fbff'; g.lineWidth = 2.5; g.setLineDash([10, 7]); g.stroke(); g.setLineDash([]); g.restore(); continue;
     }
+    if (P.type === 'wind') {
+      const a = clockAng(P.dir), ca = Math.cos(a), sa = Math.sin(a), R0 = P.r || Math.max(P.w, P.l) / 2;
+      g.save(); g.beginPath(); if (P.r) g.arc(P.x, P.y, P.r, 0, TAU); else g.rect(P.x - P.w / 2, P.y - P.l / 2, P.w, P.l); g.fillStyle = 'rgba(200,255,240,.12)'; g.fill(); g.clip();
+      g.lineCap = 'round';
+      for (let k = 0; k < 14; k++) { const ph = (time * 1.6 * P.power + k * 0.37) % 1, off = ((k * 53) % 100 / 100 - 0.5) * 2 * R0, cx = P.x - ca * R0 + ca * ph * R0 * 2 - sa * off, cy = P.y - sa * R0 + sa * ph * R0 * 2 + ca * off;
+        g.strokeStyle = `rgba(230,255,250,${0.65 * Math.sin(ph * Math.PI)})`; g.lineWidth = 3; g.beginPath(); g.moveTo(cx - ca * 34, cy - sa * 34); g.lineTo(cx, cy); g.stroke();
+        g.beginPath(); g.moveTo(cx - ca * 8 - sa * 6, cy - sa * 8 + ca * 6); g.lineTo(cx, cy); g.lineTo(cx - ca * 8 + sa * 6, cy - sa * 8 - ca * 6); g.stroke(); }
+      g.restore(); g.save(); g.beginPath(); if (P.r) g.arc(P.x, P.y, P.r, 0, TAU); else g.rect(P.x - P.w / 2, P.y - P.l / 2, P.w, P.l); g.strokeStyle = 'rgba(230,255,250,.55)'; g.lineWidth = 2; g.setLineDash([4, 10]); g.stroke(); g.setLineDash([]); g.restore();
+      upright(g, P.x, P.y, () => { g.font = 'italic 900 14px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText('WIND ' + (Math.abs(ca) > 0.7 ? (ca > 0 ? '▶' : '◀') : sa > 0 ? '▼' : '▲'), 0, 0); g.fillStyle = '#d8fff6'; g.fillText('WIND ' + (Math.abs(ca) > 0.7 ? (ca > 0 ? '▶' : '◀') : sa > 0 ? '▼' : '▲'), 0, 0); });
+      continue;
+    }
+    if (P.type === 'magnet') {
+      const pull = P.power > 0, col = pull ? '255,79,216' : '0,240,255';
+      g.save(); g.fillStyle = `rgba(${col},.08)`; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill();
+      for (let k = 0; k < 4; k++) { const ph = ((pull ? -time : time) * 0.7 + k / 4) % 1, f = (ph + 1) % 1; g.strokeStyle = `rgba(${col},${0.55 * Math.sin(f * Math.PI)})`; g.lineWidth = 3; g.beginPath(); g.arc(P.x, P.y, P.r * f, 0, TAU); g.stroke(); }
+      g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y, 16, 0, TAU); g.fill(); g.fillStyle = pull ? '#ff4fd8' : '#00f0ff'; g.beginPath(); g.arc(P.x, P.y, 11, 0, TAU); g.fill();
+      g.fillStyle = '#05060a'; g.fillRect(P.x - 2, P.y - 11, 4, 22); g.restore();
+      upright(g, P.x, P.y - 22, () => { g.font = 'italic 900 12px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = '#05060a'; g.strokeText(pull ? 'MAGNET' : 'REPEL', 0, 0); g.fillStyle = pull ? '#ff9ae6' : '#7fdfff'; g.fillText(pull ? 'MAGNET' : 'REPEL', 0, 0); });
+      continue;
+    }
+    if (P.type === 'laser') {
+      const S = moverSeg(P, 0), on = laserOn(P, time), soon = !on && laserOn(P, time + 0.5), hz2 = 14 / VIEW_K;
+      g.save(); g.lineCap = 'round';
+      if (on) { g.strokeStyle = 'rgba(255,42,85,.35)'; g.lineWidth = 16; g.beginPath(); g.moveTo(S.x1, S.y1 - hz2); g.lineTo(S.x2, S.y2 - hz2); g.stroke(); g.strokeStyle = '#ff2a55'; g.lineWidth = 6; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.stroke(); }
+      else { g.strokeStyle = soon && Math.sin(time * 40) > 0 ? '#fcee0a' : 'rgba(255,42,85,.35)'; g.lineWidth = 2; g.setLineDash([6, 8]); g.beginPath(); g.moveTo(S.x1, S.y1 - hz2); g.lineTo(S.x2, S.y2 - hz2); g.stroke(); g.setLineDash([]); }
+      for (const [px, py] of [[S.x1, S.y1], [S.x2, S.y2]]) { g.fillStyle = '#262e35'; g.fillRect(px - 7, py - hz2 - 6, 14, hz2 + 6); g.strokeStyle = '#05060a'; g.lineWidth = 2; g.strokeRect(px - 7, py - hz2 - 6, 14, hz2 + 6); g.fillStyle = on ? '#ff2a55' : '#59606c'; g.beginPath(); g.arc(px, py - hz2, 5, 0, TAU); g.fill(); }
+      g.restore(); continue;
+    }
+    if (P.type === 'spikes' && P.skin === 'fire') { if (P.dead) continue;
+      const on = spikesOn(P, time); g.save(); g.fillStyle = on ? 'rgba(255,122,26,.35)' : 'rgba(255,122,26,.12)'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill();
+      if (on) for (let k = 0; k < 5; k++) { const a = k * 1.256 + time * 3, fx = P.x + Math.cos(a) * P.r * 0.45, fy = P.y + Math.sin(a) * P.r * 0.45; upright(g, fx, fy, () => { const hh = 10 + 6 * Math.sin(time * 18 + k); g.fillStyle = '#ff7a1a'; g.beginPath(); g.moveTo(-6, 0); g.quadraticCurveTo(-4, -hh, 0, -hh * 1.4); g.quadraticCurveTo(4, -hh, 6, 0); g.closePath(); g.fill(); g.fillStyle = '#fcee0a'; g.beginPath(); g.moveTo(-3, 0); g.quadraticCurveTo(0, -hh * 0.8, 3, 0); g.fill(); }); }
+      g.restore(); continue; }
     if (P.type === 'portal') {
       const io = !!P.dst, c1 = io ? '#7fdfff' : '#ff9ae6', c2 = io ? '#ff9ae6' : '#7fdfff', hit = time - P.hitAt < 0.3, r = P.r;
       g.save(); g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y, r + 5, 0, TAU); g.fill();
@@ -5282,7 +5802,8 @@ function drawPropsFloor(g, time) {
       g.restore(); continue;
     }
     if (P.type === 'spikes') {
-      const on = spikesOn(P, time), cyc = P.on + P.off, warn = !on && P.on && (time % cyc) > cyc - 0.7;
+      if (P.dead) continue;
+      const on = spikesOn(P, time), cyc = P.on + P.off, warn = !on && P.on && (((time - (P.t0 || 0)) % cyc) + cyc) % cyc > cyc - 0.7;
       g.save(); g.fillStyle = on ? 'rgba(255,42,85,.3)' : 'rgba(255,42,85,.08)'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill();
       g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke();
       g.strokeStyle = warn && Math.sin(time * 30) > 0 ? '#fcee0a' : '#ff2a55'; g.lineWidth = 2.5; g.setLineDash([8, 6]); g.lineDashOffset = -time * 20; g.stroke(); g.setLineDash([]);
@@ -5306,6 +5827,13 @@ function drawPropsFloor(g, time) {
 }
 function drawPropRaised(g, P) {
   const hz = 16 / VIEW_K, hit = G.time - P.hitAt < 0.22;
+  if (P.type === 'barrel') { const { x, y, r } = P, bh = 26 / VIEW_K;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(x + 4, y + 5, r + 3, 0, TAU); g.fill();
+    g.beginPath(); g.moveTo(x - r, y - bh); g.lineTo(x - r, y); g.arc(x, y, r, Math.PI, 0, true); g.lineTo(x + r, y - bh); g.closePath(); g.fillStyle = '#c4202e'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke();
+    g.save(); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x - r, y - bh * 0.62, r * 2, bh * 0.22); g.fillStyle = '#05060a'; for (let k = -3; k <= 3; k++) g.fillRect(x + k * 9 - 2, y - bh * 0.62, 4, bh * 0.22); g.fillStyle = 'rgba(5,6,10,.35)'; g.fillRect(x + r * 0.3, y - bh, r, bh + r); g.restore();
+    g.fillStyle = '#e8434f'; g.beginPath(); g.arc(x, y - bh, r, 0, TAU); g.fill(); g.lineWidth = 3; g.stroke(); g.strokeStyle = '#7a0d16'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - bh, r * 0.62, 0, TAU); g.stroke();
+    upright(g, x, y - bh - 2, () => { g.font = '900 13px sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = '#05060a'; g.strokeText('☢', 0, 5); g.fillStyle = '#fcee0a'; g.fillText('☢', 0, 5); });
+    return; }
   if (P.type === 'bumper') {
     const { x, y, r } = P;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(x + 4, y + 5, r + 3, 0, TAU); g.fill();
@@ -5646,7 +6174,7 @@ function render() {
   { // tops and raised props (pillars, bars) drawn farther first
     const items = G.tops.map(t => ({ y: t.y, f: () => drawTopWorld(g, t) }));
     if (G.track) { for (const m of G.track.mobs) if (!m.dead) items.push({ y: m.y, f: () => drawTopWorld(g, m) }); if (G.track.zone === 'track') items.push({ y: G.track.boss.y, f: () => drawTopWorld(g, G.track.boss) }); }
-    for (const P of PROPS) if ((P.type === 'bumper' || P.type === 'mover') && !P.dead) { const S = P.type === 'mover' ? moverSeg(P, G.time) : null; items.push({ y: S ? (S.y1 + S.y2) / 2 : P.y, f: () => drawPropRaised(g, P) }); }
+    for (const P of PROPS) if ((P.type === 'bumper' || P.type === 'mover' || P.type === 'barrel') && !P.dead) { const S = P.type === 'mover' ? moverSeg(P, G.time) : null; items.push({ y: S ? (S.y1 + S.y2) / 2 : P.y, f: () => drawPropRaised(g, P) }); }
     items.sort((a, b) => a.y - b.y).forEach(it => it.f()); }
   if (G.track) drawBossFx(g);
   for (const w of G.waves) {
