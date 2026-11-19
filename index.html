@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.26.2</title>
+<title>SPIN! SPIN! v0.26.3</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -64,7 +64,7 @@ h1{font-size:1.9em;margin:.3em 0 .1em;letter-spacing:.08em;background:linear-gra
 .vsrow .t{font-size:.72em;line-height:1.35}
 #gacha{padding:0;justify-content:flex-start;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#2a1660 0%,#0b0b16 75%)}
 #packCv{width:100%;aspect-ratio:540/860;touch-action:none;display:block}
-#gachaBar{position:absolute;bottom:4%;left:0;right:0;display:none;justify-content:center;align-items:center;gap:.4em}
+#gachaBar{position:absolute;bottom:4%;left:0;right:0;display:none;flex-wrap:wrap;justify-content:center;align-items:center;gap:.6em 2.2em;padding:0 6%}#gachaBar #gachaOk{order:3;flex:0 0 100%;margin-top:.5em}
 #gachaOk{animation:pulse 1.2s infinite;margin:0}
 .gMore{margin:0;font-size:.8em;padding:.55em .7em;line-height:1.2}.gMore small{display:block;font-size:.75em}
 .gMore:disabled{opacity:.35}
@@ -109,7 +109,9 @@ html,body{background:#050607}
 #nav .ndot{position:absolute;top:.35em;right:26%;width:.62em;height:.62em;border-radius:50%;background:#ff2a55;border:2px solid #05060a;display:none}#nav .ndot.on{display:block}
 #nav.battle{opacity:.8}
 /* the nav replaces these: */
-#drawOpen,#storyOpen,#questOpen{display:none !important}
+#drawOpen,#storyOpen,#questOpen,#storyBack,#questBack{display:none !important}
+.pairBtns{display:flex;gap:.8em;width:100%;max-width:22em;margin-top:.6em}.pairBtns .btn{flex:1;margin:0;white-space:nowrap;padding-left:.4em;padding-right:.4em}
+#topRight.menu .topB{display:block}
 #wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);z-index:50}
 .screen{background:linear-gradient(rgba(0,240,255,.04) 1px,transparent 1px) 0 0/100% 1.6em,radial-gradient(ellipse at 50% 12%,rgba(0,240,255,.14) 0%,#07090c 62%)}
 h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Rajdhani,"Noto Sans TC",sans-serif;font-weight:700;letter-spacing:.12em;text-shadow:2px 0 #00f0ff,-2px 0 #ff2a55;text-transform:uppercase}
@@ -506,7 +508,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   <div id="exMeter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <button id="assistBtn"><span class="asRing"><img id="assistImg" alt=""></span><b id="assistTag">支援</b><u id="assistFill"></u></button>
   <div id="autoBar"><button id="spdBtn" class="autoTog"><b>SPEED</b><i>1×</i></button><button id="autoBtn" class="autoTog"><b>AUTO</b><i>OFF</i></button><button id="autoExBtn" class="autoTog"><b>EX</b><i>OFF</i></button><button id="autoMoveBtn" class="autoTog move"><b>MOVE</b><i>OFF</i></button></div>
-  <button id="menuBtn">選單</button>
+  <button id="menuBtn">✕ 離開</button>
   <div id="topRight"><button id="questOpen" class="topB">任務<b class="tdot" id="questDot"></b></button><button id="codexOpen" class="topB">圖鑑</button><button id="gearBtn">⚙ 設定</button></div>
   <div id="settings">
     <div class="spanel">
@@ -538,8 +540,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <div class="sub">看清楚對手的出場順序，不滿意可以回去調整</div>
     <div class="diffBox"><span>對手強度</span><div class="seg diffSeg" id="diffSeg"><button data-d="easy">簡單</button><button data-d="normal">普通</button><button data-d="hard">困難</button><button data-d="hell">地獄</button></div><div class="diffInfo" id="diffInfo"></div></div>
     <div id="vsList"></div>
-    <button class="btn" id="fightBtn">開戰</button>
-    <button class="btn ghost" id="backBtn">回去調整陣容</button>
+    <div class="pairBtns"><button class="btn ghost" id="backBtn">調整陣容</button><button class="btn" id="fightBtn">開戰</button></div>
   </div>
 
   <div id="gacha" class="screen">
@@ -721,10 +722,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.26.0 bottom nav bar (隊伍／章節／對戰／抽卡／任務／狀態), always on screen under the game picture; leaving a battle asks first
  v0.26.1 nav: only the current page lights up (the centre battle button is no longer always yellow); stronger active style
  v0.26.2 nav: the battle button looks like the other five (no raised yellow circle)
+ v0.26.3 UX pass: battle 選單 -> ✕ 離開 with confirm, versus buttons in one row (primary right), gacha 收下 on its own row, back buttons that repeat the nav hidden, 圖鑑 on every menu page, 0.45 s double-tap guard on buttons
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.26.2';
+const GAME_VERSION = 'v0.26.3';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1579,7 +1581,7 @@ let invTab = 'c';
 const save = () => { INV.team = collection; saveJSON('topInv', INV); saveJSON('topWins', wins); };
 
 const screens = ['team', 'versus', 'gacha', 'final', 'tutorial', 'codex', 'quest', 'story'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
-function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
+function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); document.getElementById('topRight').classList.toggle('menu', ['team', 'story', 'quest', 'versus'].includes(id)); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
 const anyScreen = () => Object.values(screens).some(e => e.classList.contains('show'));
 
 let previews = [];
@@ -1857,6 +1859,8 @@ function openProfile() {
 }
 profilePop.addEventListener('click', e => { if (!e.target.closest('.pfRow, .pfEdit')) profilePop.classList.remove('show'); });
 document.getElementById('profileBtn').onclick = openProfile;
+{ let lastEl = null, lastT = 0; document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (!b) return; const t = performance.now();
+  if (b === lastEl && t - lastT < 450 && !b.closest('#autoBar')) { e.stopImmediatePropagation(); e.preventDefault(); return; } lastEl = b; lastT = t; }, true); }
 // bottom nav: always there; leaving a running battle asks first
 const NAV_GO = { team: () => openTeam(), story: () => { swapSel = null; openStory(); }, fight: () => { openTeam(); document.getElementById('startBtn').click(); }, gacha: () => { if (!screens.team.classList.contains('show')) openTeam(); openShop(); }, quest: () => openQuest(), me: () => openProfile() };
 const inBattle = () => G && !anyScreen();
@@ -3691,7 +3695,7 @@ function pressEx(chargeOnly) {
   exBtn.classList.remove('tap'); void exBtn.offsetWidth; exBtn.classList.add('tap'); setTimeout(() => exBtn.classList.remove('tap'), 160);
   updateExBtn();
 }
-menuBtn.addEventListener('click', () => openTeam());
+menuBtn.addEventListener('click', () => ask('要離開目前的戰鬥嗎？<br><small style="opacity:.75">這一場的進度不會保留</small>', openTeam));
 
 // both tops launch together: the player's aim locks, the call plays, then the CPU's (hidden) drop is revealed
 // The countdown follows the announcer: the phone tells us when each word starts (boundary events), and the
