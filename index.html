@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.29.0</title>
+<title>SPIN! SPIN! v0.30.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -787,10 +787,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.27.1 一鍵培養 (star-up all + rank-up picker in one button), rank list shows the bonus before/after
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
+ v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.29.0';
+const GAME_VERSION = 'v0.30.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1013,6 +1014,21 @@ defBoss('boss_proteus', 'proteus', { name: '惡性擬態・普羅透斯', sig: '
 defBoss('boss_rex2', 'rex', { name: '崩壞重拳・雷克斯', sig: 'quake3', pool: ['quake3', 'rampage'], eyes: [[117.5, 110.5], [165.4, 111]], lore: '再次被控制的雷克斯，這次連狂戰士的衝鋒都學會了。' });
 defBoss('boss_chrono2', 'chrono', { name: '終末時針・克羅諾', sig: 'timestop', pool: ['timestop', 'warp', 'storm'], eyes: [[105.6, 136], [146, 142]], lore: '再次被控制的克羅諾。時間、空間和雷電都被它偷走了。' });
 defBoss('boss_host2', 'host', { name: '覺醒本體・宿主', sig: 'parasite', pool: ['parasite', 'storm', 'circuit', 'dream', 'beat', 'sling', 'parasite', 'warp'], eyes: [[77, 75], [155, 75]], lore: '宿主的真正樣子。寄生過的每一個選手，它的招式全都會用。' });
+defBoss('boss_spam2', 'spam', { name: '垃圾風暴・彈彈', sig: 'popups', pool: ['popups', 'circuit'], eyes: [[24, 184], [114, 184]], lore: '再次被殘響控制的彈彈。廣告窗裡藏著電路陷阱。' });
+defBoss('boss_twins2', 'twins', { name: '鏡像故障・零與壹', sig: 'twin', pool: ['twin', 'holo'], eyes: [[25, 117], [65, 111.6], [210, 125], [251, 122]], lore: '分身越來越多，哪個是真的已經分不清了。' });
+defBoss('boss_raven2', 'raven', { name: '黑羽亂碼・夜鴉', sig: 'holo', pool: ['holo', 'shade', 'storm'], eyes: [[55, 101], [98, 98]], lore: '殘響最先找上的駭客。黑羽一落，雷就跟著劈下。' });
+defBoss('boss_rat2', 'rat', { name: '廢鐵鑽地・咔啦', sig: 'burrow', pool: ['burrow', 'trail'], eyes: [[51, 133], [145, 132]], lore: '在機械墳場裡鑽來鑽去，留下一路火。' });
+defBoss('boss_octo2', 'octo', { name: '千手深淵・八爪', sig: 'grab', pool: ['grab', 'embrace'], eyes: [[98, 98], [171, 99]], lore: '觸手多到抓了就不放。' });
+defBoss('boss_tesla2', 'tesla', { name: '雷暴核心・T-9', sig: 'storm', pool: ['storm', 'circuit', 'warp'], eyes: [[125, 95], [170, 96]], lore: '整座墳場的電都流進了它的核心。' });
+defBoss('boss_cactus2', 'cactus', { name: '劇毒荊冠・刺球', sig: 'thorns', pool: ['thorns', 'dream'], eyes: [[83, 95], [155, 95]], lore: '刺上帶毒，碰到會昏昏欲睡。' });
+defBoss('boss_dj2', 'dj', { name: '噪音狂潮・節拍', sig: 'beat', pool: ['beat', 'warp'], eyes: [[170, 87], [214, 94]], lore: '音浪裡混進了扭曲波。' });
+defBoss('boss_mechcat2', 'mechcat', { name: '狂獸利爪・機甲貓咪', sig: 'pounce', pool: ['pounce', 'rampage', 'shade'], eyes: [[85, 98], [163, 98]], lore: '完全失控的機甲貓咪，連撲、狂衝、背後突襲。' });
+defBoss('boss_sheep2', 'sheep', { name: '永眠牧歌・夢', sig: 'dream', pool: ['dream', 'thorns', 'beat'], eyes: [[69, 133], [148, 133]], lore: '它唱的歌會讓整個神殿睡著。' });
+defBoss('boss_david2', 'david', { name: '巨石審判・大衛', sig: 'sling', pool: ['sling', 'mark', 'quake3'], eyes: [[122, 90], [165, 92]], lore: '鎖定、投石、重砸，三段審判。' });
+defBoss('boss_theseus2', 'theseus', { name: '千面再生・忒修斯', sig: 'rebuild', pool: ['rebuild', 'aegis', 'storm'], eyes: [[96, 126], [126, 125]], lore: '殘響替它換上了更硬的零件。' });
+defBoss('boss_jack2', 'jack', { name: '亡命獵手・傑克', sig: 'bounty', pool: ['bounty', 'mark', 'sling'], eyes: [[89.6, 88.6], [137, 79.5]], lore: '通緝、鎖定、射擊，一個都逃不掉。' });
+defBoss('boss_erin2', 'erin', { name: '碎盾狂嵐・艾琳', sig: 'rampage', pool: ['rampage', 'aegis', 'quake3'], eyes: [[106.3, 97.4], [152, 97.9]], lore: '碎掉的盾變成了武器。' });
+defBoss('boss_host3', 'host', { name: '殘響之王・宿主', sig: 'parasite', pool: ['parasite', 'storm', 'circuit', 'dream', 'beat', 'sling', 'rampage', 'warp', 'grab', 'thorns'], eyes: [[77, 75], [155, 75]], lore: '宿主留在網路裡的最後回聲。所有被控制過的招式，它全都記得。' });
 defBoss('boss_erin', 'erin', { name: '壞掉的盾・艾琳', sig: 'wall', eyes: [[106.3, 97.4], [152, 97.9]], lore: '被控制的艾琳。盾還舉著，只是不再分敵我。' });
 // live red glow on a BOSS portrait: mx/my map portrait pixels to canvas, k = canvas px per portrait px
 function eyeGlow(g, c, mx, my, k) {
@@ -2961,7 +2977,7 @@ function showEnding() {
   <p>現在，額頭上的黑影慢慢退去，<br>紅色的眼睛恢復了原本的顏色。</p><p>雷克斯揉著義手、傑克找回了他的帽子、<br>艾琳撿起裂開的盾。<br>大家醒來的第一句話都一樣：</p><p><b style="color:#fcee0a">「……下一場，什麼時候開始？」</b></p>
   <div class="endFaces">${faces}</div>
   <h3>STAFF</h3><p>遊戲總監・企劃・倒數語音<br><b>遊戲總監</b></p><p>程式・遊戲設計・關卡與 BOSS 設計<br><b>Claude</b></p><p>角色頭像<br><b>由遊戲總監用 Gemini／GPT 生成</b></p><p>測試<br><b>每一位轉起陀螺的你</b></p>
-  <h2>THANK YOU<br>FOR PLAYING</h2><p>SPIN! SPIN! ${GAME_VERSION}</p><p style="opacity:.7">全部 100 關的星星都還等著你拿。</p>`;
+  <h2>THANK YOU<br>FOR PLAYING</h2><p>SPIN! SPIN! ${GAME_VERSION}</p><p style="opacity:.7">全部 ${allLevels().length} 關的星星都還等著你拿。</p>`;
   const r = document.getElementById('endRoll'); r.style.animation = 'none'; void r.offsetWidth; r.style.animation = '';
   document.getElementById('ending').classList.add('show'); SFX.round && SFX.round();
 }
@@ -2978,7 +2994,7 @@ function storyFinal(win) {
   const stars = lv.stars.map((x, i) => `<div class="fStar${now[i] ? ' ok' : ''}">${now[i] ? '★' : '☆'} ${starText(x)}${now[i] && !old[i] ? ' <b>NEW!</b>' : ''}</div>`).join('');
   document.getElementById('finalScore').insertAdjacentHTML('beforeend', `<div class="fStory"><div class="fsT">STAGE ${lv.id}・${lv.name}${now[0] && !old[0] ? '　CLEAR!' : ''}</div>${stars}${rew.length ? `<div class="fRew">${rew.join('<br>')}</div>` : ''}</div>`);
   const L = allLevels(), nx = L[L.indexOf(lv) + 1];
-  if (win && lv.id === '10-10' && !old[0]) setTimeout(showEnding, 2600); // first clear of the final stage: roll the ending
+  if (win && (lv.id === '10-10' || lv.id === '15-10') && !old[0]) setTimeout(showEnding, 2600); // first clear of the final stage: roll the ending
   storyNext = win && nx && lvUnlocked(nx) ? nx : null;
   document.getElementById('nextBtn').textContent = storyNext ? `下一關 ${storyNext.id} ▶` : '回到章節';
   document.getElementById('autoNextBtn').style.display = 'none';
@@ -3463,7 +3479,7 @@ function drawChipHud(T) {
   g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText('DATA', x, y + 26); g.fillStyle = '#7fdfff'; g.fillText('DATA', x, y + 26); g.restore();
 }
 // chapter weather (screen space, cheap): rain / data / sand / embers / motes...
-const WEATHER = { 1: 'rain', 2: 'data', 3: 'sand', 4: 'ember', 5: 'mote', 6: 'data', 7: 'petal', 8: 'ember', 9: 'gold', 10: 'ash' };
+const WEATHER = { 1: 'rain', 2: 'data', 3: 'sand', 4: 'ember', 5: 'mote', 6: 'data', 7: 'petal', 8: 'ember', 9: 'gold', 10: 'ash', 11: 'data', 12: 'ember', 13: 'petal', 14: 'mote', 15: 'ash' };
 function initWeather(no) { const kind = WEATHER[no]; if (!kind) { G.weather = null; return; } const n = SETTINGS.lowAuto ? 16 : 42;
   G.weather = { kind, ps: Array.from({ length: n }, () => ({ x: Math.random() * W, y: Math.random() * H, s: Math.random(), ch: Math.random() < 0.5 ? '0' : '1' })) }; }
 function stepWeather(dt) { const Wt = G.weather; if (!Wt) return; const k = Wt.kind;
@@ -3482,7 +3498,7 @@ function drawDecals(g) { for (const d of G.decals) { const k = Math.min(1, d.lif
   const gr = g.createRadialGradient(0, 0, 2, 0, 0, d.r); gr.addColorStop(0, 'rgba(10,8,6,.9)'); gr.addColorStop(1, 'rgba(10,8,6,0)'); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, d.r, 0, TAU); g.fill();
   g.rotate(d.a); g.strokeStyle = 'rgba(255,160,60,.55)'; g.lineWidth = 2; for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(-d.r * 0.9, i * 6); g.lineTo(d.r * 0.9, i * 6 + 3); g.stroke(); } g.restore(); } }
 // chapter floor textures (drawn under the lane shading, inside the track clip)
-const FLOOR_PAT = { 1: 'tiles', 2: 'circuit', 3: 'cracks', 4: 'plates', 5: 'hex', 6: 'circuit', 7: 'clouds', 8: 'tiles', 9: 'chevron', 10: 'hex' };
+const FLOOR_PAT = { 1: 'tiles', 2: 'circuit', 3: 'cracks', 4: 'plates', 5: 'hex', 6: 'circuit', 7: 'clouds', 8: 'tiles', 9: 'chevron', 10: 'hex', 11: 'circuit', 12: 'plates', 13: 'cracks', 14: 'hex', 15: 'chevron' };
 function drawFloorPattern(g, T, ya, yb, HW) {
   if (SETTINGS.lowAuto) return; const kind = FLOOR_PAT[+T.lv.id.split('-')[0]] || 'tiles', x0 = CX - HW, x1 = CX + HW, step = 64, y0 = Math.floor(ya / step) * step;
   g.save(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(255,255,255,.07)'; g.fillStyle = 'rgba(0,0,0,.12)';

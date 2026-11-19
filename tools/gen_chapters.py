@@ -76,6 +76,11 @@ def level(c, i, L):
     k = c['segs']; cnt = c['nseg'] - 1 if isb else c['nseg'] + (1 if i >= 5 else 0) + (1 if i == 7 else 0)
     plan = [R.choice(c['must'][i % len(c['must'])])] + [R.choice(k) for _ in range(cnt - 1)]
     R.shuffle(plan)
+    if c['no'] >= 11: # from chapter 11: at most one magnet group and two firewall/barrel blocks per level (repeats drained the spin)
+        cap = {'magnet': 1, 'barrels': 2}; seen = {}
+        for j, k in enumerate(plan):
+            seen[k] = seen.get(k, 0) + 1
+            if k in cap and seen[k] > cap[k]: plan[j] = 'boost'
     tr = track(c, plan, 0, 3 + (i >= 4) + (i >= 7))
     feats = []; [feats.append(PN[p]) for p in plan if PN.get(p) and PN[p] not in feats]
     out = dict(id=lid, name=L[0])
@@ -118,6 +123,32 @@ CH = [
       mobs=[W('host', 'plasmascythe', 'plasmaplate'), W('twins', 'railgun', 'opticamo'), W('maiden', 'missilepod', 'plasmaplate'), W('raven', 'vibrosword', 'afterimage'), W('tesla', 'emp', 'forcefield'), W('octo', 'gatling', 'deflector')],
       segs=['portal', 'laser', 'magnet', 'wind', 'barrels', 'ice', 'gap', 'spinner', 'spikes', 'bumpers', 'slide'], must=[['portal', 'magnet'], ['laser', 'wind'], ['barrels', 'ice'], ['gap', 'laser']],
       bosses=[dict(name='崩壞重拳・雷克斯', c='boss_rex2', w='hydrohammer', a='exoskeleton', lv=0.92, hp=1.71), dict(name='終末時針・克羅諾', c='boss_chrono2', w='smartpistol', a='afterimage', lv=0.94, hp=1.75), dict(name='覺醒本體・宿主', c='boss_host2', w='plasmascythe', a='plasmaplate', lv=0.94, hp=0.62, lives=3, size=1.75)]),
+
+ dict(no=11, id='c11', name='第十一章・殘響訊號', desc='宿主倒下了，但它的回聲還留在網路裡。被打倒過的選手又開始一個個失控——這次更強。', bonus=dict(coins=70000, box='purple'),
+      floor=['#1f2f5e', '#162244', '#0d152b'], mob=0.93, door=235, wave=3.6, crack=55, skin='', gmax=1, nseg=8, coin=3500,
+      mobs=[W('spam', 'smartpistol', 'deflector'), W('twins', 'railgun', 'opticamo'), W('raven', 'vibrosword', 'afterimage'), W('nova', 'emp', 'forcefield'), W('chrono', 'smartpistol', 'afterimage')],
+      segs=['portal', 'laser', 'ice', 'magnet', 'spinner', 'boost', 'spikes', 'gap', 'bumpers'], must=[['portal', 'laser'], ['ice', 'magnet'], ['laser'], ['portal']],
+      bosses=[dict(name='垃圾風暴・彈彈', c='boss_spam2', w='smartpistol', a='deflector', lv=0.88, hp=1.6), dict(name='鏡像故障・零與壹', c='boss_twins2', w='railgun', a='opticamo', lv=0.9, hp=1.65), dict(name='黑羽亂碼・夜鴉', c='boss_raven2', w='vibrosword', a='afterimage', lv=0.9, hp=0.75, lives=2, size=1.6)]),
+ dict(no=12, id='c12', name='第十二章・機械墳場', desc='殘響躲進了鐵心幫的報廢工廠。生鏽的機器全被喚醒，磁鐵和炸藥桶堆得到處都是。', bonus=dict(coins=75000, box='purple'),
+      floor=['#5e4a3a', '#44352a', '#2b211a'], mob=0.91, door=235, wave=3.6, crack=55, skin='fire', gmax=1, nseg=8, coin=3700,
+      mobs=[W('rat', 'gatling', 'hover'), W('rex', 'chainaxe', 'powerarmor'), W('octo', 'gatling', 'deflector'), W('rider', 'chainaxe', 'carbonvest'), W('tesla', 'emp', 'forcefield')],
+      segs=['magnet', 'barrels', 'spinner', 'slide', 'laser', 'boost', 'spikes', 'gap', 'bumpers'], must=[['magnet'], ['barrels'], ['magnet', 'laser'], ['spinner', 'slide']],
+      bosses=[dict(name='廢鐵鑽地・咔啦', c='boss_rat2', w='gatling', a='hover', lv=0.9, hp=1.65), dict(name='千手深淵・八爪', c='boss_octo2', w='gatling', a='deflector', lv=0.86, hp=1.45), dict(name='雷暴核心・T-9', c='boss_tesla2', w='emp', a='forcefield', lv=0.88, hp=0.65, lives=2, size=1.6)]),
+ dict(no=13, id='c13', name='第十三章・荒蕪森域', desc='元森域的森林被殘響汙染，風變得狂暴，荊棘長滿了整條路。', bonus=dict(coins=80000, box='purple'),
+      floor=['#3a5e3a', '#2a442a', '#1a2b1a'], mob=0.94, door=240, wave=3.5, crack=55, skin='', gmax=1, nseg=8, coin=3900,
+      mobs=[W('cactus', 'grenade', 'reactive'), W('dj', 'missilepod', 'deflector'), W('mechcat', 'vibrosword', 'carbonvest'), W('erin', 'shotgun', 'reactive'), W('jack', 'railgun', 'opticamo')],
+      segs=['wind', 'spikes', 'barrels', 'ice', 'bumpers', 'boost', 'gap', 'spinner', 'magnet'], must=[['wind'], ['spikes', 'wind'], ['barrels'], ['ice', 'wind']],
+      bosses=[dict(name='劇毒荊冠・刺球', c='boss_cactus2', w='grenade', a='reactive', lv=0.82, hp=1.25), dict(name='噪音狂潮・節拍', c='boss_dj2', w='missilepod', a='deflector', lv=0.92, hp=1.7), dict(name='狂獸利爪・機甲貓咪', c='boss_mechcat2', w='vibrosword', a='opticamo', lv=0.92, hp=0.72, lives=2, size=1.6)]),
+ dict(no=14, id='c14', name='第十四章・虛空神殿', desc='異哲團的神殿浮在虛空裡。夢、審判、重生——每一層都是一場試煉。', bonus=dict(coins=85000, box='purple'),
+      floor=['#4a2e6e', '#362250', '#211533'], mob=0.92, door=240, wave=3.5, crack=55, skin='', gmax=1, nseg=8, coin=4100,
+      mobs=[W('sheep', 'hydrohammer', 'exoskeleton'), W('maiden', 'missilepod', 'plasmaplate'), W('proteus', 'plasmascythe', 'afterimage'), W('theseus', 'vibrosword', 'nanorepair'), W('david', 'railgun', 'titanium')],
+      segs=['portal', 'ice', 'wind', 'laser', 'magnet', 'spinner', 'spikes', 'gap', 'bumpers'], must=[['portal', 'ice'], ['laser', 'wind'], ['magnet'], ['portal']],
+      bosses=[dict(name='永眠牧歌・夢', c='boss_sheep2', w='hydrohammer', a='exoskeleton', lv=0.92, hp=1.7), dict(name='巨石審判・大衛', c='boss_david2', w='railgun', a='titanium', lv=0.88, hp=1.5), dict(name='千面再生・忒修斯', c='boss_theseus2', w='hydrohammer', a='nanorepair', lv=0.93, hp=0.72, lives=2, size=1.6)]),
+ dict(no=15, id='c15', name='第十五章・殘響核心', desc='所有殘響的源頭。最初的通緝犯、最強的盾，還有宿主最後的回聲——這次要徹底結束。', bonus=dict(coins=100000, box='purple'),
+      floor=['#5e1f2e', '#441622', '#2b0d15'], mob=0.95, door=245, wave=3.4, crack=60, skin='fire', gmax=1, nseg=8, coin=4500,
+      mobs=[W('host', 'plasmascythe', 'plasmaplate'), W('jack', 'railgun', 'opticamo'), W('erin', 'shotgun', 'reactive'), W('berserker', 'chainaxe', 'powerarmor'), W('tesla', 'emp', 'forcefield'), W('raven', 'vibrosword', 'afterimage')],
+      segs=['portal', 'laser', 'magnet', 'wind', 'barrels', 'ice', 'gap', 'spinner', 'spikes', 'bumpers', 'slide'], must=[['portal', 'magnet'], ['laser', 'wind'], ['barrels', 'ice'], ['gap', 'laser']],
+      bosses=[dict(name='亡命獵手・傑克', c='boss_jack2', w='railgun', a='opticamo', lv=0.92, hp=1.7), dict(name='碎盾狂嵐・艾琳', c='boss_erin2', w='shotgun', a='reactive', lv=0.88, hp=1.5), dict(name='殘響之王・宿主', c='boss_host3', w='plasmascythe', a='plasmaplate', lv=0.94, hp=0.55, lives=3, size=1.8)]),
 ]
 NAMES = {
  6: [('封包隧道', '暗網的入口。傳送門的出口剛好在雷射後面。'), ('防毒網', '一層層雷射柵欄擋住去路，抓空檔或鑽缺口。'), ('冰封資料庫', '冷卻系統過載，整條路都結冰了。'), ('迴圈陷阱', '傳送門和雷射交錯，走錯會繞回原地。'),
@@ -145,6 +176,32 @@ NAMES = {
       ('倒數計時', '核心開始倒數，賽道越來越危險。'), ('全員集合', '所有陣營的被控制選手都來了。'), ('最終防衛線', '全遊戲最難的賽道。過了這裡就是最後兩個 BOSS。'),
       ('時間盡頭', 'BOSS 是再次被控制的克羅諾：輪流使出「時間停止」「扭曲波」「落雷」。時鐘圈、青色波、光圈，看到哪個就躲哪個。建議金卡 3 星。'),
       ('終焉核心', '最終關。BOSS 是宿主的真正樣子「覺醒本體」（三條血）：寄生、落雷、電路陷阱、夢境雲、音浪、投石、扭曲波全部會用。三隻陀螺都要強，ASSIST 留到最後。建議金卡 3 星。')],
+
+ 11: [('廢棄伺服器', '殘響的第一個訊號就從這裡發出。'), ('冰封快取', '冷卻失控，整條路結了冰。'), ('雙重驗證', '每道雷射都要通過兩次。'), ('迴圈地獄', '傳送門一個接一個，小心繞回原點。'),
+      ('廣告墳場', 'BOSS 是再次被控制的彈彈：輪流使出「彈窗洗版」和「電路陷阱」。被廣告窗圍住時，小心腳下的電路。建議金卡 3 星。'),
+      ('封包洪流', '大量被感染的封包衝過來。'), ('鏡面走廊', '到處都是反射的影子。'), ('核心防火牆', '第十一章最難的賽道。'),
+      ('雙生故障', 'BOSS 是再次被控制的零與壹：分身和全息影像同時出現，真身會從背後突襲。建議金卡 3 星。'),
+      ('黑羽之巢', '第十一章最終關。BOSS 是再次被控制的夜鴉（兩條血）：輪流使出全息分身、影襲和落雷。建議金卡 3 星。')],
+ 12: [('報廢產線', '生鏽的產線又開始動了。'), ('磁力廢墟', '一整片磁鐵把你往廢鐵堆吸。'), ('炸藥倉', '炸藥桶堆得比人還高。'), ('絞碎機', '旋轉擋板和推板排成一列。'),
+      ('鼠洞', 'BOSS 是再次被控制的咔啦：「鑽地」從背後冒出，衝過的地方還會起火。別停在出口前面。建議金卡 3 星。'),
+      ('廢油池', '地上到處是滑溜的油漬和火焰。'), ('起重機陣', '磁鐵吊臂到處移動。'), ('熔爐深處', '第十二章最難的賽道。'),
+      ('深淵水槽', 'BOSS 是再次被控制的八爪：輪流使出「觸手拖拉」和「鐵之擁抱」。拉開距離，別被碰到。建議金卡 3 星。'),
+      ('雷暴發電廠', '第十二章最終關。BOSS 是再次被控制的 T-9（兩條血）：落雷、電路陷阱、扭曲波輪流來。建議金卡 3 星。')],
+ 13: [('枯木林道', '風把枯枝吹得到處都是。'), ('荊棘迷宮', '地刺一片接一片。'), ('毒沼', '強風會把你吹進毒刺。'), ('冰封湖面', '湖面結冰，風還在吹。'),
+      ('毒刺花園', 'BOSS 是再次被控制的刺球：「撒刺」加上「入夢」，被刺圍住時還會想睡。建議金卡 3 星。'),
+      ('狂風峽谷', '兩邊的風輪流吹。'), ('野獸小徑', '一大群野獸陀螺守在路上。'), ('森林之心', '第十三章最難的賽道。'),
+      ('噪音祭典', 'BOSS 是再次被控制的節拍：音浪裡混著扭曲波，碰到就暈。抓空檔穿過去。建議金卡 3 星。'),
+      ('獸王巢穴', '第十三章最終關。BOSS 是再次被控制的機甲貓咪（兩條血）：連續撲殺、狂暴衝鋒、背後突襲。建議金卡 3 星。')],
+ 14: [('浮空階梯', '神殿的入口浮在虛空中。'), ('鏡之迴廊', '傳送門和冰面交錯。'), ('審判之路', '雷射柵欄層層把關。'), ('引力祭壇', '磁鐵像祭壇一樣守著路。'),
+      ('永眠牧場', 'BOSS 是再次被控制的夢：夢境雲、白刺和音浪輪流來，待在雲裡會睡著。建議金卡 3 星。'),
+      ('虛空裂縫', '路面裂成好幾段。'), ('信徒長廊', '異哲團的信徒擋在每個轉角。'), ('至聖所', '第十四章最難的賽道。'),
+      ('巨石法庭', 'BOSS 是再次被控制的大衛：鎖定標記、投石、連環重砸三段審判。建議金卡 3 星。'),
+      ('重生之間', '第十四章最終關。BOSS 是再次被控制的忒修斯（兩條血）：重組回血、聖域護盾、落雷。重組時要打斷它。建議金卡 3 星。')],
+ 15: [('最後的入口', '殘響核心的大門。'), ('記憶殘片', '前面所有章節的機關都在這裡重現。'), ('通緝令', '整條路都貼滿了你的通緝令。'), ('碎盾之門', '防火牆一道比一道硬。'),
+      ('獵手之夜', 'BOSS 是再次被控制的傑克：全場通緝、鎖定標記、投石輪流來。建議金卡 3 星。'),
+      ('倒數歸零', '核心開始崩壞，賽道越來越危險。'), ('全員回聲', '所有被控制過的選手都在這裡。'), ('最後的防線', '全遊戲最難的賽道，過了這裡就是最後兩個 BOSS。'),
+      ('狂嵐盾陣', 'BOSS 是再次被控制的艾琳：狂暴衝鋒、聖域護盾、連環重砸。護盾期間別硬撞。建議金卡 3 星。'),
+      ('殘響之王', '最終關。BOSS 是宿主最後的回聲「殘響之王」（三條血）：前面所有 BOSS 的招式它都會用。三隻陀螺都要強。建議金卡 3 星。')],
 }
 out = []
 for c in CH:
