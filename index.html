@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.26.1</title>
+<title>SPIN! SPIN! v0.26.2</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -106,9 +106,6 @@ html,body{background:#050607}
 #nav button.on{color:#fcee0a;background:radial-gradient(ellipse at 50% 100%,rgba(252,238,10,.28),rgba(252,238,10,0) 70%)}
 #nav button.on::before{content:"";position:absolute;left:12%;right:12%;top:0;height:5px;background:linear-gradient(90deg,#9fe8ff,#ff8fdc);border:1.5px solid #05060a;border-top:0;box-shadow:0 0 10px rgba(255,143,220,.7)}
 #nav button.on svg{transform:scale(1.15) translateY(-1px);filter:drop-shadow(0 0 6px rgba(252,238,10,.75))}#nav button.on span{text-shadow:0 0 6px rgba(252,238,10,.6)}#nav button:active svg{transform:scale(.86)}
-/* the centre button is bigger, but only filled yellow when it is the current page (versus screen / in a battle) */
-#nav .navMain{flex:1.25}#nav .navMain svg{width:2.4em;height:2.4em;padding:.25em;margin-top:-.9em;border-radius:50%;background:#1a1d28;color:#fcee0a;border:3px solid #05060a;box-shadow:0 0 0 2px #fcee0a,0 4px 0 #05060a}
-#nav .navMain.on{background:none}#nav .navMain.on::before{display:none}#nav .navMain.on svg{background:#fcee0a;color:#05060a;transform:scale(1.1) translateY(-2px);box-shadow:0 0 0 2px #fcee0a,0 4px 0 #05060a,0 0 16px rgba(252,238,10,.8)}
 #nav .ndot{position:absolute;top:.35em;right:26%;width:.62em;height:.62em;border-radius:50%;background:#ff2a55;border:2px solid #05060a;display:none}#nav .ndot.on{display:block}
 #nav.battle{opacity:.8}
 /* the nav replaces these: */
@@ -497,7 +494,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 <nav id="nav">
   <button data-go="team"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3.4"/><circle cx="12" cy="8" r="3.4"/><circle cx="18" cy="12" r="3.4"/><path d="M3 20c1-3 5-4 9-4s8 1 9 4"/></svg><span>隊伍</span></button>
   <button data-go="story"><svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/></svg><span>章節</span><b class="ndot"></b></button>
-  <button data-go="fight" class="navMain"><svg viewBox="0 0 24 24"><path d="M12 2.5v3"/><ellipse cx="12" cy="9" rx="8.5" ry="3.2"/><path d="M4 10.5l8 11 8-11"/><path d="M8 9.2h8" opacity=".6"/></svg><span>對戰</span></button>
+  <button data-go="fight"><svg viewBox="0 0 24 24"><path d="M12 2.5v3"/><ellipse cx="12" cy="9" rx="8.5" ry="3.2"/><path d="M4 10.5l8 11 8-11"/><path d="M8 9.2h8" opacity=".6"/></svg><span>對戰</span></button>
   <button data-go="gacha"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S12 9 12 9c2-4 6-4 6-1.5S12 9 12 9"/></svg><span>抽卡</span><b class="ndot"></b></button>
   <button data-go="quest"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="1.5"/><path d="M9 9l1.5 1.5L13 8M9 15h6"/></svg><span>任務</span><b class="ndot"></b></button>
   <button data-go="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>狀態</span></button>
@@ -723,10 +720,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.25.0 heavy-hit package (impact frame, RGB glitch, directional kick, scorch decals, metal debris, sub-bass thump, music ducking, vibration tiers), KO letterbox, CONTROL BROKEN boss finish, chapter weather, HP chip bar; AUTO backs off and rams firewalls
  v0.26.0 bottom nav bar (隊伍／章節／對戰／抽卡／任務／狀態), always on screen under the game picture; leaving a battle asks first
  v0.26.1 nav: only the current page lights up (the centre battle button is no longer always yellow); stronger active style
+ v0.26.2 nav: the battle button looks like the other five (no raised yellow circle)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.26.1';
+const GAME_VERSION = 'v0.26.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
