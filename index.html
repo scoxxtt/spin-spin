@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.20.0</title>
+<title>SPIN! SPIN! v0.20.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -676,10 +676,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.18.1 track walls show their inner faces and grow/lean with the camera tilt; the road's default view is more tilted
  v0.19.0 real perspective (near big, far small) across the whole game: the world pass is drawn through a projecting canvas stand-in (PG), strength follows the tilt, on/off switch in settings
  v0.20.0 chapter 2 (10 levels): new props portal / ice / breakable wall (crack), BOSSes 失控彈窗・彈彈 (popups), 暗黑雙子・零與壹 (decoys + hack), 逆時怪盜・克羅諾 (time stop, 2 lives)
+ v0.20.1 BOSS red eyes re-aligned to the pupils (all six portraits re-made, live glow coordinates updated); tools/eye_check.py for checking
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.20.0';
+const GAME_VERSION = 'v0.20.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -878,12 +879,12 @@ for (const id of ['rat', 'rex', 'octo', 'rider', 'tesla', 'cactus', 'erin', 'jac
 // They are added non-enumerable so the codex, gacha pools and random line-ups never see them. eyes = pupil centres on the 256px portrait (for the live glow).
 // sig = signature move in the BOSS arena: quake3 連環重砸, bounty 全場通緝, wall 盾牆＋連續衝鋒, popups 彈窗洗版, twin 分身＋駭入, timestop 時間停止
 function defBoss(id, base, o) { Object.defineProperty(CLASSES, id, { value: Object.assign({}, CLASSES[base], o, { bossOf: base }), enumerable: false }); PORTRAIT_SRC[id] = `art/portraits/${id}.jpg`; if (FACE[base]) FACE[id] = FACE[base]; }
-defBoss('boss_rex', 'rex', { name: '暴走鐵拳・雷克斯', sig: 'quake3', eyes: [[117.5, 111], [167, 113]], lore: '被不明訊號控制的雷克斯。液壓義手失去限制，連砸三下地板。' });
-defBoss('boss_jack', 'jack', { name: '黑化獵人・傑克', sig: 'bounty', eyes: [[91, 88], [132, 78.7]], lore: '被控制的傑克。把整個場子的人都當成懸賞目標。' });
+defBoss('boss_rex', 'rex', { name: '暴走鐵拳・雷克斯', sig: 'quake3', eyes: [[117.5, 110.5], [165.4, 111]], lore: '被不明訊號控制的雷克斯。液壓義手失去限制，連砸三下地板。' });
+defBoss('boss_jack', 'jack', { name: '黑化獵人・傑克', sig: 'bounty', eyes: [[89.6, 88.6], [137, 79.5]], lore: '被控制的傑克。把整個場子的人都當成懸賞目標。' });
 defBoss('boss_spam', 'spam', { name: '失控彈窗・彈彈', sig: 'popups', eyes: [[24, 184], [114, 184]], lore: '被控制的彈彈。彈窗不再可愛，會把人整個圍起來。' });
-defBoss('boss_twins', 'twins', { name: '暗黑雙子・零與壹', sig: 'twin', eyes: [[28, 113], [68, 108], [205, 120], [243, 118]], lore: '被控制的雙胞胎駭客。場上的兩個，只有一個是真的。' });
-defBoss('boss_chrono', 'chrono', { name: '逆時怪盜・克羅諾', sig: 'timestop', eyes: [[90, 140], [129, 141]], lore: '被控制的克羅諾。偷走的不只是時間，還有你的回合。' });
-defBoss('boss_erin', 'erin', { name: '壞掉的盾・艾琳', sig: 'wall', eyes: [[108.8, 96.5], [151, 97.5]], lore: '被控制的艾琳。盾還舉著，只是不再分敵我。' });
+defBoss('boss_twins', 'twins', { name: '暗黑雙子・零與壹', sig: 'twin', eyes: [[25, 117], [65, 111.6], [210, 125], [251, 122]], lore: '被控制的雙胞胎駭客。場上的兩個，只有一個是真的。' });
+defBoss('boss_chrono', 'chrono', { name: '逆時怪盜・克羅諾', sig: 'timestop', eyes: [[105.6, 136], [146, 142]], lore: '被控制的克羅諾。偷走的不只是時間，還有你的回合。' });
+defBoss('boss_erin', 'erin', { name: '壞掉的盾・艾琳', sig: 'wall', eyes: [[106.3, 97.4], [152, 97.9]], lore: '被控制的艾琳。盾還舉著，只是不再分敵我。' });
 // live red glow on a BOSS portrait: mx/my map portrait pixels to canvas, k = canvas px per portrait px
 function eyeGlow(g, c, mx, my, k) {
   const E = CLASSES[c] && CLASSES[c].eyes; if (!E) return;
