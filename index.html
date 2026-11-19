@@ -2,8 +2,8 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SPIN! SPIN! v0.25.0</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>SPIN! SPIN! v0.26.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -98,6 +98,19 @@ h1{font-size:1.9em;margin:.3em 0 .1em;letter-spacing:.08em;background:linear-gra
 html,body{background:#050607}
 #wrap{background:transparent}
 #envCv{position:fixed;inset:0;width:100%;height:100%;display:block}
+#nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);display:flex;align-items:stretch;justify-content:space-around;box-sizing:border-box;padding:0 .3em env(safe-area-inset-bottom,0);z-index:120;
+  background:linear-gradient(180deg,rgba(13,16,26,.96),#05060a);border-top:2px solid #05060a;box-shadow:0 -2px 0 rgba(0,240,255,.35),0 -10px 24px rgba(0,0,0,.5)}
+#nav button{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15em;background:none;border:0;color:#8f9bb0;font:900 1em/1 Rajdhani,"Noto Sans TC",sans-serif;padding:.3em 0 .25em;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#nav svg{width:1.75em;height:1.75em;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .12s}
+#nav span{font-size:.82em;letter-spacing:.05em}
+#nav button.on{color:#fcee0a}#nav button.on::before{content:"";position:absolute;left:18%;right:18%;top:0;height:4px;background:linear-gradient(90deg,#9fe8ff,#ff8fdc);border:1px solid #05060a;border-top:0}
+#nav button.on svg{filter:drop-shadow(0 0 6px rgba(252,238,10,.6))}#nav button:active svg{transform:scale(.86)}
+#nav .navMain{flex:1.25}#nav .navMain svg{width:2.4em;height:2.4em;padding:.25em;margin-top:-.9em;border-radius:50%;background:#fcee0a;color:#05060a;border:3px solid #05060a;box-shadow:0 0 0 2px #fcee0a,0 4px 0 #05060a}
+#nav .navMain{color:#fcee0a}
+#nav .ndot{position:absolute;top:.35em;right:26%;width:.62em;height:.62em;border-radius:50%;background:#ff2a55;border:2px solid #05060a;display:none}#nav .ndot.on{display:block}
+#nav.battle{opacity:.8}
+/* the nav replaces these: */
+#drawOpen,#storyOpen,#questOpen{display:none !important}
 #wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);z-index:50}
 .screen{background:linear-gradient(rgba(0,240,255,.04) 1px,transparent 1px) 0 0/100% 1.6em,radial-gradient(ellipse at 50% 12%,rgba(0,240,255,.14) 0%,#07090c 62%)}
 h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Rajdhani,"Noto Sans TC",sans-serif;font-weight:700;letter-spacing:.12em;text-shadow:2px 0 #00f0ff,-2px 0 #ff2a55;text-transform:uppercase}
@@ -479,6 +492,14 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 </head>
 <body>
 <canvas id="envCv"></canvas>
+<nav id="nav">
+  <button data-go="team"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3.4"/><circle cx="12" cy="8" r="3.4"/><circle cx="18" cy="12" r="3.4"/><path d="M3 20c1-3 5-4 9-4s8 1 9 4"/></svg><span>隊伍</span></button>
+  <button data-go="story"><svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/></svg><span>章節</span><b class="ndot"></b></button>
+  <button data-go="fight" class="navMain"><svg viewBox="0 0 24 24"><path d="M12 2.5v3"/><ellipse cx="12" cy="9" rx="8.5" ry="3.2"/><path d="M4 10.5l8 11 8-11"/><path d="M8 9.2h8" opacity=".6"/></svg><span>對戰</span></button>
+  <button data-go="gacha"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S12 9 12 9c2-4 6-4 6-1.5S12 9 12 9"/></svg><span>抽卡</span><b class="ndot"></b></button>
+  <button data-go="quest"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="1.5"/><path d="M9 9l1.5 1.5L13 8M9 15h6"/></svg><span>任務</span><b class="ndot"></b></button>
+  <button data-go="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>狀態</span></button>
+</nav>
 <div id="wrap">
   <canvas id="cv"></canvas>
   <div id="verFoot"></div>
@@ -698,10 +719,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.23.0 BOSS intro card, first-time prop tips, ending roll after 10-10, BOSS codex tab, gate gives more spin; save export/import, auto low quality, PWA (manifest + sw.js), embedded assets and level data moved to js/assets.js and js/chapters.js
  v0.24.0 PERFECT LAUNCH (tap on the 2nd SPIN!), track COMBO, 3 data chips per track (auto-placed by hazards), unified telegraph colours (yellow = area blast)
  v0.25.0 heavy-hit package (impact frame, RGB glitch, directional kick, scorch decals, metal debris, sub-bass thump, music ducking, vibration tiers), KO letterbox, CONTROL BROKEN boss finish, chapter weather, HP chip bar; AUTO backs off and rams firewalls
+ v0.26.0 bottom nav bar (隊伍／章節／對戰／抽卡／任務／狀態), always on screen under the game picture; leaving a battle asks first
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.25.0';
+const GAME_VERSION = 'v0.26.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1189,11 +1211,14 @@ const wrap = document.getElementById('wrap');
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
 let scale = 1, arenaCache = null;
+// the bottom nav bar sits under the game picture and never covers it: the picture fits in the height above it
 function layout() {
-  const vw = window.innerWidth, vh = window.innerHeight;
+  const vw = window.innerWidth, vh0 = window.innerHeight, nav = document.getElementById('nav');
+  const safe = nav ? parseFloat(getComputedStyle(nav).paddingBottom) || 0 : 0, navH = Math.round(Math.min(74, Math.max(56, vh0 * 0.075))) + safe, vh = vh0 - navH;
   let w = vw, h = vw * H / W;
   if (h > vh) { h = vh; w = vh * W / H; }
-  wrap.style.width = w + 'px'; wrap.style.height = h + 'px';
+  wrap.style.width = w + 'px'; wrap.style.height = h + 'px'; wrap.style.top = (vh / 2) + 'px';
+  if (nav) { nav.style.height = navH + 'px'; nav.style.width = Math.max(w, Math.min(vw, w * 1.15)) + 'px'; nav.style.fontSize = Math.min(15, Math.max(11, w / W * 22)) + 'px'; }
   wrap.style.fontSize = (w / W * 18) + 'px';
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
@@ -1831,6 +1856,23 @@ function openProfile() {
 }
 profilePop.addEventListener('click', e => { if (!e.target.closest('.pfRow, .pfEdit')) profilePop.classList.remove('show'); });
 document.getElementById('profileBtn').onclick = openProfile;
+// bottom nav: always there; leaving a running battle asks first
+const NAV_GO = { team: () => openTeam(), story: () => { swapSel = null; openStory(); }, fight: () => { openTeam(); document.getElementById('startBtn').click(); }, gacha: () => { if (!screens.team.classList.contains('show')) openTeam(); openShop(); }, quest: () => openQuest(), me: () => openProfile() };
+const inBattle = () => G && !anyScreen();
+function navGo(k) {
+  SFX.init(); if (screens.gacha.classList.contains('show')) return; // let a pack opening finish
+  const go = () => { ['profilePop', 'shopPop', 'lvPop'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('show'); }); if (G && k !== 'team') openTeam(); NAV_GO[k](); navSync(); };
+  if (inBattle()) ask('要離開目前的戰鬥嗎？<br><small style="opacity:.75">這一場的進度不會保留</small>', go); else go();
+}
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => navGo(b.dataset.go));
+function navSync() { // highlight the current page, mirror the red dots, dim the bar during a battle
+  const on = inBattle() ? '' : screens.story.classList.contains('show') ? 'story' : screens.quest.classList.contains('show') ? 'quest' : screens.versus.classList.contains('show') ? 'fight' : document.getElementById('profilePop').classList.contains('show') ? 'me' : document.getElementById('shopPop').classList.contains('show') ? 'gacha' : screens.team.classList.contains('show') ? 'team' : '';
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === on));
+  const dot = id => { const e = document.getElementById(id); return !!e && e.style.display !== 'none' && e.style.display !== ''  || (id === 'drawDot' && e && e.style.display === ''); };
+  const ds = document.querySelectorAll('#nav .ndot'); ds[0].classList.toggle('on', dot('storyDot')); ds[1].classList.toggle('on', dot('drawDot')); ds[2].classList.toggle('on', dot('questDot'));
+  document.getElementById('nav').classList.toggle('battle', !!inBattle() || screens.gacha.classList.contains('show'));
+}
+setInterval(navSync, 400);
 const invPage = { c: 0, w: 0, a: 0 }; let invRows = 2, invCols = 5;
 (() => {
   const list = document.getElementById('teamList'); let md = null;
