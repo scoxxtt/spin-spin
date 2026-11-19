@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.27.1</title>
+<title>SPIN! SPIN! v0.28.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -495,14 +495,49 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .fStory{margin:.7em auto 0;width:fit-content;font-size:.62em;text-align:left;display:block;padding:.5em .8em;border:2px solid #fcee0a;background:rgba(5,6,10,.7)}
 .fStory .fsT{font-weight:900;color:#fcee0a;margin-bottom:.2em}.fStar{color:#8a93a3}.fStar.ok{color:#fcee0a}.fStar b{color:#ff4fd8;font-style:italic}
 .fRew{margin-top:.35em;color:#7fdfff;font-weight:700}
+
+/* ===== v0.28 UI skin: chunky buttons with a press-down, layered panels, clear primary/secondary, muted helper text ===== */
+.btn{border:3px solid #05060a !important;border-radius:.4em !important;background:linear-gradient(180deg,#fff9b0 0%,#fcee0a 42%,#e2c900 100%) !important;color:#05060a !important;font-weight:900 !important;
+  box-shadow:0 .28em 0 #05060a,inset 0 2px 0 rgba(255,255,255,.75),inset 0 -3px 0 rgba(0,0,0,.18) !important;text-shadow:none !important;transition:transform .06s,box-shadow .06s;letter-spacing:.06em}
+.btn:active{transform:translateY(.2em) !important;box-shadow:0 .08em 0 #05060a,inset 0 2px 0 rgba(255,255,255,.6) !important}
+.btn.ghost{background:linear-gradient(180deg,#2c3650 0%,#18202f 100%) !important;color:#9fe8ff !important;box-shadow:0 .28em 0 #05060a,inset 0 0 0 2px rgba(0,240,255,.45),inset 0 2px 0 rgba(255,255,255,.12) !important}
+.btn:disabled,.btn[disabled]{filter:grayscale(1) brightness(.6)}
+.sbtn{border:2px solid #05060a !important;border-radius:.35em !important;background:linear-gradient(180deg,#2c3650,#18202f) !important;color:#9fe8ff !important;box-shadow:0 .18em 0 #05060a,inset 0 0 0 1.5px rgba(0,240,255,.4) !important}
+.sbtn:active{transform:translateY(.12em)}.sbtn.warn{color:#ff8fa8 !important;box-shadow:0 .18em 0 #05060a,inset 0 0 0 1.5px rgba(255,42,85,.6) !important}
+.ipCard,.spanel,.askIn,.sbIn{border-radius:.6em !important;background:linear-gradient(180deg,#1f2738 0%,#131926 55%,#0c1018 100%) !important;box-shadow:0 0 0 3px #05060a,inset 0 0 0 2px rgba(0,240,255,.3),inset 0 2px 0 rgba(255,255,255,.08),0 .6em 1.4em rgba(0,0,0,.6) !important}
+.lvCard{border-radius:.45em !important;background:linear-gradient(180deg,rgba(40,50,72,.85),rgba(16,21,32,.9)) !important;box-shadow:0 .2em 0 #05060a,inset 0 2px 0 rgba(255,255,255,.07)}
+.screen h1{color:#fff !important;text-shadow:3px 3px 0 #05060a,-1px -1px 0 #05060a !important;background:linear-gradient(90deg,transparent,rgba(159,232,255,.22) 25%,rgba(255,143,220,.22) 75%,transparent);padding:.05em 1.6em;letter-spacing:.08em}
+.screen .sub,.ipCard .k,.lvD,.optS{color:#94a0b6 !important}
+#nav{background:linear-gradient(180deg,#1b2131,#07090e) !important}
+/* lobby */
+#home.screen{padding:.6em .8em 1em !important;justify-content:flex-start;gap:.55em}
+#homeIn{width:100%;max-width:26em;flex:1;min-height:0;display:flex;flex-direction:column;align-items:stretch;gap:.6em}
+.hmTop{display:flex;gap:.4em;justify-content:flex-start;padding-right:7.5em;min-height:1.9em}
+.hmPill{display:flex;align-items:center;gap:.3em;padding:.15em .6em .15em .25em;border-radius:1em;background:linear-gradient(180deg,#232b3d,#121722);border:2px solid #05060a;box-shadow:inset 0 0 0 1.5px var(--pc);font-size:.85em}
+.hmPill b{color:#fff}.hmPill .ore{width:1.25em;height:1.25em}.hmIc{color:var(--pc);font-weight:900;width:1.2em;text-align:center}
+.hmLogo{font:italic 900 2.2em/1 Rajdhani,sans-serif;text-align:center;color:#fcee0a;text-shadow:3px 3px 0 #05060a,-1px -1px 0 #05060a,0 0 18px rgba(255,143,220,.5);letter-spacing:.04em}
+.hmHero{position:relative;flex:1;min-height:14em;max-height:30em;border:3px solid #05060a;border-radius:.7em;overflow:hidden;cursor:pointer;box-shadow:0 .3em 0 #05060a,inset 0 0 0 2px #fcee0a}
+.hmBg{position:absolute;inset:0;background:radial-gradient(rgba(5,6,10,.35) 1.2px,transparent 1.8px) 0 0/8px 8px,linear-gradient(135deg,#9fe8ff 0%,#c9b8ff 45%,#ff8fdc 100%)}
+.hmBg::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 38px,rgba(255,255,255,.18) 38px 46px)}
+.hmPic{position:absolute;right:-4%;bottom:-6%;height:118%;object-fit:cover;filter:drop-shadow(-6px 0 0 #05060a);animation:hmBreath 4s ease-in-out infinite;-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%);mask-image:linear-gradient(90deg,transparent,#000 22%)}
+@keyframes hmBreath{50%{transform:translateY(-6px) scale(1.015)}}
+.hmName{position:absolute;left:.7em;top:.6em;color:#05060a}.hmName small{display:block;font-weight:900;font-size:.8em;background:#05060a;color:#fcee0a;padding:.1em .5em;width:max-content;transform:skewX(-10deg)}
+.hmName b{display:block;font:italic 900 1.9em/1.05 Rajdhani,"Noto Sans TC",sans-serif;color:#fff;text-shadow:3px 3px 0 #05060a,-1px -1px 0 #05060a,1px -1px 0 #05060a,-1px 1px 0 #05060a;margin-top:.25em}
+.hmTeam{position:absolute;left:.6em;bottom:.6em;display:flex;align-items:center;gap:.3em}.hmTeam img{width:2.6em;height:2.6em;object-fit:cover;border:2px solid #05060a;border-radius:.35em;background:#0b0f14;box-shadow:0 0 0 2px #fff}
+.hmTeam span{margin-left:.3em;font-weight:900;font-size:.8em;background:#05060a;color:#fcee0a;padding:.25em .6em;border-radius:1em}
+.hmBanner{position:relative;display:grid;grid-template-columns:1fr auto;gap:.15em .6em;text-align:left;padding:.65em .8em;border:3px solid #05060a;border-radius:.6em;color:#e9f2ff;cursor:pointer;font:inherit;
+  background:linear-gradient(100deg,#1f2a44 0%,#2a2350 60%,#3a1f48 100%);box-shadow:0 .25em 0 #05060a,inset 0 0 0 2px rgba(255,143,220,.5)}
+.hmBanner:active{transform:translateY(.15em)}.hmBT{grid-column:1/3;font-weight:900;color:#fcee0a;font-size:.85em}.hmBL{font-size:1.05em}.hmBL b{font:italic 900 1.15em Rajdhani,sans-serif;color:#9fe8ff}.hmBL i{font-style:normal;font-size:.7em;background:#ff2a55;color:#fff;padding:0 .35em;margin-left:.2em}
+.hmBS{grid-column:1;font-size:.8em;color:#94a0b6}.hmGo{grid-column:2;grid-row:2/4;align-self:center;font-weight:900;background:#fcee0a;color:#05060a;border:2px solid #05060a;padding:.35em .7em;border-radius:.35em;box-shadow:0 .18em 0 #05060a}
+.hmBtns{max-width:none;margin-top:.1em}
 </style>
 </head>
 <body>
 <canvas id="envCv"></canvas>
 <nav id="nav">
+  <button data-go="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>大廳</span></button>
   <button data-go="team"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3.4"/><circle cx="12" cy="8" r="3.4"/><circle cx="18" cy="12" r="3.4"/><path d="M3 20c1-3 5-4 9-4s8 1 9 4"/></svg><span>隊伍</span></button>
   <button data-go="story"><svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/></svg><span>章節</span><b class="ndot"></b></button>
-  <button data-go="fight"><svg viewBox="0 0 24 24"><path d="M12 2.5v3"/><ellipse cx="12" cy="9" rx="8.5" ry="3.2"/><path d="M4 10.5l8 11 8-11"/><path d="M8 9.2h8" opacity=".6"/></svg><span>對戰</span></button>
   <button data-go="gacha"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S12 9 12 9c2-4 6-4 6-1.5S12 9 12 9"/></svg><span>抽卡</span><b class="ndot"></b></button>
   <button data-go="quest"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="1.5"/><path d="M9 9l1.5 1.5L13 8M9 15h6"/></svg><span>任務</span><b class="ndot"></b></button>
   <button data-go="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>狀態</span></button>
@@ -535,8 +570,9 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     </div>
   </div>
 
+  <div id="home" class="screen"><div id="homeIn"></div></div>
   <div id="team" class="screen show">
-    <div class="topBar"><button id="profileBtn"></button><h1>SPIN! SPIN!</h1><div class="sub" id="teamSub"></div></div>
+    <div class="topBar"><button id="profileBtn"></button><h1>隊伍編成</h1><div class="sub" id="teamSub"></div></div>
     <div id="teamList"></div>
     <div class="bottomBar"><button class="btn ghost" id="drawOpen">抽卡<b class="dot" id="drawDot"></b></button><button class="btn ghost" id="storyOpen">章節<b class="dot" id="storyDot"></b></button><button class="btn" id="startBtn">開戰！</button></div>
   </div>
@@ -731,10 +767,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.26.3 UX pass: battle 選單 -> ✕ 離開 with confirm, versus buttons in one row (primary right), gacha 收下 on its own row, back buttons that repeat the nav hidden, 圖鑑 on every menu page, 0.45 s double-tap guard on buttons
  v0.27.0 一鍵升階: pick which parts to rank up, materials chosen automatically without conflicts
  v0.27.1 一鍵培養 (star-up all + rank-up picker in one button), rank list shows the bonus before/after
+ v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.27.1';
+const GAME_VERSION = 'v0.28.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1598,8 +1635,8 @@ let invSel = null;  // {k, id} part picked in the inventory
 let invTab = 'c';
 const save = () => { INV.team = collection; saveJSON('topInv', INV); saveJSON('topWins', wins); };
 
-const screens = ['team', 'versus', 'gacha', 'final', 'tutorial', 'codex', 'quest', 'story'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
-function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); document.getElementById('topRight').classList.toggle('menu', ['team', 'story', 'quest', 'versus'].includes(id)); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
+const screens = ['home', 'team', 'versus', 'gacha', 'final', 'tutorial', 'codex', 'quest', 'story'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
+function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); document.getElementById('topRight').classList.toggle('menu', ['home', 'team', 'story', 'quest', 'versus'].includes(id)); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
 const anyScreen = () => Object.values(screens).some(e => e.classList.contains('show'));
 
 let previews = [];
@@ -1917,17 +1954,17 @@ document.getElementById('profileBtn').onclick = openProfile;
 { let lastEl = null, lastT = 0; document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (!b) return; const t = performance.now();
   if (b === lastEl && t - lastT < 450 && !b.closest('#autoBar')) { e.stopImmediatePropagation(); e.preventDefault(); return; } lastEl = b; lastT = t; }, true); }
 // bottom nav: always there; leaving a running battle asks first
-const NAV_GO = { team: () => openTeam(), story: () => { swapSel = null; openStory(); }, fight: () => { openTeam(); document.getElementById('startBtn').click(); }, gacha: () => { if (!screens.team.classList.contains('show')) openTeam(); openShop(); }, quest: () => openQuest(), me: () => openProfile() };
+const NAV_GO = { home: () => openHome(), team: () => openTeam(), story: () => { swapSel = null; openStory(); }, fight: () => { openTeam(); document.getElementById('startBtn').click(); }, gacha: () => { if (!screens.team.classList.contains('show')) openTeam(); openShop(); }, quest: () => openQuest(), me: () => openProfile() };
 const inBattle = () => G && !anyScreen();
 function navGo(k) {
   SFX.init(); if (screens.gacha.classList.contains('show')) return; // let a pack opening finish
-  const go = () => { ['profilePop', 'shopPop', 'lvPop'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('show'); }); if (G && k !== 'team') openTeam(); NAV_GO[k](); navSync(); };
+  const go = () => { ['profilePop', 'shopPop', 'lvPop'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('show'); }); if (G && k !== 'team' && k !== 'home') openTeam(); NAV_GO[k](); navSync(); };
   if (inBattle()) ask('要離開目前的戰鬥嗎？<br><small style="opacity:.75">這一場的進度不會保留</small>', go); else go();
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => navGo(b.dataset.go));
 function navSync() { // highlight the current page, mirror the red dots, dim the bar during a battle
   const pop = id => document.getElementById(id).classList.contains('show');
-  const on = inBattle() ? 'fight' : pop('profilePop') ? 'me' : pop('shopPop') ? 'gacha' : screens.story.classList.contains('show') ? 'story' : screens.quest.classList.contains('show') ? 'quest' : screens.versus.classList.contains('show') ? 'fight' : document.getElementById('profilePop').classList.contains('show') ? 'me' : document.getElementById('shopPop').classList.contains('show') ? 'gacha' : screens.team.classList.contains('show') ? 'team' : '';
+  const on = inBattle() ? '' : pop('profilePop') ? 'me' : pop('shopPop') ? 'gacha' : screens.story.classList.contains('show') ? 'story' : screens.quest.classList.contains('show') ? 'quest' : screens.home.classList.contains('show') ? 'home' : screens.versus.classList.contains('show') ? 'home' : document.getElementById('profilePop').classList.contains('show') ? 'me' : document.getElementById('shopPop').classList.contains('show') ? 'gacha' : screens.team.classList.contains('show') ? 'team' : '';
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === on));
   const dot = id => { const e = document.getElementById(id); return !!e && e.style.display !== 'none' && e.style.display !== ''  || (id === 'drawDot' && e && e.style.display === ''); };
   const ds = document.querySelectorAll('#nav .ndot'); ds[0].classList.toggle('on', dot('storyDot')); ds[1].classList.toggle('on', dot('drawDot')); ds[2].classList.toggle('on', dot('questDot'));
@@ -2698,6 +2735,24 @@ document.getElementById('codexBtn').onclick = () => { settingsOpen = false; sett
 document.getElementById('codexOpen').onclick = () => { SFX.init(); openCodex(openTeam); };
 document.getElementById('tutBtn').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); showTutorial(openTeam); };
 
+// 大廳 (lobby): currencies, the lead character big, chapter progress, two main buttons; the lineup editor lives on its own page
+function openHome() { openTeam(); if (!screens.team.classList.contains('show')) return; show('home'); renderHome(); }
+function renderHome() {
+  const S = storyData(), L = allLevels(), nx = L.find(l => lvUnlocked(l) && !lvCleared(l.id)) || L[L.length - 1], ch = CHAPTERS.find(c => c.levels.includes(nx));
+  const got = L.reduce((t, l) => t + lvStars(l.id).filter(Boolean).length, 0), max = L.length * 3, lead = collection[0], C = CLASSES[lead.c];
+  const pill = (ic, v, col) => `<div class="hmPill" style="--pc:${col}">${ic}<b>${v}</b></div>`;
+  document.getElementById('homeIn').innerHTML = `
+    <div class="hmTop">${pill(ORE, INV.coins, '#fcee0a')}${pill('<span class="hmIc">◆</span>', INV.shards || 0, '#b066ff')}${pill('<span class="hmIc">⚡</span>', '+' + Math.round(teamPower() * 100) + '%', '#00f0ff')}</div>
+    <div class="hmLogo">SPIN! SPIN!</div>
+    <div class="hmHero" id="hmHero"><div class="hmBg"></div><img class="hmPic" src="${PORTRAIT_SRC[lead.c]}" alt="">
+      <div class="hmName"><small>${facBadge(C.fac, 1)} ${C.fac}・出戰 1 號</small><b>${C.name.split('・').join('<br>')}</b></div>
+      <div class="hmTeam">${collection.map((b, i) => `<img src="${PORTRAIT_SRC[b.c]}" alt="" title="${i + 1}">`).join('')}<span>隊伍編成 ▶</span></div></div>
+    <button class="hmBanner" id="hmStory"><span class="hmBT">${ch.name}</span><span class="hmBL">下一關 <b>${nx.id}</b> ${nx.name}${nx.boss ? ' <i>BOSS</i>' : ''}</span><span class="hmBS">★ ${got} / ${max}</span><span class="hmGo">繼續冒險 ▶</span></button>
+    <div class="pairBtns hmBtns"><button class="btn ghost" id="hmFree">自由對戰</button><button class="btn" id="hmGoStory">章節</button></div>`;
+  document.getElementById('hmHero').onclick = () => openTeam();
+  document.getElementById('hmStory').onclick = document.getElementById('hmGoStory').onclick = () => { swapSel = null; openStory(); };
+  document.getElementById('hmFree').onclick = () => { openTeam(); document.getElementById('startBtn').click(); };
+}
 function openTeam() {
   G = null; swapSel = null; storyCtx = null; applyStage(null); document.getElementById('lvPop').classList.remove('show');
   exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none'; exMeter.style.display = 'none'; document.getElementById('assistBtn').style.display = 'none';
@@ -3750,7 +3805,7 @@ function pressEx(chargeOnly) {
   exBtn.classList.remove('tap'); void exBtn.offsetWidth; exBtn.classList.add('tap'); setTimeout(() => exBtn.classList.remove('tap'), 160);
   updateExBtn();
 }
-menuBtn.addEventListener('click', () => ask('要離開目前的戰鬥嗎？<br><small style="opacity:.75">這一場的進度不會保留</small>', openTeam));
+menuBtn.addEventListener('click', () => ask('要離開目前的戰鬥嗎？<br><small style="opacity:.75">這一場的進度不會保留</small>', openHome));
 
 // both tops launch together: the player's aim locks, the call plays, then the CPU's (hidden) drop is revealed
 // The countdown follows the announcer: the phone tells us when each word starts (boundary events), and the
@@ -6081,7 +6136,7 @@ requestAnimationFrame(frame);
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
 window.__topGame = { PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
-openTeam();
+openHome();
 })();
 </script>
 </body>
