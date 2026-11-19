@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.28.0</title>
+<title>SPIN! SPIN! v0.29.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
 html,body{margin:0;height:100%;background:#05050a;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;color:#eef1ff}
 #wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;background:#0b0b16}
@@ -496,6 +496,23 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .fStory .fsT{font-weight:900;color:#fcee0a;margin-bottom:.2em}.fStar{color:#8a93a3}.fStar.ok{color:#fcee0a}.fStar b{color:#ff4fd8;font-style:italic}
 .fRew{margin-top:.35em;color:#7fdfff;font-weight:700}
 
+
+/* ===== v0.29 art pass ===== */
+/* A1 rarity frames: purple sparkles, red flame edge, gold holo foil */
+.tile.r1{background-image:radial-gradient(circle,rgba(214,170,255,.9) 0 1px,transparent 1.6px),radial-gradient(circle,rgba(176,102,255,.7) 0 1px,transparent 1.6px) !important;background-size:22px 26px,31px 19px !important;animation:rSpark 6s linear infinite}
+@keyframes rSpark{to{background-position:0 -52px,0 -38px}}
+.tile.r2{animation:rFlame 1.1s ease-in-out infinite alternate}
+@keyframes rFlame{from{box-shadow:inset 0 0 0 2px rgba(0,0,0,.55),0 0 .35em rgba(255,42,85,.6),0 -.15em .5em rgba(255,138,61,.35)}to{box-shadow:inset 0 0 0 2px rgba(0,0,0,.55),0 0 .7em rgba(255,42,85,.85),0 -.35em .9em rgba(255,170,61,.55)}}
+.tile.r3{border-color:#fcee0a !important;background-image:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.55) 42%,rgba(255,143,220,.4) 48%,rgba(159,232,255,.4) 54%,rgba(255,240,140,.35) 60%,transparent 72%) !important;background-size:260% 100% !important;animation:legend 2.2s infinite !important}
+/* A2 page transition: a quick comic-panel wipe; primary buttons get a light sweep now and then */
+.screen.enter{animation:scrIn .32s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes scrIn{0%{opacity:0;transform:translateX(6%) skewX(-4deg);clip-path:polygon(18% 0,100% 0,100% 100%,0 100%)}100%{opacity:1;transform:none;clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}}
+.btn:not(.ghost){background-size:100% 100%;position:relative;overflow:hidden}
+.btn:not(.ghost)::before{content:"";position:absolute;top:-20%;bottom:-20%;width:30%;left:-40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-20deg);animation:btnShine 4.5s ease-in-out infinite;pointer-events:none}
+@keyframes btnShine{0%,72%{left:-40%}88%,100%{left:130%}}
+.hmPill.bump{animation:pillBump .5s}@keyframes pillBump{30%{transform:scale(1.18);filter:brightness(1.6)}}
+/* A6 display font for the Latin logo / titles */
+.hmLogo{font-family:"Russo One",Rajdhani,sans-serif !important;font-style:italic;letter-spacing:.02em}
 /* ===== v0.28 UI skin: chunky buttons with a press-down, layered panels, clear primary/secondary, muted helper text ===== */
 .btn{border:3px solid #05060a !important;border-radius:.4em !important;background:linear-gradient(180deg,#fff9b0 0%,#fcee0a 42%,#e2c900 100%) !important;color:#05060a !important;font-weight:900 !important;
   box-shadow:0 .28em 0 #05060a,inset 0 2px 0 rgba(255,255,255,.75),inset 0 -3px 0 rgba(0,0,0,.18) !important;text-shadow:none !important;transition:transform .06s,box-shadow .06s;letter-spacing:.06em}
@@ -563,6 +580,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
       <div class="opt"><span>視角傾斜（基準）<small class="optS">（對戰中雙指上下滑也能調）</small></span><input type="range" id="viewKIn" min="0" max="100" class="vRange"></div>
       <div class="opt"><span>場地縮放<small class="optS">（雙指捏合／滾輪）</small></span><input type="range" id="viewZIn" min="0" max="100" class="vRange"></div>
       <div class="opt"><span>視角</span><button class="sbtn" id="viewReset">重設視角</button></div>
+      <div class="opt"><span>頭像統一色調<small class="optS">（所有頭像套同一套色調、網點與黑邊；重新開啟遊戲後生效）</small></span><button class="tog" data-k="portFx"></button></div>
       <div class="opt"><span>頭上血條</span><button class="tog" data-k="hpPct"></button></div>
       <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
       <div class="opt setBtns"><button class="sbtn" id="tutBtn">玩法教學</button><button class="sbtn" id="codexBtn">圖鑑</button><button class="sbtn" id="saveOutBtn">匯出存檔</button><button class="sbtn" id="saveInBtn">匯入存檔</button><button class="sbtn warn" id="resetBtn">重置進度</button></div>
@@ -768,10 +786,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.27.0 一鍵升階: pick which parts to rank up, materials chosen automatically without conflicts
  v0.27.1 一鍵培養 (star-up all + rank-up picker in one button), rank list shows the bonus before/after
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
+ v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.28.0';
+const GAME_VERSION = 'v0.29.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1020,6 +1039,23 @@ function drawFace(g, c, x, y, r, rot) {
   return true;
 }
 // draw the whole portrait into a rect (cover-fit), optionally clipped by the current path
+const PORT_FX = { done: new Set() };
+function gradePortrait(src) { return new Promise(res => { const im = new Image(); im.onload = () => { try {
+  const N = 256, cv2 = document.createElement('canvas'); cv2.width = cv2.height = N; const g = cv2.getContext('2d'); g.drawImage(im, 0, 0, N, N);
+  const D = g.getImageData(0, 0, N, N), d = D.data;
+  for (let i = 0; i < d.length; i += 4) { let r = d[i] / 255, gg = d[i + 1] / 255, b = d[i + 2] / 255; const l = 0.3 * r + 0.59 * gg + 0.11 * b, x = (i / 4) % N, y = (i / 4 / N) | 0;
+    r = l + (r - l) * 1.12; gg = l + (gg - l) * 1.12; b = l + (b - l) * 1.12;                       // a touch more saturation
+    const sh = Math.max(0, 0.45 - l) / 0.45, hi = Math.max(0, l - 0.7) / 0.3;                        // shadows lean violet-blue, highlights lean warm
+    r = r * (1 - 0.22 * sh) + 0.11 * 0.22 * sh + 0.06 * hi; gg = gg * (1 - 0.22 * sh) + 0.08 * 0.22 * sh + 0.03 * hi; b = b * (1 - 0.22 * sh) + 0.27 * 0.22 * sh - 0.02 * hi;
+    r = (r - 0.5) * 1.06 + 0.5; gg = (gg - 0.5) * 1.06 + 0.5; b = (b - 0.5) * 1.06 + 0.5;          // contrast
+    if (l < 0.32 && ((x + ((y >> 2) & 1) * 2) & 3) < 2 && (y & 3) < 2) { r *= 0.86; gg *= 0.86; b *= 0.9; } // halftone dots in the shadows
+    d[i] = Math.max(0, Math.min(255, r * 255)); d[i + 1] = Math.max(0, Math.min(255, gg * 255)); d[i + 2] = Math.max(0, Math.min(255, b * 255)); }
+  g.putImageData(D, 0, 0); const vg = g.createRadialGradient(N / 2, N * 0.45, N * 0.35, N / 2, N / 2, N * 0.75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(10,6,30,.35)'); g.fillStyle = vg; g.fillRect(0, 0, N, N);
+  g.strokeStyle = '#05060a'; g.lineWidth = 6; g.strokeRect(3, 3, N - 6, N - 6);
+  res(cv2.toDataURL('image/jpeg', 0.9)); } catch (e) { res(null); } }; im.onerror = () => res(null); im.src = src; }); }
+async function unifyPortraits() { if (SETTINGS.portFx === false) return; const ids = Object.keys(PORTRAIT_SRC).filter(k => !PORT_FX.done.has(k));
+  for (const k of ids) { const out = await gradePortrait(PORTRAIT_SRC[k]); if (out) { PORTRAIT_SRC[k] = out; PORT_FX.done.add(k); if (PORTRAITS[k]) { const im2 = new Image(); im2.src = out; PORTRAITS[k] = im2; } } }
+  if (screens.home.classList.contains('show')) renderHome(); else if (screens.team.classList.contains('show')) renderTeam(); }
 function drawPortrait(g, c, x, y, w, h) {
   if (!portraitOk(c)) return false;
   const im = PORTRAITS[c], k = Math.max(w / 256, h / 256), sw = w / k, sh = h / k;
@@ -1636,7 +1672,7 @@ let invTab = 'c';
 const save = () => { INV.team = collection; saveJSON('topInv', INV); saveJSON('topWins', wins); };
 
 const screens = ['home', 'team', 'versus', 'gacha', 'final', 'tutorial', 'codex', 'quest', 'story'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
-function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); document.getElementById('topRight').classList.toggle('menu', ['home', 'team', 'story', 'quest', 'versus'].includes(id)); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) screens[k].classList.toggle('show', k === id); }
+function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); document.getElementById('topRight').classList.toggle('menu', ['home', 'team', 'story', 'quest', 'versus'].includes(id)); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) { const was = screens[k].classList.contains('show'); screens[k].classList.toggle('show', k === id); if (k === id && !was) { screens[k].classList.remove('enter'); void screens[k].offsetWidth; screens[k].classList.add('enter'); } } }
 const anyScreen = () => Object.values(screens).some(e => e.classList.contains('show'));
 
 let previews = [];
@@ -2737,6 +2773,7 @@ document.getElementById('tutBtn').onclick = () => { settingsOpen = false; settin
 
 // 大廳 (lobby): currencies, the lead character big, chapter progress, two main buttons; the lineup editor lives on its own page
 function openHome() { openTeam(); if (!screens.team.classList.contains('show')) return; show('home'); renderHome(); }
+let homeCoins = null;
 function renderHome() {
   const S = storyData(), L = allLevels(), nx = L.find(l => lvUnlocked(l) && !lvCleared(l.id)) || L[L.length - 1], ch = CHAPTERS.find(c => c.levels.includes(nx));
   const got = L.reduce((t, l) => t + lvStars(l.id).filter(Boolean).length, 0), max = L.length * 3, lead = collection[0], C = CLASSES[lead.c];
@@ -2749,6 +2786,7 @@ function renderHome() {
       <div class="hmTeam">${collection.map((b, i) => `<img src="${PORTRAIT_SRC[b.c]}" alt="" title="${i + 1}">`).join('')}<span>隊伍編成 ▶</span></div></div>
     <button class="hmBanner" id="hmStory"><span class="hmBT">${ch.name}</span><span class="hmBL">下一關 <b>${nx.id}</b> ${nx.name}${nx.boss ? ' <i>BOSS</i>' : ''}</span><span class="hmBS">★ ${got} / ${max}</span><span class="hmGo">繼續冒險 ▶</span></button>
     <div class="pairBtns hmBtns"><button class="btn ghost" id="hmFree">自由對戰</button><button class="btn" id="hmGoStory">章節</button></div>`;
+  if (homeCoins != null && homeCoins !== INV.coins) { const pl = document.querySelector('#homeIn .hmPill'); if (pl) pl.classList.add('bump'); } homeCoins = INV.coins;
   document.getElementById('hmHero').onclick = () => openTeam();
   document.getElementById('hmStory').onclick = document.getElementById('hmGoStory').onclick = () => { swapSel = null; openStory(); };
   document.getElementById('hmFree').onclick = () => { openTeam(); document.getElementById('startBtn').click(); };
@@ -3288,7 +3326,7 @@ const SFX = (() => {
 const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
-const SETTINGS = Object.assign({ persp: true, music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1, autoTilt: true }, loadJSON('topSettings', {}));
+const SETTINGS = Object.assign({ portFx: true, persp: true, music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1, autoTilt: true }, loadJSON('topSettings', {}));
 VIEW_K = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
@@ -3443,6 +3481,23 @@ function drawWeather(g) { const Wt = G.weather, k = Wt.kind; g.save();
 function drawDecals(g) { for (const d of G.decals) { const k = Math.min(1, d.life / 2); g.save(); g.globalAlpha = 0.55 * k; g.translate(d.x, d.y);
   const gr = g.createRadialGradient(0, 0, 2, 0, 0, d.r); gr.addColorStop(0, 'rgba(10,8,6,.9)'); gr.addColorStop(1, 'rgba(10,8,6,0)'); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, d.r, 0, TAU); g.fill();
   g.rotate(d.a); g.strokeStyle = 'rgba(255,160,60,.55)'; g.lineWidth = 2; for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(-d.r * 0.9, i * 6); g.lineTo(d.r * 0.9, i * 6 + 3); g.stroke(); } g.restore(); } }
+// chapter floor textures (drawn under the lane shading, inside the track clip)
+const FLOOR_PAT = { 1: 'tiles', 2: 'circuit', 3: 'cracks', 4: 'plates', 5: 'hex', 6: 'circuit', 7: 'clouds', 8: 'tiles', 9: 'chevron', 10: 'hex' };
+function drawFloorPattern(g, T, ya, yb, HW) {
+  if (SETTINGS.lowAuto) return; const kind = FLOOR_PAT[+T.lv.id.split('-')[0]] || 'tiles', x0 = CX - HW, x1 = CX + HW, step = 64, y0 = Math.floor(ya / step) * step;
+  g.save(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(255,255,255,.07)'; g.fillStyle = 'rgba(0,0,0,.12)';
+  const rr = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); };
+  for (let y = y0; y < yb + step; y += step) {
+    if (kind === 'tiles') { g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); for (let x = x0 + ((y / step) & 1 ? step / 2 : 0); x < x1; x += step) { g.moveTo(x, y); g.lineTo(x, y + step); } g.stroke(); }
+    else if (kind === 'plates') { g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); for (let x = x0; x < x1; x += step * 1.5) { g.moveTo(x, y); g.lineTo(x, y + step); } g.stroke(); g.fillStyle = 'rgba(255,255,255,.12)'; for (let x = x0 + 8; x < x1; x += step * 1.5) { g.beginPath(); g.arc(x, y + 8, 2.4, 0, TAU); g.arc(x + step * 1.5 - 16, y + 8, 2.4, 0, TAU); g.fill(); } g.fillStyle = 'rgba(0,0,0,.12)'; }
+    else if (kind === 'circuit') { g.strokeStyle = 'rgba(0,240,255,.10)'; g.beginPath(); for (let x = x0 + 20; x < x1; x += 48) { const k = rr(x, y); if (k < 0.55) { g.moveTo(x, y); g.lineTo(x, y + step * 0.5); g.lineTo(x + (k < 0.27 ? 24 : -24), y + step * 0.75); g.lineTo(x + (k < 0.27 ? 24 : -24), y + step); } } g.stroke(); g.fillStyle = 'rgba(0,240,255,.16)'; for (let x = x0 + 20; x < x1; x += 48) if (rr(x, y + 1) < 0.3) { g.beginPath(); g.arc(x, y, 3, 0, TAU); g.fill(); } }
+    else if (kind === 'cracks') { g.strokeStyle = 'rgba(0,0,0,.28)'; g.beginPath(); for (let n = 0; n < 2; n++) { let x = x0 + rr(y, n) * (x1 - x0), yy = y + rr(n, y) * step; g.moveTo(x, yy); for (let s2 = 0; s2 < 4; s2++) { x += (rr(x, yy) - 0.5) * 40; yy += 10 + rr(yy, x) * 14; g.lineTo(x, yy); } } g.stroke(); }
+    else if (kind === 'hex') { g.strokeStyle = 'rgba(176,102,255,.12)'; const r = 18; for (let x = x0 + ((y / step) & 1 ? 0 : 27); x < x1 + r; x += 54) { g.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; i ? g.lineTo(x + Math.cos(a) * r, y + 32 + Math.sin(a) * r) : g.moveTo(x + Math.cos(a) * r, y + 32 + Math.sin(a) * r); } g.closePath(); g.stroke(); } }
+    else if (kind === 'clouds') { g.fillStyle = 'rgba(255,255,255,.05)'; for (let x = x0; x < x1; x += 90) { const k = rr(x, y); g.beginPath(); g.arc(x + k * 50, y + 20, 18 + k * 10, 0, TAU); g.arc(x + k * 50 + 22, y + 26, 14, 0, TAU); g.fill(); } }
+    else if (kind === 'chevron') { g.strokeStyle = 'rgba(252,238,10,.10)'; g.lineWidth = 6; g.beginPath(); g.moveTo(CX - 60, y + 40); g.lineTo(CX, y + 10); g.lineTo(CX + 60, y + 40); g.stroke(); g.lineWidth = 1.5; }
+  }
+  g.restore();
+}
 function drawTip(tp) {
   const g = ctx, k = Math.max(0, Math.min(1, (tp.max - tp.t) * 5, tp.t * 3)), w = W - 36, x0 = 18, y0 = 232 - (1 - k) * 30, h = 58;
   g.save(); g.globalAlpha = k * 0.95; g.fillStyle = 'rgba(5,6,10,.82)'; g.fillRect(x0, y0, w, h); g.strokeStyle = '#fcee0a'; g.lineWidth = 2; g.strokeRect(x0, y0, w, h);
@@ -4635,6 +4690,7 @@ function drawTrack(g, time, cam) {
   floor(); g.fillStyle = T.floor[1]; g.fill();
   g.save(); floor(); g.clip();
   g.fillStyle = T.floor[0]; g.globalAlpha = 0.35; g.fillRect(CX - 70, ya, 140, yb - ya); g.globalAlpha = 1;          // lit centre lane
+  drawFloorPattern(g, T, ya, yb, HW);
   g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(CX - HW, ya, 40, yb - ya); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(CX + HW - 26, ya, 26, yb - ya); // cel shadow under the left wall
   g.fillStyle = 'rgba(0,0,0,.4)';                                                                                  // halftone fading out of the shadow
   for (let y = Math.ceil(ya / 12) * 12; y < yb; y += 12) for (let c = 0; c < 4; c++) { g.beginPath(); g.arc(CX - HW + 46 + c * 11 + ((y / 12) & 1 ? 5 : 0), y, 2.6 - c * 0.6, 0, TAU); g.fill(); }
@@ -5735,6 +5791,7 @@ function drawTopWorld0(g, t) {
   else if (t.falling > 0) { sc = clamp(t.falling / 0.7, 0, 1); g.globalAlpha = Math.sqrt(sc); }
   // shadow + owner ring lie on the floor
   g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(3, 8, 31 * sc, 29 * sc, 0, 0, TAU); g.fill();
+  if (G && !t.dead && !(t.falling > 0) && t.spin > 0.45 && !SETTINGS.lowAuto) { const k = Math.min(1, (t.spin - 0.45) / 0.45); g.save(); g.lineCap = 'round'; for (let i = 0; i < 3; i++) { const a = G.time * (14 + 16 * k) * (t.s && t.s.w && t.s.w.dir < 0 ? -1 : 1) + i * 2.09; g.strokeStyle = `rgba(255,255,255,${0.12 + 0.28 * k})`; g.lineWidth = 2 + k * 1.5; g.beginPath(); g.ellipse(0, -4, 36 * sc, 33 * sc, 0, a, a + 0.9 + 0.5 * k); g.stroke(); } g.restore(); }
   g.strokeStyle = t.side === 0 ? 'rgba(0,240,255,.7)' : 'rgba(255,59,92,.7)'; g.lineWidth = 2.5;
   g.beginPath(); g.arc(0, 0, 38 * sc, 0, TAU); g.stroke();
   // lift the top off the floor; tilt & bob a little as it loses spin
@@ -6135,8 +6192,9 @@ requestAnimationFrame(frame);
 // installable / offline (PWA): only on a real web host — opening the file directly skips it
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
+setTimeout(unifyPortraits, 300);
 })();
 </script>
 </body>
