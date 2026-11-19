@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.30.0</title>
+<title>SPIN! SPIN! v0.30.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -788,10 +788,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.30.1 fix: LAST SPIN! fired every frame when an enemy/BOSS ran out of spin on a track (pop-up flood, heavy lag)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.30.0';
+const GAME_VERSION = 'v0.30.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -5105,6 +5106,11 @@ function stepTop(t, foe, h) {
   t.spin -= t.s.decay * h;
   if (t.spin <= 0) {
     t.spin = 0;
+    if (G.track) { // tracks: enemies and BOSSes never run dry (they'd sit at zero and re-trigger every frame); the player's top running dry costs a life
+      if (t.mob || t.boss || t.side !== 0) { t.spin = 0.05; return; }
+      if (G.phase === 'battle') endRound(null, 0, '停轉'); return;
+    }
+    if (G.phase !== 'battle') return; // already ending: no repeated pop-ups
     if (foe && !foe.dead && foe.spin > 0) { // the one still spinning wins the round (+1); both at once = draw
       addText(foe.x, foe.y - 50, 'SURVIVE！+1', '#fcee0a', 28); comicPop(foe.x, foe.y - 100, 'LAST SPIN!', 40, '#ffffff', '#fcee0a', 1.1);
       focusLines(foe.x, foe.y, 'rgba(252,238,10,.7)', 0.4); camPunch('ko', foe.x, foe.y);
