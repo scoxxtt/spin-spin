@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.30.1</title>
+<title>SPIN! SPIN! v0.31.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -788,11 +788,12 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.31.0 track mechanics batch 2 (jump ramps, wormhole tubes, grind rails, virus chase wall, decks 2F-4F, slopes, lifts, chasms + planks, crumbling floor, belts, turntables, switch doors, one-way gates, blackout, low gravity); all 15 chapters regenerated with longer roads
  v0.30.1 fix: LAST SPIN! fired every frame when an enemy/BOSS ran out of spin on a track (pop-up flood, heavy lag)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.30.1';
+const GAME_VERSION = 'v0.31.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1154,6 +1155,7 @@ const PROP_DEF = {
 function makeProp(p) {
   if (p.type === 'wall') p = Object.assign({ len: 120 }, p, { type: 'mover', move: 'spin', speed: 0 }); // 固定牆＝不會動的擋板
   if (p.type === 'crack') p = Object.assign({ len: 120, hp: 60 }, p, { type: 'mover', move: 'spin', speed: 0 }); // 可撞破的牆：有血量的固定牆（v0.20.0）
+  if (p.type === 'door') p = Object.assign({ len: 140, rot: 3 }, p, { type: 'mover', move: 'spin', speed: 0, skin: 'door' }); // 上鎖的門：踩開關才會打開（v0.31）
   if (p.type === 'popup') p = Object.assign({ len: 56, hp: 16, life: 6.5, skin: 'popup' }, p, { type: 'mover', move: 'spin', speed: 0 }); // 彈窗（BOSS 彈彈叫出來的小牆）
   const P = Object.assign({}, PROP_DEF[p.type] || {}, p), a = clockAng(p.at == null ? 12 : p.at), d = p.d == null ? 0.5 : p.d;
   P.x = CX + Math.cos(a) * AX * d; P.y = CY + Math.sin(a) * BY * d; P.hitAt = -9; if (P.hp != null) P.hp0 = P.hp;
@@ -2592,7 +2594,7 @@ const TUT = [
       }
       tLabel(g, '箭頭＝剋制 +30%', 200, 380, '#fcee0a', 14);
   } },
-  { title: '玩法總覽', text: '<div class="tutRules">・<b>PERFECT 發射</b>：倒數喊第二聲 SPIN! 的瞬間點一下畫面，轉速、速度、EX 都有加成（開 AUTO 也可以自己點）<br>・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）；零件庫的<b>「一鍵培養」</b>會先把能升星的全部升星，再列出可升階的讓你勾選，素材自動挑<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射。終點是圓形闖關場：<b>撞破最上面的門</b>衝進去就過關（撞越快扣越多，門會放衝擊波、有守衛）；每章第 5、9、10 關改成 <b>BOSS</b>，要打到爆甲</div>', draw(g, t) {
+  { title: '玩法總覽', text: '<div class="tutRules">・<b>PERFECT 發射</b>：倒數喊第二聲 SPIN! 的瞬間點一下畫面，轉速、速度、EX 都有加成（開 AUTO 也可以自己點）<br>・<b>零件庫</b>：角色卡、武器、鎧甲分開收藏，拖到出戰格換裝<br>・<b>同種裝備</b>：同一種武器／鎧甲隊伍裡只能用一次（稀有度不同除外）<br>・<b>升星</b>：抽到同名累積素材，按「合成」升星（最多 3 星），滿星後再抽到變萬能卡<br>・<b>稀有度</b>：白＜紫＜紅＜金，補給箱只出白或紫（10連抽+1 必出 1 紫）。3 星後按<b>「升階」</b>，挑 2 張同陣營、同品階的 3 星當素材（武器鎧甲吃同類型）；零件庫的<b>「一鍵培養」</b>會先把能升星的全部升星，再列出可升階的讓你勾選，素材自動挑<br>・<b>陣營羈絆</b>：同陣營 2 隻以上有加成，異哲團算任一陣營<br>・<b>ASSIST</b>：2、3 號上場時，前一棒開打 3 秒後可支援一次，同陣營變<b>連攜</b><br>・<b>金幣</b>：贏 +60、輸 +15、每日首勝 +150，任務和保險箱也能領<br>・<b>自動</b>：AUTO 發射、EX 放技能、MOVE 移動<br>・<b>視角</b>：雙指捏合縮放、上下滑傾斜（電腦：滾輪／Shift＋滾輪）<br>・<b>章節</b>：直條賽道關。<b>往後拉、放開發射</b>，自動彈牆，飛行中拖曳微調。排陣的 3 隻陀螺＝<b>3 條命</b>，倒下就換下一隻在原地重新發射。終點是圓形闖關場：<b>撞破最上面的門</b>衝進去就過關（撞越快扣越多，門會放衝擊波、有守衛）；每章第 5、9、10 關改成 <b>BOSS</b>，要打到爆甲<br>・<b>賽道機關</b>：跳台（夠快才飛得起來）、高台 2F～4F（從斜坡上去，邊緣會掉回下一層）、蟲洞管道、滑軌、深淵與獨木橋（掉下去算一條命）、輸送帶、旋轉圓盤、開關門、崩塌地板、升降台、黑暗區、低重力。每章第 8 關有<b>病毒牆</b>從後面追上來，被追到就損失一隻陀螺。第一次遇到會跳出說明</div>', draw(g, t) {
       g.setTransform(2, 0, 0, 2, 0, 0); const bg = g.createLinearGradient(0, 0, 0, 400); bg.addColorStop(0, '#10232a'); bg.addColorStop(1, '#07090c'); g.fillStyle = bg; g.fillRect(0, 0, 400, 400);
       tTop(g, TA, 90, 210, t * 9, 1.1); tTop(g, TB, 200, 180, -t * 9, 1.3); tTop(g, TC, 310, 210, t * 9, 1.1);
       tLabel(g, 'SPIN! SPIN!', 200, 70, '#fcee0a', 44);
@@ -2870,6 +2872,11 @@ document.getElementById('fightBtn').onclick = fight;
 // 賽道關（v0.13.0）：關卡寫 track 與 boss 兩塊（不用寫 stage／foe）
 //   track   len 賽道長度（像素）、mobLv 小兵裝備等級、floor 地板三色、signs 地面招牌 [{ y, txt, col }]
 //           gaps 牆上的缺口＝出界 [{ side: 'L' 或 'R', from, to }]、props 機關（位置改用 x：-1 左牆～1 右牆、y：離起點幾像素；多一種 pit 陷阱洞）
+//           v0.31 新機關（props）：ramp 跳台 { x, y, w, l, power }、tube 蟲洞管道 { x, y, ex, ey 出口, bend 彎度, open 開關週期秒（不寫＝一直開）, ph }、rail 滑軌 { x, y, x2, y2 }（從 x,y 滑向 x2,y2）、
+//             belt 輸送帶 { x, y, w, l, dir 時鐘方向, power }、turn 旋轉圓盤 { x, y, r, speed 每秒圈數（負＝逆時針） }、switch 開關 { x, y, id, time 開門秒數（不寫＝永久） }＋door 鎖門 { x, y, len, lock: 開關 id }、
+//             oneway 單向閘門 { y }（只能往前過）、wall 固定牆 { x, y, len, rot: 12 } 可做分岔路
+//           v0.31 賽道層級：decks 高台 [{ x, w, y 起點, l 長度, h 樓層 1=2F 2=3F 3=4F, b 底層（預設 h-1）, up 上坡長, down 下坡長（0＝直接掉下）, lift 升降週期秒 }]、
+//             chasms 深淵 [{ y, l, planks: [{ x, w, sway 搖晃幅度 }] }]、crumble 崩塌地板 [{ x, y 中心, w, l }]、dark 黑暗區 / lowg 低重力 [{ from, to }]、chase 病毒牆 { speed, delay }
 //           mobs 途中敵人 [{ type: 'guard' 守門型（左右巡邏）或 'rush' 衝撞型（靠近就衝過來）, x, y, c, w, a, hp 血量倍率（預設 0.4） }]
 //   boss    name、c 用 BOSS 版角色（boss_rex／boss_jack／boss_erin，用 defBoss 新增；決定頭像與招牌技）、w／a、diff 強度、lv 裝備等級、hp 血量倍率、size 體型倍率、lives 幾條血、stage BOSS 場的場地設定（同對戰關 stage，預設標準出口）
 //           phase2（血量 70% 以下）／phase3（35% 以下，同時暴走）：{ props: 新增機關（用時鐘位置 at／d）, mobs: 叫出小兵 }
@@ -3458,12 +3465,17 @@ function drawBossCut(bc) {
 const PROP_TIPS = { bumper: ['彈力柱', '撞到會被大力彈開，可以拿來借力轉彎。'], boost: ['加速帶', '踩上去往箭頭方向衝刺，撞門、撞牆前先踩它。'], mover: ['移動擋板', '會轉或來回推，等它過去再衝。'], spikes: ['地刺', '待在上面會掉轉速；閃黃光代表快冒出來了。'],
   pit: ['陷阱洞', '掉進去直接損失一隻陀螺，一定要繞開。'], ice: ['冰面', '在上面拖曳幾乎沒用，進去前先對好方向。'], portal: ['傳送門', '從 WARP 進、EXIT 出，速度方向不變，常常是捷徑。'], crack: ['防火牆', '有血條的牆，用加速帶衝過去撞破它。'],
   chip: ['資料晶片', '每關 3 個，都放在危險的位置旁邊。第一次拿到有金幣。'],
-  wind: ['強風', '會一直把你往箭頭方向吹，往反方向多抓一點角度。'], barrel: ['炸藥桶', '一撞就爆還會連鎖，引敵人過去再撞，自己別站太近。'], magnet: ['磁鐵', '紅圈把你吸過去、青圈把你推開；被吸住就往外大力拖曳。'], laser: ['雷射柵欄', '亮的時候撞到會被彈回扣血；旁邊有缺口，或等它熄掉再衝。'] };
+  wind: ['強風', '會一直把你往箭頭方向吹，往反方向多抓一點角度。'], barrel: ['炸藥桶', '一撞就爆還會連鎖，引敵人過去再撞，自己別站太近。'], magnet: ['磁鐵', '紅圈把你吸過去、青圈把你推開；被吸住就往外大力拖曳。'], laser: ['雷射柵欄', '亮的時候撞到會被彈回扣血；旁邊有缺口，或等它熄掉再衝。'],
+  ramp: ['跳台', '夠快衝上去就會飛起來，可以越過深淵和障礙；太慢跳不起來。'], tube: ['蟲洞管道', '鑽進洞口會被一路送到很前面；有的會開關，等它亮再進。'], rail: ['滑軌', '順著方向擦上去就會自動高速滑行；往旁邊拖曳可以跳下來。'],
+  belt: ['輸送帶', '會把你一路往箭頭方向送，逆向要多出力。'], turn: ['旋轉圓盤', '踩上去會被帶著繞圈甩出去，看準出口方向再離開。'], switch: ['開關', '撞到開關，對應的鎖門就會打開；有的只開幾秒。'], door: ['鎖門', '撞不壞，要先去踩旁邊的黃色開關。'],
+  oneway: ['單向閘門', '只能往前過，過了就回不去。'], deck: ['高台 2F～4F', '從斜坡開上去；邊緣會掉回下一層，不會死但會頓一下。'], lift: ['升降台', '會升上降下，降下來時開上去就能被帶上高台。'],
+  chasm: ['深淵', '中間沒有地板，只能走獨木橋、滑軌或用跳台飛過去。'], sway: ['搖晃獨木橋', '橋會左右晃，跟著它的節奏過去。'], crumble: ['崩塌地板', '踩過的地板半秒後就會塌，不要停下來。'],
+  chase: ['病毒牆', '紅色的牆會從後面追上來，被追到就損失一隻陀螺，一路往前衝！'], dark: ['黑暗區', '只看得到身邊一圈，慢一點、貼著路中間走。'], lowg: ['低重力', '滑很遠、拖曳不太有用，跳台會飛得更久。'] };
 let TIP_SEEN = null;
 function tipCheck() {
   const T = G.track, p = G.tops[0]; if (G.tip || T.zone !== 'track' || p.dead) return;
   if (!TIP_SEEN) try { TIP_SEEN = JSON.parse(localStorage.getItem('topTips') || '{}'); } catch (e) { TIP_SEEN = {}; } const seen = TIP_SEEN;
-  for (const P of PROPS) { if (!PROP_TIPS[P.type] || seen[P.type]) continue; const d = p.y - P.y; if (d < -40 || d > 480) continue;
+  for (const P of [...PROPS, ...(T.marks || [])]) { if (!PROP_TIPS[P.type] || seen[P.type]) continue; const d = p.y - P.y; if (d < -40 || d > 480) continue;
     seen[P.type] = 1; try { localStorage.setItem('topTips', JSON.stringify(seen)); } catch (e) {} const [t, x] = PROP_TIPS[P.type]; G.tip = { t: 4.2, max: 4.2, title: t, text: x }; return; }
 }
 function drawCombo(T) {
@@ -4242,10 +4254,10 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
 // The 3 lineup tops are the 3 lives: when one is lost the next launches from where it fell.
 // ===================================================================================
 const TRK = { HW: 190, FUN: 260, ENT_Y: CY + 218 }; // corridor half-width, length of the funnel before the entrance, entrance y
-const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT', 'holdT', 'shHit', 'iceT', 'portCD', 'frzT', 'lzCD', 'invCtl', 'aegisT', 'ghost', 'hugArm'];
+const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT', 'holdT', 'shHit', 'iceT', 'portCD', 'frzT', 'lzCD', 'invCtl', 'aegisT', 'ghost', 'hugArm', 'rampTip', 'railCD', 'owTip'];
 const onTrack = () => !!(G && G.track && G.track.zone === 'track');
 const trkHalf = (T, sv) => sv <= T.len - TRK.FUN ? TRK.HW : TRK.HW + (T.gw - TRK.HW) * Math.min(1, (sv - (T.len - TRK.FUN)) / TRK.FUN);
-const LOSE_TEXT = { BREAK: '爆甲', SURVIVE: '停轉', '停轉': '停轉', OUT: '出界', TRAP: '掉進陷阱', DEAD: '掉進 DEAD', BLOOD: '掉進 BLOOD', 'RING OUT': 'RING OUT' };
+const LOSE_TEXT = { BREAK: '爆甲', SURVIVE: '停轉', '停轉': '停轉', OUT: '出界', TRAP: '掉進陷阱', DEAD: '掉進 DEAD', BLOOD: '掉進 BLOOD', 'RING OUT': 'RING OUT', CAUGHT: '被病毒牆吞掉' };
 
 function makeMob(def, lv, x, y) {
   const t = makeTop({ c: def.c, w: def.w, a: def.a, bc: lv, bw: lv, ba: lv }, 1);
@@ -4268,11 +4280,19 @@ function chipSpots(lv) {
     else if (p.type === 'wind') c.push({ x: (p.dir === 9 ? -1 : 1) * 0.76, y: p.y, w: 2.5 });
     else if (p.type === 'spikes') c.push({ x: cl(x), y: p.y, w: 1.5 });
     else if (p.type === 'barrel') c.push({ x: cl(x), y: p.y + 55, w: 1 });
-    else if (p.type === 'ice') c.push({ x: 0.7 * (hash(lv.id + p.y) & 1 ? 1 : -1), y: p.y, w: 1.5 }); }
+    else if (p.type === 'ice') c.push({ x: 0.7 * (hash(lv.id + p.y) & 1 ? 1 : -1), y: p.y, w: 1.5 });
+    else if (p.type === 'rail') c.push({ x: (x + p.x2) / 2, y: (p.y + p.y2) / 2, w: 3 });
+    else if (p.type === 'ramp') c.push({ x, y: p.y + 260, w: 3 });
+    else if (p.type === 'turn') c.push({ x: cl(x + 0.3), y: p.y, w: 1.5 }); }
+  for (const d of tr.decks || []) if (!d.lift) c.push({ x: d.x || 0, y: d.y + (d.l || 400) * 0.6, w: 2.5 + (d.h || 1) * 0.3 });
+  for (const ch of tr.chasms || []) { const q = (ch.planks || [])[0]; if (q && !q.sway) c.push({ x: q.x, y: ch.y + (ch.l || 220) / 2, w: 3.5 }); }
+  for (const cr of tr.crumble || []) c.push({ x: cr.x || 0, y: cr.y, w: 2 });
+  const voidAt = (x, y) => (tr.chasms || []).some(ch => y > ch.y - 30 && y < ch.y + (ch.l || 220) + 30 && !(ch.planks || []).some(q => !q.sway && Math.abs(x - q.x) * TRK.HW < (q.w || 70) / 2)) || (tr.decks || []).some(d => Math.abs((x - (d.x || 0)) * TRK.HW) < (d.w || 200) / 2 + 40 && y > d.y - 200 && y < d.y + (d.l || 400) + 60 && (d.lift || y < d.y));
+  for (let i = c.length - 1; i >= 0; i--) if (voidAt(c[i].x, c[i].y) && !(c[i].w >= 3)) c.splice(i, 1);
   const out = [], H0 = hash(lv.id);
   for (let k = 0; k < 3; k++) { const a = lo + (hi - lo) * k / 3, b = lo + (hi - lo) * (k + 1) / 3, inB = c.filter(q => q.y >= a && q.y < b);
     inB.sort((p, q) => q.w - p.w || ((hash(lv.id + p.y) ^ H0) - (hash(lv.id + q.y) ^ H0)));
-    out.push(inB[0] || { x: (H0 >> k) & 1 ? 0.74 : -0.74, y: (a + b) / 2 }); }
+    let fb = { x: (H0 >> k) & 1 ? 0.74 : -0.74, y: (a + b) / 2 }; for (let n = 0; n < 12 && voidAt(fb.x, fb.y); n++) fb.y += 90; out.push(inB[0] || fb); }
   return out;
 }
 function chipGot(P) {
@@ -4294,10 +4314,11 @@ function startTrack(lv) {
     gaps: (tr.gaps || []).map(gp => ({ side: gp.side === 'L' ? -1 : 1, from: gp.from, to: gp.to })),
     noBoss: !lv.boss, zone: 'track', idx: 0, started: false, mobs: [], phase: 1, bossLives: bs.lives || 1, best: 0, safe: null, kills: 0 };
   GATES = [{ door: true, a: Math.PI / 2, half: GATE_HALF, pts: 0, name: 'GATE', col: '0,240,255', txt: '#00f0ff', x: CX, y: CY + BY }];
-  PROPS = (tr.props || []).map(p => makeProp({ ...p, px: CX + (p.x || 0) * TRK.HW, py: T.y0 - p.y })); linkPortals();
+  PROPS = (tr.props || []).map(p => makeProp({ ...p, px: CX + (p.x || 0) * TRK.HW, py: T.y0 - p.y, ...(p.x2 != null ? { x2: CX + p.x2 * TRK.HW, y2: T.y0 - p.y2 } : {}), ...(p.ex != null ? { ex: CX + p.ex * TRK.HW, ey: T.y0 - p.ey } : {}) })); linkPortals();
   { const got = (storyData().chip || {})[lv.id] || 0; T.chips = chipSpots(lv).map((q, i) => ({ had: !!(got >> i & 1), now: false })); chipSpots(lv).forEach((q, i) => { const Q = makeProp({ type: 'chip', px: CX + q.x * TRK.HW, py: T.y0 - q.y }); Q.idx = i; Q.had = T.chips[i].had; PROPS.push(Q); }); }
   arenaCache = null;
   T.mobs = (tr.mobs || []).map(m => makeMob(m, tr.mobLv || 0, CX + (m.x || 0) * TRK.HW, T.y0 - m.y));
+  tfInit(T, tr);
   const b = T.boss = makeTop(bb, 1); b.boss = true; b.rad = TR * (bs.size || 1.6); b.s.maxHp *= bs.hp || 3; b.hp = b.s.maxHp; b.s.mass *= 1.5; b.kbOut = 0.5; b.dmgOut = bs.dmg || 0.62; b.s.decay = 0; b.s.accel *= 0.85; // heavy, but its hits push less than its size suggests so one bump is not a ring-out
   b.x = CX; b.y = CY - 50; b.dead = T.noBoss; b.chargeCD = 4; b.sig = CLASSES[bs.c].sig || null; b.pool = CLASSES[bs.c].pool || null; b.mimic = !!CLASSES[bs.c].mimic; b.undying = b.sig === 'undying'; b.revived = false; b.sigCD = 6; b.chain = 0;
   const gh = T.ghost = makeTop(bb, 1); gh.dead = true; gh.ghost = true; // stand-in "foe" while no enemy is near
@@ -4320,7 +4341,8 @@ function trackNearMob(p, R0) { let best = null, bd = R0; for (const m of G.track
 function trackAuto(me) {
   const m = SETTINGS.autoMove; if (!m || m === 'off') return null;
   const T = G.track, foe = G.tops[1]; let tx = CX, ty = me.y - 220;
-  if (m !== 'def' && foe && !foe.dead && len(foe.x - me.x, foe.y - me.y) < 240) { tx = foe.x; ty = foe.y; }
+  const run = T.chase && T.chase.y - me.y < 650; // the virus wall is close: no time to fight
+  if (m !== 'def' && !run && foe && !foe.dead && len(foe.x - me.x, foe.y - me.y) < 240) { tx = foe.x; ty = foe.y; }
   const d = norm(tx - me.x, ty - me.y); let ux = d.x, uy = d.y;
   for (const P of PROPS) if (P.type === 'laser' && (laserOn(P, G.time) || laserOn(P, G.time + 0.5))) { const S = moverSeg(P, 0), my = (S.y1 + S.y2) / 2, dyl = me.y - my; if (Math.abs(dyl) < 120 && Math.abs(me.x - (S.x1 + S.x2) / 2) < P.len / 2 + 30) { uy += (dyl >= 0 ? 1 : -1) * 2.2; } }
   for (const P of PROPS) if (P.type === 'pit' || (P.type === 'spikes' && spikesOn(P, G.time))) { const dx = me.x - P.x, dy = me.y - P.y, dd = len(dx, dy) || 1, R0 = P.r + 130; if (dd < R0) { const k = (R0 - dd) / R0 * 2.6; ux += dx / dd * k + (dx >= 0 ? 1 : -1) * k; uy += dy / dd * k * 0.5; } } // slip round the side, do not just brake
@@ -4334,6 +4356,7 @@ function trackAuto(me) {
       if (me.ram === 'back') return { x: (cq.x - me.x) * -0.004, y: 1 };
       const g = norm(cq.x - me.x, cq.y - me.y); return { x: g.x, y: g.y }; }
     me.ram = null; }
+  { const q = tfAuto(me); if (q) { const d2 = norm(q.x - me.x, q.y - me.y); ux = ux * 0.3 + d2.x * 1.6; uy = uy * 0.3 + d2.y * 1.6; } }
   const sv = T.y0 - me.y;
   for (const gp of T.gaps) if (sv > gp.from - 80 && sv < gp.to + 80) { const dist = Math.abs(me.x - (CX + gp.side * TRK.HW)); if (dist < 170) ux -= gp.side * (170 - dist) / 170 * 2.4; }
   const l = len(ux, uy); if (l > 1) { ux /= l; uy /= l; }
@@ -4348,7 +4371,7 @@ function trackBounds(t, h) {
   const hw = trkHalf(T, sv), fun = sv > T.len - TRK.FUN;
   for (const sd of [-1, 1]) {
     const over = (t.x - CX) * sd - (hw - m); if (over <= 0) continue;
-    if (isP && !fun && !(t.invT > 0) && T.gaps.some(gp => gp.side === sd && sv > gp.from && sv < gp.to)) {
+    if (isP && !fun && !(t.invT > 0) && !t.air && !t.grind && T.gaps.some(gp => gp.side === sd && sv > gp.from && sv < gp.to)) {
       if (over > m + 4) { t.falling = 0.9; t.fellIn = { pts: 0, name: 'OUT' }; t.onRing = false;
         addText(t.x, t.y - 50, '出界！', '#ff2a55', 28); comicPop(t.x, t.y - 100, 'OUT!!', 44, '#ffffff', '#ff2a55', 1); SFX.gate(); G.shake = 12; focusLines(t.x, t.y, 'rgba(255,42,85,.8)', 0.4); }
       continue;
@@ -4376,7 +4399,7 @@ function mobStep(m, p, h) {
     if (m.mob === 'guard' || m.cd < 1.5) { m.vx += ((tx - m.x) * kp - m.vx * 6) * h; m.vy += ((m.hy - m.y) * kp - m.vy * 6) * h; }
   }
   m.vx *= 1 - 0.6 * h; m.vy *= 1 - 0.6 * h; m.x += m.vx * h; m.y += m.vy * h;
-  if (G.track.zone === 'track') trackBounds(m, h);
+  if (G.track.zone === 'track') { trackBounds(m, h); tfAfterMove(m, h, m.x - m.vx * h, m.y - m.vy * h); }
   else if (qOf(m.x, m.y, 16) > 1) { const n = eNormal(m.x, m.y), c = eClamp(m.x, m.y, 16), vn = m.vx * n.x + m.vy * n.y; m.x = c.x; m.y = c.y; if (vn > 0) { m.vx -= 1.8 * vn * n.x; m.vy -= 1.8 * vn * n.y; } }
 }
 // BOSS: three phases by health, and a telegraphed charge. If the charge ends in a wall the BOSS is stunned and takes extra damage
@@ -4540,13 +4563,15 @@ function trackPhysics(h) {
     stepTop(b, p, h); if (G.phase !== 'battle') return;
     collide(p, b, h); if (G.phase !== 'battle') return;
   }
-  for (const m of T.mobs) if (!m.dead) { mobStep(m, p, h); collide(p, m, h); if (G.phase !== 'battle') return; }
+  for (const m of T.mobs) if (!m.dead) { mobStep(m, p, h); if (tfMeet(p, m)) collide(p, m, h); if (G.phase !== 'battle') return; }
+  if (T.zone === 'track') tfStep(T, p, h);
   for (const P of PROPS) { if (P.fuse > 0 && (P.fuse -= h) <= 0) barrelBoom(P); if (P.life && !P.dead && (P.life -= h) <= 0) { P.dead = true; if (P.skin !== 'fire') sparks(P.x, P.y, 10, '#7fdfff', 160); } }
   if (T.shots) shotsStep(h);
   if (p.dead || p.falling) return;
   if (T.zone === 'track') {
     const sv = T.y0 - p.y; T.best = Math.max(T.best, sv);
-    if (Math.abs(p.x - CX) < trkHalf(T, sv) - 46 && !PROPS.some(P => (P.type === 'pit' || P.type === 'spikes') && len(p.x - P.x, p.y - P.y) < P.r + 46)) T.safe = { x: p.x, y: p.y };
+    if (Math.abs(p.x - CX) < trkHalf(T, sv) - 46 && !p.air && !p.grind && !p.tube && !(p.lvl > 0.05) && !PROPS.some(P => (P.type === 'pit' || P.type === 'spikes') && len(p.x - P.x, p.y - P.y) < P.r + 46) && tfSafeAt(p.x, p.y)) T.safe = { x: p.x, y: p.y };
+    if (p.y < TRK.ENT_Y - 8 && !p.tube) tfClear(p);
     if (p.y < TRK.ENT_Y - 8) T.noBoss ? (T.lv.goal ? trackEnterGate() : trackGoal()) : trackEnterBoss();
   } else if (T.zone === 'gate') gateStep(h);
   else if (qOf(p.x, p.y) < 0.66 && !inGateZone(p.x, p.y)) T.safe = { x: p.x, y: p.y };
@@ -4603,6 +4628,8 @@ function gateAuto(me) {
     if (m !== 'def' && foe && !foe.dead && foe.mob && len(foe.x - me.x, foe.y - me.y) < 100) { tx = foe.x; ty = foe.y; }
     else { if (me.y < gt.y + 110 && me.vy >= -40) me.back = 0.7; if (me.back > 0) { me.back -= 1 / 60; tx = CX + (me.x < CX ? -40 : 40); ty = CY + 70; } if (gt.cd < 0.9 && len(me.x - gt.x, me.y - gt.y) < GATE_WAVE_R + 30) { tx = CX; ty = CY + 80; } }
   }
+  me.stk = len(me.vx, me.vy) < 45 ? (me.stk || 0) + 1 / 60 : Math.max(0, (me.stk || 0) - 1 / 30); // pinned against a wall in front of the door: slide out sideways
+  if (me.stk > 0.8) { tx = CX + (me.x <= CX ? -170 : 170); ty = me.y + 20; if (me.stk > 1.8) me.stk = 0; }
   const u = norm(tx - me.x, ty - me.y); return propAvoid(me, { x: u.x, y: u.y });
 }
 function drawGate(g) {
@@ -4662,11 +4689,11 @@ function trackEnd(winner, pts, reason) {
   }
   if (!p.dead && p.spin > 0) return;
   // lost this top
-  const why = LOSE_TEXT[reason] || reason, fell = ['OUT', 'TRAP', 'DEAD', 'BLOOD', 'RING OUT'].includes(reason);
+  const why = LOSE_TEXT[reason] || reason, fell = ['OUT', 'TRAP', 'DEAD', 'BLOOD', 'RING OUT', 'CAUGHT'].includes(reason);
   let rp = fell || !isFinite(p.x) ? T.safe : { x: p.x, y: p.y };
-  if (T.zone === 'track') { const sv = clamp(T.y0 - rp.y, 40, T.len - 10), hw = trkHalf(T, sv) - 40; rp = { x: clamp(rp.x, CX - hw, CX + hw), y: T.y0 - sv }; if (PROPS.some(P => P.type === 'pit' && len(rp.x - P.x, rp.y - P.y) < P.r + 30)) rp = T.safe; }
+  if (T.zone === 'track') { const sv = clamp(T.y0 - rp.y, 40, T.len - 10), hw = trkHalf(T, sv) - 40; rp = { x: clamp(rp.x, CX - hw, CX + hw), y: T.y0 - sv }; if (PROPS.some(P => P.type === 'pit' && len(rp.x - P.x, rp.y - P.y) < P.r + 30) || !tfSafeAt(rp.x, rp.y)) rp = T.safe; }
   else rp = clampDrop(rp.x, rp.y);
-  (T.lost = T.lost || []).push({ why: reason, zone: T.zone, at: Math.round(T.best), t: Math.round(G.time) });
+  (T.lost = T.lost || []).push({ why: reason, zone: T.zone, at: Math.round(T.best), t: Math.round(G.time), sv: Math.round(T.y0 - p.y), x: Math.round(p.x - CX) });
   T.resp = rp; T.idx++; G.joy = null; p.dead = true; SFX.draw && SFX.draw();
   if (T.idx >= G.lineup.length) { G.score = [0, 1]; G.phase = 'trackEnd'; T.endT = 2.2; showBanner(`${why}… GAME OVER`, 2.2, '#ff3b5c'); }
   else { G.phase = 'respawn'; T.endT = 1.5; showBanner(`${why}！換 ${T.idx + 1} 號上場`, 1.5, '#ff3b5c'); }
@@ -4680,10 +4707,300 @@ function trackWait(dt) {
   // next top in the lineup, at the spot the last one fell; the player aims and launches again
   G.round = T.idx + 1; G.pb = G.lineup[T.idx];
   const np = makeTop(G.pb, 0); np.x = T.resp.x; np.y = T.resp.y; G.tops[0] = np;
+  if (T.chase) { T.chase.y = Math.max(T.chase.y, np.y + 650); T.chase.t = Math.min(T.chase.t, T.chase.delay - 1.5); }
+  if (T.cells) for (const c of T.cells) { c.st = 0; c.t = 0; } // the collapsed floor is rebuilt for the next top
   G.assist = { t: 0, used: [false, true], ai: 0 }; G.assistFx = null; G.acut = null; G.cam = null; G.exFreeze = null; G.slowT = 0;
   G.phase = 'launch'; G.placed = true; G.drag = null; G.autoT = 0;
   showBanner(`${T.idx + 1} 號出擊！剩 ${G.lineup.length - T.idx} 隻`, 1.2, '#00f0ff'); SFX.round(); updateExBtn(); paintAssist();
 }
+// ---------- v0.31 track features (賽道機關第二批): jump ramps, wormhole tubes, grind rails, virus chase wall, raised decks 2F–4F with slopes and lifts,
+// chasms with planks (some swaying), collapsing floor, conveyor belts, turntables, switch + locked doors, one-way gates, blackout and low-gravity sections ----------
+const DECK_H = 24, TRK_DECAY = 0.65; // one floor = 24 screen px; the player's spin drains slower on the (longer) roads
+const deckLift = lv => lv * DECK_H / VIEW_K;
+const airZ = t => t.air ? t.air.H * Math.sin(Math.PI * clamp(t.air.t / t.air.dur, 0, 1)) : 0;
+const tubeOpen = P => !P.open || ((G.time + (P.ph || 0)) % P.open) < P.open * 0.55;
+function tubePt(P, u) { const mx = (P.x + P.ex) / 2, my = (P.y + P.ey) / 2, dx = P.ex - P.x, dy = P.ey - P.y, L = len(dx, dy) || 1, cx = mx - dy / L * (P.bend || 0) * L, cy = my + dx / L * (P.bend || 0) * L, a = 1 - u;
+  return { x: a * a * P.x + 2 * a * u * cx + u * u * P.ex, y: a * a * P.y + 2 * a * u * cy + u * u * P.ey, z: 46 + Math.sin(Math.PI * u) * 70 }; }
+function tfInit(T, tr) {
+  const X = x => CX + (x || 0) * TRK.HW, Y = sv => T.y0 - sv;
+  T.decks = (tr.decks || []).map((d, i) => ({ i, cx: X(d.x), w: d.w || 200, y: d.y, l: d.l || 400, h: d.h || 1, b: d.b == null ? (d.h || 1) - 1 : d.b, up: d.lift ? 0 : d.up == null ? 150 : d.up, down: d.lift ? 0 : d.down || 0, lift: d.lift || 0, ph: d.ph || 0 }));
+  T.chasms = (tr.chasms || []).map(c => ({ y: c.y, l: c.l || 220, planks: (c.planks || []).map(q => ({ x: X(q.x), w: q.w || 70, sway: q.sway || 0, ph: q.ph || 0 })) }));
+  T.cells = []; for (const c of tr.crumble || []) { const W0 = c.w || 300, L0 = c.l || 256, n = Math.max(1, Math.round(W0 / 64)), m = Math.max(1, Math.round(L0 / 64)), s = W0 / n, s2 = L0 / m;
+    for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) T.cells.push({ x: X(c.x) - W0 / 2 + s * (i + 0.5), y: Y(c.y - L0 / 2 + s2 * (j + 0.5)), sw: s, sl: s2, st: 0, t: 0 }); }
+  T.chase = tr.chase ? { speed: tr.chase.speed || 230, delay: tr.chase.delay == null ? 2.5 : tr.chase.delay, y: T.y0 + 420, t: 0, warned: false } : null;
+  T.dark = (tr.dark || []).map(r => ({ from: r.from, to: r.to })); T.lowg = (tr.lowg || []).map(r => ({ from: r.from, to: r.to }));
+  T.marks = []; const mk = (type, sv) => T.marks.push({ type, y: Y(sv) });
+  T.decks.forEach(d => mk(d.lift ? 'lift' : 'deck', d.y - d.up)); T.chasms.forEach(c => mk(c.planks.some(q => q.sway) ? 'sway' : 'chasm', c.y));
+  for (const c of tr.crumble || []) mk('crumble', c.y - (c.l || 256) / 2); if (T.chase) mk('chase', 40); T.dark.forEach(r => mk('dark', r.from)); T.lowg.forEach(r => mk('lowg', r.from));
+  for (const P of PROPS) { if (P.type === 'mover' && P.skin === 'door') T.marks.push({ type: 'door', y: P.y }); const d = deckUnder(T, P.x, P.y); if (d) { P.deck = d; P.lvl = d.h; } }
+  for (const m of T.mobs) { const d = deckUnder(T, m.x, m.y); if (d) m.lvl = d.h; }
+}
+function deckUnder(T, x, y) { const sv = T.y0 - y; let best = null; for (const d of T.decks) if (!d.lift && Math.abs(x - d.cx) < d.w / 2 && sv >= d.y && sv <= d.y + d.l && (!best || d.h > best.h)) best = d; return best; }
+const deckLv = d => d.lift ? d.b + (d.h - d.b) * (0.5 - 0.5 * Math.cos((G.time + d.ph) * TAU / d.lift)) : d.h;
+const plankX = q => q.x + (q.sway ? Math.sin((G.time + q.ph) * 1.6) * q.sway : 0);
+// floor levels under a point: the ground (0) unless it is a chasm / a fallen cell, plus every deck top and slope there
+function tfSurf(x, y) {
+  const T = G.track, sv = T.y0 - y, out = [];
+  let ground = true;
+  for (const c of T.chasms) if (sv > c.y && sv < c.y + c.l) { ground = c.planks.some(q => Math.abs(x - plankX(q)) < q.w / 2 + 10); break; } // a top hanging a little over the edge still counts as on the plank
+  if (ground) for (const c of T.cells) if (c.st === 2 && Math.abs(x - c.x) < c.sw / 2 && Math.abs(y - c.y) < c.sl / 2) { ground = false; break; }
+  if (ground) out.push(0);
+  for (const d of T.decks) { if (Math.abs(x - d.cx) > d.w / 2) continue; const h = deckLv(d);
+    if (sv >= d.y && sv <= d.y + d.l) out.push(h);
+    else if (d.up && sv >= d.y - d.up && sv < d.y) out.push(d.b + (h - d.b) * (sv - d.y + d.up) / d.up);
+    else if (d.down && sv > d.y + d.l && sv <= d.y + d.l + d.down) out.push(h - (h - d.b) * (sv - d.y - d.l) / d.down); }
+  return out;
+}
+const tfLv = t => (t.lvl || 0) + (t.tube ? 9 : t.air ? airZ(t) / DECK_H : 0);
+const tfMeet = (a, b) => !G.track || !G.track.decks || G.track.zone !== 'track' || (!a.tube && !b.tube && Math.abs(tfLv(a) - tfLv(b)) < 0.6);
+const tfKey = t => (G.track && G.track.decks ? tfLv(t) * 1e5 : 0);
+function tfZ(t) { const T = G.track; if (!T || !T.decks || T.zone !== 'track') return null;
+  return { b: deckLift(t.lvl || 0) + (t.dropZ || 0) / VIEW_K, a: t.tube ? tubePt(t.tube.P, Math.min(1, t.tube.u)).z : t.grind ? 9 : airZ(t) }; }
+function tfClear(t) { t.air = null; t.grind = null; t.tube = null; t.lvl = 0; t.dropZ = 0; }
+// a respawn point has to be plain ground
+function tfSafeAt(x, y) {
+  const T = G.track; if (!T.decks) return true; const sv = T.y0 - y;
+  if (T.chasms.some(c => sv > c.y - 90 && sv < c.y + c.l + 90)) return false;
+  if (T.cells.some(c => Math.abs(x - c.x) < c.sw / 2 + 50 && Math.abs(y - c.y) < c.sl / 2 + 50)) return false;
+  if (T.decks.some(d => Math.abs(x - d.cx) < d.w / 2 + 50 && sv > d.y - d.up - 50 && sv < d.y + d.l + d.down + 50)) return false;
+  if (T.chase && y > T.chase.y - 700) return false;
+  return !PROPS.some(P => (P.type === 'belt' || P.type === 'turn') && len(x - P.x, y - P.y) < (P.r || Math.max(P.w, P.l) / 2) + 40);
+}
+// wormhole tube / grind rail: the top rides on its own, nothing else touches it. Returns true while riding
+function tfRide(t, h) {
+  if (t.tube) { const R = t.tube; R.u += h / R.dur; t.invT = Math.max(t.invT, 0.25); const q = tubePt(R.P, Math.min(1, R.u)); t.x = q.x; t.y = q.y; t.angle += t.s.w.dir * 30 * h;
+    if (G.time - (R.fx || 0) > 0.05) { R.fx = G.time; G.particles.length < 400 && sparks(t.x, t.y - q.z / VIEW_K, 2, '#ff9ae6', 120); }
+    if (R.u >= 1) { const q0 = tubePt(R.P, 0.96), d = norm(q.x - q0.x, q.y - q0.y); t.tube = null; t.vx = d.x * 860; t.vy = d.y * 860; t.lvl = 0; t.spin = Math.min(1, t.spin + 0.06);
+      t.air = { t: 0.5, dur: 0.9, H: 40 }; // spat out of the exit with a little hop
+      wave(t.x, t.y, '255,154,230', 120, 8, 0.4); sparks(t.x, t.y, 26, '#ff9ae6', 380, true); G.shake = Math.max(G.shake, 6); SFX.boost(); comicPop(t.x, t.y - 80, 'WARP OUT!!', 34, '#ffffff', '#ff4fd8', 0.7); }
+    return true; }
+  if (t.grind) { const R = t.grind; R.s += R.v * h; R.v = Math.min(R.v + 140 * h, 1150); t.x = R.P.x + R.tx * R.s; t.y = R.P.y + R.ty * R.s; t.vx = R.tx * R.v; t.vy = R.ty * R.v; t.angle += t.s.w.dir * 34 * h;
+    if (G.time - (R.fx || 0) > 0.04) { R.fx = G.time; sparks(t.x - R.tx * 14, t.y - R.ty * 14 - 6, 3, '#fcee0a', 260); }
+    const u = t.side === 0 && G.joy ? playerInput(t) : null, side = u ? u.x * -R.ty + u.y * R.tx : 0;
+    if (Math.abs(side) > 0.6) { t.grind = null; t.railCD = 0.5; t.vx += -R.ty * Math.sign(side) * 380; t.vy += R.tx * Math.sign(side) * 380; t.air = { t: 0, dur: 0.38, H: 26 }; addText(t.x, t.y - 40, '跳軌！', '#fcee0a', 18); return false; }
+    if (R.s >= R.L) { t.grind = null; t.railCD = 0.4; t.air = { t: 0, dur: 0.55, H: 34 }; comboAdd(1, t.x, t.y); comicPop(t.x, t.y - 70, 'GRIND!!', 30, '#05060a', '#fcee0a', 0.55); SFX.boost(); }
+    return true; }
+  return false;
+}
+function tfVoid(t) {
+  if (t.mob) { t.dead = true; t.hp = 0; sparks(t.x, t.y, 20, '#ff3b5c', 260); comicPop(t.x, t.y - 60, 'BYE!', 30, '#ffffff', '#ff2a55', 0.6); trackEnd(0, 0, 'OUT'); return; }
+  if (t.side !== 0 || t.boss || t.invT > 0) return;
+  t.falling = 0.9; t.fellIn = { pts: 0, name: 'OUT' }; t.vx *= 0.3; t.vy *= 0.3; t.air = null; t.grind = null;
+  addText(t.x, t.y - 50, '掉下去了！', '#ff2a55', 28); comicPop(t.x, t.y - 100, 'FALL!!', 44, '#ffffff', '#ff2a55', 1); SFX.gate(); G.shake = 12; comboBreak();
+}
+function tfLand(t, S, e2) {
+  const air = t.air, cand = S.filter(s => s <= e2 + 0.2); t.air = null;
+  if (!cand.length) return tfVoid(t);
+  const nl = Math.max(...cand), up = nl - (t.lvl || 0); t.lvl = nl;
+  if (t.side !== 0 || t.mob) return;
+  const big = air.dur > 0.8;
+  G.shake = Math.max(G.shake, big ? 9 : 4); sparks(t.x, t.y, big ? 26 : 12, '#fcee0a', big ? 340 : 220, true); wave(t.x, t.y, '252,238,10', big ? 110 : 70, 6, 0.3); SFX.thump(big ? 0.8 : 0.45);
+  if (air.H > 30) { comboAdd(big ? 2 : 1, t.x, t.y); t.spin = Math.min(1, t.spin + (big ? 0.06 : 0.03));
+    if (G.comicCD <= 0) { comicPop(t.x, t.y - 70, up > 0.5 ? 'UP!!' : big ? 'BIG AIR!!' : 'LANDING!', big ? 40 : 28, '#ffffff', '#00b8d4', 0.6); G.comicCD = 0.3; } }
+}
+function tfDrop(t, nl) {
+  const dz = (t.lvl || 0) - nl; t.lvl = nl; t.dropZ = dz * DECK_H; t.stunT = Math.max(t.stunT, 0.1 + 0.08 * dz);
+  if (t.side === 0 && !t.mob) { G.shake = Math.max(G.shake, 3 + dz * 2); sparks(t.x, t.y, 8 + dz * 4, '#a8fbff', 200); SFX.thump(0.3 + dz * 0.15); addText(t.x, t.y - 44, nl > 0 ? `落到 ${Math.round(nl) + 1}F` : '落下！', '#a8fbff', 18); }
+}
+// after a top moves on the road: deck sides are walls, slopes carry it up or down, edges drop it a floor, chasms swallow it, jumps land
+function tfAfterMove(t, h, ox, oy) {
+  const T = G.track; if (!T.decks || t.falling || t.dead) return;
+  const sv = T.y0 - t.y; t.lowg = T.lowg.some(r => sv > r.from && sv < r.to);
+  if (t.dropZ > 0) t.dropZ = Math.max(0, t.dropZ - h * DECK_H * 8);
+  const cur = t.lvl || 0, air = t.air, eff = cur + airZ(t) / DECK_H;
+  if (!air && !t.grind && cur < 0.3 && t.side === 0 && !t.mob) for (const c of T.chasms) if (sv > c.y - 60 && sv < c.y + c.l) { // bridge assist: a top near a plank is drawn onto its middle
+    let bq = null, bd = 1e9; for (const q of c.planks) { const d = Math.abs(plankX(q) - t.x); if (d < bd) { bd = d; bq = q; } }
+    if (bq && bd < bq.w / 2 + 30) { const k = Math.min(1, 7 * h); t.vx += ((plankX(bq) - t.x) * 6 - t.vx) * k; }
+    break; }
+  let S = tfSurf(t.x, t.y);
+  if (T.decks.length && S.some(s => s > eff + 0.42)) {
+    const hi = A => A.some(s => s > eff + 0.42), bx = hi(tfSurf(t.x, oy)), by = hi(tfSurf(ox, t.y)), vn = len(t.vx, t.vy);
+    if (bx && !by) { t.x = ox; t.vx *= -0.55; } else if (by && !bx) { t.y = oy; t.vy *= -0.55; } else { t.x = ox; t.y = oy; t.vx *= -0.55; t.vy *= -0.55; }
+    if (t.side === 0 && !t.mob && vn > 160) { sparks(t.x, t.y, 6, '#a8fbff', 160); SFX.wall(vn); if (vn > 320) comboBreak(); }
+    S = tfSurf(t.x, t.y);
+  }
+  if (air) { air.t += h * (t.lowg ? 0.62 : 1); const u = air.t / air.dur, e2 = cur + airZ(t) / DECK_H;
+    if (u >= 1 || (u > 0.5 && S.some(s => s > cur + 0.42 && s <= e2 + 0.2))) tfLand(t, S, e2); return; }
+  if (t.grind) return;
+  let best = -1; for (const s of S) if (Math.abs(s - cur) <= 0.42 && s > best) best = s;
+  if (best >= 0) { const dl = best - cur; if (dl < -0.002) { const k = 1 + Math.min(0.05, -dl * 1.4); t.vx *= k; t.vy *= k; } else if (dl > 0.002) { const k = 1 - Math.min(0.03, dl * 0.5); t.vx *= k; t.vy *= k; } t.lvl = best; return; }
+  const low = S.filter(s => s < cur); if (low.length) return tfDrop(t, Math.max(...low));
+  tfVoid(t);
+}
+// per-frame road systems: chase wall, crumbling cells, timed switches
+function tfStep(T, p, h) {
+  if (!T.decks) return;
+  for (const c of T.cells) {
+    if (c.st === 0) { for (const t of [p, ...T.mobs]) if (!t.dead && !t.falling && !t.air && !t.tube && !t.grind && (t.lvl || 0) < 0.3 && Math.abs(t.x - c.x) < c.sw / 2 + 6 && Math.abs(t.y - c.y) < c.sl / 2 + 6) { c.st = 1; c.t = 0.8; break; } }
+    else if (c.st === 1) { if ((c.t -= h) <= 0) { c.st = 2; c.t = 3.5; sparks(c.x, c.y, 6, '#59606c', 160); } }
+    else if ((c.t -= h) <= 0 && !(Math.abs(p.x - c.x) < c.sw && Math.abs(p.y - c.y) < c.sl)) { c.st = 0; }
+  }
+  for (const P of PROPS) if (P.type === 'switch' && P.on && P.time && (P.offT -= h) <= 0) { P.on = false; for (const D of PROPS) if (D.lock === P.id) { D.dead = false; sparks((D.x), D.y, 12, '#fcee0a', 200); } addText(P.x, P.y - 40, '門關上了', '#ff2a55', 16); }
+  const C = T.chase; if (!C) return;
+  C.t += h; if (C.t > C.delay) C.y -= C.speed * h;
+  C.y = Math.min(C.y, p.y + 820); // it never falls too far behind: the pressure stays on
+  if (!C.warned && C.t > 0.2) { C.warned = true; comicPop(CX, p.y - 130, 'VIRUS WALL!!', 44, '#ffffff', '#ff2a55', 1.3); addText(p.x, p.y - 70, '病毒牆追來了！一路往前衝', '#ff2a55', 22); SFX.round(); }
+  for (const m of T.mobs) if (!m.dead && m.y > C.y) { m.dead = true; m.counted = true; sparks(m.x, m.y, 16, '#ff2a55', 240); }
+  if (!p.dead && !p.falling && !p.tube && p.y > C.y - TR * 0.5) { p.falling = 0.55; p.fellIn = { pts: 0, name: 'CAUGHT' }; p.vx = 0; p.vy = 0; p.air = null; p.grind = null;
+    comicPop(p.x, p.y - 90, 'CAUGHT!!', 46, '#ffffff', '#ff2a55', 1.1); G.shake = 14; G.flash = 0.25; G.flashCol = '255,42,85'; SFX.gate(); comboBreak(); }
+  else if (p.y > C.y - 360 && G.time - (C.near || -9) > 2.5) { C.near = G.time; addText(p.x, p.y - 60, '病毒牆就在後面！', '#ff2a55', 18); }
+}
+// new road props (called from propStep; returns true when it handled the prop)
+function tfProp(t, P, h) {
+  const isP = t.side === 0 && !t.mob;
+  if (P.type === 'ramp') {
+    if (isP && !t.air && Math.abs(t.x - P.x) < P.w / 2 && Math.abs(t.y - P.y) < P.l / 2) { const fwd = -t.vy, sp = len(t.vx, t.vy);
+      if (fwd > 290) { const dur = Math.max(0.62, Math.min(clamp(sp / 950, 0.5, 1.15), 720 / sp)) * (P.power || 1); /* a flight never carries more than ~720 px, so it lands inside the stretch the ramp was built for */ t.air = { t: 0, dur, H: (40 + 50 * dur) * (P.power || 1) }; t.vy = Math.min(t.vy * 1.1, -600); t.vx *= 0.8;
+        SFX.boost(); sparks(t.x, t.y, 18, '#fcee0a', 300, true); if (G.comicCD <= 0) { comicPop(t.x, t.y - 70, dur > 0.8 ? 'JUMP!!!' : 'JUMP!', dur > 0.8 ? 40 : 30, '#05060a', '#fcee0a', 0.6); G.comicCD = 0.3; } focusLines(t.x, t.y, 'rgba(252,238,10,.6)', 0.25); }
+      else if (!(t.rampTip > 0)) { t.rampTip = 2; addText(t.x, t.y - 44, '太慢了！跳不起來', '#ff9f1a', 18); } }
+    return true; }
+  if (P.type === 'tube') {
+    if (isP && !t.tube && tubeOpen(P) && len(t.x - P.x, t.y - P.y) < P.r) { t.tube = { P, u: 0, dur: clamp(len(P.ex - P.x, P.ey - P.y) / 1500, 0.6, 1.6) }; t.air = null; t.grind = null; t.vx = 0; t.vy = 0;
+      SFX.boost(); sparks(t.x, t.y, 22, '#ff9ae6', 300, true); comicPop(t.x, t.y - 70, 'WARP TUBE!', 32, '#ffffff', '#ff4fd8', 0.7); comboAdd(1, t.x, t.y); wave(t.x, t.y, '255,154,230', 90, 6, 0.3); }
+    return true; }
+  if (P.type === 'rail') {
+    if (isP && !t.grind && !(t.railCD > 0)) { const ex = P.x2 - P.x, ey = P.y2 - P.y, L2 = ex * ex + ey * ey, k = ((t.x - P.x) * ex + (t.y - P.y) * ey) / L2;
+      if (k > -0.08 && k < 0.9) { const cx = P.x + ex * k, cy = P.y + ey * k; if (len(t.x - cx, t.y - cy) < 38) { const L = Math.sqrt(L2), tx = ex / L, ty = ey / L, along = t.vx * tx + t.vy * ty;
+        if (along > 140) { t.grind = { P, s: Math.max(0, k * L), L, tx, ty, v: Math.max(along * 1.1, 780) }; t.air = null; sparks(cx, cy, 16, '#fcee0a', 300, true); SFX.attach(); if (G.comicCD <= 0) { comicPop(t.x, t.y - 64, 'GRIND!', 28, '#05060a', '#fcee0a', 0.5); G.comicCD = 0.3; } } } } }
+    return true; }
+  if (P.type === 'belt') {
+    if (Math.abs(t.x - P.x) < P.w / 2 && Math.abs(t.y - P.y) < P.l / 2) { const a = clockAng(P.dir), f = 1000 * (P.power || 1) * h; t.vx += Math.cos(a) * f; t.vy += Math.sin(a) * f; }
+    return true; }
+  if (P.type === 'turn') {
+    const dx = t.x - P.x, dy = t.y - P.y, d = len(dx, dy);
+    if (d < P.r && d > 4) { const w = (P.speed || 0.5) * TAU, tx = -dy / d, ty = dx / d, vt = t.vx * tx + t.vy * ty, k = Math.min(1, 2.6 * h); t.vx += tx * (w * d - vt) * k + dx / d * w * w * d * 0.12 * h; t.vy += ty * (w * d - vt) * k + dy / d * w * w * d * 0.12 * h; }
+    return true; }
+  if (P.type === 'switch') {
+    if (isP && !P.on && len(t.x - P.x, t.y - P.y) < P.r + TR * 0.6) { P.on = true; P.offT = P.time || 0; let n = 0; for (const D of PROPS) if (D.lock === P.id && !D.dead) { D.dead = true; n++; sparks(D.x, D.y, 26, '#fcee0a', 320, true); wave(D.x, D.y, '252,238,10', 100, 6, 0.4); }
+      SFX.gate(); G.shake = Math.max(G.shake, 6); comboAdd(1, t.x, t.y); comicPop(t.x, t.y - 70, 'UNLOCK!', 34, '#05060a', '#fcee0a', 0.7); addText(t.x, t.y - 40, P.time ? `門開了！${P.time} 秒內通過` : '門開了！', '#fcee0a', 20); }
+    return true; }
+  if (P.type === 'oneway') {
+    const R = (t.rad || TR) * 0.7; if (t.vy > 0 && t.y > P.y - R && t.y < P.y + R + 8 && Math.abs(t.x - P.x) < P.w / 2) { t.y = P.y - R; t.vy *= -0.7; if (isP && !(t.owTip > 0)) { t.owTip = 1.5; addText(t.x, t.y - 40, '單向閘門：只能往前', '#00f0ff', 16); } }
+    return true; }
+  return false;
+}
+// MOVE auto: go through the ways across chasms, into tubes and onto rails; press the switch before a locked door
+function tfAuto(me) {
+  const T = G.track; if (!T.decks || me.air || me.tube || me.grind) return null;
+  const sv = T.y0 - me.y; let best = null, bd = 1e9; const cand = (x, y, w) => { const d = me.y - y; if (d < 10 || d > 560) return; const sc = d + Math.abs(x - me.x) * 0.8 - (w || 0); if (sc < bd) { bd = sc; best = { x, y }; } };
+  const chIn = T.chasms.find(c => sv > c.y - 40 && sv < c.y + c.l); // already on a plank: ride it straight, cancel sideways drift
+  if (chIn) { let bx = null, bd = 1e9; for (const q of chIn.planks) { const d = Math.abs(plankX(q) - me.x); if (d < bd) { bd = d; bx = plankX(q); } } if (bx != null && bd < 140) return { x: bx - me.vx * 0.35, y: me.y - 170 }; }
+  const door = PROPS.find(D => D.skin === 'door' && !D.dead && me.y - D.y > -10 && me.y - D.y < 700);
+  if (door) { const s = PROPS.find(P => P.type === 'switch' && P.id === door.lock && !P.on); if (s) return { x: s.x, y: s.y }; }
+  const ch = T.chasms.find(c => c.y - sv > -30 && c.y - sv < 520);
+  if (ch) { const yE = T.y0 - ch.y; for (const q of ch.planks) cand(plankX(q), yE - 40, 220);
+    for (const P of PROPS) { if (P.type === 'ramp' && P.y < me.y && T.y0 - P.y < ch.y + 20) cand(P.x, P.y, 400); if (P.type === 'rail' && T.y0 - P.y < ch.y + 40 && T.y0 - P.y2 > ch.y + ch.l) cand(P.x, Math.min(P.y + 30, me.y - 90), 300); }
+    for (const d of T.decks) if (d.y <= ch.y && d.y + d.l >= ch.y + ch.l && !d.lift) cand(d.cx, T.y0 - d.y + d.up, 320); }
+  else { for (const P of PROPS) { if (P.type === 'tube' && tubeOpen(P)) cand(P.x, P.y, 120); if (P.type === 'rail') cand(P.x, P.y + 26, 60); if (P.type === 'ramp') cand(P.x, P.y + P.l / 2, 40); } }
+  if (!best) { const cr = T.cells.find(c => c.st < 2 && Math.abs(me.y - c.y) < c.sl / 2 + 120 && Math.abs(me.x - c.x) < c.sw / 2 + 20); if (cr) return { x: me.x - me.vx * 0.4, y: me.y - 240 }; } // crumbling floor: straight ahead, flat out
+  for (const P of PROPS) if (P.type === 'belt' && Math.abs(me.x - P.x) < P.w / 2 + 40 && Math.abs(me.y - P.y) < P.l / 2 + 60) { const a = clockAng(P.dir); if (Math.abs(Math.cos(a)) > 0.5) return { x: me.x - Math.cos(a) * 160 - me.vx * 0.3, y: me.y - 160 }; } // sideways belt: lean against it
+  if (best) best.x -= me.vx * 0.3;
+  if (best && me.lvl > 0.4) { const d = T.decks.find(d => Math.abs(me.x - d.cx) < d.w / 2 && sv >= d.y - 5 && sv <= d.y + d.l + 5); if (d) best.x = clamp(best.x, d.cx - d.w / 2 + 30, d.cx + d.w / 2 - 30); }
+  return best;
+}
+// ---------- drawing ----------
+function tfDrawFloor(g, time) {
+  const T = G.track; if (!T || !T.decks) return; const Y = sv => T.y0 - sv, XL = CX - TRK.HW - 40, XW = (TRK.HW + 40) * 2;
+  for (const r of T.lowg) { g.fillStyle = 'rgba(160,120,255,.10)'; g.fillRect(XL, Y(r.to), XW, r.to - r.from); g.fillStyle = 'rgba(200,180,255,.5)';
+    for (let k = 0; k < 18; k++) { const x = XL + ((k * 97) % 100) / 100 * XW, y = Y(r.from) - ((k * 61 + time * 40) % (r.to - r.from)); g.beginPath(); g.arc(x, y, 2 + (k % 3), 0, TAU); g.fill(); }
+    signPlate(g, CX, Y(r.from) - 20, 0, 'LOW-G 低重力', '#c9b3ff', 12, 1); }
+  for (const c of T.chasms) { const y0 = Y(c.y + c.l), y1 = Y(c.y);
+    g.fillStyle = '#020308'; g.fillRect(XL, y0, XW, c.l);
+    for (let k = 1; k < 6; k++) { g.strokeStyle = `rgba(127,223,255,${0.14 - k * 0.02})`; g.lineWidth = 2; g.beginPath(); g.moveTo(XL, y0 + k * 10); g.lineTo(XL + XW, y0 + k * 10); g.stroke(); }
+    g.lineWidth = 4; g.strokeStyle = '#ff2a55'; g.beginPath(); g.moveTo(XL, y1); g.lineTo(XL + XW, y1); g.moveTo(XL, y0); g.lineTo(XL + XW, y0); g.stroke();
+    g.strokeStyle = '#fcee0a'; g.setLineDash([14, 12]); g.lineWidth = 2; g.beginPath(); g.moveTo(XL, y1 - 6); g.lineTo(XL + XW, y1 - 6); g.stroke(); g.setLineDash([]);
+    for (const q of c.planks) { const x = plankX(q); g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(x - q.w / 2 + 4, y0 + 6, q.w, c.l);
+      g.fillStyle = q.sway ? '#8a6a44' : '#5a6274'; g.fillRect(x - q.w / 2, y0 - 4, q.w, c.l + 8); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.strokeRect(x - q.w / 2, y0 - 4, q.w, c.l + 8);
+      g.fillStyle = q.sway ? '#a8875a' : '#7a828d'; for (let y = y0 + 8; y < y1 - 6; y += 26) g.fillRect(x - q.w / 2 + 4, y, q.w - 8, 4);
+      g.fillStyle = '#fcee0a'; g.fillRect(x - q.w / 2, y0 - 4, 4, c.l + 8); g.fillRect(x + q.w / 2 - 4, y0 - 4, 4, c.l + 8); }
+    signPlate(g, CX, y1 + 22, 0, c.planks.some(q => q.sway) ? '搖晃獨木橋' : c.planks.length ? '獨木橋' : 'CHASM', '#ff2a55', 12, 1); }
+  for (const c of T.cells) { const x = c.x - c.sw / 2 + 2, y = c.y - c.sl / 2 + 2, w = c.sw - 4, l = c.sl - 4;
+    if (c.st === 2) { g.fillStyle = '#020308'; g.fillRect(x, y, w, l); g.strokeStyle = 'rgba(255,42,85,.6)'; g.lineWidth = 2; g.strokeRect(x, y, w, l); continue; }
+    const sh = c.st === 1 ? Math.sin(time * 70) * 2 : 0; g.fillStyle = c.st === 1 ? '#5a2a36' : '#39415e'; g.fillRect(x + sh, y, w, l); g.strokeStyle = '#05060a'; g.lineWidth = 2; g.strokeRect(x + sh, y, w, l);
+    g.strokeStyle = c.st === 1 ? '#ff2a55' : 'rgba(168,251,255,.35)'; g.lineWidth = c.st === 1 ? 2.5 : 1.5; g.beginPath(); g.moveTo(x + w * 0.2 + sh, y + l * 0.3); g.lineTo(x + w * 0.5 + sh, y + l * 0.5); g.lineTo(x + w * 0.8 + sh, y + l * 0.35); g.moveTo(x + w * 0.5 + sh, y + l * 0.5); g.lineTo(x + w * 0.45 + sh, y + l * 0.85); g.stroke(); }
+}
+function tfDrawProp(g, P, time) {
+  if (P.type === 'ramp') { const x = P.x - P.w / 2, y = P.y - P.l / 2, L = 14 / VIEW_K;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 4, y + 5, P.w, P.l);
+    g.beginPath(); g.moveTo(x, y + P.l); g.lineTo(x + P.w, y + P.l); g.lineTo(x + P.w, y - L); g.lineTo(x, y - L); g.closePath();
+    const gr = g.createLinearGradient(0, y + P.l, 0, y - L); gr.addColorStop(0, '#7fdfff'); gr.addColorStop(1, '#ff9ae6'); g.fillStyle = gr; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke();
+    g.fillStyle = '#ff4fd8'; g.fillRect(x, y - L - 8, P.w, 8); g.strokeRect(x, y - L - 8, P.w, 8);
+    g.strokeStyle = '#05060a'; g.lineWidth = 4; for (let k = 0; k < 3; k++) { const yy = y + P.l - 10 - k * (P.l + L) / 3.2, ph = (time * 2 + k / 3) % 1; g.globalAlpha = 0.5 + 0.5 * ph; g.beginPath(); g.moveTo(P.x - 22, yy + 8); g.lineTo(P.x, yy - 6); g.lineTo(P.x + 22, yy + 8); g.stroke(); } g.globalAlpha = 1;
+    return true; }
+  if (P.type === 'tube') { const on = tubeOpen(P);
+    g.fillStyle = '#05060a'; g.beginPath(); g.ellipse(P.x, P.y, P.r + 10, (P.r + 10) * 0.8, 0, 0, TAU); g.fill();
+    g.fillStyle = on ? '#2a0a2e' : '#14161d'; g.beginPath(); g.ellipse(P.x, P.y, P.r, P.r * 0.8, 0, 0, TAU); g.fill();
+    g.strokeStyle = on ? '#ff4fd8' : '#59606c'; g.lineWidth = 4; g.stroke(); if (on) { for (let k = 0; k < 3; k++) { const r = P.r * (1 - ((time * 1.4 + k / 3) % 1)); g.strokeStyle = `rgba(255,154,230,${r / P.r})`; g.lineWidth = 2; g.beginPath(); g.ellipse(P.x, P.y, r, r * 0.8, 0, 0, TAU); g.stroke(); } }
+    g.fillStyle = 'rgba(255,79,216,.18)'; g.beginPath(); g.ellipse(P.ex, P.ey, P.r, P.r * 0.8, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,79,216,.6)'; g.lineWidth = 2; g.setLineDash([6, 5]); g.stroke(); g.setLineDash([]);
+    signPlate(g, P.x, P.y + P.r + 14, 0, on ? 'TUBE' : 'CLOSED', on ? '#ff4fd8' : '#8a90a0', 11, 1); return true; }
+  if (P.type === 'rail') { const L = 9 / VIEW_K, a = Math.atan2(P.y2 - P.y, P.x2 - P.x), nx = -Math.sin(a) * 5, ny = Math.cos(a) * 5;
+    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 10; g.beginPath(); g.moveTo(P.x + 4, P.y + 5); g.lineTo(P.x2 + 4, P.y2 + 5); g.stroke();
+    g.strokeStyle = '#59606c'; g.lineWidth = 3; for (let k = 0; k <= 1.001; k += 0.08) { const x = P.x + (P.x2 - P.x) * k, y = P.y + (P.y2 - P.y) * k; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - L); g.stroke(); }
+    g.lineCap = 'round'; g.strokeStyle = '#05060a'; g.lineWidth = 11; g.beginPath(); g.moveTo(P.x, P.y - L); g.lineTo(P.x2, P.y2 - L); g.stroke();
+    g.strokeStyle = '#fcee0a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(P.x + nx * 0.3, P.y - L - 1.5); g.lineTo(P.x2 + nx * 0.3, P.y2 - L - 1.5); g.stroke(); g.lineCap = 'butt';
+    g.fillStyle = '#fcee0a'; g.beginPath(); g.arc(P.x, P.y - L, 8, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 2.5; g.stroke(); return true; }
+  if (P.type === 'belt') { const a = clockAng(P.dir), ca = Math.cos(a), sa = Math.sin(a), x = P.x - P.w / 2, y = P.y - P.l / 2;
+    g.save(); g.fillStyle = '#20242e'; g.fillRect(x, y, P.w, P.l); g.beginPath(); g.rect(x, y, P.w, P.l); g.clip();
+    g.strokeStyle = '#fcee0a'; g.lineWidth = 5; const R0 = Math.max(P.w, P.l), sp = 46;
+    for (let k = -R0; k < R0; k += sp) { const o = k + ((time * 120 * (P.power || 1)) % sp); for (let j = -R0; j <= R0; j += 60) { const cx = P.x + ca * o - sa * j, cy = P.y + sa * o + ca * j;
+      g.beginPath(); g.moveTo(cx - ca * 10 - sa * 12, cy - sa * 10 + ca * 12); g.lineTo(cx, cy); g.lineTo(cx - ca * 10 + sa * 12, cy - sa * 10 - ca * 12); g.stroke(); } }
+    g.restore(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.strokeRect(x, y, P.w, P.l); g.fillStyle = '#59606c'; g.fillRect(x - 3, y - 3, P.w + 6, 5); g.fillRect(x - 3, y + P.l - 2, P.w + 6, 5); return true; }
+  if (P.type === 'turn') { const a = time * (P.speed || 0.5) * TAU;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(P.x + 4, P.y + 5, P.r, 0, TAU); g.fill();
+    g.fillStyle = '#2b3350'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke();
+    for (let k = 0; k < 6; k++) { const b = a + k * TAU / 6; g.fillStyle = k % 2 ? '#7fdfff' : '#ff9ae6'; g.beginPath(); g.moveTo(P.x, P.y); g.arc(P.x, P.y, P.r - 6, b, b + 0.32); g.closePath(); g.fill(); }
+    g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y, 14, 0, TAU); g.fill(); g.strokeStyle = '#fcee0a'; g.lineWidth = 3; g.beginPath(); g.arc(P.x, P.y, P.r * 0.72, a, a + 1.2); g.stroke(); return true; }
+  if (P.type === 'switch') { const on = P.on;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(P.x + 3, P.y + 5, P.r + 4, (P.r + 4) * 0.8, 0, 0, TAU); g.fill();
+    g.fillStyle = '#05060a'; g.beginPath(); g.ellipse(P.x, P.y, P.r + 4, (P.r + 4) * 0.8, 0, 0, TAU); g.fill();
+    g.fillStyle = on ? '#3a3f1a' : '#fcee0a'; g.beginPath(); g.ellipse(P.x, P.y - (on ? 0 : 5), P.r, P.r * 0.8, 0, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke();
+    if (!on) { g.fillStyle = 'rgba(252,238,10,.25)'; g.beginPath(); g.ellipse(P.x, P.y, P.r + 14 + Math.sin(time * 6) * 4, (P.r + 14) * 0.8, 0, 0, TAU); g.fill(); }
+    signPlate(g, P.x, P.y + P.r + 14, 0, on ? (P.time ? `${Math.ceil(P.offT)}s` : 'OPEN') : 'SWITCH', '#fcee0a', 11, 1); return true; }
+  if (P.type === 'oneway') { const x = P.x - P.w / 2;
+    g.fillStyle = 'rgba(0,240,255,.12)'; g.fillRect(x, P.y - 14, P.w, 28); g.strokeStyle = '#00f0ff'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, P.y); g.lineTo(x + P.w, P.y); g.stroke();
+    g.lineWidth = 4; for (let k = 0; k < 6; k++) { const cx = x + P.w * (k + 0.5) / 6, cy = P.y + 6 - ((time * 30 + k * 4) % 20); g.beginPath(); g.moveTo(cx - 12, cy + 8); g.lineTo(cx, cy - 4); g.lineTo(cx + 12, cy + 8); g.stroke(); } return true; }
+  return false;
+}
+// raised decks go in the depth-sorted list; props standing on a deck are drawn on its top face
+function tfDeckItems(items, g) {
+  const T = G.track; if (!T || !T.decks || T.zone !== 'track') return;
+  for (const d of T.decks) items.push({ y: T.y0 - d.y + d.up + d.b * 1e5 - 0.5, f: () => tfDrawDeck(g, d) });
+}
+function tfDrawDeck(g, d) {
+  const T = G.track, hv = deckLv(d), L = deckLift(hv), Lb = deckLift(d.b), x0 = d.cx - d.w / 2, yN = T.y0 - d.y, yF = T.y0 - d.y - d.l, col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))];
+  const quad = (a, b, c, e, fill) => { g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.lineTo(...c); g.lineTo(...e); g.closePath(); g.fillStyle = fill; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); };
+  g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(x0 + 10, yF - Lb + 8, d.w, d.l + 8);
+  if (d.down) { const yE = yF - d.down; quad([x0, yF - L], [x0 + d.w, yF - L], [x0 + d.w, yE - Lb], [x0, yE - Lb], shade(col, -0.15)); }
+  quad([x0, yN - Lb], [x0 + d.w, yN - Lb], [x0 + d.w, yN - L], [x0, yN - L], '#1b2140'); // front face
+  g.save(); g.beginPath(); g.rect(x0, yN - L, d.w, L - Lb); g.clip(); g.fillStyle = '#fcee0a'; for (let k = -2; k < d.w / 24 + 2; k++) { g.beginPath(); g.moveTo(x0 + k * 24, yN - Lb); g.lineTo(x0 + k * 24 + 12, yN - Lb); g.lineTo(x0 + k * 24 + 12 + (L - Lb), yN - L); g.lineTo(x0 + k * 24 + (L - Lb), yN - L); g.closePath(); g.globalAlpha = 0.35; g.fill(); } g.restore(); g.globalAlpha = 1;
+  quad([x0, yF - L], [x0 + d.w, yF - L], [x0 + d.w, yN - L], [x0, yN - L], col); // top face
+  g.strokeStyle = 'rgba(127,223,255,.8)'; g.lineWidth = 2; g.strokeRect(x0 + 6, yF - L + 6, d.w - 12, d.l - 12);
+  if (d.up) { const yS = yN + d.up; quad([x0, yS - Lb], [x0 + d.w, yS - Lb], [x0 + d.w, yN - L], [x0, yN - L], shade(col, 0.08));
+    g.strokeStyle = '#fcee0a'; g.lineWidth = 4; for (let k = 0; k < 3; k++) { const yy = yS - Lb - (k + 0.7) * (d.up + L - Lb) / 3.4; g.beginPath(); g.moveTo(d.cx - 26, yy + 9); g.lineTo(d.cx, yy - 6); g.lineTo(d.cx + 26, yy + 9); g.stroke(); } }
+  g.save(); g.translate(0, -L); drawPropsFloor(g, G.time, d); g.restore();
+  upright(g, x0 + 22, yN - L - 18, () => { g.font = 'italic 900 16px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const s = d.lift ? 'LIFT' : `${d.h + 1}F`; g.strokeText(s, 0, 0); g.fillStyle = '#fcee0a'; g.fillText(s, 0, 0); });
+}
+function tfDrawOver(g) {
+  const T = G.track; if (!T || !T.decks || T.zone !== 'track') return; const p = G.tops[0], XL = CX - TRK.HW - 300, XW = (TRK.HW + 300) * 2, Y = sv => T.y0 - sv;
+  for (const P of PROPS) if (P.type === 'tube') { // the glass tube runs overhead
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; const pts = []; for (let k = 0; k <= 24; k++) { const q = tubePt(P, k / 24); pts.push([q.x, q.y - q.z / VIEW_K]); }
+    const path = () => { g.beginPath(); g.moveTo(...pts[0]); for (const q of pts) g.lineTo(...q); };
+    path(); g.strokeStyle = 'rgba(5,6,10,.85)'; g.lineWidth = 58; g.stroke(); path(); g.strokeStyle = 'rgba(255,154,230,.45)'; g.lineWidth = 46; g.stroke(); path(); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 12; g.stroke();
+    path(); g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 4; g.setLineDash([18, 14]); g.lineDashOffset = -G.time * 120; g.stroke(); g.setLineDash([]);
+    g.strokeStyle = '#05060a'; g.lineWidth = 4; for (const k of [0, 24]) { g.beginPath(); g.moveTo(pts[k][0], pts[k][1]); g.lineTo(k ? P.ex : P.x, k ? P.ey : P.y); g.stroke(); }
+    g.restore(); }
+  if (p && !p.dead) for (const r of T.dark) { const y0 = Y(r.to), y1 = Y(r.from), sv = T.y0 - p.y, inside = sv > r.from - 200 && sv < r.to + 200;
+    g.save(); g.beginPath(); g.rect(XL, y0, XW, y1 - y0); g.clip();
+    for (const [rad, a] of [[140, 0.4], [185, 0.45], [235, 0.6], [300, 0.7]]) { g.beginPath(); g.rect(XL, y0, XW, y1 - y0); if (inside) { g.moveTo(p.x + rad, p.y); g.ellipse(p.x, p.y, rad, rad, 0, 0, TAU); } g.fillStyle = `rgba(3,4,10,${a})`; g.fill('evenodd'); }
+    g.restore(); g.strokeStyle = '#ff4fd8'; g.lineWidth = 3; g.setLineDash([16, 10]); g.beginPath(); g.moveTo(XL, y1); g.lineTo(XL + XW, y1); g.stroke(); g.setLineDash([]);
+    signPlate(g, CX, y1 + 20, 0, 'BLACKOUT 黑暗區', '#ff4fd8', 12, 1); }
+  const C = T.chase; if (C) { const y = C.y, sh = Math.sin(G.time * 30) * 4;
+    g.fillStyle = 'rgba(255,42,85,.55)'; g.fillRect(XL, y, XW, 900); g.fillStyle = 'rgba(5,6,10,.5)'; for (let k = 0; k < 14; k++) g.fillRect(XL, y + 12 + k * 22 + ((G.time * 80) % 22), XW, 6);
+    g.strokeStyle = '#ffffff'; g.lineWidth = 5; g.beginPath(); for (let k = 0; k <= 24; k++) { const x = XL + XW * k / 24; g.lineTo(x, y + (k % 2 ? 12 : -6) + sh); } g.stroke();
+    g.strokeStyle = '#ff2a55'; g.lineWidth = 3; g.stroke();
+    for (let k = 0; k < 4; k++) upright(g, CX + (k - 1.5) * 120, y + 46, () => { g.font = 'italic 900 22px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 5; g.strokeStyle = '#05060a'; g.strokeText('VIRUS', 0, 0); g.fillStyle = '#ffffff'; g.fillText('VIRUS', 0, 0); }); }
+}
+Object.assign(PROP_DEF, { ramp: { w: 120, l: 80 }, tube: { r: 34 }, rail: {}, belt: { w: 160, l: 200, dir: 12, power: 1 }, turn: { r: 110, speed: 0.5 }, switch: { r: 24 }, oneway: { w: 420 } });
 // ---------- track drawing ----------
 function trackBackdrop(g, cam) { // far from the arena the stadium gives way to a night-city grid sliding past
   const k = clamp((cam.y - CY - 150) / 260, 0, 1); if (k <= 0) return;
@@ -4835,10 +5152,16 @@ function levelFoe(lv) {
 const chipsOf = id => { const m = (storyData().chip || {})[id] || 0; return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1); };
 function levelTags(lv) {
   if (!lv.track) return stageTags(lv.stage);
-  const tr = lv.track, t = ['賽道關・3 條命'], PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區', pit: '陷阱洞', wall: '固定牆', crack: '防火牆', portal: '傳送門', ice: '冰面', wind: '強風', barrel: '炸藥桶', magnet: '磁鐵', laser: '雷射柵欄' }, cnt = {};
+  const tr = lv.track, t = ['賽道關・3 條命'], PN = { bumper: '彈力柱', boost: '加速帶', mover: '移動擋板', spikes: '地刺區', pit: '陷阱洞', wall: '分岔牆', crack: '防火牆', portal: '傳送門', ice: '冰面', wind: '強風', barrel: '炸藥桶', magnet: '磁鐵', laser: '雷射柵欄', ramp: '跳台', tube: '蟲洞管道', rail: '滑軌', belt: '輸送帶', turn: '旋轉圓盤', switch: '開關門', oneway: '單向閘門' }, cnt = {};
+  if (tr.chase) t.push('病毒牆追擊');
   if ((tr.gaps || []).length) t.push('牆有缺口');
-  for (const p of tr.props || []) cnt[p.type] = 1;
-  for (const k in cnt) t.push(PN[k]);
+  { const D = tr.decks || [], st = D.filter(d => !d.lift); if (st.length) t.push(`高台 ${Math.max(...st.map(d => d.h || 1)) + 1}F`); if (D.some(d => d.lift)) t.push('升降台'); }
+  if ((tr.chasms || []).length) t.push('深淵');
+  if ((tr.crumble || []).length) t.push('崩塌地板');
+  if ((tr.dark || []).length) t.push('黑暗區');
+  if ((tr.lowg || []).length) t.push('低重力');
+  for (const p of tr.props || []) cnt[p.type === 'door' ? 'switch' : p.type] = 1;
+  for (const k in cnt) if (PN[k]) t.push(PN[k]);
   if ((tr.mobs || []).length) t.push('敵人 ×' + tr.mobs.length);
   t.push(lv.boss ? '終點 BOSS' : lv.goal ? '終點破門' : '衝到終點過關'); return t;
 }
@@ -4866,6 +5189,7 @@ function propStep(t, h) {
   const T = G.time;
   for (const P of PROPS) {
     if (P.type === 'chip') { if (!P.dead && t === G.tops[0] && !t.dead && len(t.x - P.x, t.y - P.y) < P.r + TR * 0.85) chipGot(P); continue; }
+    if (G.track && G.track.decks && G.track.zone === 'track') { if (t.air || t.grind || t.tube || Math.abs((t.lvl || 0) - (P.lvl || 0)) > 0.45) continue; if (tfProp(t, P, h)) continue; }
     if (P.type === 'pit') {
       if (t.side === 0 && !t.mob && !(t.invT > 0) && !t.falling && len(t.x - P.x, t.y - P.y) < P.r - 8) { t.falling = 0.7; t.fellIn = { pts: 0, name: 'TRAP' }; t.vx *= 0.25; t.vy *= 0.25; addText(t.x, t.y - 50, '掉進陷阱！', '#ff2a55', 26); comicPop(t.x, t.y - 100, 'TRAP!!', 40, '#ffffff', '#ff2a55', 1); SFX.gate(); G.shake = 10; return; }
       continue;
@@ -4966,6 +5290,7 @@ function stepTop(t, foe, h) {
   for (const k of TOP_TIMERS) if (t[k] > 0) t[k] -= h;
   if (t.poisonT > 0) { t.poisonT -= h; if (t.poisonT <= 0) t.poison = 0; }
   if (t.boostT <= 0 && !t.ex) { t.dashMult = 1; t.kbMult = 1; }
+  if ((t.tube || t.grind) && onTrack() && tfRide(t, h)) return; // riding a tube / rail (v0.31)
 
   // input
   let u = { x: 0, y: 0 };
@@ -5032,14 +5357,15 @@ function stepTop(t, foe, h) {
     }
   } else {
     const pull = inTrack ? 0 : BASIN_PULL * (t.s.c.pull || 1);
-    const ice = t.iceT > 0 ? 0.25 : 1; // on ice steering barely bites and nothing slows you down
+    const ice = (t.iceT > 0 ? 0.25 : 1) * (t.air ? 0.3 : 1) * (t.lowg ? 0.6 : 1); // on ice steering barely bites and nothing slows you down; in the air / low gravity it barely bites either
     let ax = u.x * t.s.accel * ctrl * ice - (t.x - CX) * pull;
     let ay = u.y * t.s.accel * ctrl * ice - (t.y - CY) * pull;
     t.vx += ax * h; t.vy += ay * h;
     const sp = len(t.vx, t.vy);
-    const fr = (sp > t.s.maxSpeed ? (t.launchedT > 0 ? 0.5 : 1.3) : (inTrack ? 0.12 : 0.4)) * (t.iceT > 0 ? 0.15 : 1);
+    const fr = (sp > t.s.maxSpeed ? (t.launchedT > 0 ? 0.5 : 1.3) : (inTrack ? 0.12 : 0.4)) * (t.iceT > 0 ? 0.15 : 1) * (t.air ? 0.15 : 1) * (t.lowg ? 0.3 : 1);
     t.vx *= 1 - fr * h; t.vy *= 1 - fr * h;
     t.x += t.vx * h; t.y += t.vy * h;
+    if (inTrack) tfAfterMove(t, h, t.x - t.vx * h, t.y - t.vy * h);
     // attach to the rail
     const tol = t.s.a.special === 'magnet' ? 16 : 10;
     if (t.ringCD <= 0 && !t.ex && t.stunT <= 0 && sp < 950 && !(t.side === 1 && t.ai.mode === 'chase')) {
@@ -5103,7 +5429,7 @@ function stepTop(t, foe, h) {
   }
   if (!t.onRing && PROPS.length) propStep(t, h);
   t.angle += t.s.w.dir * (6 + 24 * t.spin) * h;
-  t.spin -= t.s.decay * h;
+  t.spin -= t.s.decay * h * (G.track && t.side === 0 && !t.mob ? TRK_DECAY : 1);
   if (t.spin <= 0) {
     t.spin = 0;
     if (G.track) { // tracks: enemies and BOSSes never run dry (they'd sit at zero and re-trigger every frame); the player's top running dry costs a life
@@ -5599,9 +5925,12 @@ function drawRim(g, A0, A1) {
   }
 }
 // ---------- props drawing (floor space, squashed by the 2.5D view) ----------
-function drawPropsFloor(g, time) {
-  if (G && G.decals && G.decals.length) drawDecals(g);
+function drawPropsFloor(g, time, only) {
+  if (!only && G && G.decals && G.decals.length) drawDecals(g);
+  if (!only && G && G.track) tfDrawFloor(g, time);
   for (const P of PROPS) {
+    if (only ? P.deck !== only : P.deck) continue;
+    if (tfDrawProp(g, P, time)) continue;
     if (P.type === 'chip') { if (P.dead) continue; const bob = Math.sin(time * 4 + P.idx) * 4, r = P.r + 2;
       g.save(); g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(P.x, P.y + 6, r * 0.9, r * 0.4, 0, 0, TAU); g.fill();
       g.globalAlpha = P.had ? 0.45 : 1; g.translate(P.x, P.y - 12 + bob); g.beginPath(); g.moveTo(0, -r * 1.3); g.lineTo(r, 0); g.lineTo(0, r * 1.3); g.lineTo(-r, 0); g.closePath();
@@ -5690,6 +6019,10 @@ function drawPropsFloor(g, time) {
   }
 }
 function drawPropRaised(g, P) {
+  if (P.skin === 'door') { const S = moverSeg(P, 0), H2 = 30 / VIEW_K, x0 = Math.min(S.x1, S.x2), w = Math.abs(S.x2 - S.x1) || 22, y = (S.y1 + S.y2) / 2;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x0 + 4, y - 6, w, 16); g.fillStyle = '#05060a'; g.fillRect(x0 - 2, y - H2 - 2, w + 4, H2 + 12);
+    g.fillStyle = '#fcee0a'; g.fillRect(x0, y - H2, w, H2 + 8); g.save(); g.beginPath(); g.rect(x0, y - H2, w, H2 + 8); g.clip(); g.fillStyle = '#05060a'; for (let k = -2; k < w / 20 + 2; k++) { g.beginPath(); g.moveTo(x0 + k * 20, y + 8); g.lineTo(x0 + k * 20 + 10, y + 8); g.lineTo(x0 + k * 20 + 10 + H2, y - H2); g.lineTo(x0 + k * 20 + H2, y - H2); g.closePath(); g.fill(); } g.restore();
+    g.strokeStyle = '#05060a'; g.lineWidth = 3; g.strokeRect(x0, y - H2, w, H2 + 8); upright(g, (S.x1 + S.x2) / 2, y - H2 - 12, () => { g.fillStyle = '#05060a'; g.fillRect(-26, -10, 52, 18); g.font = '900 12px sans-serif'; g.textAlign = 'center'; g.fillStyle = '#fcee0a'; g.fillText('🔒 LOCK', 0, 4); }); return; }
   const hz = 16 / VIEW_K, hit = G.time - P.hitAt < 0.22;
   if (P.type === 'barrel') { const { x, y, r } = P, bh = 26 / VIEW_K;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(x + 4, y + 5, r + 3, 0, TAU); g.fill();
@@ -5805,6 +6138,7 @@ function drawTopWorld0(g, t) {
   if (t.side === 1 && G && !G.track && (G.phase === 'launch' || G.phase === 'count')) return; // the CPU's drop point stays secret until SPIN!
   g.save();
   g.translate(t.x, t.y);
+  const tz = G && G.track ? tfZ(t) : null; if (tz && tz.b) g.translate(0, -tz.b);
   if (t.rad) g.scale(t.rad / TR, t.rad / TR); // BOSS / small enemies
   if (t.invT > 0) g.globalAlpha = 0.5 + 0.4 * Math.sin(G.time * 40);
   let sc = 1;
@@ -5817,7 +6151,7 @@ function drawTopWorld0(g, t) {
   g.strokeStyle = t.side === 0 ? 'rgba(0,240,255,.7)' : 'rgba(255,59,92,.7)'; g.lineWidth = 2.5;
   g.beginPath(); g.arc(0, 0, 38 * sc, 0, TAU); g.stroke();
   // lift the top off the floor; tilt & bob a little as it loses spin
-  const hop = t.hopT > 0 ? Math.sin(Math.PI * (1 - t.hopT / 0.38)) * (t.hopH || 12) : 0;
+  const hop = (t.hopT > 0 ? Math.sin(Math.PI * (1 - t.hopT / 0.38)) * (t.hopH || 12) : 0) + (tz ? tz.a : 0);
   const lift = (TOP_LIFT + hop + roLift + (t.falling && !t.ringOut ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
   g.translate(0, -lift);
   if (viewK < 1) {
@@ -6042,11 +6376,11 @@ function render() {
   drawHalftones(g);
   drawNearWall(g); // tops ride in front of the near wall (they sit on the floor inside it, the camera looks down over the rim)
   { // tops and raised props (pillars, bars) drawn farther first
-    const items = G.tops.map(t => ({ y: t.y, f: () => drawTopWorld(g, t) }));
-    if (G.track) { for (const m of G.track.mobs) if (!m.dead) items.push({ y: m.y, f: () => drawTopWorld(g, m) }); if (G.track.zone === 'track') items.push({ y: G.track.boss.y, f: () => drawTopWorld(g, G.track.boss) }); }
+    const items = G.tops.map(t => ({ y: t.y + tfKey(t), f: () => drawTopWorld(g, t) })); tfDeckItems(items, g);
+    if (G.track) { for (const m of G.track.mobs) if (!m.dead) items.push({ y: m.y + tfKey(m), f: () => drawTopWorld(g, m) }); if (G.track.zone === 'track') items.push({ y: G.track.boss.y, f: () => drawTopWorld(g, G.track.boss) }); }
     for (const P of PROPS) if ((P.type === 'bumper' || P.type === 'mover' || P.type === 'barrel') && !P.dead) { const S = P.type === 'mover' ? moverSeg(P, G.time) : null; items.push({ y: S ? (S.y1 + S.y2) / 2 : P.y, f: () => drawPropRaised(g, P) }); }
     items.sort((a, b) => a.y - b.y).forEach(it => it.f()); }
-  if (G.track) drawBossFx(g);
+  if (G.track) { tfDrawOver(g); drawBossFx(g); }
   for (const w of G.waves) {
     const k = w.t / w.max, r = 8 + (1 - k) * w.R1;
     g.strokeStyle = `rgba(${w.col},${k})`; g.lineWidth = w.w * k + 1; g.beginPath(); g.arc(w.x, w.y, r, 0, TAU); g.stroke();
@@ -6214,7 +6548,7 @@ requestAnimationFrame(frame);
 // installable / offline (PWA): only on a real web host — opening the file directly skips it
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
 setTimeout(unifyPortraits, 300);
 })();

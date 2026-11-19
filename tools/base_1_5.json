@@ -1,0 +1,5531 @@
+[
+ {
+  "id": "c1",
+  "no": 1,
+  "name": "第一章・霓虹新人賽",
+  "desc": "夜之城地下陀螺聯賽的新人選拔。有人駭進了賽場，選手一個個失控。",
+  "bonus": {
+   "coins": 4000,
+   "box": "purple"
+  },
+  "levels": [
+   {
+    "id": "1-1",
+    "name": "霓虹高架",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "kills",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 300
+     },
+     "star3": {
+      "coins": 200
+     }
+    },
+    "mobLv": -0.1,
+    "floor": [
+     "#3d4f86",
+     "#2b3766",
+     "#1a2144"
+    ],
+    "mobs": [
+     [
+      "rat",
+      "gatling",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 110,
+     "wave": 6,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.5,
+       "c": "rat",
+       "w": "gatling",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "props": [
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.5,
+        "dir": 12
+       },
+       {
+        "type": "bumper",
+        "at": 10,
+        "d": 0.5
+       },
+       {
+        "type": "bumper",
+        "at": 2,
+        "d": 0.5
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "1-2",
+    "name": "彈珠街",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 350
+     },
+     "star3": {
+      "coins": 250
+     }
+    },
+    "mobLv": -0.05,
+    "floor": [
+     "#2f7f86",
+     "#215b63",
+     "#143a40"
+    ],
+    "mobs": [
+     [
+      "raven",
+      "smartpistol",
+      "afterimage"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 90,
+     "wave": 6,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "raven",
+       "w": "smartpistol",
+       "a": "afterimage"
+      }
+     ],
+     "stage": {
+      "props": [
+       {
+        "type": "wall",
+        "at": 12,
+        "d": 0.2,
+        "len": 150,
+        "rot": 3
+       },
+       {
+        "type": "boost",
+        "at": 8,
+        "d": 0.55,
+        "dir": 1.2
+       },
+       {
+        "type": "boost",
+        "at": 4,
+        "d": 0.55,
+        "dir": 10.8
+       },
+       {
+        "type": "bumper",
+        "at": 6,
+        "d": 0.35
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "1-3",
+    "name": "斷橋",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 400
+     },
+     "star3": {
+      "coins": 300
+     }
+    },
+    "mobLv": -0.05,
+    "floor": [
+     "#55508a",
+     "#3a3666",
+     "#222044"
+    ],
+    "mobs": [
+     [
+      "rat",
+      "gatling",
+      "hover"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 100,
+     "wave": 6,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.6,
+       "c": "rat",
+       "w": "gatling",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "props": [
+       {
+        "type": "wall",
+        "at": 9.6,
+        "d": 0.5,
+        "len": 100,
+        "rot": 1.5
+       },
+       {
+        "type": "wall",
+        "at": 2.4,
+        "d": 0.5,
+        "len": 100,
+        "rot": 10.5
+       },
+       {
+        "type": "mover",
+        "at": 6,
+        "d": 0.25,
+        "len": 90,
+        "move": "spin",
+        "speed": 0.12
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.62,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "1-4",
+    "name": "地刺市場",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 450
+     },
+     "star3": {
+      "coins": 300
+     }
+    },
+    "mobLv": 0,
+    "floor": [
+     "#7a4a5c",
+     "#573343",
+     "#33202a"
+    ],
+    "mobs": [
+     [
+      "cactus",
+      "vibrosword",
+      "titanium"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 90,
+     "wave": 5,
+     "respawn": 12,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "cactus",
+       "w": "vibrosword",
+       "a": "titanium",
+       "hp": 0.5
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "rat",
+       "w": "gatling",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "props": [
+       {
+        "type": "spikes",
+        "at": 12,
+        "d": 0.42,
+        "r": 44,
+        "on": 2,
+        "off": 2
+       },
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.5
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.5
+       },
+       {
+        "type": "boost",
+        "at": 7.3,
+        "d": 0.6,
+        "dir": 12.7
+       },
+       {
+        "type": "boost",
+        "at": 4.7,
+        "d": 0.6,
+        "dir": 11.3
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "1-5",
+    "name": "齒輪工廠",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 800,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 600
+     }
+    },
+    "mobLv": -0.05,
+    "floor": [
+     "#3d4f86",
+     "#2b3766",
+     "#1a2144"
+    ],
+    "mobs": [
+     [
+      "rat",
+      "gatling",
+      "hover"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "boss": {
+     "name": "暴走鐵拳・雷克斯",
+     "c": "boss_rex",
+     "w": "hydrohammer",
+     "a": "exoskeleton",
+     "diff": "normal",
+     "lv": 0.05,
+     "hp": 1.6,
+     "size": 1.6,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#6e5c3c",
+       "#4f412a",
+       "#2f2718"
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "mover",
+        "at": 12,
+        "d": 0,
+        "len": 120,
+        "move": "spin",
+        "speed": 0.12
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 9.5,
+        "d": 0.5,
+        "c": "rat",
+        "w": "gatling",
+        "a": "hover"
+       },
+       {
+        "type": "guard",
+        "at": 2.5,
+        "d": 0.5,
+        "c": "rat",
+        "w": "gatling",
+        "a": "hover"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "spikes",
+        "at": 4.5,
+        "d": 0.5,
+        "r": 42,
+        "on": 2,
+        "off": 2.5
+       },
+       {
+        "type": "spikes",
+        "at": 7.5,
+        "d": 0.5,
+        "r": 42,
+        "on": 2,
+        "off": 2.5
+       }
+      ]
+     }
+    },
+    "desc": "第一個 BOSS 關。衝進終點的圓形場，把 BOSS 打到爆甲才過關！BOSS 是被控制的鐵拳・雷克斯：他會連砸三下地板，砸完拳頭會卡住，那是進攻的好機會；衝撞撞到牆也會暈眩，傷害 ×1.5。"
+   },
+   {
+    "id": "1-6",
+    "name": "天台飛車",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 500
+     },
+     "star3": {
+      "coins": 350
+     }
+    },
+    "mobLv": 0.1,
+    "floor": [
+     "#6a5aa6",
+     "#463a7c",
+     "#281f50"
+    ],
+    "mobs": [
+     [
+      "raven",
+      "smartpistol",
+      "afterimage"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 100,
+     "wave": 5,
+     "respawn": 12,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "raven",
+       "w": "smartpistol",
+       "a": "afterimage"
+      },
+      {
+       "type": "rush",
+       "at": 3,
+       "d": 0.6,
+       "c": "rider",
+       "w": "chainaxe",
+       "a": "carbonvest"
+      }
+     ],
+     "stage": {
+      "props": [
+       {
+        "type": "mover",
+        "at": 12,
+        "d": 0.36,
+        "len": 80,
+        "rot": 12,
+        "move": "slide",
+        "span": 70,
+        "period": 2.8
+       },
+       {
+        "type": "boost",
+        "at": 8,
+        "d": 0.6,
+        "dir": 1
+       },
+       {
+        "type": "boost",
+        "at": 4,
+        "d": 0.6,
+        "dir": 11
+       },
+       {
+        "type": "bumper",
+        "at": 10.4,
+        "d": 0.72
+       },
+       {
+        "type": "bumper",
+        "at": 1.6,
+        "d": 0.72
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "1-7",
+    "name": "絞肉機",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 550
+     },
+     "star3": {
+      "coins": 400
+     }
+    },
+    "mobLv": 0.12,
+    "floor": [
+     "#7a6038",
+     "#564326",
+     "#332716"
+    ],
+    "mobs": [
+     [
+      "cactus",
+      "vibrosword",
+      "titanium"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 100,
+     "wave": 5,
+     "respawn": 12,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.66,
+       "c": "cactus",
+       "w": "vibrosword",
+       "a": "titanium",
+       "hp": 0.5
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.66,
+       "c": "rat",
+       "w": "gatling",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "props": [
+       {
+        "type": "mover",
+        "at": 9.5,
+        "d": 0.42,
+        "len": 110,
+        "move": "spin",
+        "speed": 0.14
+       },
+       {
+        "type": "mover",
+        "at": 2.5,
+        "d": 0.42,
+        "len": 110,
+        "move": "spin",
+        "speed": -0.14
+       },
+       {
+        "type": "spikes",
+        "at": 12,
+        "d": 0,
+        "r": 42,
+        "on": 2,
+        "off": 2
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "1-8",
+    "name": "鐵籠地道",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 600
+     },
+     "star3": {
+      "coins": 400,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.15,
+    "floor": [
+     "#59606c",
+     "#3a4048",
+     "#22252a"
+    ],
+    "mobs": [
+     [
+      "cactus",
+      "vibrosword",
+      "titanium"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 110,
+     "wave": 4.5,
+     "respawn": 11,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.66,
+       "c": "cactus",
+       "w": "vibrosword",
+       "a": "titanium",
+       "hp": 0.5
+      },
+      {
+       "type": "rush",
+       "at": 9,
+       "d": 0.6,
+       "c": "rat",
+       "w": "shotgun",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "props": [
+       {
+        "type": "wall",
+        "at": 10.6,
+        "d": 0.4,
+        "len": 60,
+        "rot": 3
+       },
+       {
+        "type": "wall",
+        "at": 1.4,
+        "d": 0.4,
+        "len": 60,
+        "rot": 3
+       },
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.56
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.56
+       },
+       {
+        "type": "spikes",
+        "at": 7.6,
+        "d": 0.45,
+        "r": 40,
+        "on": 2,
+        "off": 2.5
+       },
+       {
+        "type": "spikes",
+        "at": 4.4,
+        "d": 0.45,
+        "r": 40,
+        "on": 2,
+        "off": 2.5
+       },
+       {
+        "type": "boost",
+        "at": 9.6,
+        "d": 0.74,
+        "dir": 1.6
+       },
+       {
+        "type": "boost",
+        "at": 2.4,
+        "d": 0.74,
+        "dir": 10.4
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "1-9",
+    "name": "天台追緝",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "assist"
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1000,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 700
+     }
+    },
+    "mobLv": 0.15,
+    "floor": [
+     "#6a5aa6",
+     "#463a7c",
+     "#281f50"
+    ],
+    "mobs": [
+     [
+      "raven",
+      "smartpistol",
+      "afterimage"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "boss": {
+     "name": "黑化獵人・傑克",
+     "c": "boss_jack",
+     "w": "railgun",
+     "a": "opticamo",
+     "diff": "normal",
+     "lv": 0.22,
+     "hp": 2.2,
+     "size": 1.35,
+     "lives": 1,
+     "stage": {
+      "wallH": 12,
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD",
+        "w": 50
+       }
+      ],
+      "ringOut": 0.5,
+      "floor": [
+       "#5b4d8f",
+       "#3f3473",
+       "#251d4b"
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "boost",
+        "at": 3,
+        "d": 0.42,
+        "dir": 3
+       },
+       {
+        "type": "boost",
+        "at": 9,
+        "d": 0.42,
+        "dir": 9
+       }
+      ],
+      "mobs": [
+       {
+        "type": "rush",
+        "at": 10.5,
+        "d": 0.55,
+        "c": "rider",
+        "w": "chainaxe",
+        "a": "carbonvest"
+       },
+       {
+        "type": "rush",
+        "at": 1.5,
+        "d": 0.55,
+        "c": "rider",
+        "w": "chainaxe",
+        "a": "carbonvest"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "bumper",
+        "at": 12,
+        "d": 0.45
+       },
+       {
+        "type": "spikes",
+        "at": 6,
+        "d": 0.3,
+        "r": 40,
+        "on": 2,
+        "off": 2.5
+       }
+      ]
+     }
+    },
+    "desc": "終點是低牆天台場，被撞飛很容易 RING OUT。BOSS 是被控制的賞金獵人・傑克：他會發動「全場通緝」封鎖你的 EX、叫小兵一起追你，把他引去撞牆可以提前解除。建議隊伍有紫卡 3 星的實力。"
+   },
+   {
+    "id": "1-10",
+    "name": "鐵籠終局",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "ex",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1500,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1000
+     }
+    },
+    "mobLv": 0.15,
+    "floor": [
+     "#59606c",
+     "#3a4048",
+     "#22252a"
+    ],
+    "mobs": [
+     [
+      "cactus",
+      "vibrosword",
+      "titanium"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "boss": {
+     "name": "壞掉的盾・艾琳",
+     "c": "boss_erin",
+     "w": "hydrohammer",
+     "a": "powerarmor",
+     "diff": "normal",
+     "lv": 0.18,
+     "hp": 0.62,
+     "size": 1.7,
+     "lives": 2,
+     "stage": {
+      "wallH": 44,
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD",
+        "w": 40
+       }
+      ],
+      "rails": false,
+      "ringOut": 0,
+      "core": 0.42,
+      "floor": [
+       "#4f555e",
+       "#353a42",
+       "#1e2126"
+      ],
+      "props": [
+       {
+        "type": "bumper",
+        "at": 2,
+        "d": 0.62
+       },
+       {
+        "type": "bumper",
+        "at": 10,
+        "d": 0.62
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "spikes",
+        "at": 12,
+        "d": 0,
+        "r": 44,
+        "on": 2,
+        "off": 3
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 9,
+        "d": 0.5,
+        "c": "cactus",
+        "w": "vibrosword",
+        "a": "titanium",
+        "hp": 0.5
+       },
+       {
+        "type": "guard",
+        "at": 3,
+        "d": 0.5,
+        "c": "cactus",
+        "w": "vibrosword",
+        "a": "titanium",
+        "hp": 0.5
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "bumper",
+        "at": 4.5,
+        "d": 0.5
+       },
+       {
+        "type": "bumper",
+        "at": 7.5,
+        "d": 0.5
+       }
+      ]
+     }
+    },
+    "desc": "第一章最終關。終點是高牆鐵籠，不會 RING OUT。BOSS 是被控制的重盾・艾琳，有兩條血：正面有盾幾乎打不動，要繞到背後；她會連續衝鋒，撞到牆就暈眩。建議隊伍裡至少有一張紅卡。"
+   }
+  ]
+ },
+ {
+  "id": "c2",
+  "no": 2,
+  "name": "第二章・訊號汙染區",
+  "desc": "控制選手的訊號來自城市的資料區。這裡的地板會結冰、牆會擋路、空間被打出了洞。",
+  "bonus": {
+   "coins": 8000,
+   "box": "purple"
+  },
+  "levels": [
+   {
+    "id": "2-1",
+    "name": "冷卻液管道",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 600
+     },
+     "star3": {
+      "coins": 400
+     }
+    },
+    "mobLv": 0.3,
+    "floor": [
+     "#2d5f7a",
+     "#1f4458",
+     "#132b38"
+    ],
+    "mobs": [
+     [
+      "spam",
+      "smartpistol",
+      "hover"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 110,
+     "wave": 5.5,
+     "respawn": 12,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.6,
+       "c": "spam",
+       "w": "smartpistol",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#2d5f7a",
+       "#1f4458",
+       "#132b38"
+      ],
+      "props": [
+       {
+        "type": "ice",
+        "at": 6,
+        "d": 0.3,
+        "r": 80
+       },
+       {
+        "type": "boost",
+        "at": 7.5,
+        "d": 0.62,
+        "dir": 12.6
+       },
+       {
+        "type": "boost",
+        "at": 4.5,
+        "d": 0.62,
+        "dir": 11.4
+       },
+       {
+        "type": "bumper",
+        "at": 10,
+        "d": 0.55
+       },
+       {
+        "type": "bumper",
+        "at": 2,
+        "d": 0.55
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "2-2",
+    "name": "防火牆",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 650
+     },
+     "star3": {
+      "coins": 450
+     }
+    },
+    "mobLv": 0.3,
+    "floor": [
+     "#4b3f6e",
+     "#352c52",
+     "#211b34"
+    ],
+    "mobs": [
+     [
+      "raven",
+      "smartpistol",
+      "afterimage"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 110,
+     "wave": 5.5,
+     "respawn": 12,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "raven",
+       "w": "smartpistol",
+       "a": "afterimage"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#4b3f6e",
+       "#352c52",
+       "#211b34"
+      ],
+      "props": [
+       {
+        "type": "crack",
+        "at": 12,
+        "d": 0.3,
+        "len": 130,
+        "rot": 3,
+        "hp": 37
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.55,
+        "dir": 12
+       },
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.55
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.55
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "2-3",
+    "name": "斷線區",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 700
+     },
+     "star3": {
+      "coins": 500
+     }
+    },
+    "mobLv": 0.35,
+    "floor": [
+     "#2f3a63",
+     "#212a49",
+     "#141a30"
+    ],
+    "mobs": [
+     [
+      "nova",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 120,
+     "wave": 5,
+     "respawn": 12,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.6,
+       "c": "nova",
+       "w": "emp",
+       "a": "forcefield"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#2f3a63",
+       "#212a49",
+       "#141a30"
+      ],
+      "props": [
+       {
+        "type": "portal",
+        "id": "a",
+        "at": 7,
+        "d": 0.62,
+        "to": "b"
+       },
+       {
+        "type": "portal",
+        "id": "b",
+        "at": 11.2,
+        "d": 0.5
+       },
+       {
+        "type": "boost",
+        "at": 5,
+        "d": 0.6,
+        "dir": 11.5
+       },
+       {
+        "type": "bumper",
+        "at": 1.5,
+        "d": 0.6
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "2-4",
+    "name": "急凍走廊",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 750
+     },
+     "star3": {
+      "coins": 500
+     }
+    },
+    "mobLv": 0.35,
+    "floor": [
+     "#2a6b84",
+     "#1c4d60",
+     "#10303d"
+    ],
+    "mobs": [
+     [
+      "spam",
+      "smartpistol",
+      "hover"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 120,
+     "wave": 5,
+     "respawn": 11,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "spam",
+       "w": "smartpistol",
+       "a": "hover"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "rat",
+       "w": "shotgun",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#2a6b84",
+       "#1c4d60",
+       "#10303d"
+      ],
+      "props": [
+       {
+        "type": "ice",
+        "at": 9,
+        "d": 0.55,
+        "r": 60
+       },
+       {
+        "type": "ice",
+        "at": 3,
+        "d": 0.55,
+        "r": 60
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.55,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "2-5",
+    "name": "彈窗地獄",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1200,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 800
+     }
+    },
+    "mobLv": 0.4,
+    "floor": [
+     "#5a4a2c",
+     "#40351f",
+     "#272013"
+    ],
+    "mobs": [
+     [
+      "spam",
+      "smartpistol",
+      "hover"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "boss": {
+     "name": "失控彈窗・彈彈",
+     "c": "boss_spam",
+     "w": "smartpistol",
+     "a": "hover",
+     "diff": "normal",
+     "lv": 0.45,
+     "hp": 1.9,
+     "size": 1.5,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#5a4a2c",
+       "#40351f",
+       "#272013"
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "ice",
+        "at": 12,
+        "d": 0.35,
+        "r": 70
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 9.5,
+        "d": 0.5,
+        "c": "spam",
+        "w": "smartpistol",
+        "a": "hover"
+       },
+       {
+        "type": "guard",
+        "at": 2.5,
+        "d": 0.5,
+        "c": "spam",
+        "w": "smartpistol",
+        "a": "hover"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "spikes",
+        "at": 4.5,
+        "d": 0.5,
+        "r": 42,
+        "on": 2,
+        "off": 2.5
+       },
+       {
+        "type": "spikes",
+        "at": 7.5,
+        "d": 0.5,
+        "r": 42,
+        "on": 2,
+        "off": 2.5
+       }
+      ]
+     }
+    },
+    "desc": "第二章第一個 BOSS。被控制的彈彈會「彈窗洗版」：在你身邊彈出一圈廣告窗把你圍住、讓你變慢，撞破它們才能出來。BOSS 衝撞撞到牆會暈眩。建議隊伍有紅卡。"
+   },
+   {
+    "id": "2-6",
+    "name": "雙層防火牆",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 800
+     },
+     "star3": {
+      "coins": 550
+     }
+    },
+    "mobLv": 0.42,
+    "floor": [
+     "#56305e",
+     "#3d2244",
+     "#25152a"
+    ],
+    "mobs": [
+     [
+      "raven",
+      "smartpistol",
+      "afterimage"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 130,
+     "wave": 5,
+     "respawn": 11,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "raven",
+       "w": "smartpistol",
+       "a": "afterimage"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "rat",
+       "w": "shotgun",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#56305e",
+       "#3d2244",
+       "#25152a"
+      ],
+      "props": [
+       {
+        "type": "crack",
+        "at": 10.5,
+        "d": 0.42,
+        "len": 90,
+        "rot": 1.5,
+        "hp": 33
+       },
+       {
+        "type": "crack",
+        "at": 1.5,
+        "d": 0.42,
+        "len": 90,
+        "rot": 10.5,
+        "hp": 33
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       },
+       {
+        "type": "mover",
+        "at": 6,
+        "d": 0.2,
+        "len": 80,
+        "move": "spin",
+        "speed": 0.12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "2-7",
+    "name": "封包風暴",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      5
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 850
+     },
+     "star3": {
+      "coins": 600,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.45,
+    "floor": [
+     "#2e6b5a",
+     "#204c40",
+     "#132e27"
+    ],
+    "mobs": [
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 130,
+     "wave": 5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "rush",
+       "at": 11,
+       "d": 0.6,
+       "c": "rat",
+       "w": "shotgun",
+       "a": "hover"
+      },
+      {
+       "type": "rush",
+       "at": 1,
+       "d": 0.6,
+       "c": "rat",
+       "w": "shotgun",
+       "a": "hover"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#2e6b5a",
+       "#204c40",
+       "#132e27"
+      ],
+      "props": [
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.55
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.55
+       },
+       {
+        "type": "boost",
+        "at": 7.5,
+        "d": 0.62,
+        "dir": 12.6
+       },
+       {
+        "type": "boost",
+        "at": 4.5,
+        "d": 0.62,
+        "dir": 11.4
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "2-8",
+    "name": "黑洞中繼站",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 900
+     },
+     "star3": {
+      "coins": 600,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.48,
+    "floor": [
+     "#3a2e58",
+     "#29203f",
+     "#191427"
+    ],
+    "mobs": [
+     [
+      "nova",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "goal": {
+     "hp": 140,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "nova",
+       "w": "emp",
+       "a": "forcefield"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "nova",
+       "w": "emp",
+       "a": "forcefield"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#3a2e58",
+       "#29203f",
+       "#191427"
+      ],
+      "props": [
+       {
+        "type": "ice",
+        "at": 6,
+        "d": 0.35,
+        "r": 70
+       },
+       {
+        "type": "crack",
+        "at": 12,
+        "d": 0.3,
+        "len": 110,
+        "rot": 3,
+        "hp": 41
+       },
+       {
+        "type": "portal",
+        "id": "a",
+        "at": 8,
+        "d": 0.6,
+        "to": "b"
+       },
+       {
+        "type": "portal",
+        "id": "b",
+        "at": 10.6,
+        "d": 0.62
+       },
+       {
+        "type": "boost",
+        "at": 4,
+        "d": 0.6,
+        "dir": 11
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "2-9",
+    "name": "雙生伺服器",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      2
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1500,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1000
+     }
+    },
+    "mobLv": 0.5,
+    "floor": [
+     "#265e64",
+     "#1a4347",
+     "#10292c"
+    ],
+    "mobs": [
+     [
+      "raven",
+      "smartpistol",
+      "afterimage"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "boss": {
+     "name": "暗黑雙子・零與壹",
+     "c": "boss_twins",
+     "w": "railgun",
+     "a": "opticamo",
+     "diff": "normal",
+     "lv": 0.55,
+     "hp": 2,
+     "size": 1.5,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#265e64",
+       "#1a4347",
+       "#10292c"
+      ],
+      "props": [
+       {
+        "type": "portal",
+        "id": "a",
+        "at": 9,
+        "d": 0.62,
+        "to": "b"
+       },
+       {
+        "type": "portal",
+        "id": "b",
+        "at": 3,
+        "d": 0.62,
+        "to": "a"
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "bumper",
+        "at": 12,
+        "d": 0.45
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "spikes",
+        "at": 4.5,
+        "d": 0.5,
+        "r": 42,
+        "on": 2,
+        "off": 2.5
+       },
+       {
+        "type": "spikes",
+        "at": 7.5,
+        "d": 0.5,
+        "r": 42,
+        "on": 2,
+        "off": 2.5
+       }
+      ]
+     }
+    },
+    "desc": "BOSS 是被控制的雙胞胎駭客零與壹：場上會出現長得一模一樣的分身，打幾下就會碎，但真的只有一個。真身會「駭入」偷光你的 EX，看到連線就拉開距離。建議隊伍有紅卡 3 星。"
+   },
+   {
+    "id": "2-10",
+    "name": "逆轉時鐘塔",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "ex",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 2500,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1500
+     }
+    },
+    "mobLv": 0.55,
+    "floor": [
+     "#4a4a6e",
+     "#33334f",
+     "#1f1f31"
+    ],
+    "mobs": [
+     [
+      "nova",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "rat",
+      "shotgun",
+      "hover"
+     ]
+    ],
+    "boss": {
+     "name": "逆時怪盜・克羅諾",
+     "c": "boss_chrono",
+     "w": "plasmascythe",
+     "a": "nanorepair",
+     "diff": "normal",
+     "lv": 0.6,
+     "hp": 0.75,
+     "size": 1.6,
+     "lives": 2,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD",
+        "w": 46
+       }
+      ],
+      "ringOut": 0.3,
+      "floor": [
+       "#4a4a6e",
+       "#33334f",
+       "#1f1f31"
+      ],
+      "props": [
+       {
+        "type": "ice",
+        "at": 9,
+        "d": 0.55,
+        "r": 60
+       },
+       {
+        "type": "ice",
+        "at": 3,
+        "d": 0.55,
+        "r": 60
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "mover",
+        "at": 12,
+        "d": 0,
+        "len": 110,
+        "move": "spin",
+        "speed": 0.12
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 10.5,
+        "d": 0.55,
+        "c": "nova",
+        "w": "emp",
+        "a": "forcefield"
+       },
+       {
+        "type": "guard",
+        "at": 1.5,
+        "d": 0.55,
+        "c": "nova",
+        "w": "emp",
+        "a": "forcefield"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "spikes",
+        "at": 6,
+        "d": 0.35,
+        "r": 40,
+        "on": 2,
+        "off": 2.5
+       }
+      ]
+     }
+    },
+    "desc": "第二章最終關。BOSS 是被控制的時間竊賊克羅諾，有兩條血：他會在你腳下畫出時鐘圈，指針轉完前沒逃出去就會被凍住，接著被他撞。地上的冰面讓逃跑更難。建議隊伍裡至少有一張金卡或全紅卡 3 星。"
+   }
+  ]
+ },
+ {
+  "id": "c3",
+  "no": 3,
+  "name": "第三章・荒野訊號站",
+  "desc": "訊號源往城外移動，躲進了廢棄的荒野中繼站。這裡風很大，路邊堆滿了沒人管的炸藥桶。",
+  "bonus": {
+   "coins": 12000,
+   "box": "purple"
+  },
+  "levels": [
+   {
+    "id": "3-1",
+    "name": "風口公路",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1000
+     },
+     "star3": {
+      "coins": 600
+     }
+    },
+    "mobLv": 0.55,
+    "floor": [
+     "#7a6a3c",
+     "#5a4c2a",
+     "#3a301a"
+    ],
+    "mobs": [
+     [
+      "cactus",
+      "grenade",
+      "reactive"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "goal": {
+     "hp": 150,
+     "wave": 5,
+     "respawn": 11,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "cactus",
+       "w": "grenade",
+       "a": "reactive"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#7a6a3c",
+       "#5a4c2a",
+       "#3a301a"
+      ],
+      "props": [
+       {
+        "type": "wind",
+        "at": 6,
+        "d": 0.3,
+        "r": 90,
+        "dir": 12
+       },
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.55
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.55
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.65,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "3-2",
+    "name": "炸藥倉庫",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1050
+     },
+     "star3": {
+      "coins": 650
+     }
+    },
+    "mobLv": 0.56,
+    "floor": [
+     "#6e4a32",
+     "#503522",
+     "#322014"
+    ],
+    "mobs": [
+     [
+      "sheep",
+      "hydrohammer",
+      "exoskeleton"
+     ],
+     [
+      "cactus",
+      "grenade",
+      "reactive"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "goal": {
+     "hp": 150,
+     "wave": 5,
+     "respawn": 11,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.6,
+       "c": "sheep",
+       "w": "hydrohammer",
+       "a": "exoskeleton"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#6e4a32",
+       "#503522",
+       "#322014"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 11,
+        "d": 0.45
+       },
+       {
+        "type": "barrel",
+        "at": 1,
+        "d": 0.45
+       },
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.3
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       },
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.55
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.55
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "3-3",
+    "name": "沙塵峽谷",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1100
+     },
+     "star3": {
+      "coins": 700
+     }
+    },
+    "mobLv": 0.58,
+    "floor": [
+     "#8a6b3e",
+     "#674f2c",
+     "#43331c"
+    ],
+    "mobs": [
+     [
+      "hunter",
+      "railgun",
+      "opticamo"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "goal": {
+     "hp": 160,
+     "wave": 5,
+     "respawn": 11,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "hunter",
+       "w": "railgun",
+       "a": "opticamo"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#8a6b3e",
+       "#674f2c",
+       "#43331c"
+      ],
+      "props": [
+       {
+        "type": "wind",
+        "at": 10,
+        "d": 0.45,
+        "r": 70,
+        "dir": 3
+       },
+       {
+        "type": "wind",
+        "at": 2,
+        "d": 0.45,
+        "r": 70,
+        "dir": 9
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       },
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.32
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "3-4",
+    "name": "油井連爆",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1150
+     },
+     "star3": {
+      "coins": 700
+     }
+    },
+    "mobLv": 0.6,
+    "floor": [
+     "#5e4a36",
+     "#443526",
+     "#2a2017"
+    ],
+    "mobs": [
+     [
+      "sheep",
+      "hydrohammer",
+      "exoskeleton"
+     ],
+     [
+      "mechcat",
+      "vibrosword",
+      "carbonvest"
+     ],
+     [
+      "cactus",
+      "grenade",
+      "reactive"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "goal": {
+     "hp": 160,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "cactus",
+       "w": "grenade",
+       "a": "reactive"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "sheep",
+       "w": "hydrohammer",
+       "a": "exoskeleton"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#5e4a36",
+       "#443526",
+       "#2a2017"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 10.5,
+        "d": 0.4
+       },
+       {
+        "type": "barrel",
+        "at": 1.5,
+        "d": 0.4
+       },
+       {
+        "type": "crack",
+        "at": 12,
+        "d": 0.3,
+        "len": 110,
+        "rot": 3,
+        "hp": 45
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "3-5",
+    "name": "荊棘溫室",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1800,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1200
+     }
+    },
+    "mobLv": 0.62,
+    "floor": [
+     "#3f6a3a",
+     "#2d4d29",
+     "#1c3119"
+    ],
+    "mobs": [
+     [
+      "cactus",
+      "grenade",
+      "reactive"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "boss": {
+     "name": "腐化荊棘・刺球",
+     "c": "boss_cactus",
+     "w": "grenade",
+     "a": "reactive",
+     "diff": "normal",
+     "lv": 0.58,
+     "hp": 1.75,
+     "size": 1.5,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#3f6a3a",
+       "#2d4d29",
+       "#1c3119"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 9,
+        "d": 0.6
+       },
+       {
+        "type": "barrel",
+        "at": 3,
+        "d": 0.6
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.5
+       },
+       {
+        "type": "barrel",
+        "at": 7.5,
+        "d": 0.55
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 10,
+        "d": 0.5,
+        "c": "cactus",
+        "w": "grenade",
+        "a": "reactive"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "wind",
+        "at": 6,
+        "d": 0.3,
+        "r": 80,
+        "dir": 9
+       }
+      ]
+     }
+    },
+    "desc": "第三章第一個 BOSS。被控制的刺球會「撒刺」：在你身邊撒出一片地刺，地刺冒出來前地上會閃，看到閃光就快離開。場邊的炸藥桶可以拿來炸它。建議紅卡 3 星以上。"
+   },
+   {
+    "id": "3-6",
+    "name": "風車田",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1250
+     },
+     "star3": {
+      "coins": 750
+     }
+    },
+    "mobLv": 0.64,
+    "floor": [
+     "#6b7a3c",
+     "#4e5a2a",
+     "#323a1a"
+    ],
+    "mobs": [
+     [
+      "hunter",
+      "railgun",
+      "opticamo"
+     ],
+     [
+      "mechcat",
+      "vibrosword",
+      "carbonvest"
+     ],
+     [
+      "sheep",
+      "hydrohammer",
+      "exoskeleton"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "goal": {
+     "hp": 170,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "hunter",
+       "w": "railgun",
+       "a": "opticamo"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "sheep",
+       "w": "hydrohammer",
+       "a": "exoskeleton"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#6b7a3c",
+       "#4e5a2a",
+       "#323a1a"
+      ],
+      "props": [
+       {
+        "type": "mover",
+        "at": 6,
+        "d": 0.25,
+        "len": 90,
+        "move": "spin",
+        "speed": 0.12
+       },
+       {
+        "type": "boost",
+        "at": 4.5,
+        "d": 0.62,
+        "dir": 11.4
+       },
+       {
+        "type": "boost",
+        "at": 7.5,
+        "d": 0.62,
+        "dir": 12.6
+       },
+       {
+        "type": "wind",
+        "at": 12,
+        "d": 0.35,
+        "r": 60,
+        "dir": 6,
+        "power": 0.6
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "3-7",
+    "name": "狩獵場",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      5
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1300
+     },
+     "star3": {
+      "coins": 800,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.66,
+    "floor": [
+     "#4f5e2e",
+     "#3a4521",
+     "#252c14"
+    ],
+    "mobs": [
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "mechcat",
+      "vibrosword",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 170,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "rush",
+       "at": 11,
+       "d": 0.6,
+       "c": "mechcat",
+       "w": "vibrosword",
+       "a": "carbonvest"
+      },
+      {
+       "type": "rush",
+       "at": 1,
+       "d": 0.6,
+       "c": "rex",
+       "w": "chainaxe",
+       "a": "powerarmor"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#4f5e2e",
+       "#3a4521",
+       "#252c14"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 9,
+        "d": 0.5
+       },
+       {
+        "type": "barrel",
+        "at": 3,
+        "d": 0.5
+       },
+       {
+        "type": "bumper",
+        "at": 12,
+        "d": 0.35
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "3-8",
+    "name": "斷橋風暴",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1350
+     },
+     "star3": {
+      "coins": 850,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.68,
+    "floor": [
+     "#6a5a3a",
+     "#4d4129",
+     "#30291a"
+    ],
+    "mobs": [
+     [
+      "hunter",
+      "railgun",
+      "opticamo"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "sheep",
+      "hydrohammer",
+      "exoskeleton"
+     ],
+     [
+      "mechcat",
+      "vibrosword",
+      "carbonvest"
+     ],
+     [
+      "cactus",
+      "grenade",
+      "reactive"
+     ]
+    ],
+    "goal": {
+     "hp": 180,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "hunter",
+       "w": "railgun",
+       "a": "opticamo"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "cactus",
+       "w": "grenade",
+       "a": "reactive"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#6a5a3a",
+       "#4d4129",
+       "#30291a"
+      ],
+      "props": [
+       {
+        "type": "wind",
+        "at": 6,
+        "d": 0.35,
+        "r": 70,
+        "dir": 12
+       },
+       {
+        "type": "barrel",
+        "at": 10,
+        "d": 0.45
+       },
+       {
+        "type": "barrel",
+        "at": 2,
+        "d": 0.45
+       },
+       {
+        "type": "crack",
+        "at": 12,
+        "d": 0.3,
+        "len": 110,
+        "rot": 3,
+        "hp": 50
+       },
+       {
+        "type": "boost",
+        "at": 4,
+        "d": 0.6,
+        "dir": 11
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "3-9",
+    "name": "低音炮營地",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      2
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 2200,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1400
+     }
+    },
+    "mobLv": 0.7,
+    "floor": [
+     "#5a2e5e",
+     "#412144",
+     "#28142a"
+    ],
+    "mobs": [
+     [
+      "dj",
+      "missilepod",
+      "deflector"
+     ],
+     [
+      "mechcat",
+      "vibrosword",
+      "carbonvest"
+     ],
+     [
+      "rex",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "boss": {
+     "name": "失真音浪・節拍",
+     "c": "boss_dj",
+     "w": "missilepod",
+     "a": "deflector",
+     "diff": "normal",
+     "lv": 0.68,
+     "hp": 1.95,
+     "size": 1.5,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#5a2e5e",
+       "#412144",
+       "#28142a"
+      ],
+      "props": [
+       {
+        "type": "bumper",
+        "at": 10,
+        "d": 0.55
+       },
+       {
+        "type": "bumper",
+        "at": 2,
+        "d": 0.55
+       }
+      ]
+     },
+     "phase2": {
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 9,
+        "d": 0.5,
+        "c": "dj",
+        "w": "missilepod",
+        "a": "deflector"
+       },
+       {
+        "type": "guard",
+        "at": 3,
+        "d": 0.5,
+        "c": "dj",
+        "w": "missilepod",
+        "a": "deflector"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.5
+       },
+       {
+        "type": "barrel",
+        "at": 4.5,
+        "d": 0.55
+       },
+       {
+        "type": "barrel",
+        "at": 7.5,
+        "d": 0.55
+       }
+      ]
+     }
+    },
+    "desc": "BOSS 是被控制的 DJ 節拍：他會「放重低音」，從身上一圈一圈震出音浪，碰到就被震飛扣血。音浪之間有空檔，抓節奏穿過去打他。建議紅卡 3 星或金卡。"
+   },
+   {
+    "id": "3-10",
+    "name": "野貓之巢",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "ex",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 3500,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 2000
+     }
+    },
+    "mobLv": 0.72,
+    "floor": [
+     "#6e5038",
+     "#503a28",
+     "#322419"
+    ],
+    "mobs": [
+     [
+      "hunter",
+      "railgun",
+      "opticamo"
+     ],
+     [
+      "mechcat",
+      "vibrosword",
+      "carbonvest"
+     ],
+     [
+      "sheep",
+      "hydrohammer",
+      "exoskeleton"
+     ]
+    ],
+    "boss": {
+     "name": "反噬利爪・機甲貓咪",
+     "c": "boss_mechcat",
+     "w": "vibrosword",
+     "a": "opticamo",
+     "diff": "normal",
+     "lv": 0.72,
+     "hp": 0.8,
+     "size": 1.6,
+     "lives": 2,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD",
+        "w": 46
+       }
+      ],
+      "ringOut": 0.3,
+      "floor": [
+       "#6e5038",
+       "#503a28",
+       "#322419"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 9,
+        "d": 0.6
+       },
+       {
+        "type": "barrel",
+        "at": 3,
+        "d": 0.6
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "wind",
+        "at": 12,
+        "d": 0.3,
+        "r": 70,
+        "dir": 6,
+        "power": 0.6
+       }
+      ],
+      "mobs": [
+       {
+        "type": "rush",
+        "at": 10.5,
+        "d": 0.55,
+        "c": "mechcat",
+        "w": "vibrosword",
+        "a": "carbonvest"
+       },
+       {
+        "type": "rush",
+        "at": 1.5,
+        "d": 0.55,
+        "c": "rex",
+        "w": "chainaxe",
+        "a": "powerarmor"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.55
+       },
+       {
+        "type": "barrel",
+        "at": 6,
+        "d": 0.3
+       }
+      ]
+     }
+    },
+    "desc": "第三章最終關。BOSS 是被控制的機甲貓咪，有兩條血：「連續撲殺」會連撞兩三下，每次撲過來前會閃紅光，看到就橫向閃開，讓它撞牆暈眩。建議金卡或全紅卡 3 星。"
+   }
+  ]
+ },
+ {
+  "id": "c4",
+  "no": 4,
+  "name": "第四章・鐵心重工",
+  "desc": "訊號的硬體全部在鐵心幫的重工廠生產。磁鐵吊臂會把你吸過去，雷射柵欄一亮一滅，整座工廠都在加班。",
+  "bonus": {
+   "coins": 16000,
+   "box": "purple"
+  },
+  "levels": [
+   {
+    "id": "4-1",
+    "name": "磁吸產線",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1400
+     },
+     "star3": {
+      "coins": 800
+     }
+    },
+    "mobLv": 0.74,
+    "floor": [
+     "#5a5f68",
+     "#41454c",
+     "#272a2f"
+    ],
+    "mobs": [
+     [
+      "guardian",
+      "hydrohammer",
+      "titanium"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 190,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "guardian",
+       "w": "hydrohammer",
+       "a": "titanium"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#5a5f68",
+       "#41454c",
+       "#272a2f"
+      ],
+      "props": [
+       {
+        "type": "magnet",
+        "at": 9,
+        "d": 0.5,
+        "r": 90
+       },
+       {
+        "type": "magnet",
+        "at": 3,
+        "d": 0.5,
+        "r": 90
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       },
+       {
+        "type": "bumper",
+        "at": 12,
+        "d": 0.32
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "4-2",
+    "name": "雷射柵欄",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1450
+     },
+     "star3": {
+      "coins": 850
+     }
+    },
+    "mobLv": 0.75,
+    "floor": [
+     "#4a3a3a",
+     "#362a2a",
+     "#211919"
+    ],
+    "mobs": [
+     [
+      "tesla",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 190,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "tesla",
+       "w": "emp",
+       "a": "forcefield"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#4a3a3a",
+       "#362a2a",
+       "#211919"
+      ],
+      "props": [
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.32,
+        "len": 160,
+        "on": 1.4,
+        "off": 2
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       },
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.55
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.55
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "4-3",
+    "name": "吊臂倉庫",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1500
+     },
+     "star3": {
+      "coins": 900
+     }
+    },
+    "mobLv": 0.77,
+    "floor": [
+     "#5e5048",
+     "#443a34",
+     "#2a2420"
+    ],
+    "mobs": [
+     [
+      "octo",
+      "gatling",
+      "deflector"
+     ],
+     [
+      "berserker",
+      "vibrosword",
+      "reactive"
+     ],
+     [
+      "guardian",
+      "hydrohammer",
+      "titanium"
+     ]
+    ],
+    "goal": {
+     "hp": 200,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "octo",
+       "w": "gatling",
+       "a": "deflector"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#5e5048",
+       "#443a34",
+       "#2a2420"
+      ],
+      "props": [
+       {
+        "type": "magnet",
+        "at": 6,
+        "d": 0.3,
+        "r": 80,
+        "power": -1
+       },
+       {
+        "type": "barrel",
+        "at": 10,
+        "d": 0.45
+       },
+       {
+        "type": "barrel",
+        "at": 2,
+        "d": 0.45
+       },
+       {
+        "type": "boost",
+        "at": 4.5,
+        "d": 0.62,
+        "dir": 11.4
+       },
+       {
+        "type": "boost",
+        "at": 7.5,
+        "d": 0.62,
+        "dir": 12.6
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "4-4",
+    "name": "熔爐輸送帶",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1550
+     },
+     "star3": {
+      "coins": 900
+     }
+    },
+    "mobLv": 0.79,
+    "floor": [
+     "#6b3e2a",
+     "#4e2d1e",
+     "#311c13"
+    ],
+    "mobs": [
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "guardian",
+      "hydrohammer",
+      "titanium"
+     ],
+     [
+      "berserker",
+      "vibrosword",
+      "reactive"
+     ],
+     [
+      "tesla",
+      "emp",
+      "forcefield"
+     ]
+    ],
+    "goal": {
+     "hp": 200,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "guardian",
+       "w": "hydrohammer",
+       "a": "titanium"
+      },
+      {
+       "type": "rush",
+       "at": 1,
+       "d": 0.64,
+       "c": "rider",
+       "w": "chainaxe",
+       "a": "carbonvest"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#6b3e2a",
+       "#4e2d1e",
+       "#311c13"
+      ],
+      "props": [
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.62,
+        "dir": 12
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.3,
+        "dir": 12
+       },
+       {
+        "type": "spikes",
+        "at": 9,
+        "d": 0.5,
+        "r": 38,
+        "on": 2,
+        "off": 2,
+        "skin": "fire"
+       },
+       {
+        "type": "spikes",
+        "at": 3,
+        "d": 0.5,
+        "r": 38,
+        "on": 2,
+        "off": 2,
+        "skin": "fire"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "4-5",
+    "name": "狂飆試車場",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 2400,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1500
+     }
+    },
+    "mobLv": 0.8,
+    "floor": [
+     "#3c3c44",
+     "#2b2b31",
+     "#1a1a1e"
+    ],
+    "mobs": [
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "guardian",
+      "hydrohammer",
+      "titanium"
+     ]
+    ],
+    "boss": {
+     "name": "失速狂飆・轟天",
+     "c": "boss_rider",
+     "w": "chainaxe",
+     "a": "carbonvest",
+     "diff": "normal",
+     "lv": 0.74,
+     "hp": 1.85,
+     "size": 1.5,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#3c3c44",
+       "#2b2b31",
+       "#1a1a1e"
+      ],
+      "props": [
+       {
+        "type": "bumper",
+        "at": 9,
+        "d": 0.5
+       },
+       {
+        "type": "bumper",
+        "at": 3,
+        "d": 0.5
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.5
+       }
+      ],
+      "mobs": [
+       {
+        "type": "rush",
+        "at": 10,
+        "d": 0.5,
+        "c": "rider",
+        "w": "chainaxe",
+        "a": "carbonvest"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "magnet",
+        "at": 6,
+        "d": 0.3,
+        "r": 70,
+        "power": -1
+       }
+      ]
+     }
+    },
+    "desc": "第四章第一個 BOSS。被控制的轟天衝撞特別頻繁，衝過的地方會一路燒起火焰地刺。別跟在它屁股後面，從側面打它。建議金卡。"
+   },
+   {
+    "id": "4-6",
+    "name": "電磁走廊",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1600
+     },
+     "star3": {
+      "coins": 950
+     }
+    },
+    "mobLv": 0.82,
+    "floor": [
+     "#3a4a5e",
+     "#2a3644",
+     "#1a222b"
+    ],
+    "mobs": [
+     [
+      "tesla",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "berserker",
+      "vibrosword",
+      "reactive"
+     ],
+     [
+      "octo",
+      "gatling",
+      "deflector"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 210,
+     "wave": 4.5,
+     "respawn": 10,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "tesla",
+       "w": "emp",
+       "a": "forcefield"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "octo",
+       "w": "gatling",
+       "a": "deflector"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#3a4a5e",
+       "#2a3644",
+       "#1a222b"
+      ],
+      "props": [
+       {
+        "type": "magnet",
+        "at": 9,
+        "d": 0.5,
+        "r": 80
+       },
+       {
+        "type": "magnet",
+        "at": 3,
+        "d": 0.5,
+        "r": 80,
+        "power": -1
+       },
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.32,
+        "len": 160,
+        "on": 1.4,
+        "off": 2
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "4-7",
+    "name": "暴動工廠",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      5
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1650
+     },
+     "star3": {
+      "coins": 1000,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.84,
+    "floor": [
+     "#5e3a30",
+     "#442a22",
+     "#2a1a15"
+    ],
+    "mobs": [
+     [
+      "berserker",
+      "vibrosword",
+      "reactive"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "goal": {
+     "hp": 210,
+     "wave": 4.5,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "rush",
+       "at": 11,
+       "d": 0.6,
+       "c": "berserker",
+       "w": "vibrosword",
+       "a": "reactive"
+      },
+      {
+       "type": "rush",
+       "at": 1,
+       "d": 0.6,
+       "c": "rider",
+       "w": "chainaxe",
+       "a": "carbonvest"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#5e3a30",
+       "#442a22",
+       "#2a1a15"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 9,
+        "d": 0.5
+       },
+       {
+        "type": "barrel",
+        "at": 3,
+        "d": 0.5
+       },
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.3
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "4-8",
+    "name": "核心冷卻塔",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1700
+     },
+     "star3": {
+      "coins": 1050,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.86,
+    "floor": [
+     "#2f4f5e",
+     "#223944",
+     "#15242b"
+    ],
+    "mobs": [
+     [
+      "tesla",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "berserker",
+      "vibrosword",
+      "reactive"
+     ],
+     [
+      "octo",
+      "gatling",
+      "deflector"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "guardian",
+      "hydrohammer",
+      "titanium"
+     ]
+    ],
+    "goal": {
+     "hp": 220,
+     "wave": 4,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "tesla",
+       "w": "emp",
+       "a": "forcefield"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "guardian",
+       "w": "hydrohammer",
+       "a": "titanium"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#2f4f5e",
+       "#223944",
+       "#15242b"
+      ],
+      "props": [
+       {
+        "type": "ice",
+        "at": 6,
+        "d": 0.35,
+        "r": 70
+       },
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.32,
+        "len": 160,
+        "on": 1.3,
+        "off": 2
+       },
+       {
+        "type": "magnet",
+        "at": 9,
+        "d": 0.5,
+        "r": 80
+       },
+       {
+        "type": "magnet",
+        "at": 3,
+        "d": 0.5,
+        "r": 80,
+        "power": -1
+       },
+       {
+        "type": "boost",
+        "at": 4,
+        "d": 0.6,
+        "dir": 11
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "4-9",
+    "name": "深海維修槽",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      2
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 2800,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1700
+     }
+    },
+    "mobLv": 0.88,
+    "floor": [
+     "#1f4a5e",
+     "#163644",
+     "#0d222b"
+    ],
+    "mobs": [
+     [
+      "octo",
+      "gatling",
+      "deflector"
+     ],
+     [
+      "berserker",
+      "vibrosword",
+      "reactive"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ]
+    ],
+    "boss": {
+     "name": "深淵觸手・八爪",
+     "c": "boss_octo",
+     "w": "gatling",
+     "a": "deflector",
+     "diff": "normal",
+     "lv": 0.84,
+     "hp": 2,
+     "size": 1.5,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#1f4a5e",
+       "#163644",
+       "#0d222b"
+      ],
+      "props": [
+       {
+        "type": "ice",
+        "at": 9,
+        "d": 0.55,
+        "r": 55
+       },
+       {
+        "type": "ice",
+        "at": 3,
+        "d": 0.55,
+        "r": 55
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "magnet",
+        "at": 12,
+        "d": 0.45,
+        "r": 70,
+        "power": -1
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 9.5,
+        "d": 0.5,
+        "c": "octo",
+        "w": "gatling",
+        "a": "deflector"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "spikes",
+        "at": 4.5,
+        "d": 0.5,
+        "r": 40,
+        "on": 2,
+        "off": 2.5
+       },
+       {
+        "type": "spikes",
+        "at": 7.5,
+        "d": 0.5,
+        "r": 40,
+        "on": 2,
+        "off": 2.5
+       }
+      ]
+     }
+    },
+    "desc": "BOSS 是被控制的八爪：它會伸出觸手，觸手伸到你身上就會把你一路拖過去。觸手伸出來時拉開距離就能閃過；被抓到就往反方向大力拖曳。建議金卡。"
+   },
+   {
+    "id": "4-10",
+    "name": "超載發電廠",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "ex",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 4500,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 2500
+     }
+    },
+    "mobLv": 0.9,
+    "floor": [
+     "#2e2a5e",
+     "#211e44",
+     "#14122b"
+    ],
+    "mobs": [
+     [
+      "tesla",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "berserker",
+      "vibrosword",
+      "reactive"
+     ],
+     [
+      "rider",
+      "chainaxe",
+      "carbonvest"
+     ],
+     [
+      "guardian",
+      "hydrohammer",
+      "titanium"
+     ]
+    ],
+    "boss": {
+     "name": "過載核心・T-9",
+     "c": "boss_tesla",
+     "w": "emp",
+     "a": "forcefield",
+     "diff": "normal",
+     "lv": 0.88,
+     "hp": 0.85,
+     "size": 1.6,
+     "lives": 2,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD",
+        "w": 46
+       }
+      ],
+      "ringOut": 0.3,
+      "floor": [
+       "#2e2a5e",
+       "#211e44",
+       "#14122b"
+      ],
+      "props": [
+       {
+        "type": "magnet",
+        "at": 9,
+        "d": 0.55,
+        "r": 70,
+        "power": -1
+       },
+       {
+        "type": "magnet",
+        "at": 3,
+        "d": 0.55,
+        "r": 70,
+        "power": -1
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.4,
+        "len": 140,
+        "on": 1.3,
+        "off": 2
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 10.5,
+        "d": 0.55,
+        "c": "tesla",
+        "w": "emp",
+        "a": "forcefield"
+       },
+       {
+        "type": "guard",
+        "at": 1.5,
+        "d": 0.55,
+        "c": "tesla",
+        "w": "emp",
+        "a": "forcefield"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "barrel",
+        "at": 7.5,
+        "d": 0.55
+       },
+       {
+        "type": "barrel",
+        "at": 4.5,
+        "d": 0.55
+       }
+      ]
+     }
+    },
+    "desc": "第四章最終關。BOSS 是被控制的 T-9，有兩條血：「落雷」會在你身邊畫出好幾個光圈，光圈縮完就劈下雷，被劈到會麻痺。看到光圈立刻離開。建議金卡 3 星。"
+   }
+  ]
+ },
+ {
+  "id": "c5",
+  "no": 5,
+  "name": "第五章・異哲團聖所",
+  "desc": "所有線索都指向異哲團的地下聖所。控制訊號的源頭就在最深處——一個寄生在網路裡的東西。這裡會出現前面所有的機關。",
+  "bonus": {
+   "coins": 25000,
+   "box": "purple"
+  },
+  "levels": [
+   {
+    "id": "5-1",
+    "name": "鏡廳入口",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1800
+     },
+     "star3": {
+      "coins": 1000
+     }
+    },
+    "mobLv": 0.85,
+    "floor": [
+     "#4a2e5e",
+     "#362244",
+     "#21152a"
+    ],
+    "mobs": [
+     [
+      "mage",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "proteus",
+      "plasmascythe",
+      "afterimage"
+     ],
+     [
+      "maiden",
+      "missilepod",
+      "plasmaplate"
+     ]
+    ],
+    "goal": {
+     "hp": 230,
+     "wave": 4,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "mage",
+       "w": "emp",
+       "a": "forcefield"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#4a2e5e",
+       "#362244",
+       "#21152a"
+      ],
+      "props": [
+       {
+        "type": "portal",
+        "id": "a",
+        "at": 7,
+        "d": 0.62,
+        "to": "b"
+       },
+       {
+        "type": "portal",
+        "id": "b",
+        "at": 11.2,
+        "d": 0.5
+       },
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.3,
+        "len": 140,
+        "on": 1.3,
+        "off": 2
+       },
+       {
+        "type": "boost",
+        "at": 5,
+        "d": 0.6,
+        "dir": 11.5
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "5-2",
+    "name": "風之迴廊",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1850
+     },
+     "star3": {
+      "coins": 1050
+     }
+    },
+    "mobLv": 0.86,
+    "floor": [
+     "#3e3e6e",
+     "#2d2d4f",
+     "#1b1b31"
+    ],
+    "mobs": [
+     [
+      "maiden",
+      "missilepod",
+      "plasmaplate"
+     ],
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "mage",
+      "emp",
+      "forcefield"
+     ]
+    ],
+    "goal": {
+     "hp": 230,
+     "wave": 4,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 12,
+       "d": 0.62,
+       "c": "maiden",
+       "w": "missilepod",
+       "a": "plasmaplate"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#3e3e6e",
+       "#2d2d4f",
+       "#1b1b31"
+      ],
+      "props": [
+       {
+        "type": "wind",
+        "at": 10,
+        "d": 0.45,
+        "r": 70,
+        "dir": 3
+       },
+       {
+        "type": "wind",
+        "at": 2,
+        "d": 0.45,
+        "r": 70,
+        "dir": 9
+       },
+       {
+        "type": "magnet",
+        "at": 6,
+        "d": 0.3,
+        "r": 70,
+        "power": -1
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.62,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "5-3",
+    "name": "不死者墓園",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1900
+     },
+     "star3": {
+      "coins": 1100
+     }
+    },
+    "mobLv": 0.88,
+    "floor": [
+     "#3a3a3a",
+     "#2a2a2a",
+     "#1a1a1a"
+    ],
+    "mobs": [
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "undead",
+      "hydrohammer",
+      "nanorepair"
+     ],
+     [
+      "mage",
+      "emp",
+      "forcefield"
+     ]
+    ],
+    "goal": {
+     "hp": 240,
+     "wave": 4,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "undead",
+       "w": "hydrohammer",
+       "a": "nanorepair"
+      },
+      {
+       "type": "rush",
+       "at": 1,
+       "d": 0.64,
+       "c": "undead",
+       "w": "chainaxe",
+       "a": "powerarmor"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#3a3a3a",
+       "#2a2a2a",
+       "#1a1a1a"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 10.5,
+        "d": 0.4
+       },
+       {
+        "type": "barrel",
+        "at": 1.5,
+        "d": 0.4
+       },
+       {
+        "type": "crack",
+        "at": 12,
+        "d": 0.3,
+        "len": 110,
+        "rot": 3,
+        "hp": 55
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "5-4",
+    "name": "擬態迷宮",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 1950
+     },
+     "star3": {
+      "coins": 1150
+     }
+    },
+    "mobLv": 0.9,
+    "floor": [
+     "#2e5e5a",
+     "#224441",
+     "#152b28"
+    ],
+    "mobs": [
+     [
+      "proteus",
+      "plasmascythe",
+      "afterimage"
+     ],
+     [
+      "maiden",
+      "missilepod",
+      "plasmaplate"
+     ],
+     [
+      "mage",
+      "emp",
+      "forcefield"
+     ]
+    ],
+    "goal": {
+     "hp": 240,
+     "wave": 4,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "maiden",
+       "w": "missilepod",
+       "a": "plasmaplate"
+      },
+      {
+       "type": "rush",
+       "at": 1,
+       "d": 0.64,
+       "c": "proteus",
+       "w": "plasmascythe",
+       "a": "afterimage"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#2e5e5a",
+       "#224441",
+       "#152b28"
+      ],
+      "props": [
+       {
+        "type": "portal",
+        "id": "a",
+        "at": 8,
+        "d": 0.6,
+        "to": "b"
+       },
+       {
+        "type": "portal",
+        "id": "b",
+        "at": 10.6,
+        "d": 0.62
+       },
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.32,
+        "len": 140,
+        "on": 1.4,
+        "off": 2
+       },
+       {
+        "type": "ice",
+        "at": 4,
+        "d": 0.5,
+        "r": 55
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "5-5",
+    "name": "重組工坊",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "lives",
+      3
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 3000,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 1800
+     }
+    },
+    "mobLv": 0.91,
+    "floor": [
+     "#5e5a3a",
+     "#44412a",
+     "#2b291a"
+    ],
+    "mobs": [
+     [
+      "theseus",
+      "vibrosword",
+      "nanorepair"
+     ],
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "boss": {
+     "name": "無限重組・忒修斯",
+     "c": "boss_theseus",
+     "w": "hydrohammer",
+     "a": "nanorepair",
+     "diff": "normal",
+     "lv": 0.88,
+     "hp": 1.95,
+     "size": 1.5,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#5e5a3a",
+       "#44412a",
+       "#2b291a"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 9,
+        "d": 0.6
+       },
+       {
+        "type": "barrel",
+        "at": 3,
+        "d": 0.6
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.42,
+        "len": 140,
+        "on": 1.3,
+        "off": 2
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 9.5,
+        "d": 0.5,
+        "c": "theseus",
+        "w": "vibrosword",
+        "a": "nanorepair"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "barrel",
+        "at": 7.5,
+        "d": 0.55
+       },
+       {
+        "type": "barrel",
+        "at": 4.5,
+        "d": 0.55
+       }
+      ]
+     }
+    },
+    "desc": "第五章第一個 BOSS。被控制的忒修斯會「重組」：身上冒綠光的時候在回血，這時候用力撞它就能打斷，打斷後它會暈眩一陣子——那是最好的輸出時機。建議金卡 3 星。"
+   },
+   {
+    "id": "5-6",
+    "name": "雷射聖堂",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 2000
+     },
+     "star3": {
+      "coins": 1200
+     }
+    },
+    "mobLv": 0.93,
+    "floor": [
+     "#5e2e3e",
+     "#44222d",
+     "#2b151c"
+    ],
+    "mobs": [
+     [
+      "mage",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "proteus",
+      "plasmascythe",
+      "afterimage"
+     ],
+     [
+      "maiden",
+      "missilepod",
+      "plasmaplate"
+     ],
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ]
+    ],
+    "goal": {
+     "hp": 250,
+     "wave": 4,
+     "respawn": 9,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "mage",
+       "w": "emp",
+       "a": "forcefield"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "maiden",
+       "w": "missilepod",
+       "a": "plasmaplate"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#5e2e3e",
+       "#44222d",
+       "#2b151c"
+      ],
+      "props": [
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.32,
+        "len": 160,
+        "on": 1.2,
+        "off": 2
+       },
+       {
+        "type": "laser",
+        "at": 6,
+        "d": 0.3,
+        "len": 120,
+        "on": 1.2,
+        "off": 2,
+        "phase": 1.6
+       },
+       {
+        "type": "boost",
+        "at": 4.5,
+        "d": 0.62,
+        "dir": 11.4
+       },
+       {
+        "type": "boost",
+        "at": 7.5,
+        "d": 0.62,
+        "dir": 12.6
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "5-7",
+    "name": "信徒狂潮",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      6
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 2100
+     },
+     "star3": {
+      "coins": 1250,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.95,
+    "floor": [
+     "#3e2e5e",
+     "#2d2244",
+     "#1c152a"
+    ],
+    "mobs": [
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "proteus",
+      "plasmascythe",
+      "afterimage"
+     ]
+    ],
+    "goal": {
+     "hp": 250,
+     "wave": 4,
+     "respawn": 8,
+     "guards": [
+      {
+       "type": "rush",
+       "at": 11,
+       "d": 0.6,
+       "c": "undead",
+       "w": "chainaxe",
+       "a": "powerarmor"
+      },
+      {
+       "type": "rush",
+       "at": 1,
+       "d": 0.6,
+       "c": "proteus",
+       "w": "plasmascythe",
+       "a": "afterimage"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#3e2e5e",
+       "#2d2244",
+       "#1c152a"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 9,
+        "d": 0.5
+       },
+       {
+        "type": "barrel",
+        "at": 3,
+        "d": 0.5
+       },
+       {
+        "type": "wind",
+        "at": 12,
+        "d": 0.35,
+        "r": 60,
+        "dir": 6,
+        "power": 0.6
+       },
+       {
+        "type": "boost",
+        "at": 6,
+        "d": 0.6,
+        "dir": 12
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "5-8",
+    "name": "最終防線",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      4
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 2200
+     },
+     "star3": {
+      "coins": 1300,
+      "box": "white"
+     }
+    },
+    "mobLv": 0.97,
+    "floor": [
+     "#2a2a4a",
+     "#1f1f36",
+     "#131322"
+    ],
+    "mobs": [
+     [
+      "mage",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "theseus",
+      "vibrosword",
+      "nanorepair"
+     ],
+     [
+      "proteus",
+      "plasmascythe",
+      "afterimage"
+     ],
+     [
+      "maiden",
+      "missilepod",
+      "plasmaplate"
+     ]
+    ],
+    "goal": {
+     "hp": 260,
+     "wave": 4,
+     "respawn": 8,
+     "guards": [
+      {
+       "type": "guard",
+       "at": 11,
+       "d": 0.64,
+       "c": "mage",
+       "w": "emp",
+       "a": "forcefield"
+      },
+      {
+       "type": "guard",
+       "at": 1,
+       "d": 0.64,
+       "c": "theseus",
+       "w": "vibrosword",
+       "a": "nanorepair"
+      }
+     ],
+     "stage": {
+      "floor": [
+       "#2a2a4a",
+       "#1f1f36",
+       "#131322"
+      ],
+      "props": [
+       {
+        "type": "ice",
+        "at": 6,
+        "d": 0.35,
+        "r": 60
+       },
+       {
+        "type": "laser",
+        "at": 12,
+        "d": 0.32,
+        "len": 160,
+        "on": 1.2,
+        "off": 2
+       },
+       {
+        "type": "barrel",
+        "at": 10,
+        "d": 0.45
+       },
+       {
+        "type": "barrel",
+        "at": 2,
+        "d": 0.45
+       },
+       {
+        "type": "magnet",
+        "at": 4,
+        "d": 0.55,
+        "r": 70,
+        "power": -1
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "5-9",
+    "name": "石像大廳",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "kills",
+      2
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 3500,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 2000
+     }
+    },
+    "mobLv": 0.88,
+    "floor": [
+     "#5e5e66",
+     "#44444a",
+     "#2b2b2f"
+    ],
+    "mobs": [
+     [
+      "david",
+      "railgun",
+      "titanium"
+     ],
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "proteus",
+      "plasmascythe",
+      "afterimage"
+     ]
+    ],
+    "boss": {
+     "name": "墮落巨像・大衛",
+     "c": "boss_david",
+     "w": "railgun",
+     "a": "titanium",
+     "diff": "normal",
+     "lv": 0.85,
+     "hp": 1.7,
+     "size": 1.55,
+     "lives": 1,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD"
+       }
+      ],
+      "ringOut": 0.35,
+      "floor": [
+       "#5e5e66",
+       "#44444a",
+       "#2b2b2f"
+      ],
+      "props": [
+       {
+        "type": "bumper",
+        "at": 10,
+        "d": 0.5
+       },
+       {
+        "type": "bumper",
+        "at": 2,
+        "d": 0.5
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "barrel",
+        "at": 12,
+        "d": 0.5
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 9,
+        "d": 0.5,
+        "c": "david",
+        "w": "railgun",
+        "a": "titanium"
+       },
+       {
+        "type": "guard",
+        "at": 3,
+        "d": 0.5,
+        "c": "david",
+        "w": "railgun",
+        "a": "titanium"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "magnet",
+        "at": 6,
+        "d": 0.3,
+        "r": 70,
+        "power": -1
+       }
+      ]
+     }
+    },
+    "desc": "BOSS 是被控制的大衛：它會「投石」，先畫出一條紅色瞄準線，接著石頭沿著線飛過來，打中會被擊飛扣血。看到瞄準線就往旁邊閃。暴怒後一次丟三顆。建議金卡 3 星。"
+   },
+   {
+    "id": "5-10",
+    "name": "寄生核心",
+    "stars": [
+     [
+      "win"
+     ],
+     [
+      "lives",
+      2
+     ],
+     [
+      "ex",
+      5
+     ]
+    ],
+    "reward": {
+     "first": {
+      "coins": 6000,
+      "box": "purple"
+     },
+     "star3": {
+      "coins": 3500
+     }
+    },
+    "mobLv": 0.9,
+    "floor": [
+     "#3a1f4a",
+     "#2a1636",
+     "#1a0e22"
+    ],
+    "mobs": [
+     [
+      "mage",
+      "emp",
+      "forcefield"
+     ],
+     [
+      "undead",
+      "chainaxe",
+      "powerarmor"
+     ],
+     [
+      "maiden",
+      "missilepod",
+      "plasmaplate"
+     ],
+     [
+      "proteus",
+      "plasmascythe",
+      "afterimage"
+     ],
+     [
+      "theseus",
+      "vibrosword",
+      "nanorepair"
+     ]
+    ],
+    "boss": {
+     "name": "幕後黑手・宿主",
+     "c": "boss_host",
+     "w": "plasmascythe",
+     "a": "plasmaplate",
+     "diff": "normal",
+     "lv": 0.86,
+     "hp": 0.5,
+     "size": 1.7,
+     "lives": 3,
+     "stage": {
+      "exits": [
+       {
+        "at": 6,
+        "type": "DEAD",
+        "w": 46
+       }
+      ],
+      "ringOut": 0.3,
+      "floor": [
+       "#3a1f4a",
+       "#2a1636",
+       "#1a0e22"
+      ],
+      "props": [
+       {
+        "type": "barrel",
+        "at": 9,
+        "d": 0.6
+       },
+       {
+        "type": "barrel",
+        "at": 3,
+        "d": 0.6
+       }
+      ]
+     },
+     "phase2": {
+      "props": [
+       {
+        "type": "magnet",
+        "at": 12,
+        "d": 0.42,
+        "r": 70,
+        "power": -1
+       }
+      ],
+      "mobs": [
+       {
+        "type": "guard",
+        "at": 10.5,
+        "d": 0.55,
+        "c": "mage",
+        "w": "emp",
+        "a": "forcefield"
+       },
+       {
+        "type": "guard",
+        "at": 1.5,
+        "d": 0.55,
+        "c": "maiden",
+        "w": "missilepod",
+        "a": "plasmaplate"
+       }
+      ]
+     },
+     "phase3": {
+      "props": [
+       {
+        "type": "laser",
+        "at": 6,
+        "d": 0.3,
+        "len": 140,
+        "on": 1.2,
+        "off": 2
+       },
+       {
+        "type": "barrel",
+        "at": 7.5,
+        "d": 0.55
+       },
+       {
+        "type": "barrel",
+        "at": 4.5,
+        "d": 0.55
+       }
+      ]
+     }
+    },
+    "desc": "第五章最終關。BOSS 是一切的幕後黑手「宿主」，有三條血：它會輪流「寄生」你（幾秒內拖曳方向上下左右反轉、自動移動失效）和「孵化」小幼體。被寄生時頭上會顯示 REVERSED，拖曳方向反過來想。建議金卡 3 星，隊伍三隻都要強。"
+   }
+  ]
+ }
+]

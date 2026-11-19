@@ -1,8 +1,10 @@
-# Generates chapters 6-10 (track levels) from segment templates. Output: JS objects for CHAPTERS.
-# usage: python3 tools/gen_chapters.py          -> rewrites chapters 6-10 inside js/chapters.js (fixed seed: same output every run)
+# Generates all 15 chapters of track levels from segment templates (v0.31: new road mechanics, longer roads).
+# usage: python3 tools/gen_chapters.py          -> rewrites the whole CHAPTERS list in js/chapters.js (fixed seed: same output every run)
 #        python3 tools/gen_chapters.py --print  -> print only
-import random, json
-R = random.Random(610)
+# Chapters 1-5 keep their hand-made names, BOSSes, goals, stars and rewards (tools/base_1_5.json); every road is regenerated.
+import random, json, os, sys
+HERE = os.path.dirname(os.path.abspath(__file__))
+R = random.Random(731)
 def js(o):
     if isinstance(o, dict): return '{ ' + ', '.join(f"{k}: {js(v)}" for k, v in o.items()) + ' }'
     if isinstance(o, list): return '[' + ', '.join(js(v) for v in o) + ']'
@@ -10,50 +12,120 @@ def js(o):
     if isinstance(o, bool): return 'true' if o else 'false'
     if isinstance(o, float): return f'{round(o, 2):g}'
     return str(o)
-
-# ---- segments: each returns (props, gaps, sign, used-length) placed from y0 ----
-def seg_bumpers(y, c):  return [dict(type='bumper', x=-0.45, y=y + 60), dict(type='bumper', x=0.45, y=y + 60), dict(type='bumper', x=R.choice([-0.15, 0.15]), y=y + 220)], [], None, 320
-def seg_boost(y, c):    return [dict(type='boost', x=R.choice([-0.2, 0, 0.2]), y=y + 40)], [], None, 200
+def S(props=None, gaps=None, sign=None, used=300, **ex): return dict(props=props or [], gaps=gaps or [], sign=sign, used=used, ex=ex)
+sd = lambda: R.choice([-1, 1])
+# ---- segments: each places its pieces from track distance y and returns how much road it used. c = chapter config (c['no'] scales the difficulty) ----
+def seg_bumpers(y, c):  return S([dict(type='bumper', x=-0.45, y=y + 60), dict(type='bumper', x=0.45, y=y + 60), dict(type='bumper', x=R.choice([-0.15, 0.15]), y=y + 220)], used=320)
+def seg_boost(y, c):    return S([dict(type='boost', x=R.choice([-0.2, 0, 0.2]), y=y + 40)], used=200)
 def seg_wind(y, c):
     d = R.choice([3, 9]); side = 0.55 if d == 3 else -0.55
-    return [dict(type='wind', x=0, y=y + 150, l=260, w=380, dir=d, power=0.7), dict(type='spikes', x=side, y=y + 180, r=34, on=2, off=2)], [], ('CROSSWIND', '#e9f2ff'), 340
-def seg_barrels(y, c):
-    return [dict(type='boost', x=0, y=y + 20), dict(type='barrel', x=-0.3, y=y + 200), dict(type='barrel', x=0.3, y=y + 200), dict(type='crack', x=0, y=y + 260, len=380, rot=3, hp=c['crack'])], [], ('EXPLOSIVE', '#ff2a55'), 380
+    return S([dict(type='wind', x=0, y=y + 150, l=260, w=380, dir=d, power=0.7), dict(type='spikes', x=side, y=y + 180, r=34, on=2, off=2)], sign=('CROSSWIND', '#e9f2ff'), used=340)
+def seg_barrels(y, c):  return S([dict(type='boost', x=0, y=y + 20), dict(type='barrel', x=-0.3, y=y + 200), dict(type='barrel', x=0.3, y=y + 200), dict(type='crack', x=0, y=y + 260, len=380, rot=3, hp=c['crack'])], sign=('EXPLOSIVE', '#ff2a55'), used=380)
+def seg_firewall(y, c): return S([dict(type='boost', x=0, y=y + 30), dict(type='crack', x=0, y=y + 250, len=380, rot=3, hp=c['crack'])], sign=('FIREWALL', '#c9ced6'), used=340)
 def seg_magnet(y, c):
     sx = R.choice([-0.4, 0.4])
-    return [dict(type='magnet', x=sx, y=y + 160, r=130), dict(type='spikes', x=sx, y=y + 160, r=30), dict(type='magnet', x=-sx, y=y + 330, r=120, power=-1)], [], ('EM FIELD', '#00f0ff'), 420
+    return S([dict(type='magnet', x=sx, y=y + 160, r=130), dict(type='spikes', x=sx, y=y + 160, r=30), dict(type='magnet', x=-sx, y=y + 330, r=120, power=-1)], sign=('EM FIELD', '#00f0ff'), used=420)
 def seg_laser(y, c):
     c['lz'] = -c.get('lz', 0.21); ph = round(R.uniform(0, 1.5), 1)
-    return [dict(type='laser', x=c['lz'], y=y + 120, len=300, on=1.1, off=2.1, phase=ph)], [], ('LASER GRID', '#ff2a55'), 260
-def seg_spinner(y, c):  return [dict(type='mover', x=R.choice([-0.25, 0.25]), y=y + 150, len=110, move='spin', speed=R.choice([0.14, -0.14]))], [], None, 300
-def seg_ice(y, c):      return [dict(type='ice', x=0, y=y + 150, l=260, w=380), dict(type='bumper', x=R.choice([-0.3, 0.3]), y=y + 160)], [], ('ICE', '#a8fbff'), 330
+    return S([dict(type='laser', x=c['lz'], y=y + 120, len=300, on=1.1, off=2.1, phase=ph)], sign=('LASER GRID', '#ff2a55'), used=260)
+def seg_spinner(y, c):  return S([dict(type='mover', x=R.choice([-0.25, 0.25]), y=y + 150, len=110, move='spin', speed=R.choice([0.14, -0.14]))], used=300)
+def seg_ice(y, c):      return S([dict(type='ice', x=0, y=y + 150, l=260, w=380), dict(type='bumper', x=R.choice([-0.3, 0.3]), y=y + 160)], sign=('ICE', '#a8fbff'), used=330)
 def seg_portal(y, c):
     c['pid'] = c.get('pid', 0) + 1; a, b = f"p{c['pid']}a", f"p{c['pid']}b"; sx = R.choice([-0.45, 0.45])
-    return [dict(type='portal', id=a, x=sx, y=y + 80, to=b), dict(type='portal', id=b, x=-sx * 0.6, y=y + 470), dict(type='spikes', x=-sx * 0.5, y=y + 260, r=42, on=2, off=2), dict(type='laser', x=0.21, y=y + 330, len=300, on=1.1, off=2.1)], [], ('WARP', '#ff9ae6'), 540
-def seg_spikes(y, c):   return [dict(type='spikes', x=-0.35, y=y + 100, r=42, on=2, off=2, skin=c['skin']), dict(type='spikes', x=0.35, y=y + 240, r=42, on=2, off=2, phase=1, skin=c['skin'])], [], None, 340
+    return S([dict(type='portal', id=a, x=sx, y=y + 80, to=b), dict(type='portal', id=b, x=-sx * 0.6, y=y + 470), dict(type='spikes', x=-sx * 0.5, y=y + 260, r=42, on=2, off=2), dict(type='laser', x=0.21, y=y + 330, len=300, on=1.1, off=2.1)], sign=('WARP', '#ff9ae6'), used=540)
+def seg_spikes(y, c):   return S([dict(type='spikes', x=-0.35, y=y + 100, r=42, on=2, off=2, skin=c['skin']), dict(type='spikes', x=0.35, y=y + 240, r=42, on=2, off=2, phase=1, skin=c['skin'])], used=340)
 def seg_gap(y, c):
-    sd = R.choice(['L', 'R']); return [dict(type='bumper', x=0.3 if sd == 'L' else -0.3, y=y + 140)], [dict(side=sd, **{'from': y + 60}, to=y + 200)], ('DANGER GAP', '#ff2a55'), 300
-def seg_slide(y, c):    return [dict(type='mover', x=0, y=y + 140, len=90, rot=12, move='slide', span=70, period=2.6)], [], None, 280
-SEGS = dict(bumpers=seg_bumpers, boost=seg_boost, wind=seg_wind, barrels=seg_barrels, magnet=seg_magnet, laser=seg_laser, spinner=seg_spinner, ice=seg_ice, portal=seg_portal, spikes=seg_spikes, gap=seg_gap, slide=seg_slide)
-PN = dict(bumpers='彈力柱', wind='強風', barrels='炸藥桶＋防火牆', magnet='磁鐵', laser='雷射', spinner='旋轉擋板', ice='冰面', portal='傳送門', spikes='地刺', gap='缺口', slide='推板')
-
-def track(c, plan, ln, mobs_n):
-    y = 330; props = [dict(type='boost', x=0, y=280)]; gaps = []; signs = [dict(y=60, txt='START')]; slots = []; ng = 0
+    s = R.choice(['L', 'R']); return S([dict(type='bumper', x=0.3 if s == 'L' else -0.3, y=y + 140)], [dict(side=s, **{'from': y + 60}, to=y + 200)], ('DANGER GAP', '#ff2a55'), 300)
+def seg_slide(y, c):    return S([dict(type='mover', x=0, y=y + 140, len=90, rot=12, move='slide', span=70, period=2.6)], used=280)
+# ---- v0.31 road mechanics ----
+def seg_ramp(y, c):     # jump ramp over a bumper (early) or live spikes; the landing zone is kept clear
+    n = c['no']; over = dict(type='bumper', x=0, y=y + 440) if n < 3 else dict(type='spikes', x=0, y=y + 440, r=44, on=2, off=1.5)
+    return S([dict(type='boost', x=0, y=y + 40), dict(type='ramp', x=0, y=y + 230, w=140, l=80), over], sign=('JUMP', '#fcee0a'), used=1000)
+def seg_deck(y, c):     # 2F deck the whole road climbs over (a narrow ground lane on each side)
+    return S([dict(type='boost', x=0, y=y + 30)], sign=('2F', '#7fdfff'), used=820, decks=[dict(x=0, w=250, y=y + 200, l=380, h=1, up=150, down=150)])
+def seg_deck2(y, c):    # 2F with a 3F block on top: drop back to 2F off its end
+    s = sd() * 0.2
+    return S([dict(type='boost', x=0, y=y + 30)], sign=('3F', '#7fdfff'), used=990, decks=[dict(x=0, w=300, y=y + 190, l=560, h=1, up=150, down=150), dict(x=s, w=160, y=y + 270, l=280, h=2, up=100)])
+def seg_deck3(y, c):    # up to 4F
+    s = sd() * 0.15
+    return S([dict(type='boost', x=0, y=y + 30)], sign=('4F', '#ff9ae6'), used=1180, decks=[dict(x=0, w=320, y=y + 190, l=760, h=1, up=150, down=150), dict(x=s, w=220, y=y + 260, l=500, h=2, up=100), dict(x=s, w=130, y=y + 360, l=230, h=3, up=90)])
+def seg_belt(y, c):
+    n = c['no']
+    if n < 4: return S([dict(type='belt', x=0, y=y + 170, w=200, l=280, dir=12, power=0.8), dict(type='bumper', x=-0.62, y=y + 170), dict(type='bumper', x=0.62, y=y + 170)], sign=('BELT', '#fcee0a'), used=400)
+    s = R.choice(['L', 'R']); return S([dict(type='belt', x=0, y=y + 160, w=380, l=220, dir=9 if s == 'L' else 3, power=round(min(0.7, 0.4 + 0.02 * n), 2))], [dict(side=s, **{'from': y + 70}, to=y + 260)], ('BELT', '#fcee0a'), 380)
+def seg_tube(y, c):     # wormhole tube: skips a laser + spikes section; from chapter 6 the mouth opens and shuts
+    n = c['no']; s = sd() * 0.5; t = dict(type='tube', x=s, y=y + 100, ex=round(-s * 0.3, 2), ey=y + 760, bend=0.2)
+    if n >= 6: t.update(open=3.2, ph=round(R.uniform(0, 3), 1))
+    return S([t, dict(type='laser', x=0.21 * (1 if s < 0 else -1), y=y + 330, len=300, on=1.1, off=2.1, phase=round(R.uniform(0, 1.5), 1)), dict(type='spikes', x=round(-s * 0.4, 2), y=y + 520, r=42, on=2, off=2)], sign=('TUBE', '#ff4fd8'), used=880)
+def seg_rail(y, c):
+    s = sd() * 0.5; return S([dict(type='rail', x=s, y=y + 80, x2=s, y2=y + 620), dict(type='spikes', x=round(-s * 0.3, 2), y=y + 260, r=42, on=2, off=2), dict(type='bumper', x=round(-s * 0.5, 2), y=y + 460)], sign=('GRIND', '#fcee0a'), used=720)
+def seg_bridge(y, c):   # chasm with planks: wide pair early, one swaying plank from chapter 9
+    n = c['no']; L = min(320, 220 + 8 * n)
+    if n < 9: w = max(72, 120 - 4 * n); planks = [dict(x=-0.45, w=w), dict(x=0.45, w=w)]
+    else: planks = [dict(x=round(sd() * 0.3, 2), w=110, sway=16 + n * 3 // 2, ph=round(R.uniform(0, 3), 1))]
+    return S(sign=('CHASM', '#ff2a55'), used=120 + L + 160, chasms=[dict(y=y + 120, l=L, planks=planks)])
+def seg_jumpgap(y, c):  # ramp jump over a chasm (a narrow spare plank until chapter 6)
+    n = c['no']; L = 180 + min(100, 6 * n); pl = [dict(x=round(sd() * 0.62, 2), w=64)] if n < 6 else []
+    return S([dict(type='boost', x=0, y=y + 30), dict(type='ramp', x=0, y=y + 200, w=380, l=80)], sign=('JUMP', '#fcee0a'), used=max(1000, 300 + L + 260), chasms=[dict(y=y + 300, l=L, planks=pl)])
+def seg_railgap(y, c):  # a rail runs across the chasm; a thin plank on the other side until chapter 9
+    n = c['no']; s = sd() * 0.4; pl = [dict(x=round(-s * 1.2, 2), w=70 if n < 9 else 56)]
+    return S([dict(type='rail', x=s, y=y + 60, x2=s, y2=y + 660)], sign=('GRIND', '#fcee0a'), used=780, chasms=[dict(y=y + 240, l=280, planks=pl)])
+def seg_turn(y, c):
+    n = c['no']; return S([dict(type='turn', x=0, y=y + 200, r=105, speed=round(sd() * (0.35 + 0.02 * n), 2)), dict(type='spikes', x=-0.64, y=y + 200, r=32, on=2, off=2), dict(type='spikes', x=0.64, y=y + 200, r=32, on=2, off=2, phase=1)], sign=('TURNTABLE', '#7fdfff'), used=420)
+def seg_switch(y, c):   # locked door across the road: press the switch in the side pocket first (from chapter 9 it only stays open for a few seconds)
+    n = c['no']; c['sid'] = c.get('sid', 0) + 1; i = f"s{c['sid']}"; s = sd(); sw = dict(type='switch', x=round(s * 0.62, 2), y=y + 250, id=i)
+    if n >= 9: sw['time'] = max(5, 9 - n // 3)
+    return S([sw, dict(type='spikes', x=round(-s * 0.2, 2), y=y + 300, r=40, on=2, off=2), dict(type='door', x=0, y=y + 470, len=380, lock=i)], sign=('SWITCH', '#fcee0a'), used=580)
+def seg_branch(y, c):   # a wall splits the road: one lane has spikes and bumpers, the other a belt running backwards
+    s = sd(); return S([dict(type='wall', x=0, y=y + 300, len=440, rot=12), dict(type='spikes', x=-0.5 * s, y=y + 200, r=36, on=2, off=2), dict(type='bumper', x=-0.5 * s, y=y + 400), dict(type='belt', x=0.5 * s, y=y + 300, w=170, l=300, dir=6, power=0.4)], sign=('BRANCH', '#7fdfff'), used=620)
+def seg_crumble(y, c):  # collapsing floor across the road (from chapter 11 behind a one-way gate)
+    n = c['no']; p = [dict(type='boost', x=0, y=y + 20)] + ([dict(type='oneway', x=0, y=y + 70)] if n >= 11 else [])
+    return S(p, sign=('CRUMBLE', '#ff9f1a'), used=380, crumble=[dict(x=0, y=y + 190, w=380, l=192)])
+def seg_lift(y, c):     # a lift across the whole road: drive on while it is down, ride it up, drop off the far end
+    return S([dict(type='boost', x=0, y=y + 40)], sign=('LIFT', '#7fdfff'), used=560, decks=[dict(x=0, w=380, y=y + 200, l=220, h=1, b=0, lift=3.6, ph=round(R.uniform(0, 3), 1))])
+SEGS = {k[4:]: v for k, v in globals().items() if k.startswith('seg_')}
+PN = dict(bumpers='彈力柱', wind='強風', barrels='炸藥桶＋防火牆', firewall='防火牆', magnet='磁鐵', laser='雷射', spinner='旋轉擋板', ice='冰面', portal='傳送門', spikes='地刺', gap='缺口', slide='推板',
+          ramp='跳台', deck='高台 2F', deck2='高台 3F', deck3='高台 4F', belt='輸送帶', tube='蟲洞管道', rail='滑軌', bridge='獨木橋', jumpgap='跳台飛越深淵', railgap='滑軌跨越深淵', turn='旋轉圓盤', switch='開關門',
+          branch='分岔路', crumble='崩塌地板', lift='升降台', dark='黑暗區', lowg='低重力', chase='病毒牆')
+EXPL = dict(ramp='第一次出現跳台：夠快衝上去就會飛起來，越過前面的障礙。', bumpers='彈力柱會把你大力彈開，可以借力轉彎。', deck='第一次出現高台：從斜坡開上 2F，邊緣會掉回下一層，不會死但會頓一下。',
+            spikes='地刺一亮一滅，踩在上面轉速會一直掉。', belt='第一次出現輸送帶：會一路把你往箭頭方向送。', spinner='旋轉擋板被掃到會被打飛，等它轉過去再衝。',
+            ice='第一次出現冰面：在上面拖曳幾乎沒用，進去前先對好方向。', tube='第一次出現蟲洞管道：鑽進粉紅色洞口，會從管子一路被送到很前面。', bridge='第一次出現深淵：沒有地板的地方只能走獨木橋，掉下去算一條命。',
+            portal='第一次出現傳送門：衝進 WARP 門會從 EXIT 門出來。', firewall='第一次出現防火牆：有血條的灰牆，用力撞破才過得去。', gap='第一次出現牆的缺口：缺口那一側沒有牆，衝出去就出界。',
+            wind='第一次出現強風：會一直把你往箭頭方向吹。', barrels='第一次出現炸藥桶：一撞就爆還會連鎖，把敵人引過去再撞。', jumpgap='跳台可以直接飛過深淵：速度不夠會掉下去，先踩加速帶。', turn='第一次出現旋轉圓盤：會帶著你繞圈再甩出去。',
+            magnet='第一次出現磁鐵：紅圈吸、青圈推。', laser='第一次出現雷射柵欄：亮的時候撞到會被彈回扣血。', rail='第一次出現滑軌：順著方向擦上黃色軌道就會自動高速滑行，往旁邊拖曳可以跳下來。', railgap='滑軌也能直接滑過深淵。',
+            switch='第一次出現開關門：鎖住的門撞不壞，先去踩旁邊的黃色開關。', branch='第一次出現分岔路：一邊有地刺，一邊是逆向輸送帶，自己選。', deck2='高台疊到 3F 了。', deck3='高台疊到 4F 了。',
+            crumble='第一次出現崩塌地板：踩過半秒就塌，不要停。', lift='第一次出現升降台：降下來時開上去，會被帶上高台。', dark='第一次出現黑暗區：只看得到身邊一圈。', lowg='第一次出現低重力：滑很遠、拖曳不太有用，跳台飛得更久。',
+            chase='第一次出現病毒牆：紅色的牆從後面追上來，被追到就損失一隻陀螺，一路往前衝！')
+CHASM_SEGS = {'bridge', 'jumpgap', 'railgap'}
+def track(c, plan, mobs_n, mods, mobLv=None, floor=None, mobs_pool=None):
+    y = 330; props = [dict(type='boost', x=0, y=280)]; gaps = []; signs = [dict(y=60, txt='START')]; slots = []; ng = 0; ex = dict(decks=[], chasms=[], crumble=[]); starts = []
     for k in plan:
         if k == 'gap':
             if ng >= c['gmax']: k = 'bumpers'
             else: ng += 1
-        p, g, sg, used = SEGS[k](y, c); props += p; gaps += g
-        if sg and not any(abs(s['y'] - (y - 20)) < 300 for s in signs): signs.append(dict(y=y - 20, txt=sg[0], col=sg[1]))
-        slots.append(y + used - 40); y += used
-    ln = max(ln, y + 420)
+        s = SEGS[k](y, c); props += s['props']; gaps += s['gaps']
+        for kk, v in s['ex'].items(): ex[kk] += v
+        sg = s['sign']
+        if sg and not any(abs(q['y'] - (y - 20)) < 260 for q in signs): signs.append(dict(y=y - 20, txt=sg[0], col=sg[1]))
+        starts.append(y); slots.append((y + s['used'] - 40, k)); y += s['used']
+    ln = y + 420
     signs.append(dict(y=ln - 330, txt='GOAL', col='#7fdfff'))
     props += [dict(type='boost', x=-0.32, y=ln - 350), dict(type='boost', x=0.32, y=ln - 350)]
-    mobs = []; R.shuffle(slots)
-    for i, sy in enumerate(sorted(slots[:mobs_n])):
-        q = R.choice(c['mobs']); typ = 'guard' if i % 2 == 0 else 'rush'
+    mobs = []; ok = [q for q in slots if q[1] not in ('switch', 'crumble') and q[1] not in CHASM_SEGS]; R.shuffle(ok)
+    pool = mobs_pool or c['mobs']
+    for i, (sy, k) in enumerate(sorted(ok[:mobs_n])):
+        q = R.choice(pool); typ = 'guard' if i % 2 == 0 else 'rush'
         mobs.append(dict(type=typ, x=0 if typ == 'guard' else R.choice([-0.3, 0.3]), y=min(sy, ln - 420), c=q[0], w=q[1], a=q[2]))
-    return dict(len=ln, mobLv=c['mob'], floor=c['floor'], signs=signs, gaps=gaps, props=props, mobs=mobs)
+    tr = dict(len=ln, mobLv=c['mob'] if mobLv is None else mobLv, floor=floor or c['floor'], signs=signs, gaps=gaps, props=props, mobs=mobs)
+    for kk, v in ex.items():
+        if v: tr[kk] = v
+    for m in mods: # dark / low-gravity stretch over the middle of the road; the chase wall over the whole road
+        if m in ('dark', 'lowg'):
+            a = starts[max(1, len(starts) // 3)]; b = min(ln - 500, a + R.choice([1000, 1200, 1400]))
+            tr[m] = [dict(**{'from': a}, to=b)]; signs.append(dict(y=a - 40, txt='BLACKOUT' if m == 'dark' else 'LOW-G', col='#ff4fd8' if m == 'dark' else '#c9b3ff'))
+        if m == 'chase': tr['chase'] = dict(speed=105 + 9 * c['no'], delay=3)
+    signs.sort(key=lambda q: q['y'])
+    return tr
 
 ARENA = [lambda: dict(type='bumper', at=9, d=0.55), lambda: dict(type='bumper', at=3, d=0.55), lambda: dict(type='barrel', at=10, d=0.45), lambda: dict(type='barrel', at=2, d=0.45),
          lambda: dict(type='laser', at=12, d=0.32, len=150, on=1.2, off=2), lambda: dict(type='magnet', at=6, d=0.3, r=70, power=-1), lambda: dict(type='ice', at=4, d=0.5, r=55),
@@ -62,7 +134,6 @@ def goal(c, n):
     ps = [dict(type='boost', at=6, d=0.6, dir=12)] + [f() for f in R.sample(ARENA, 3)]
     gs = [dict(type='guard', at=11, d=0.64, c=c['mobs'][0][0], w=c['mobs'][0][1], a=c['mobs'][0][2]), dict(type='guard', at=1, d=0.64, c=c['mobs'][1][0], w=c['mobs'][1][1], a=c['mobs'][1][2])]
     return dict(hp=c['door'] + n * 4, wave=c['wave'], respawn=8, guards=gs, stage=dict(floor=c['floor'], props=ps))
-
 def boss_lv(c, b, n):
     bp = [f() for f in R.sample(ARENA[:4] + ARENA[5:7], 2)]
     m = R.choice(c['mobs'])
@@ -71,31 +142,84 @@ def boss_lv(c, b, n):
                 phase2=dict(mobs=[dict(type='guard', at=10, d=0.5, c=m[0], w=m[1], a=m[2])], props=[ARENA[R.choice([4, 7, 8])]()]),
                 phase3=dict(props=[dict(type='barrel', at=7.5, d=0.55), dict(type='barrel', at=4.5, d=0.55)]))
 
-def level(c, i, L):
-    n = c['no']; lid = f'{n}-{i + 1}'; isb = i + 1 in (5, 9, 10)
-    k = c['segs']; cnt = c['nseg'] - 1 if isb else c['nseg'] + (1 if i >= 5 else 0) + (1 if i == 7 else 0)
-    plan = [R.choice(c['must'][i % len(c['must'])])] + [R.choice(k) for _ in range(cnt - 1)]
+# which road mechanics each chapter brings in (introduced one per level on levels 1-4, 6, 7, in this order), the dark / low-g / chase levels, road length
+FEAT = {
+ 1: dict(new=['ramp', 'bumpers', 'deck', 'spikes', 'belt', 'spinner'], base=['boost'], nseg=8, chase=[7], dark=[], lowg=[]),
+ 2: dict(new=['ice', 'tube', 'bridge', 'portal', 'firewall', 'gap'], base=['slide'], nseg=9, chase=[7], dark=[], lowg=[]),
+ 3: dict(new=['wind', 'barrels', 'jumpgap', 'turn'], nseg=9, chase=[7], dark=[], lowg=[]),
+ 4: dict(new=['magnet', 'laser', 'rail', 'railgap'], nseg=10, chase=[7], dark=[], lowg=[]),
+ 5: dict(new=['switch', 'branch', 'deck2'], nseg=10, chase=[7], dark=[], lowg=[]),
+ 6: dict(new=['tube', 'portal', 'laser'], nseg=10, chase=[7], dark=[1, 3, 6, 8], lowg=[]),
+ 7: dict(new=['deck2', 'wind', 'ice'], nseg=11, chase=[7], dark=[], lowg=[0, 2, 5, 6, 8]),
+ 8: dict(new=['crumble', 'lift', 'barrels'], nseg=11, chase=[7], dark=[], lowg=[]),
+ 9: dict(new=['bridge', 'railgap', 'magnet', 'gap'], nseg=11, chase=[7], dark=[], lowg=[]),
+ 10: dict(new=['deck3', 'switch', 'jumpgap'], nseg=11, chase=[5, 7], dark=[2, 6], lowg=[3]),
+ 11: dict(new=['crumble', 'tube', 'laser'], nseg=11, chase=[7], dark=[0, 2, 4, 7], lowg=[]),
+ 12: dict(new=['belt', 'magnet', 'crumble', 'lift'], nseg=11, chase=[7], dark=[], lowg=[]),
+ 13: dict(new=['wind', 'bridge', 'turn', 'spikes'], nseg=11, chase=[7], dark=[], lowg=[]),
+ 14: dict(new=['deck3', 'tube', 'ice', 'rail'], nseg=11, chase=[7], dark=[], lowg=[1, 3, 5, 7, 9]),
+ 15: dict(new=['switch', 'railgap', 'deck3', 'crumble'], nseg=11, chase=[5, 7], dark=[3, 8], lowg=[6]),
+}
+SEEN = []           # every mechanic, in the order it first shows up in the game
+INTRO_AT = [0, 1, 2, 3, 5, 6]
+CAPS = dict(magnet=1, barrels=2, switch=1, lift=1, deck=2, deck2=1, deck3=1, tube=2, crumble=2, bridge=2, jumpgap=2, railgap=1, firewall=2, branch=1)
+def plan_for(c, i, isb):
+    F = FEAT[c['no']]; n = c['no']
+    known = list(dict.fromkeys(SEEN))  # everything from earlier chapters / levels
+    intro = [k for j, k in enumerate(F['new']) if j < len(INTRO_AT) and INTRO_AT[j] <= i]
+    theme = list(dict.fromkeys(F['new'][:len(intro)] + [k for k in F['new'] if k in known]))
+    pool = [k for k in known if k not in ('chase', 'dark', 'lowg')] + F.get('base', [])
+    cnt = F['nseg'] - (2 if isb else 0) + (1 if i == 7 else 0)
+    must = F['new'][INTRO_AT.index(i)] if i in INTRO_AT and INTRO_AT.index(i) < len(F['new']) else (R.choice(theme) if theme else None)
+    plan = [must] if must else []
+    tries = 0
+    while len(plan) < cnt:
+        tries += 1; k = R.choice(theme) if theme and R.random() < 0.45 else R.choice(pool or ['boost', 'bumpers'])
+        if tries > 200: k = R.choice(['boost', 'bumpers'] if n > 1 else ['boost'])
+        elif plan.count(k) >= CAPS.get(k, 3): continue
+        if sum(p in CHASM_SEGS for p in plan) >= (2 if n < 9 else 3) and k in CHASM_SEGS: continue
+        plan.append(k)
+    if i in FEAT[n]['chase']: # chase levels are run levels: nothing that makes you stop and ram
+        plan = [p if p not in ('firewall', 'barrels', 'switch', 'lift', 'branch') else R.choice(['ramp', 'boost', 'bridge' if n > 1 else 'deck']) for p in plan]
     R.shuffle(plan)
-    if c['no'] >= 11: # from chapter 11: at most one magnet group and two firewall/barrel blocks per level (repeats drained the spin)
-        cap = {'magnet': 1, 'barrels': 2}; seen = {}
-        for j, k in enumerate(plan):
-            seen[k] = seen.get(k, 0) + 1
-            if k in cap and seen[k] > cap[k]: plan[j] = 'boost'
-    tr = track(c, plan, 0, 3 + (i >= 4) + (i >= 7))
-    feats = []; [feats.append(PN[p]) for p in plan if PN.get(p) and PN[p] not in feats]
+    BLOCK = ('firewall', 'barrels', 'switch', 'lift', 'branch')
+    j = 0
+    while j < len(plan) - 1: # never make the player stop right after collapsing floor / a chasm (a knock-back would drop them in)
+        if plan[j] in ('crumble',) + tuple(CHASM_SEGS) and plan[j + 1] not in ('boost', 'ramp'): plan.insert(j + 1, 'boost') # nothing that bounces you back right after a drop
+        elif plan[j] in ('ramp', 'jumpgap') and plan[j + 1] in tuple(CHASM_SEGS) + ('crumble',): plan.insert(j + 1, 'boost')
+        j += 1
+    if n == 1 and i < 2: plan = [p for p in plan if p != 'spikes']  # 1-1 / 1-2: nothing that drains the spin
+    return plan
+STAR_KILLS = lambda st, nm, chase: [s if s[0] != 'kills' else (['lives', 3] if chase else ['kills', min(s[1], max(2, nm - 1))]) for s in st]
+def level(c, i, L, base=None):
+    n = c['no']; lid = f'{n}-{i + 1}'; isb = i + 1 in (5, 9, 10)
+    plan = plan_for(c, i, isb)
+    F = FEAT[n]; mods = [m for m in ('dark', 'lowg', 'chase') if i in F[m]]
+    news = [k for k in dict.fromkeys(plan + mods) if k not in SEEN]
+    for k in plan + mods:
+        if k not in SEEN: SEEN.append(k)
+    nm = 2 if 'chase' in mods else 3 + (i >= 4) + (i >= 7)
+    if base: tr = track(c, plan, nm, mods, base['mobLv'], base['floor'], base['mobs'] if len(base['mobs']) >= 2 else None)
+    else: tr = track(c, plan, nm, mods)
+    feats = []; [feats.append(PN[p]) for p in mods + plan if PN.get(p) and PN[p] not in feats]
     out = dict(id=lid, name=L[0])
-    if isb: out['boss'] = True
-    out['desc'] = L[1] + ('' if isb else '　機關：' + '、'.join(feats[:5]) + '。')
+    tut = ''.join(EXPL[k] for k in news if k in EXPL)
+    if isb: out['desc'] = L[1] + ('　' + tut if tut else '')
+    else: out['desc'] = L[1] + '　' + tut + '機關：' + '、'.join(feats[:6]) + '。'
     out['track'] = tr
-    if isb: out['boss'] = boss_lv(c, c['bosses'][[5, 9, 10].index(i + 1)], i)
+    if base and isb: out['boss'] = base['boss']
+    elif isb: out['boss'] = boss_lv(c, c['bosses'][[5, 9, 10].index(i + 1)], i)
+    elif base: out['goal'] = base['goal']
     else: out['goal'] = goal(c, i)
-    k3 = len(tr['mobs'])
-    st = [['win'], ['lives', 2], R.choice([['kills', min(k3, 3 + (i > 5))], ['lives', 3], ['ex', 4]])] if not isb else [['win'], ['lives', 2], (['ex', 5] if i == 9 else ['lives', 3] if i == 4 else ['kills', 2])]
-    out['stars'] = st
-    base = c['coin'] + i * c['coin'] // 20
-    out['reward'] = dict(first=dict(coins=base * (2 if isb else 1) + (c['coin'] if i == 9 else 0), **({'box': 'purple'} if isb else {})), star3=dict(coins=base * 6 // 10 * (2 if isb else 1), **({'box': 'white'} if i in (6, 7) else {})))
+    k3 = len(tr['mobs']); chase = 'chase' in mods
+    if base: out['stars'] = STAR_KILLS(base['stars'], k3, chase); out['reward'] = base['reward']
+    else:
+        st = [['win'], ['lives', 2], R.choice([['kills', min(k3, 3 + (i > 5))], ['lives', 3], ['ex', 4]])] if not isb else [['win'], ['lives', 2], (['ex', 5] if i == 9 else ['lives', 3] if i == 4 else ['kills', 2])]
+        out['stars'] = STAR_KILLS(st, k3, chase)
+        b0 = c['coin'] + i * c['coin'] // 20
+        out['reward'] = dict(first=dict(coins=b0 * (2 if isb else 1) + (c['coin'] if i == 9 else 0), **({'box': 'purple'} if isb else {})), star3=dict(coins=b0 * 6 // 10 * (2 if isb else 1), **({'box': 'white'} if i in (6, 7) else {})))
+    if base: out = {k: out[k] for k in ['id', 'name', 'boss', 'desc', 'track', 'goal', 'stars', 'reward'] if k in out}
     return out
-
 W = lambda c, w, a: (c, w, a)
 CH = [
  dict(no=6, id='c6', name='第六章・暗網深層', desc='宿主的本體藏在網路深處。虛駭組的地盤到處是傳送門和雷射，被控制的駭客們守在每一層。', bonus=dict(coins=30000, box='purple'),
@@ -203,13 +327,40 @@ NAMES = {
       ('狂嵐盾陣', 'BOSS 是再次被控制的艾琳：狂暴衝鋒、聖域護盾、連環重砸。護盾期間別硬撞。建議金卡 3 星。'),
       ('殘響之王', '最終關。BOSS 是宿主最後的回聲「殘響之王」（三條血）：前面所有 BOSS 的招式它都會用。三隻陀螺都要強。建議金卡 3 星。')],
 }
-out = []
-for c in CH:
-    lv = [level(c, i, NAMES[c['no']][i]) for i in range(10)]
-    out.append('  ' + js(dict(id=c['id'], no=c['no'], name=c['name'], desc=c['desc'], bonus=c['bonus'], levels=lv)) + ',')
-import sys, os
-txt = '\n'.join(out)
-if '--print' in sys.argv: print(txt)
-else:
-    f = os.path.join(os.path.dirname(__file__), '..', 'js', 'chapters.js'); h = open(f, encoding='utf8').read()
-    i = h.index("  { id: 'c6'"); j = h.index('\n];\n', i); open(f, 'w', encoding='utf8').write(h[:i] + txt + h[j:]); print('chapters 6-10 written to js/chapters.js')
+# chapters 1-5: names, BOSSes, goals, stars and rewards come from tools/base_1_5.json; these are the new road flavour lines
+FLAVOR = {
+ '1-1': '第一條賽道。往後拉、放開發射，自動彈牆，飛行中拖曳可以微調方向。衝進終點的圓形場後，用力撞最上面的門（撞越快扣越多），門破了衝進去就過關。門每隔幾秒會放衝擊波把你彈開，還有守衛。',
+ '1-2': '整條街都是彈力柱，撞上去會被彈開。', '1-3': '斷掉的高架橋被搭成了一層層的平台。', '1-4': '夜市的地上埋滿了會冒出來的地刺。',
+ '1-6': '大樓天台的臨時賽道，輸送帶把你一路往前送。', '1-7': '一路都是轉個不停的擋板。', '1-8': '第一章最長的一條。病毒牆從後面追上來，過了這裡就是連續兩個 BOSS。',
+ '2-1': '資料中心的冷卻液漏了一地。', '2-2': '粉紅色的管道把你直接吸到前面去。', '2-3': '整段路都斷線了，只剩幾條細細的橋。', '2-4': '空間被打出了洞，WARP 門到處都是。',
+ '2-6': '一道道防火牆擋在路上。', '2-7': '牆也斷了，路邊到處是缺口。', '2-8': '第二章最難的賽道，病毒牆緊追在後。過了這裡就是連續兩個 BOSS。',
+ '3-1': '荒野的風口，風大得站不穩。', '3-2': '沒人管的炸藥桶堆滿了倉庫。', '3-3': '峽谷中間斷了，只能用跳台飛過去。', '3-4': '舊風車的底座變成了旋轉圓盤。',
+ '3-6': '強風、炸藥桶和深淵混在一起。', '3-7': '大群野生陀螺藏在峽谷裡。', '3-8': '第三章最難的賽道，病毒牆緊追在後。過了這裡就是連續兩個 BOSS。',
+ '4-1': '磁鐵吊臂會把你吸過去。', '4-2': '雷射柵欄一亮一滅，工廠在加班。', '4-3': '頭頂的黃色滑軌是送貨用的高速通道。', '4-4': '滑軌架在熔爐上方，掉下去就完了。',
+ '4-6': '輸送帶把你往牆邊的缺口送。', '4-7': '工人陀螺全都暴動了。', '4-8': '第四章最難的賽道，病毒牆緊追在後。過了這裡就是連續兩個 BOSS。',
+ '5-1': '聖所的大門被鎖住了。', '5-2': '聖所的走廊分成兩條路。', '5-3': '高台一層一層往上疊，像祭壇一樣。', '5-4': '前面所有的機關都出現在迷宮裡。',
+ '5-6': '雷射、磁鐵、滑軌輪番上陣。', '5-7': '異哲團的信徒陀螺一湧而上。', '5-8': '第五章最難的賽道，病毒牆緊追在後。過了這裡就是連續兩個 BOSS。',
+}
+BASE_CFG = {1: dict(mob=0, door=100, wave=5, crack=35, skin='', gmax=1, coin=300), 2: dict(mob=0.4, door=120, wave=4.6, crack=40, skin='', gmax=1, coin=600),
+            3: dict(mob=0.6, door=160, wave=4.4, crack=45, skin='', gmax=1, coin=1000), 4: dict(mob=0.8, door=200, wave=4.2, crack=50, skin='fire', gmax=1, coin=1400),
+            5: dict(mob=0.9, door=240, wave=4, crack=55, skin='', gmax=1, coin=1800)}
+def main():
+    base = json.load(open(os.path.join(HERE, 'base_1_5.json'), encoding='utf8'))
+    out = []
+    for b in base:
+        n = b['no']; mobs = []
+        for l in b['levels']: mobs += [tuple(m) for m in l['mobs'] if tuple(m) not in mobs]
+        c = dict(no=n, id=b['id'], name=b['name'], desc=b['desc'], bonus=b['bonus'], floor=b['levels'][0]['floor'], mobs=mobs, **BASE_CFG[n])
+        lv = []
+        for i, L in enumerate(b['levels']):
+            fl = L.get('desc') if L.get('boss') else FLAVOR[L['id']]
+            lv.append(level(c, i, (L['name'], fl), L))
+        out.append('  ' + js(dict(id=c['id'], no=n, name=c['name'], desc=c['desc'], bonus=c['bonus'], levels=lv)) + ',')
+    for c in CH:
+        lv = [level(c, i, NAMES[c['no']][i]) for i in range(10)]
+        out.append('  ' + js(dict(id=c['id'], no=c['no'], name=c['name'], desc=c['desc'], bonus=c['bonus'], levels=lv)) + ',')
+    txt = '\n'.join(out)
+    if '--print' in sys.argv: print(txt); return
+    f = os.path.join(HERE, '..', 'js', 'chapters.js'); h = open(f, encoding='utf8').read()
+    i = h.index("  { id: 'c1'"); j = h.index('\n];\n', i); open(f, 'w', encoding='utf8').write(h[:i] + txt + h[j:]); print('chapters 1-15 written to js/chapters.js')
+main()
