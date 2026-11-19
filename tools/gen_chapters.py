@@ -1,5 +1,6 @@
 # Generates chapters 6-10 (track levels) from segment templates. Output: JS objects for CHAPTERS.
-# usage: python3 tools/gen_chapters.py > /tmp/ch610.js   (fixed seed: same output every run)
+# usage: python3 tools/gen_chapters.py          -> rewrites chapters 6-10 inside js/chapters.js (fixed seed: same output every run)
+#        python3 tools/gen_chapters.py --print  -> print only
 import random, json
 R = random.Random(610)
 def js(o):
@@ -149,4 +150,9 @@ out = []
 for c in CH:
     lv = [level(c, i, NAMES[c['no']][i]) for i in range(10)]
     out.append('  ' + js(dict(id=c['id'], no=c['no'], name=c['name'], desc=c['desc'], bonus=c['bonus'], levels=lv)) + ',')
-print('\n'.join(out))
+import sys, os
+txt = '\n'.join(out)
+if '--print' in sys.argv: print(txt)
+else:
+    f = os.path.join(os.path.dirname(__file__), '..', 'js', 'chapters.js'); h = open(f, encoding='utf8').read()
+    i = h.index("  { id: 'c6'"); j = h.index('\n];\n', i); open(f, 'w', encoding='utf8').write(h[:i] + txt + h[j:]); print('chapters 6-10 written to js/chapters.js')
