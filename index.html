@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.32.0</title>
+<title>SPIN! SPIN! v0.32.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -145,6 +145,7 @@ h1{background:none;color:#fcee0a;-webkit-text-fill-color:#fcee0a;font-family:Raj
 .screen{padding-bottom:3.4em !important}
 #final{background:radial-gradient(rgba(255,255,255,.06) 1.1px,transparent 1.6px) 0 0/10px 10px,rgba(4,6,10,.9)}
 #final .big{font-size:3em;font-style:italic;letter-spacing:.04em;transform:skew(-6deg);text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px 0 #05060a,2px 2px 0 #05060a,0 3px 0 #05060a,0 6px 0 #05060a,0 9px 0 #05060a,0 0 1.2em currentColor !important;background:linear-gradient(90deg,transparent,rgba(0,0,0,.55) 20%,rgba(0,0,0,.55) 80%,transparent);padding:.1em 1.2em}
+#final{text-align:center}#final .fStory{text-align:left}
 #final .fsc{font-style:italic;font-weight:900;font-size:1.15em;text-shadow:2px 2px 0 #05060a}
 .sub,.invTab,.shopBtn,.slot .nm,.slot .mini,.tile .tn,.tile .tst,.eqTag,.matTag,.newTag,.tag,.snum,#exBtn,#menuBtn,#gearBtn,.seg button,.tog,.vsrow .t,.opt span,.ipHead .t,.ipHead .s,.ipRow .n,.suN,.coin,#teamSub,.pbar span,.mergeBtn,.selHint,#tutStep,.link{font-weight:900;font-style:normal}
 .benchHd,.vs,.score,.spanel h2,.coinGot{font-style:italic;font-weight:900}
@@ -789,6 +790,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.32.1 optical centring: centred labels ending/starting with full-width CJK punctuation or carrying letter-spacing get a balancing text-indent (MutationObserver), centred canvas text gets the same nudge; result screen text centred
  v0.32.0 MOVE gets a 'clear' mode: on the road it hunts down every enemy (brakes to turn, goes back for ones it passed, not through locked doors or across drops), fights like attack mode in battles
  v0.31.2 fake 3D everywhere: the perspective projection takes a height (PG.setZ, zTo/zPoly/zFill/zLine/zBegin) so walls, decks, tubes, ramps, rails, doors, the virus wall and chasm cliffs rise, come closer and spread; arena walls, props and tops stand taller as the camera tilts (HK)
  v0.31.1 raised decks read as floors: taller with camera tilt, spread from the centre line, inner side walls, bigger cast shadows; tops on upper floors drawn lifted, pushed out and larger
@@ -797,7 +799,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.32.0';
+const GAME_VERSION = 'v0.32.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2021,6 +2023,31 @@ function navGo(k) {
   if (inBattle()) ask('要離開目前的戰鬥嗎？<br><small style="opacity:.75">這一場的進度不會保留</small>', go); else go();
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => navGo(b.dataset.go));
+
+// ---------- v0.32.1 optical centring of every centred label ----------
+// Full-width CJK punctuation（）！」。… carries half an em of blank space on one side, and letter-spacing leaves a gap after the last letter,
+// so a centred label that ends in ！ or ）looks pushed to the left. Labels get a balancing text-indent; centred canvas text gets the same nudge.
+const WIDE_END = /[）！」』】。，？：；〉》]$/, WIDE_START = /^[（「『【〈《]/;
+const OPT_SEL = 'button, .btn, .sbtn, h1, h2, h3, .tog, .qBtn, [class*="Btn"], .chTab, .tile .tst';
+function opticalCentre(el) {
+  if (!el || el.childElementCount) return;
+  const t = el.textContent.trim(); if (!t) { el.style.textIndent = ''; return; }
+  const cs = getComputedStyle(el); if (cs.textAlign !== 'center' && cs.justifyContent !== 'center') return;
+  const fs = parseFloat(cs.fontSize) || 16, ls = parseFloat(cs.letterSpacing) || 0;
+  const ind = ls / fs + (WIDE_END.test(t) ? 0.5 : 0) - (WIDE_START.test(t) ? 0.5 : 0);
+  el.style.textIndent = Math.abs(ind) > 0.005 ? ind.toFixed(3) + 'em' : '';
+}
+let optQ = new Set(), optRAF = 0;
+function optQueue(el) { if (el) optQ.add(el); if (!optRAF) optRAF = requestAnimationFrame(() => { optRAF = 0; const q = optQ; optQ = new Set(); q.forEach(opticalCentre); }); }
+new MutationObserver(ms => { for (const m of ms) { const n = m.target.nodeType === 3 ? m.target.parentElement : m.target; if (n && n.matches && n.matches(OPT_SEL)) optQueue(n); else if (n && n.closest) optQueue(n.closest(OPT_SEL));
+  for (const a of m.addedNodes) if (a.nodeType === 1) { if (a.matches(OPT_SEL)) optQueue(a); a.querySelectorAll && a.querySelectorAll(OPT_SEL).forEach(optQueue); } } })
+  .observe(document.body, { subtree: true, childList: true, characterData: true });
+document.querySelectorAll(OPT_SEL).forEach(optQueue);
+for (const fn of ['fillText', 'strokeText']) { const orig = CanvasRenderingContext2D.prototype[fn];
+  CanvasRenderingContext2D.prototype[fn] = function (txt, x, y, ...r) {
+    if (this.textAlign === 'center' && typeof txt === 'string' && txt.length > 1) { const e = WIDE_END.test(txt), b = WIDE_START.test(txt);
+      if (e !== b) { const m = /(\d+(?:\.\d+)?)px/.exec(this.font), fs = m ? +m[1] : 16; x += (e ? 0.25 : -0.25) * fs; } }
+    return orig.call(this, txt, x, y, ...r); }; }
 function navSync() { // highlight the current page, mirror the red dots, dim the bar during a battle
   const pop = id => document.getElementById(id).classList.contains('show');
   const on = inBattle() ? '' : pop('profilePop') ? 'me' : pop('shopPop') ? 'gacha' : screens.story.classList.contains('show') ? 'story' : screens.quest.classList.contains('show') ? 'quest' : screens.home.classList.contains('show') ? 'home' : screens.versus.classList.contains('show') ? 'home' : document.getElementById('profilePop').classList.contains('show') ? 'me' : document.getElementById('shopPop').classList.contains('show') ? 'gacha' : screens.team.classList.contains('show') ? 'team' : '';
