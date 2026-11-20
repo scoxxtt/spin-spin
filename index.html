@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.31.1</title>
+<title>SPIN! SPIN! v0.31.2</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -788,13 +788,14 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.31.2 fake 3D everywhere: the perspective projection takes a height (PG.setZ, zTo/zPoly/zFill/zLine/zBegin) so walls, decks, tubes, ramps, rails, doors, the virus wall and chasm cliffs rise, come closer and spread; arena walls, props and tops stand taller as the camera tilts (HK)
  v0.31.1 raised decks read as floors: taller with camera tilt, spread from the centre line, inner side walls, bigger cast shadows; tops on upper floors drawn lifted, pushed out and larger
  v0.31.0 track mechanics batch 2 (jump ramps, wormhole tubes, grind rails, virus chase wall, decks 2F-4F, slopes, lifts, chasms + planks, crumbling floor, belts, turntables, switch doors, one-way gates, blackout, low gravity); all 15 chapters regenerated with longer roads
  v0.30.1 fix: LAST SPIN! fired every frame when an enemy/BOSS ran out of spin on a track (pop-up flood, heavy lag)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.31.1';
+const GAME_VERSION = 'v0.31.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -4634,7 +4635,7 @@ function gateAuto(me) {
   const u = norm(tx - me.x, ty - me.y); return propAvoid(me, { x: u.x, y: u.y });
 }
 function drawGate(g) {
-  const T = G.track, gt = T.gate, dz = (WALL_H + 30) / VIEW_K, a0 = gt.a - gt.half, a1 = gt.a + gt.half, R0 = AX + 2;
+  const T = G.track, gt = T.gate, dz = (WALL_H + 30) * HK() / VIEW_K, a0 = gt.a - gt.half, a1 = gt.a + gt.half, R0 = AX + 2;
   const shape = () => { g.beginPath(); g.arc(CX, CY, R0, a0, a1); g.arc(CX, CY - dz, R0, a1, a0, true); g.closePath(); };
   g.save();
   if (!gt.open && gt.cd < 0.8) { const k = 1 - gt.cd / 0.8; g.fillStyle = `rgba(255,42,85,${0.08 + 0.16 * k})`; g.beginPath(); g.arc(gt.x, gt.y + 20, GATE_WAVE_R, 0, TAU); g.fill(); g.strokeStyle = '#ff2a55'; g.lineWidth = 4; g.setLineDash([14, 10]); g.lineDashOffset = -G.time * 60; g.stroke(); g.setLineDash([]); }
@@ -4756,7 +4757,7 @@ const tfLv = t => (t.lvl || 0) + (t.tube ? 9 : t.air ? airZ(t) / DECK_H : 0);
 const tfMeet = (a, b) => !G.track || !G.track.decks || G.track.zone !== 'track' || (!a.tube && !b.tube && Math.abs(tfLv(a) - tfLv(b)) < 0.6);
 const tfKey = t => (G.track && G.track.decks ? tfLv(t) * 1e5 : 0);
 function tfZ(t) { const T = G.track; if (!T || !T.decks || T.zone !== 'track') return null;
-  const V = deckView(), lv = t.lvl || 0; return { b: lv * V.dz + (t.dropZ || 0) / VIEW_K, dx: (t.x - CX) * V.k * lv, s: 1 + 0.12 * lv, a: t.tube ? tubePt(t.tube.P, Math.min(1, t.tube.u)).z : t.grind ? 9 : airZ(t) }; }
+  const lv = t.lvl || 0; return { z: lv * FLOOR_Z + (t.dropZ || 0) * FLOOR_Z / DECK_H, a: t.tube ? tubePt(t.tube.P, Math.min(1, t.tube.u)).z : t.grind ? 9 : airZ(t) }; }
 function tfClear(t) { t.air = null; t.grind = null; t.tube = null; t.lvl = 0; t.dropZ = 0; }
 // a respawn point has to be plain ground
 function tfSafeAt(x, y) {
@@ -4907,26 +4908,31 @@ function tfDrawFloor(g, time) {
     signPlate(g, CX, Y(r.from) - 20, 0, 'LOW-G 低重力', '#c9b3ff', 12, 1); }
   for (const c of T.chasms) { const y0 = Y(c.y + c.l), y1 = Y(c.y);
     g.fillStyle = '#020308'; g.fillRect(XL, y0, XW, c.l);
+    zFill(g, [[XL, y0, 0], [XL + XW, y0, 0], [XL + XW, y0, -90], [XL, y0, -90]], '#1a2240'); zFill(g, [[XL, y0, -45], [XL + XW, y0, -45], [XL + XW, y0, -90], [XL, y0, -90]], 'rgba(2,3,8,.7)'); // the far cliff face drops into the dark
+    zLine(g, [[XL, y0, -20], [XL + XW, y0, -20]], 'rgba(127,223,255,.35)', 2);
     for (let k = 1; k < 6; k++) { g.strokeStyle = `rgba(127,223,255,${0.14 - k * 0.02})`; g.lineWidth = 2; g.beginPath(); g.moveTo(XL, y0 + k * 10); g.lineTo(XL + XW, y0 + k * 10); g.stroke(); }
     g.lineWidth = 4; g.strokeStyle = '#ff2a55'; g.beginPath(); g.moveTo(XL, y1); g.lineTo(XL + XW, y1); g.moveTo(XL, y0); g.lineTo(XL + XW, y0); g.stroke();
     g.strokeStyle = '#fcee0a'; g.setLineDash([14, 12]); g.lineWidth = 2; g.beginPath(); g.moveTo(XL, y1 - 6); g.lineTo(XL + XW, y1 - 6); g.stroke(); g.setLineDash([]);
     for (const q of c.planks) { const x = plankX(q); g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(x - q.w / 2 + 4, y0 + 6, q.w, c.l);
+      for (const sx of [x - q.w / 2, x + q.w / 2]) zFill(g, [[sx, y0 - 4, 0], [sx, y1 + 4, 0], [sx, y1 + 4, -14], [sx, y0 - 4, -14]], q.sway ? '#4a3a26' : '#2e333d', 2); // plank thickness
+      zFill(g, [[x - q.w / 2, y1 + 4, 0], [x + q.w / 2, y1 + 4, 0], [x + q.w / 2, y1 + 4, -14], [x - q.w / 2, y1 + 4, -14]], q.sway ? '#5e4a30' : '#3a404c', 2);
       g.fillStyle = q.sway ? '#8a6a44' : '#5a6274'; g.fillRect(x - q.w / 2, y0 - 4, q.w, c.l + 8); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.strokeRect(x - q.w / 2, y0 - 4, q.w, c.l + 8);
       g.fillStyle = q.sway ? '#a8875a' : '#7a828d'; for (let y = y0 + 8; y < y1 - 6; y += 26) g.fillRect(x - q.w / 2 + 4, y, q.w - 8, 4);
       g.fillStyle = '#fcee0a'; g.fillRect(x - q.w / 2, y0 - 4, 4, c.l + 8); g.fillRect(x + q.w / 2 - 4, y0 - 4, 4, c.l + 8); }
     signPlate(g, CX, y1 + 22, 0, c.planks.some(q => q.sway) ? '搖晃獨木橋' : c.planks.length ? '獨木橋' : 'CHASM', '#ff2a55', 12, 1); }
   for (const c of T.cells) { const x = c.x - c.sw / 2 + 2, y = c.y - c.sl / 2 + 2, w = c.sw - 4, l = c.sl - 4;
-    if (c.st === 2) { g.fillStyle = '#020308'; g.fillRect(x, y, w, l); g.strokeStyle = 'rgba(255,42,85,.6)'; g.lineWidth = 2; g.strokeRect(x, y, w, l); continue; }
+    if (c.st === 2) { g.fillStyle = '#020308'; g.fillRect(x, y, w, l); zFill(g, [[x, y, 0], [x + w, y, 0], [x + w, y, -40], [x, y, -40]], '#2a1420'); g.strokeStyle = 'rgba(255,42,85,.6)'; g.lineWidth = 2; g.strokeRect(x, y, w, l); continue; }
     const sh = c.st === 1 ? Math.sin(time * 70) * 2 : 0; g.fillStyle = c.st === 1 ? '#5a2a36' : '#39415e'; g.fillRect(x + sh, y, w, l); g.strokeStyle = '#05060a'; g.lineWidth = 2; g.strokeRect(x + sh, y, w, l);
     g.strokeStyle = c.st === 1 ? '#ff2a55' : 'rgba(168,251,255,.35)'; g.lineWidth = c.st === 1 ? 2.5 : 1.5; g.beginPath(); g.moveTo(x + w * 0.2 + sh, y + l * 0.3); g.lineTo(x + w * 0.5 + sh, y + l * 0.5); g.lineTo(x + w * 0.8 + sh, y + l * 0.35); g.moveTo(x + w * 0.5 + sh, y + l * 0.5); g.lineTo(x + w * 0.45 + sh, y + l * 0.85); g.stroke(); }
 }
 function tfDrawProp(g, P, time) {
-  if (P.type === 'ramp') { const x = P.x - P.w / 2, y = P.y - P.l / 2, L = 14 / VIEW_K;
-    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 4, y + 5, P.w, P.l);
-    g.beginPath(); g.moveTo(x, y + P.l); g.lineTo(x + P.w, y + P.l); g.lineTo(x + P.w, y - L); g.lineTo(x, y - L); g.closePath();
-    const gr = g.createLinearGradient(0, y + P.l, 0, y - L); gr.addColorStop(0, '#7fdfff'); gr.addColorStop(1, '#ff9ae6'); g.fillStyle = gr; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke();
-    g.fillStyle = '#ff4fd8'; g.fillRect(x, y - L - 8, P.w, 8); g.strokeRect(x, y - L - 8, P.w, 8);
-    g.strokeStyle = '#05060a'; g.lineWidth = 4; for (let k = 0; k < 3; k++) { const yy = y + P.l - 10 - k * (P.l + L) / 3.2, ph = (time * 2 + k / 3) % 1; g.globalAlpha = 0.5 + 0.5 * ph; g.beginPath(); g.moveTo(P.x - 22, yy + 8); g.lineTo(P.x, yy - 6); g.lineTo(P.x + 22, yy + 8); g.stroke(); } g.globalAlpha = 1;
+  if (P.type === 'ramp') { const x = P.x - P.w / 2, y = P.y - P.l / 2, x1 = x + P.w, yb = y + P.l, RZ = 18; // a real wedge: the far edge stands RZ high
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 6, y - 4, P.w, P.l + 8);
+    for (const sx of [x, x1]) zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#3a2a5a', 2.5);
+    zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.fillStyle = '#9fd8ff'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); zEnd(g);
+    zFill(g, [[x, y + P.l * 0.5, RZ * 0.5], [x1, y + P.l * 0.5, RZ * 0.5], [x1, y, RZ], [x, y, RZ]], 'rgba(255,154,230,.75)');
+    zFill(g, [[x, y, RZ], [x1, y, RZ], [x1, y - 8, RZ], [x, y - 8, RZ]], '#ff4fd8', 3);
+    for (let k = 0; k < 3; k++) { const u = (k + 0.6) / 3.2, yy = yb - P.l * u, z = RZ * u, ph = (time * 2 + k / 3) % 1; g.globalAlpha = 0.5 + 0.5 * ph; zLine(g, [[P.x - 22, yy + 8, z], [P.x, yy - 6, z], [P.x + 22, yy + 8, z]], '#05060a', 4); } g.globalAlpha = 1;
     return true; }
   if (P.type === 'tube') { const on = tubeOpen(P);
     g.fillStyle = '#05060a'; g.beginPath(); g.ellipse(P.x, P.y, P.r + 10, (P.r + 10) * 0.8, 0, 0, TAU); g.fill();
@@ -4934,12 +4940,11 @@ function tfDrawProp(g, P, time) {
     g.strokeStyle = on ? '#ff4fd8' : '#59606c'; g.lineWidth = 4; g.stroke(); if (on) { for (let k = 0; k < 3; k++) { const r = P.r * (1 - ((time * 1.4 + k / 3) % 1)); g.strokeStyle = `rgba(255,154,230,${r / P.r})`; g.lineWidth = 2; g.beginPath(); g.ellipse(P.x, P.y, r, r * 0.8, 0, 0, TAU); g.stroke(); } }
     g.fillStyle = 'rgba(255,79,216,.18)'; g.beginPath(); g.ellipse(P.ex, P.ey, P.r, P.r * 0.8, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(255,79,216,.6)'; g.lineWidth = 2; g.setLineDash([6, 5]); g.stroke(); g.setLineDash([]);
     signPlate(g, P.x, P.y + P.r + 14, 0, on ? 'TUBE' : 'CLOSED', on ? '#ff4fd8' : '#8a90a0', 11, 1); return true; }
-  if (P.type === 'rail') { const L = 9 / VIEW_K, a = Math.atan2(P.y2 - P.y, P.x2 - P.x), nx = -Math.sin(a) * 5, ny = Math.cos(a) * 5;
-    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 10; g.beginPath(); g.moveTo(P.x + 4, P.y + 5); g.lineTo(P.x2 + 4, P.y2 + 5); g.stroke();
-    g.strokeStyle = '#59606c'; g.lineWidth = 3; for (let k = 0; k <= 1.001; k += 0.08) { const x = P.x + (P.x2 - P.x) * k, y = P.y + (P.y2 - P.y) * k; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - L); g.stroke(); }
-    g.lineCap = 'round'; g.strokeStyle = '#05060a'; g.lineWidth = 11; g.beginPath(); g.moveTo(P.x, P.y - L); g.lineTo(P.x2, P.y2 - L); g.stroke();
-    g.strokeStyle = '#fcee0a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(P.x + nx * 0.3, P.y - L - 1.5); g.lineTo(P.x2 + nx * 0.3, P.y2 - L - 1.5); g.stroke(); g.lineCap = 'butt';
-    g.fillStyle = '#fcee0a'; g.beginPath(); g.arc(P.x, P.y - L, 8, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 2.5; g.stroke(); return true; }
+  if (P.type === 'rail') { const RZ = 14; // the rail rides RZ above the floor on posts
+    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 10; g.beginPath(); g.moveTo(P.x + 6, P.y + 2); g.lineTo(P.x2 + 6, P.y2 + 2); g.stroke();
+    for (let k = 0; k <= 1.001; k += 0.08) { const x = P.x + (P.x2 - P.x) * k, y = P.y + (P.y2 - P.y) * k; zLine(g, [[x, y, 0], [x, y, RZ]], '#59606c', 3); }
+    g.lineCap = 'round'; zLine(g, [[P.x, P.y, RZ], [P.x2, P.y2, RZ]], '#05060a', 11); zLine(g, [[P.x, P.y, RZ], [P.x2, P.y2, RZ]], '#fcee0a', 5); zLine(g, [[P.x, P.y, RZ + 1.5], [P.x2, P.y2, RZ + 1.5]], '#ffffff', 1.5); g.lineCap = 'butt';
+    g.save(); zBegin(g, RZ, P.x); g.fillStyle = '#fcee0a'; g.beginPath(); g.arc(P.x, P.y, 8, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 2.5; g.stroke(); zEnd(g); g.restore(); return true; }
   if (P.type === 'belt') { const a = clockAng(P.dir), ca = Math.cos(a), sa = Math.sin(a), x = P.x - P.w / 2, y = P.y - P.l / 2;
     g.save(); g.fillStyle = '#20242e'; g.fillRect(x, y, P.w, P.l); g.beginPath(); g.rect(x, y, P.w, P.l); g.clip();
     g.strokeStyle = '#fcee0a'; g.lineWidth = 5; const R0 = Math.max(P.w, P.l), sp = 46;
@@ -4967,50 +4972,45 @@ function tfDeckItems(items, g) {
   const T = G.track; if (!T || !T.decks || T.zone !== 'track') return;
   for (const d of T.decks) items.push({ y: T.y0 - d.y + d.up + d.b * 1e5 - 0.5, f: () => tfDrawDeck(g, d) });
 }
-// fake perspective for raised floors (same idea as the corridor walls): every floor is taller the more the camera tilts,
-// and things higher up spread away from the road's centre line, so the side facing the centre shows and the top face reads as closer
-function deckView() { const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1); return { dz: (20 + 30 * tk) / VIEW_K, k: 0.05 + 0.1 * tk }; }
+// raised floors (v0.31.2): drawn with real heights through zTo / zPoly, so a higher floor rises, comes closer and spreads out
+const FLOOR_Z = 40; // height of one floor, in the same units as the corridor walls
 function tfDrawDeck(g, d) {
-  const T = G.track, V = deckView(), hv = deckLv(d), x0 = d.cx - d.w / 2, x1 = d.cx + d.w / 2, yN = T.y0 - d.y, yF = T.y0 - d.y - d.l, col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))];
-  const P = (x, y, lv) => [CX + (x - CX) * (1 + V.k * lv), y - V.dz * lv];
-  const poly = (pts, fill, lw = 3) => { g.beginPath(); g.moveTo(...pts[0]); for (const q of pts.slice(1)) g.lineTo(...q); g.closePath(); g.fillStyle = fill; g.fill(); if (lw) { g.strokeStyle = '#05060a'; g.lineWidth = lw; g.stroke(); } };
-  const b = d.b, yS = yN + d.up, yE = yF - d.down;
-  // cast shadow on the floor below (bigger the higher the deck)
-  g.fillStyle = `rgba(0,0,0,${0.28 + 0.08 * (hv - b)})`; const so = 10 + 10 * (hv - b); g.fillRect(x0 + so, yE + so * 0.4, d.w, yS - yE);
-  // side walls: only the one facing the road's centre is seen (the other hides under the top face)
-  for (const sx of [x0, x1]) { const away = (sx - d.cx) * (sx - CX) > 0 && Math.abs(sx - CX) > 2; if (away) continue;
-    poly([P(sx, yN, b), P(sx, yF, b), P(sx, yF, hv), P(sx, yN, hv)], shade(col, -0.45), 2.5); }
-  if (d.down) poly([P(x0, yF, hv), P(x1, yF, hv), P(x1, yE, b), P(x0, yE, b)], shade(col, -0.12));
-  poly([P(x0, yN, b), P(x1, yN, b), P(x1, yN, hv), P(x0, yN, hv)], '#1b2140'); // front face toward the camera
-  { const A = P(x0, yN, b), B = P(x1, yN, b), C = P(x1, yN, hv), D = P(x0, yN, hv); g.save(); g.beginPath(); g.moveTo(...A); g.lineTo(...B); g.lineTo(...C); g.lineTo(...D); g.closePath(); g.clip();
-    g.fillStyle = 'rgba(252,238,10,.35)'; const H = A[1] - D[1]; for (let k = -2; k < (B[0] - A[0]) / 24 + 3; k++) { const xx = D[0] + k * 24; g.beginPath(); g.moveTo(xx, A[1]); g.lineTo(xx + 12, A[1]); g.lineTo(xx + 12 + H, D[1]); g.lineTo(xx + H, D[1]); g.closePath(); g.fill(); }
-    g.fillStyle = 'rgba(0,240,255,.8)'; g.fillRect(D[0], D[1] + 3, C[0] - D[0], 3); g.restore(); }
-  poly([P(x0, yF, hv), P(x1, yF, hv), P(x1, yN, hv), P(x0, yN, hv)], col); // top face
-  { const a = P(x0 + 6, yF + 6, hv), c = P(x1 - 6, yN - 6, hv); g.strokeStyle = 'rgba(127,223,255,.85)'; g.lineWidth = 2; g.strokeRect(a[0], a[1], c[0] - a[0], c[1] - a[1]); }
-  if (d.up) { poly([P(x0, yS, b), P(x1, yS, b), P(x1, yN, hv), P(x0, yN, hv)], shade(col, 0.08));
-    g.strokeStyle = '#fcee0a'; g.lineWidth = 4; for (let k = 0; k < 3; k++) { const u = (k + 0.7) / 3.4, q = P(d.cx, yS - (yS - yN) * u, b + (hv - b) * u); g.beginPath(); g.moveTo(q[0] - 26, q[1] + 9); g.lineTo(q[0], q[1] - 6); g.lineTo(q[0] + 26, q[1] + 9); g.stroke(); } }
-  g.save(); g.translate(CX, -V.dz * hv); g.scale(1 + V.k * hv, 1); g.translate(-CX, 0); drawPropsFloor(g, G.time, d); g.restore();
-  const lp = P(x0 + 24, yN, hv); upright(g, lp[0], lp[1] - 16, () => { g.font = 'italic 900 18px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const s = d.lift ? 'LIFT' : `${d.h + 1}F`; g.strokeText(s, 0, 0); g.fillStyle = '#fcee0a'; g.fillText(s, 0, 0); });
+  const T = G.track, hv = deckLv(d), b = d.b, x0 = d.cx - d.w / 2, x1 = d.cx + d.w / 2, yN = T.y0 - d.y, yF = T.y0 - d.y - d.l, yS = yN + d.up, yE = yF - d.down;
+  const col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))], zb = b * FLOOR_Z, zt = hv * FLOOR_Z;
+  zFill(g, [[x0 + 14, yE + 10, zb], [x1 + 22, yE + 10, zb], [x1 + 22, yS + 14, zb], [x0 + 14, yS + 14, zb]], `rgba(0,0,0,${0.3 + 0.08 * (hv - b)})`); // cast shadow on the floor below
+  for (const sx of [x0, x1]) zFill(g, [[sx, yN, zb], [sx, yF, zb], [sx, yF, zt], [sx, yN, zt]], shade(col, -0.45), 2.5); // side walls (the one facing away hides under the top)
+  if (d.down) zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]], shade(col, -0.12), 3);
+  zFill(g, [[x0, yN, zb], [x1, yN, zb], [x1, yN, zt], [x0, yN, zt]], '#1b2140', 3);            // front face toward the camera
+  const hz = zt - zb; for (let k = 0; k < d.w / 26; k++) { const xa = x0 + k * 26 + 4; if (xa + 12 > x1) break; zFill(g, [[xa, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.75], [xa, yN, zb + hz * 0.75]], 'rgba(252,238,10,.38)'); } // hazard panels
+  zLine(g, [[x0, yN, zt - 3], [x1, yN, zt - 3]], 'rgba(0,240,255,.85)', 3);
+  zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], col, 3);                  // top face
+  zLine(g, [[x0 + 7, yF + 7, zt], [x1 - 7, yF + 7, zt], [x1 - 7, yN - 7, zt], [x0 + 7, yN - 7, zt], [x0 + 7, yF + 7, zt]], 'rgba(127,223,255,.85)', 2);
+  if (d.up) { zFill(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]], shade(col, 0.08), 3);
+    for (let k = 0; k < 3; k++) { const u = (k + 0.7) / 3.4, y = yS - (yS - yN) * u, z = zb + (zt - zb) * u; zLine(g, [[d.cx - 26, y + 9, z], [d.cx, y - 6, z], [d.cx + 26, y + 9, z]], '#fcee0a', 4); } }
+  g.save(); zBegin(g, zt, d.cx); drawPropsFloor(g, G.time, d); zEnd(g); g.restore();
+  g.save(); zBegin(g, zt, x0 + 24); upright(g, x0 + 24, yN - 18, () => { g.font = 'italic 900 18px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const s = d.lift ? 'LIFT' : `${d.h + 1}F`; g.strokeText(s, 0, 0); g.fillStyle = '#fcee0a'; g.fillText(s, 0, 0); }); zEnd(g); g.restore();
 }
 function tfDrawOver(g) {
   const T = G.track; if (!T || !T.decks || T.zone !== 'track') return; const p = G.tops[0], XL = CX - TRK.HW - 300, XW = (TRK.HW + 300) * 2, Y = sv => T.y0 - sv;
-  for (const P of PROPS) if (P.type === 'tube') { // the glass tube runs overhead
-    g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; const pts = []; for (let k = 0; k <= 24; k++) { const q = tubePt(P, k / 24); pts.push([q.x, q.y - q.z / VIEW_K]); }
-    const path = () => { g.beginPath(); g.moveTo(...pts[0]); for (const q of pts) g.lineTo(...q); };
-    path(); g.strokeStyle = 'rgba(5,6,10,.85)'; g.lineWidth = 58; g.stroke(); path(); g.strokeStyle = 'rgba(255,154,230,.45)'; g.lineWidth = 46; g.stroke(); path(); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 12; g.stroke();
-    path(); g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 4; g.setLineDash([18, 14]); g.lineDashOffset = -G.time * 120; g.stroke(); g.setLineDash([]);
-    g.strokeStyle = '#05060a'; g.lineWidth = 4; for (const k of [0, 24]) { g.beginPath(); g.moveTo(pts[k][0], pts[k][1]); g.lineTo(k ? P.ex : P.x, k ? P.ey : P.y); g.stroke(); }
+  for (const P of PROPS) if (P.type === 'tube') { // the glass tube runs overhead (real height: it rises out of the mouth and comes down at the exit)
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; const pts = []; for (let k = 0; k <= 24; k++) { const q = tubePt(P, k / 24); pts.push([q.x, q.y, q.z * 1.2]); }
+    zLine(g, [[P.x, P.y, 0], pts[0]], '#05060a', 6); zLine(g, [[P.ex, P.ey, 0], pts[24]], '#05060a', 6);
+    for (const k of [0, 24]) { const q = pts[k]; zLine(g, [[q[0] - 22, q[1], 0], [q[0] - 22, q[1], q[2]]], '#59606c', 5); zLine(g, [[q[0] + 22, q[1], 0], [q[0] + 22, q[1], q[2]]], '#59606c', 5); } // support legs
+    zLine(g, pts, 'rgba(5,6,10,.85)', 58); zLine(g, pts, 'rgba(255,154,230,.45)', 46); zLine(g, pts, 'rgba(255,255,255,.25)', 12);
+    g.setLineDash([18, 14]); g.lineDashOffset = -G.time * 120; zLine(g, pts, 'rgba(255,255,255,.55)', 4); g.setLineDash([]);
     g.restore(); }
   if (p && !p.dead) for (const r of T.dark) { const y0 = Y(r.to), y1 = Y(r.from), sv = T.y0 - p.y, inside = sv > r.from - 200 && sv < r.to + 200;
     g.save(); g.beginPath(); g.rect(XL, y0, XW, y1 - y0); g.clip();
     for (const [rad, a] of [[140, 0.4], [185, 0.45], [235, 0.6], [300, 0.7]]) { g.beginPath(); g.rect(XL, y0, XW, y1 - y0); if (inside) { g.moveTo(p.x + rad, p.y); g.ellipse(p.x, p.y, rad, rad, 0, 0, TAU); } g.fillStyle = `rgba(3,4,10,${a})`; g.fill('evenodd'); }
     g.restore(); g.strokeStyle = '#ff4fd8'; g.lineWidth = 3; g.setLineDash([16, 10]); g.beginPath(); g.moveTo(XL, y1); g.lineTo(XL + XW, y1); g.stroke(); g.setLineDash([]);
     signPlate(g, CX, y1 + 20, 0, 'BLACKOUT 黑暗區', '#ff4fd8', 12, 1); }
-  const C = T.chase; if (C) { const y = C.y, sh = Math.sin(G.time * 30) * 4;
-    g.fillStyle = 'rgba(255,42,85,.55)'; g.fillRect(XL, y, XW, 900); g.fillStyle = 'rgba(5,6,10,.5)'; for (let k = 0; k < 14; k++) g.fillRect(XL, y + 12 + k * 22 + ((G.time * 80) % 22), XW, 6);
-    g.strokeStyle = '#ffffff'; g.lineWidth = 5; g.beginPath(); for (let k = 0; k <= 24; k++) { const x = XL + XW * k / 24; g.lineTo(x, y + (k % 2 ? 12 : -6) + sh); } g.stroke();
-    g.strokeStyle = '#ff2a55'; g.lineWidth = 3; g.stroke();
-    for (let k = 0; k < 4; k++) upright(g, CX + (k - 1.5) * 120, y + 46, () => { g.font = 'italic 900 22px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 5; g.strokeStyle = '#05060a'; g.strokeText('VIRUS', 0, 0); g.fillStyle = '#ffffff'; g.fillText('VIRUS', 0, 0); }); }
+  const C = T.chase; if (C) { const y = C.y, sh = Math.sin(G.time * 30) * 4, WH = 150, XR = XL + XW; // a towering wall of red static, with the ground behind it already eaten
+    g.fillStyle = 'rgba(255,42,85,.45)'; g.fillRect(XL, y, XW, 900);
+    zFill(g, [[XL, y, 0], [XR, y, 0], [XR, y, WH], [XL, y, WH]], 'rgba(255,42,85,.62)');
+    for (let k = 0; k < 9; k++) { const z = ((k * 17 + G.time * 60) % WH); zLine(g, [[XL, y, z], [XR, y, z]], 'rgba(5,6,10,.45)', 5); }
+    const zig = []; for (let k = 0; k <= 24; k++) zig.push([XL + XW * k / 24, y, WH + (k % 2 ? 14 : -4) + sh]); zLine(g, zig, '#ffffff', 5); zLine(g, zig, '#ff2a55', 3);
+    zLine(g, [[XL, y, 0], [XR, y, 0]], '#ffffff', 4);
+    for (let k = 0; k < 4; k++) { const x = CX + (k - 1.5) * 120; g.save(); zBegin(g, WH * 0.5, x); upright(g, x, y, () => { g.font = 'italic 900 26px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 5; g.strokeStyle = '#05060a'; g.strokeText('VIRUS', 0, 0); g.fillStyle = '#ffffff'; g.fillText('VIRUS', 0, 0); }); zEnd(g); g.restore(); } }
 }
 Object.assign(PROP_DEF, { ramp: { w: 120, l: 80 }, tube: { r: 34 }, rail: {}, belt: { w: 160, l: 200, dir: 12, power: 1 }, turn: { r: 110, speed: 0.5 }, switch: { r: 24 }, oneway: { w: 420 } });
 // ---------- track drawing ----------
@@ -5060,32 +5060,30 @@ function drawTrack(g, time, cam) {
   // walls: inner face (seen because the top leans outward), rim with hazard stripes, and the near end cap where a wall stops at a gap
   const stripes = (x, y, w, hh) => { g.save(); g.beginPath(); g.rect(x, y, w, hh); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x, y, w, hh); g.fillStyle = '#0b0b0b'; for (let k = Math.floor(y / 18) - 1; k * 18 < y + hh + 18; k++) { g.beginPath(); g.moveTo(x, k * 18); g.lineTo(x + w, k * 18 - 8); g.lineTo(x + w, k * 18 + 1); g.lineTo(x, k * 18 + 9); g.closePath(); g.fill(); } g.restore(); };
   const quad = (p1, p2, p3, p4, col, lw = 3) => { g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.lineTo(p3[0], p3[1]); g.lineTo(p4[0], p4[1]); g.closePath(); g.fillStyle = col; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = lw; g.stroke(); };
+  const WZ = 30 + 26 * tk, AW = WALL_H * HK() / ZV().zy, HC = '#030405'; // corridor wall height; the arena wall height in the same units
   for (const sd of [-1, 1]) {
     let segs = [[0, sF]];
     for (const gp of T.gaps) if (gp.side === sd) segs = segs.flatMap(([a, b]) => gp.to <= a || gp.from >= b ? [[a, b]] : [[a, gp.from], [gp.to, b]].filter(q => q[1] > q[0]));
-    const x = CX + sd * HW, xt = x + sd * lean, neon = sd < 0 ? '#7fdfff' : '#ff9ae6';
+    const x = CX + sd * HW, xo = x + sd * 24, neon = sd < 0 ? '#7fdfff' : '#ff9ae6';
     for (const [a, b] of segs) { const y1 = Math.max(yOf(b), v0 - 40), y2 = Math.min(yOf(a), v1 + 40); if (y2 <= y1) continue;
-      quad([x, y1], [x, y2], [xt, y2 - dz], [xt, y1 - dz], '#232b33');                                                     // inner face
-      g.save(); g.beginPath(); g.moveTo(x, y1); g.lineTo(x, y2); g.lineTo(xt, y2 - dz); g.lineTo(xt, y1 - dz); g.closePath(); g.clip();
-      g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.moveTo(x, y1); g.lineTo(x, y2); g.lineTo(x + sd * lean * 0.35, y2 - dz * 0.35); g.lineTo(x + sd * lean * 0.35, y1 - dz * 0.35); g.closePath(); g.fill(); // cel shadow at the foot
-      g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 2;
-      for (let sv = Math.ceil(a / 120) * 120; sv < b; sv += 120) { const y = yOf(sv); if (y < y1 || y > y2) continue; g.beginPath(); g.moveTo(x, y); g.lineTo(xt, y - dz); g.stroke(); } // panel seams
-      g.strokeStyle = neon; g.lineWidth = 3; g.globalAlpha = 0.55 + 0.45 * tk; g.beginPath(); g.moveTo(x + sd * lean * 0.62, y1 - dz * 0.62); g.lineTo(x + sd * lean * 0.62, y2 - dz * 0.62); g.stroke(); g.globalAlpha = 1; // neon strip
-      g.restore();
-      quad([xt, y1 - dz], [xt, y2 - dz], [xt + sd * 24, y2 - dz], [xt + sd * 24, y1 - dz], '#14181c');                      // rim
-      stripes(sd > 0 ? xt + 15 : xt - 22, y1 - dz, 7, y2 - y1);
-      g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(xt, y1 - dz); g.lineTo(xt, y2 - dz); g.stroke();
-      if (yOf(a) < v1 + 40) quad([x, y2], [x + sd * 24, y2], [xt + sd * 24, y2 - dz], [xt, y2 - dz], '#0d1013');          // near end cap
+      zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ], [x, y1, WZ]], '#232b33', 3, HC);                                       // inner face (a real height now)
+      zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ * 0.35], [x, y1, WZ * 0.35]], 'rgba(0,0,0,.35)');                       // cel shadow at the foot
+      for (let sv = Math.ceil(a / 120) * 120; sv < b; sv += 120) { const y = yOf(sv); if (y < y1 || y > y2) continue; zLine(g, [[x, y, 0], [x, y, WZ]], 'rgba(0,0,0,.55)', 2); } // panel seams
+      g.globalAlpha = 0.55 + 0.45 * tk; zLine(g, [[x, y1, WZ * 0.62], [x, y2, WZ * 0.62]], neon, 3); g.globalAlpha = 1;      // neon strip
+      zFill(g, [[x, y1, WZ], [x, y2, WZ], [xo, y2, WZ], [xo, y1, WZ]], '#14181c', 3, HC);                                     // rim
+      const xs = x + sd * 18; zLine(g, [[xs, y1, WZ], [xs, y2, WZ]], '#fcee0a', 7); g.setLineDash([9, 9]); zLine(g, [[xs, y1, WZ], [xs, y2, WZ]], '#0b0b0b', 7); g.setLineDash([]); // hazard stripe
+      zLine(g, [[x, y1, WZ], [x, y2, WZ]], 'rgba(0,240,255,.85)', 2);
+      if (yOf(a) < v1 + 40) zFill(g, [[x, y2, 0], [xo, y2, 0], [xo, y2, WZ], [x, y2, WZ]], '#0d1013', 3, HC);                // near end cap
     }
-    // funnel: the lean fades to nothing at the doorway so it meets the arena wall cleanly
+    // funnel: the wall drops from road height to the arena wall height at the doorway
     const fx = CX + sd * gw;
-    quad([x, yF], [fx, top], [fx, top - WALL_H / VIEW_K], [xt, yF - dz], '#1f272d');
-    quad([xt, yF - dz], [fx, top - WALL_H / VIEW_K], [fx + sd * 24, top - WALL_H / VIEW_K], [xt + sd * 24, yF - dz], '#14181c');
-    g.strokeStyle = 'rgba(0,240,255,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(xt, yF - dz); g.lineTo(fx, top - WALL_H / VIEW_K); g.stroke();
+    zFill(g, [[x, yF, 0], [fx, top, 0], [fx, top, AW], [x, yF, WZ]], '#1f272d', 3, HC);
+    zFill(g, [[x, yF, WZ], [fx, top, AW], [fx + sd * 24, top, AW], [xo, yF, WZ]], '#14181c', 3, HC);
+    zLine(g, [[x, yF, WZ], [fx, top, AW]], 'rgba(0,240,255,.85)', 2);
   }
-  if (y0 < v1 + 60) { const xl = CX - HW - lean - 24, ww = (HW + lean + 24) * 2; // start wall: rim, then the face toward the camera
-    g.fillStyle = '#14181c'; g.fillRect(xl, y0 - dz, ww, 24); g.strokeStyle = '#030405'; g.lineWidth = 3; g.strokeRect(xl, y0 - dz, ww, 24);
-    g.fillStyle = '#0d1013'; g.fillRect(xl, y0 - dz + 24, ww, dz); g.strokeRect(xl, y0 - dz + 24, ww, dz); }
+  if (y0 < v1 + 60) { const xl = CX - HW - 24, xr = CX + HW + 24; // start wall: top, then the face toward the camera
+    zFill(g, [[xl, y0, WZ], [xr, y0, WZ], [xr, y0 + 24, WZ], [xl, y0 + 24, WZ]], '#14181c', 3, HC);
+    zFill(g, [[xl, y0 + 24, 0], [xr, y0 + 24, 0], [xr, y0 + 24, WZ], [xl, y0 + 24, WZ]], '#0d1013', 3, HC); }
 }
 // BOSS signature-move graphics on the floor: slam warning ring, shield arc, WANTED crosshair
 function drawBossFx(g) {
@@ -5900,7 +5898,7 @@ function gateCuts(a0, a1) {
   return segs;
 }
 function drawFarWall(g) {
-  const dz = WALL_H / VIEW_K;
+  const dz = WALL_H * HK() / VIEW_K;
   // inner wall face of the back half: from the floor edge up to the rim
   for (const [a0, a1] of gateCuts(Math.PI, TAU)) {
     g.beginPath();
@@ -5917,14 +5915,14 @@ function drawFarWall(g) {
     g.strokeStyle = 'rgba(0,240,255,.75)'; g.lineWidth = 2; g.beginPath(); g.ellipse(CX, CY - 2, AX + 1, AX + 1, 0, a0, a1); g.stroke();
   }
   // WORMHOLE: a tunnel sign mounted on the back wall, right above the rail opening (stays upright like a real sign)
-  if (RAILS.length) { const dz2 = WALL_H / VIEW_K; upright(g, CX, CY - AX - dz2 * 0.45, () => {
+  if (RAILS.length) { const dz2 = WALL_H * HK() / VIEW_K; upright(g, CX, CY - AX - dz2 * 0.45, () => {
       signPlate(g, 0, 0, 0, 'WORMHOLE', '#fcee0a', 13);
       g.strokeStyle = '#00f0ff'; g.lineWidth = 2; g.beginPath(); for (let k = 0; k < 26; k++) { const an = k * 0.5 + G.time * 4, rr = 1 + k * 0.28; g.lineTo(-62 + Math.cos(an) * rr, Math.sin(an) * rr); } g.stroke();
     }); }
   drawRim(g, Math.PI, TAU);
 }
 function drawRim(g, A0, A1) {
-  const dz = WALL_H / VIEW_K;
+  const dz = WALL_H * HK() / VIEW_K;
   for (const [a0, a1] of gateCuts(A0, A1)) {
     wallRange(g, a0, a1, AX + 1, AX + 26, dz); g.fillStyle = '#14181c'; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = 4; g.stroke();
     // hazard stripes on the rim top
@@ -5978,7 +5976,7 @@ function drawPropsFloor(g, time, only) {
       continue;
     }
     if (P.type === 'laser') {
-      const S = moverSeg(P, 0), on = laserOn(P, time), soon = !on && laserOn(P, time + 0.5), hz2 = 14 / VIEW_K;
+      const S = moverSeg(P, 0), on = laserOn(P, time), soon = !on && laserOn(P, time + 0.5), hz2 = 14 * HK() / VIEW_K;
       g.save(); g.lineCap = 'round';
       if (on) { g.strokeStyle = 'rgba(255,42,85,.35)'; g.lineWidth = 16; g.beginPath(); g.moveTo(S.x1, S.y1 - hz2); g.lineTo(S.x2, S.y2 - hz2); g.stroke(); g.strokeStyle = '#ff2a55'; g.lineWidth = 6; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.stroke(); }
       else { g.strokeStyle = soon && Math.sin(time * 40) > 0 ? '#fcee0a' : 'rgba(255,42,85,.35)'; g.lineWidth = 2; g.setLineDash([6, 8]); g.beginPath(); g.moveTo(S.x1, S.y1 - hz2); g.lineTo(S.x2, S.y2 - hz2); g.stroke(); g.setLineDash([]); }
@@ -6031,12 +6029,15 @@ function drawPropsFloor(g, time, only) {
   }
 }
 function drawPropRaised(g, P) {
-  if (P.skin === 'door') { const S = moverSeg(P, 0), H2 = 30 / VIEW_K, x0 = Math.min(S.x1, S.x2), w = Math.abs(S.x2 - S.x1) || 22, y = (S.y1 + S.y2) / 2;
-    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x0 + 4, y - 6, w, 16); g.fillStyle = '#05060a'; g.fillRect(x0 - 2, y - H2 - 2, w + 4, H2 + 12);
-    g.fillStyle = '#fcee0a'; g.fillRect(x0, y - H2, w, H2 + 8); g.save(); g.beginPath(); g.rect(x0, y - H2, w, H2 + 8); g.clip(); g.fillStyle = '#05060a'; for (let k = -2; k < w / 20 + 2; k++) { g.beginPath(); g.moveTo(x0 + k * 20, y + 8); g.lineTo(x0 + k * 20 + 10, y + 8); g.lineTo(x0 + k * 20 + 10 + H2, y - H2); g.lineTo(x0 + k * 20 + H2, y - H2); g.closePath(); g.fill(); } g.restore();
-    g.strokeStyle = '#05060a'; g.lineWidth = 3; g.strokeRect(x0, y - H2, w, H2 + 8); upright(g, (S.x1 + S.x2) / 2, y - H2 - 12, () => { g.fillStyle = '#05060a'; g.fillRect(-26, -10, 52, 18); g.font = '900 12px sans-serif'; g.textAlign = 'center'; g.fillStyle = '#fcee0a'; g.fillText('🔒 LOCK', 0, 4); }); return; }
-  const hz = 16 / VIEW_K, hit = G.time - P.hitAt < 0.22;
-  if (P.type === 'barrel') { const { x, y, r } = P, bh = 26 / VIEW_K;
+  if (P.skin === 'door') { const S = moverSeg(P, 0), DZ = 48, x0 = Math.min(S.x1, S.x2), w = Math.abs(S.x2 - S.x1) || 22, x1 = x0 + w, y = (S.y1 + S.y2) / 2; // a solid gate DZ high
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x0 + 8, y - 4, w, 16);
+    zFill(g, [[x0, y - 8, DZ], [x1, y - 8, DZ], [x1, y, DZ], [x0, y, DZ]], '#05060a', 2);
+    zFill(g, [[x0, y, 0], [x1, y, 0], [x1, y, DZ], [x0, y, DZ]], '#fcee0a', 3);
+    for (let xx = x0 + 6; xx + 10 < x1; xx += 22) zFill(g, [[xx, y, 4], [xx + 10, y, 4], [xx + 10 + 12, y, DZ - 4], [xx + 12, y, DZ - 4]], '#05060a');
+    zLine(g, [[x0, y, DZ], [x1, y, DZ]], '#05060a', 3);
+    g.save(); zBegin(g, DZ + 14, (x0 + x1) / 2); upright(g, (x0 + x1) / 2, y, () => { g.fillStyle = '#05060a'; g.fillRect(-26, -10, 52, 18); g.font = '900 12px sans-serif'; g.textAlign = 'center'; g.fillStyle = '#fcee0a'; g.fillText('🔒 LOCK', 0, 4); }); zEnd(g); g.restore(); return; }
+  const hz = 16 * HK() / VIEW_K, hit = G.time - P.hitAt < 0.22;
+  if (P.type === 'barrel') { const { x, y, r } = P, bh = 26 * HK() / VIEW_K;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(x + 4, y + 5, r + 3, 0, TAU); g.fill();
     g.beginPath(); g.moveTo(x - r, y - bh); g.lineTo(x - r, y); g.arc(x, y, r, Math.PI, 0, true); g.lineTo(x + r, y - bh); g.closePath(); g.fillStyle = '#c4202e'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke();
     g.save(); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x - r, y - bh * 0.62, r * 2, bh * 0.22); g.fillStyle = '#05060a'; for (let k = -3; k <= 3; k++) g.fillRect(x + k * 9 - 2, y - bh * 0.62, 4, bh * 0.22); g.fillStyle = 'rgba(5,6,10,.35)'; g.fillRect(x + r * 0.3, y - bh, r, bh + r); g.restore();
@@ -6056,7 +6057,7 @@ function drawPropRaised(g, P) {
   } else if (P.hp != null) { // breakable wall (concrete slab) or popup window
     const S = moverSeg(P, G.time), ang = Math.atan2(S.y2 - S.y1, S.x2 - S.x1), th = P.skin === 'popup' ? 7 : 11, nx = -Math.sin(ang) * th, ny = Math.cos(ang) * th, f = Math.max(0, P.hp / P.hp0), fl = P.flash > 0;
     if (P.flash > 0) P.flash -= 1 / 60;
-    const H2 = (P.skin === 'popup' ? 22 : 26) / VIEW_K, quad = lift => [[S.x1 + nx, S.y1 + ny - lift], [S.x2 + nx, S.y2 + ny - lift], [S.x2 - nx, S.y2 - ny - lift], [S.x1 - nx, S.y1 - ny - lift]];
+    const H2 = (P.skin === 'popup' ? 22 : 26) * HK() / VIEW_K, quad = lift => [[S.x1 + nx, S.y1 + ny - lift], [S.x2 + nx, S.y2 + ny - lift], [S.x2 - nx, S.y2 - ny - lift], [S.x1 - nx, S.y1 - ny - lift]];
     const poly = q => { g.beginPath(); g.moveTo(q[0][0], q[0][1]); for (let i = 1; i < 4; i++) g.lineTo(q[i][0], q[i][1]); g.closePath(); };
     const B = quad(0), T2 = quad(H2);
     g.save(); g.translate(4, 5); poly(B); g.fillStyle = 'rgba(0,0,0,.45)'; g.fill(); g.restore();
@@ -6084,7 +6085,7 @@ function drawPropRaised(g, P) {
   }
 }
 function drawNearWall(g) {
-  const dz = WALL_H / VIEW_K;
+  const dz = WALL_H * HK() / VIEW_K;
   for (const [a0, a1] of gateCuts(0, Math.PI)) {
     // outer front face below the rim
     g.beginPath();
@@ -6150,7 +6151,7 @@ function drawTopWorld0(g, t) {
   if (t.side === 1 && G && !G.track && (G.phase === 'launch' || G.phase === 'count')) return; // the CPU's drop point stays secret until SPIN!
   g.save();
   g.translate(t.x, t.y);
-  const tz = G && G.track ? tfZ(t) : null; if (tz && (tz.b || tz.dx)) { g.translate(tz.dx, -tz.b); if (tz.s !== 1) g.scale(tz.s, tz.s); } // standing on a higher floor: lifted, pushed out from the centre line and a bit bigger (closer to the camera)
+  const tz = G && G.track ? tfZ(t) : null; if (tz && tz.z) { g.translate(-t.x, -t.y); zBegin(g, tz.z, t.x); g.translate(t.x, t.y); } // standing on a higher floor: drawn that high (rises, comes closer, spreads out)
   if (t.rad) g.scale(t.rad / TR, t.rad / TR); // BOSS / small enemies
   if (t.invT > 0) g.globalAlpha = 0.5 + 0.4 * Math.sin(G.time * 40);
   let sc = 1;
@@ -6164,7 +6165,7 @@ function drawTopWorld0(g, t) {
   g.beginPath(); g.arc(0, 0, 38 * sc, 0, TAU); g.stroke();
   // lift the top off the floor; tilt & bob a little as it loses spin
   const hop = (t.hopT > 0 ? Math.sin(Math.PI * (1 - t.hopT / 0.38)) * (t.hopH || 12) : 0) + (tz ? tz.a : 0);
-  const lift = (TOP_LIFT + hop + roLift + (t.falling && !t.ringOut ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE / viewK;
+  const hk = HK(), lift = (TOP_LIFT * hk + hop + roLift + (t.falling && !t.ringOut ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE * hk / viewK;
   g.translate(0, -lift);
   if (viewK < 1) {
     const wob = (1 - t.spin) * 0.25;
@@ -6209,6 +6210,7 @@ function drawTopWorld0(g, t) {
       g.strokeStyle = t.side === 0 ? '#00f0ff' : '#ff3b5c'; g.lineWidth = 1.5; g.strokeRect(-bw / 2 - 2, -bh / 2 - 2, bw + 4, bh + 4);
     });
   }
+  if (tz && tz.z) zEnd(g);
 }
 
 // ===================================================================================
@@ -6230,18 +6232,30 @@ function perspSetup(cam, sx, sy) {
   PSP.on = PSP.P > 1e-5;
   PSP.camx = cam.x; PSP.camy = cam.y; PSP.zs = cam.z * scale; PSP.zsK = zK * scale; PSP.lz = cam.z; PSP.lK = zK;
   PSP.cx = scale * (CX + sx); PSP.cy = scale * (VIEW_CY + sy);
+  { const v = ZV(); PSP.zy = PSP.zs * v.zy; PSP.zk = v.zk; } // height: screen px per unit and the spread away from the camera line
   PSP.uTop = -Ytop / (1 - PSP.P * Ytop); PSP.uBot = Ybot / (1 + PSP.P * Ybot); // visible world range above / below the camera
 }
 const pspQ = u => Math.max(0.3, 1 - PSP.P * u);
+// fake 3D heights (v0.31.2): everything with a height (walls, raised floors, tubes, the virus wall…) is drawn with zTo / zPoly.
+// With perspective on, PG lifts the point Z units and spreads it away from the camera line; with it off, the same idea is faked here.
+const HK = () => 0.8 + 0.9 * clamp((0.97 - VIEW_K) / 0.32, 0, 1); // fake-3D height boost: things stand taller the more the camera tilts
+const ZV = () => { const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1); return { tk, zy: 0.4 + 0.6 * tk, zk: 0.0012 + 0.0022 * tk }; };
+function zTo(g, x, y, z, move) { if (g.isProj) { g.setZ(z); move ? g.moveTo(x, y) : g.lineTo(x, y); return; } const v = ZV(), X = CX + (x - CX) * (1 + z * v.zk), Y = y - z * v.zy / VIEW_K; move ? g.moveTo(X, Y) : g.lineTo(X, Y); }
+function zPoly(g, pts) { g.beginPath(); pts.forEach((q, i) => zTo(g, q[0], q[1], q[2], i === 0)); g.closePath(); }
+function zFill(g, pts, fill, lw, col = '#05060a') { zPoly(g, pts); if (fill) { g.fillStyle = fill; g.fill(); } if (lw) { g.strokeStyle = col; g.lineWidth = lw; g.stroke(); } if (g.isProj) g.setZ(0); }
+function zLine(g, pts, col, lw) { g.beginPath(); pts.forEach((q, i) => zTo(g, q[0], q[1], q[2], i === 0)); g.strokeStyle = col; g.lineWidth = lw; g.stroke(); if (g.isProj) g.setZ(0); }
+// draw a whole group (a top, the props on a deck) standing z above the floor; ax = where the fallback measures the spread from
+function zBegin(g, z, ax) { if (g.isProj) { g.setZ(z); return; } const v = ZV(); g.translate((ax - CX) * z * v.zk, -z * v.zy / VIEW_K); }
+function zEnd(g) { if (g.isProj) g.setZ(0); }
 // screen (logical px) -> floor point, the inverse of the projection (touch input)
 function pspToWorld(px, py) { const Y = (py - VIEW_CY) / PSP.lK, u = Y / (1 + PSP.P * Y), q = pspQ(u); return { x: PSP.camx + (px - CX) * q / PSP.lz, y: PSP.camy + u }; }
 const PG = (() => {
   // paths are built straight in device pixels (the real canvas sits at identity while points go in); fill / stroke / text / images
   // switch the real canvas to the projection's local affine form at their point, so line widths, gradients and glyphs scale with depth
-  let R = null, M = [1, 0, 0, 1, 0, 0], pass = false, lx = 0, ly = 0, ident = false, started = false;
+  let R = null, M = [1, 0, 0, 1, 0, 0], pass = false, lx = 0, ly = 0, ident = false, started = false, Z = 0; // Z: height above the floor (v0.31.2 fake 3D)
   const stack = [];
   const W = (x, y) => [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5]];
-  function at(x, y) { const u = y - PSP.camy, q = pspQ(u); return [PSP.cx + (x - PSP.camx) * PSP.zs / q, PSP.cy + PSP.zsK * u / q, q]; }
+  function at(x, y) { const u = y - PSP.camy, q = pspQ(u), f = 1 + Z * PSP.zk; return [PSP.cx + (x - PSP.camx) * PSP.zs * f / q, PSP.cy + (PSP.zsK * u - Z * PSP.zy) / q, q / f]; } // a point Z above the floor rises and spreads away from the camera line (closer = bigger)
   function local(x, y) {
     const [wx, wy] = W(x, y), [X, Y, q] = at(wx, wy);
     const j11 = PSP.zs / q, j12 = (wx - PSP.camx) * PSP.zs * PSP.P / (q * q), j22 = PSP.zsK / (q * q);
@@ -6258,7 +6272,8 @@ const PG = (() => {
   function devRect(x, y, w, h) { const p = new Path2D(); [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].forEach(([px, py], i) => { const [X, Y] = at(...W(px, py)); i ? p.lineTo(X, Y) : p.moveTo(X, Y); }); p.closePath(); return p; }
   const api = {
     isProj: true,
-    begin(real) { R = real; M = [1, 0, 0, 1, 0, 0]; pass = false; stack.length = 0; ident = false; started = false; },
+    begin(real) { R = real; M = [1, 0, 0, 1, 0, 0]; pass = false; stack.length = 0; ident = false; started = false; Z = 0; },
+    setZ(z) { Z = z || 0; }, get z() { return Z; },
     get canvas() { return R.canvas; },
     save() { R.save(); stack.push([M.slice(), pass, ident]); },
     restore() { R.restore(); const s = stack.pop(); if (s) { M = s[0]; pass = s[1]; ident = s[2]; } },
