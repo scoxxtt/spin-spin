@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.31.0</title>
+<title>SPIN! SPIN! v0.31.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -788,12 +788,13 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.31.1 raised decks read as floors: taller with camera tilt, spread from the centre line, inner side walls, bigger cast shadows; tops on upper floors drawn lifted, pushed out and larger
  v0.31.0 track mechanics batch 2 (jump ramps, wormhole tubes, grind rails, virus chase wall, decks 2F-4F, slopes, lifts, chasms + planks, crumbling floor, belts, turntables, switch doors, one-way gates, blackout, low gravity); all 15 chapters regenerated with longer roads
  v0.30.1 fix: LAST SPIN! fired every frame when an enemy/BOSS ran out of spin on a track (pop-up flood, heavy lag)
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.31.0';
+const GAME_VERSION = 'v0.31.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -4715,7 +4716,7 @@ function trackWait(dt) {
 }
 // ---------- v0.31 track features (賽道機關第二批): jump ramps, wormhole tubes, grind rails, virus chase wall, raised decks 2F–4F with slopes and lifts,
 // chasms with planks (some swaying), collapsing floor, conveyor belts, turntables, switch + locked doors, one-way gates, blackout and low-gravity sections ----------
-const DECK_H = 24, TRK_DECAY = 0.65; // one floor = 24 screen px; the player's spin drains slower on the (longer) roads
+const DECK_H = 30, TRK_DECAY = 0.65; // one floor = 24 screen px; the player's spin drains slower on the (longer) roads
 const deckLift = lv => lv * DECK_H / VIEW_K;
 const airZ = t => t.air ? t.air.H * Math.sin(Math.PI * clamp(t.air.t / t.air.dur, 0, 1)) : 0;
 const tubeOpen = P => !P.open || ((G.time + (P.ph || 0)) % P.open) < P.open * 0.55;
@@ -4755,7 +4756,7 @@ const tfLv = t => (t.lvl || 0) + (t.tube ? 9 : t.air ? airZ(t) / DECK_H : 0);
 const tfMeet = (a, b) => !G.track || !G.track.decks || G.track.zone !== 'track' || (!a.tube && !b.tube && Math.abs(tfLv(a) - tfLv(b)) < 0.6);
 const tfKey = t => (G.track && G.track.decks ? tfLv(t) * 1e5 : 0);
 function tfZ(t) { const T = G.track; if (!T || !T.decks || T.zone !== 'track') return null;
-  return { b: deckLift(t.lvl || 0) + (t.dropZ || 0) / VIEW_K, a: t.tube ? tubePt(t.tube.P, Math.min(1, t.tube.u)).z : t.grind ? 9 : airZ(t) }; }
+  const V = deckView(), lv = t.lvl || 0; return { b: lv * V.dz + (t.dropZ || 0) / VIEW_K, dx: (t.x - CX) * V.k * lv, s: 1 + 0.12 * lv, a: t.tube ? tubePt(t.tube.P, Math.min(1, t.tube.u)).z : t.grind ? 9 : airZ(t) }; }
 function tfClear(t) { t.air = null; t.grind = null; t.tube = null; t.lvl = 0; t.dropZ = 0; }
 // a respawn point has to be plain ground
 function tfSafeAt(x, y) {
@@ -4966,19 +4967,30 @@ function tfDeckItems(items, g) {
   const T = G.track; if (!T || !T.decks || T.zone !== 'track') return;
   for (const d of T.decks) items.push({ y: T.y0 - d.y + d.up + d.b * 1e5 - 0.5, f: () => tfDrawDeck(g, d) });
 }
+// fake perspective for raised floors (same idea as the corridor walls): every floor is taller the more the camera tilts,
+// and things higher up spread away from the road's centre line, so the side facing the centre shows and the top face reads as closer
+function deckView() { const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1); return { dz: (20 + 30 * tk) / VIEW_K, k: 0.05 + 0.1 * tk }; }
 function tfDrawDeck(g, d) {
-  const T = G.track, hv = deckLv(d), L = deckLift(hv), Lb = deckLift(d.b), x0 = d.cx - d.w / 2, yN = T.y0 - d.y, yF = T.y0 - d.y - d.l, col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))];
-  const quad = (a, b, c, e, fill) => { g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.lineTo(...c); g.lineTo(...e); g.closePath(); g.fillStyle = fill; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); };
-  g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(x0 + 10, yF - Lb + 8, d.w, d.l + 8);
-  if (d.down) { const yE = yF - d.down; quad([x0, yF - L], [x0 + d.w, yF - L], [x0 + d.w, yE - Lb], [x0, yE - Lb], shade(col, -0.15)); }
-  quad([x0, yN - Lb], [x0 + d.w, yN - Lb], [x0 + d.w, yN - L], [x0, yN - L], '#1b2140'); // front face
-  g.save(); g.beginPath(); g.rect(x0, yN - L, d.w, L - Lb); g.clip(); g.fillStyle = '#fcee0a'; for (let k = -2; k < d.w / 24 + 2; k++) { g.beginPath(); g.moveTo(x0 + k * 24, yN - Lb); g.lineTo(x0 + k * 24 + 12, yN - Lb); g.lineTo(x0 + k * 24 + 12 + (L - Lb), yN - L); g.lineTo(x0 + k * 24 + (L - Lb), yN - L); g.closePath(); g.globalAlpha = 0.35; g.fill(); } g.restore(); g.globalAlpha = 1;
-  quad([x0, yF - L], [x0 + d.w, yF - L], [x0 + d.w, yN - L], [x0, yN - L], col); // top face
-  g.strokeStyle = 'rgba(127,223,255,.8)'; g.lineWidth = 2; g.strokeRect(x0 + 6, yF - L + 6, d.w - 12, d.l - 12);
-  if (d.up) { const yS = yN + d.up; quad([x0, yS - Lb], [x0 + d.w, yS - Lb], [x0 + d.w, yN - L], [x0, yN - L], shade(col, 0.08));
-    g.strokeStyle = '#fcee0a'; g.lineWidth = 4; for (let k = 0; k < 3; k++) { const yy = yS - Lb - (k + 0.7) * (d.up + L - Lb) / 3.4; g.beginPath(); g.moveTo(d.cx - 26, yy + 9); g.lineTo(d.cx, yy - 6); g.lineTo(d.cx + 26, yy + 9); g.stroke(); } }
-  g.save(); g.translate(0, -L); drawPropsFloor(g, G.time, d); g.restore();
-  upright(g, x0 + 22, yN - L - 18, () => { g.font = 'italic 900 16px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const s = d.lift ? 'LIFT' : `${d.h + 1}F`; g.strokeText(s, 0, 0); g.fillStyle = '#fcee0a'; g.fillText(s, 0, 0); });
+  const T = G.track, V = deckView(), hv = deckLv(d), x0 = d.cx - d.w / 2, x1 = d.cx + d.w / 2, yN = T.y0 - d.y, yF = T.y0 - d.y - d.l, col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))];
+  const P = (x, y, lv) => [CX + (x - CX) * (1 + V.k * lv), y - V.dz * lv];
+  const poly = (pts, fill, lw = 3) => { g.beginPath(); g.moveTo(...pts[0]); for (const q of pts.slice(1)) g.lineTo(...q); g.closePath(); g.fillStyle = fill; g.fill(); if (lw) { g.strokeStyle = '#05060a'; g.lineWidth = lw; g.stroke(); } };
+  const b = d.b, yS = yN + d.up, yE = yF - d.down;
+  // cast shadow on the floor below (bigger the higher the deck)
+  g.fillStyle = `rgba(0,0,0,${0.28 + 0.08 * (hv - b)})`; const so = 10 + 10 * (hv - b); g.fillRect(x0 + so, yE + so * 0.4, d.w, yS - yE);
+  // side walls: only the one facing the road's centre is seen (the other hides under the top face)
+  for (const sx of [x0, x1]) { const away = (sx - d.cx) * (sx - CX) > 0 && Math.abs(sx - CX) > 2; if (away) continue;
+    poly([P(sx, yN, b), P(sx, yF, b), P(sx, yF, hv), P(sx, yN, hv)], shade(col, -0.45), 2.5); }
+  if (d.down) poly([P(x0, yF, hv), P(x1, yF, hv), P(x1, yE, b), P(x0, yE, b)], shade(col, -0.12));
+  poly([P(x0, yN, b), P(x1, yN, b), P(x1, yN, hv), P(x0, yN, hv)], '#1b2140'); // front face toward the camera
+  { const A = P(x0, yN, b), B = P(x1, yN, b), C = P(x1, yN, hv), D = P(x0, yN, hv); g.save(); g.beginPath(); g.moveTo(...A); g.lineTo(...B); g.lineTo(...C); g.lineTo(...D); g.closePath(); g.clip();
+    g.fillStyle = 'rgba(252,238,10,.35)'; const H = A[1] - D[1]; for (let k = -2; k < (B[0] - A[0]) / 24 + 3; k++) { const xx = D[0] + k * 24; g.beginPath(); g.moveTo(xx, A[1]); g.lineTo(xx + 12, A[1]); g.lineTo(xx + 12 + H, D[1]); g.lineTo(xx + H, D[1]); g.closePath(); g.fill(); }
+    g.fillStyle = 'rgba(0,240,255,.8)'; g.fillRect(D[0], D[1] + 3, C[0] - D[0], 3); g.restore(); }
+  poly([P(x0, yF, hv), P(x1, yF, hv), P(x1, yN, hv), P(x0, yN, hv)], col); // top face
+  { const a = P(x0 + 6, yF + 6, hv), c = P(x1 - 6, yN - 6, hv); g.strokeStyle = 'rgba(127,223,255,.85)'; g.lineWidth = 2; g.strokeRect(a[0], a[1], c[0] - a[0], c[1] - a[1]); }
+  if (d.up) { poly([P(x0, yS, b), P(x1, yS, b), P(x1, yN, hv), P(x0, yN, hv)], shade(col, 0.08));
+    g.strokeStyle = '#fcee0a'; g.lineWidth = 4; for (let k = 0; k < 3; k++) { const u = (k + 0.7) / 3.4, q = P(d.cx, yS - (yS - yN) * u, b + (hv - b) * u); g.beginPath(); g.moveTo(q[0] - 26, q[1] + 9); g.lineTo(q[0], q[1] - 6); g.lineTo(q[0] + 26, q[1] + 9); g.stroke(); } }
+  g.save(); g.translate(CX, -V.dz * hv); g.scale(1 + V.k * hv, 1); g.translate(-CX, 0); drawPropsFloor(g, G.time, d); g.restore();
+  const lp = P(x0 + 24, yN, hv); upright(g, lp[0], lp[1] - 16, () => { g.font = 'italic 900 18px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const s = d.lift ? 'LIFT' : `${d.h + 1}F`; g.strokeText(s, 0, 0); g.fillStyle = '#fcee0a'; g.fillText(s, 0, 0); });
 }
 function tfDrawOver(g) {
   const T = G.track; if (!T || !T.decks || T.zone !== 'track') return; const p = G.tops[0], XL = CX - TRK.HW - 300, XW = (TRK.HW + 300) * 2, Y = sv => T.y0 - sv;
@@ -6138,7 +6150,7 @@ function drawTopWorld0(g, t) {
   if (t.side === 1 && G && !G.track && (G.phase === 'launch' || G.phase === 'count')) return; // the CPU's drop point stays secret until SPIN!
   g.save();
   g.translate(t.x, t.y);
-  const tz = G && G.track ? tfZ(t) : null; if (tz && tz.b) g.translate(0, -tz.b);
+  const tz = G && G.track ? tfZ(t) : null; if (tz && (tz.b || tz.dx)) { g.translate(tz.dx, -tz.b); if (tz.s !== 1) g.scale(tz.s, tz.s); } // standing on a higher floor: lifted, pushed out from the centre line and a bit bigger (closer to the camera)
   if (t.rad) g.scale(t.rad / TR, t.rad / TR); // BOSS / small enemies
   if (t.invT > 0) g.globalAlpha = 0.5 + 0.4 * Math.sin(G.time * 40);
   let sc = 1;
