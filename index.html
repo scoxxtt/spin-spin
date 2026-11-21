@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.33.1</title>
+<title>SPIN! SPIN! v0.33.2</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -561,6 +561,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #comicGo.on{opacity:1;transform:scale(1);pointer-events:auto}
 #comic.show~#topRight,body:has(#comic.show) #topRight{display:none}
 #home.hasBg{background:linear-gradient(rgba(5,6,10,.12),rgba(5,6,10,.25) 55%,rgba(5,6,10,.6)),url(art/bg_lobby.jpg) center top/cover no-repeat}
+.hmLogoImg{display:block;height:5.8em;width:auto;max-width:82%;margin:-.3em auto -.2em;align-self:center;filter:drop-shadow(0 .18em 0 rgba(0,0,0,.55))}
 </style>
 </head>
 <body>
@@ -807,6 +808,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.33.2 Gemini logo (art/logo.png, white background keyed out) on the title screen (beat bounce + light sweep) and in the lobby
  v0.33.1 Gemini key visual (title) and lobby background, graded to the night palette
  v0.33.0 title screen on every launch (drawn key visual, or art/title_kv.jpg), first-launch 3-panel comic tutorial instead of the 10-page one, lobby background slot art/bg_lobby.jpg
  v0.32.2 layout again on visualViewport / orientation / pageshow changes and after load (Samsung Internet, in-app browsers); tip when a phone shows the desktop version of the page
@@ -819,7 +821,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.33.1';
+const GAME_VERSION = 'v0.33.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2695,6 +2697,7 @@ document.getElementById('tutNext').onclick = () => { SFX.init(); if (tutIdx < TU
 document.getElementById('tutSkip').onclick = () => { SFX.init(); endTutorial(); };
 // ---------- v0.33 title screen (every launch) + 3-panel comic tutorial (first launch) ----------
 // Optional art: art/title_kv.jpg (key visual, 9:16) and art/bg_lobby.jpg (lobby background). Without them everything is drawn here.
+const LOGO_IMG = new Image(); let logoOk = false; LOGO_IMG.onload = () => { logoOk = true; }; LOGO_IMG.src = 'art/logo.png'; // v0.33.2 the Gemini logo (transparent PNG)
 const KV_IMG = new Image(); let kvOk = false; KV_IMG.onload = () => { kvOk = true; }; KV_IMG.src = 'art/title_kv.jpg';
 { const lb = new Image(); lb.onload = () => document.getElementById('home').classList.add('hasBg'); lb.src = 'art/bg_lobby.jpg'; }
 const tiRand = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
@@ -2731,12 +2734,20 @@ function drawTitle(g, W, H, t) {
     tTop(g, TA, W / 2 - 34 * sc / 1.3 - gap, cy, t * 16, sc); tTop(g, TB, W / 2 + 34 * sc / 1.3 + gap, cy, -t * 16, sc);
   }
   const vg = g.createLinearGradient(0, H * 0.72, 0, H); vg.addColorStop(0, 'rgba(5,6,10,0)'); vg.addColorStop(1, 'rgba(5,6,10,.85)'); g.fillStyle = vg; g.fillRect(0, H * 0.72, W, H * 0.28);
-  drawLogo(g, W / 2, H * 0.24, W / 430, t);
+  if (logoOk) { // the logo bounces on the beat, and a light sweep runs across it every few seconds
+    const lw = Math.min(W * 0.9, H * 0.62), lh = lw * LOGO_IMG.height / LOGO_IMG.width, b = 1 + Math.max(0, Math.sin(t * 2.2 * Math.PI)) * 0.025;
+    g.save(); g.translate(W / 2, H * 0.22); g.scale(b, b); g.drawImage(LOGO_IMG, -lw / 2, -lh / 2, lw, lh);
+    const sp = (t % 3.2) / 3.2; if (sp < 0.35) { const c = tiShine || (tiShine = document.createElement('canvas')); c.width = Math.ceil(lw); c.height = Math.ceil(lh); const x = c.getContext('2d');
+      x.drawImage(LOGO_IMG, 0, 0, lw, lh); x.globalCompositeOperation = 'source-atop'; const sx = -lw * 0.3 + sp / 0.35 * lw * 1.6, gr = x.createLinearGradient(sx - 60, 0, sx + 60, lh * 0.3);
+      gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,.75)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, lw, lh); x.globalCompositeOperation = 'source-over';
+      g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.6; g.drawImage(c, -lw / 2, -lh / 2); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
+    g.restore(); }
+  else drawLogo(g, W / 2, H * 0.24, W / 430, t);
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `900 ${W * 0.042}px "Noto Sans TC", sans-serif`; g.lineWidth = 5; g.strokeStyle = '#05060a'; g.strokeText('轉起來，撞上去！', W / 2, H * 0.4); g.fillStyle = '#ffffff'; g.fillText('轉起來，撞上去！', W / 2, H * 0.4);
   const bl = 0.55 + 0.45 * Math.sin(t * 4); g.globalAlpha = bl; g.font = `italic 900 ${W * 0.07}px Rajdhani, sans-serif`; g.lineWidth = 7; g.strokeText('TAP TO START', W / 2, H * 0.88); g.fillStyle = '#fcee0a'; g.fillText('TAP TO START', W / 2, H * 0.88); g.globalAlpha = 1;
   g.font = `700 ${W * 0.028}px Rajdhani, sans-serif`; g.fillStyle = 'rgba(255,255,255,.55)'; g.fillText('SPIN! SPIN! ' + GAME_VERSION, W / 2, H * 0.955);
 }
-let titleT = 0;
+let titleT = 0, tiShine = null;
 function showTitle() {
   if (navigator.webdriver || /[?&]notitle/.test(location.search)) return; // automated checks skip it
   const el = document.createElement('div'); el.id = 'titleScr'; const cv = document.createElement('canvas'); el.appendChild(cv); document.body.appendChild(el);
@@ -2986,7 +2997,7 @@ function renderHome() {
   const pill = (ic, v, col) => `<div class="hmPill" style="--pc:${col}">${ic}<b>${v}</b></div>`;
   document.getElementById('homeIn').innerHTML = `
     <div class="hmTop">${pill(ORE, INV.coins, '#fcee0a')}${pill('<span class="hmIc">◆</span>', INV.shards || 0, '#b066ff')}${pill('<span class="hmIc">⚡</span>', '+' + Math.round(teamPower() * 100) + '%', '#00f0ff')}</div>
-    <div class="hmLogo">SPIN! SPIN!</div>
+    <img class="hmLogoImg" src="art/logo.png" alt="SPIN! SPIN!" onerror="this.outerHTML='<div class=hmLogo>SPIN! SPIN!</div>'">
     <div class="hmHero" id="hmHero"><div class="hmBg"></div><img class="hmPic" src="${PORTRAIT_SRC[lead.c]}" alt="">
       <div class="hmName"><small>${facBadge(C.fac, 1)} ${C.fac}・出戰 1 號</small><b>${C.name.split('・').join('<br>')}</b></div>
       <div class="hmTeam">${collection.map((b, i) => `<img src="${PORTRAIT_SRC[b.c]}" alt="" title="${i + 1}">`).join('')}<span>隊伍編成 ▶</span></div></div>
