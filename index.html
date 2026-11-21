@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.35.0</title>
+<title>SPIN! SPIN! v0.36.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -476,6 +476,17 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #story.screen{justify-content:flex-start}
 .bottomBar #startBtn{flex:1.25}
 .storyTabs{margin:.2em 0 .3em;display:grid;grid-template-columns:repeat(5,1fr);gap:.25em}.storyTabs button{padding:.3em .1em;white-space:nowrap;font-size:.92em}
+.chNav{width:100%;display:flex;align-items:center;gap:.5em;margin:.2em 0 .1em;flex:none}
+.chNav .chArr{flex:none;width:2.6em;height:2.6em;padding:0;font-size:1.3em;line-height:1;font-weight:900}
+.chNav .chArr:disabled{opacity:.3}
+.chNav .chMid{flex:1;text-align:center;min-width:0}
+.chNav .chNo{font-family:Rajdhani,sans-serif;font-style:italic;font-weight:900;font-size:1.35em;color:#fcee0a;text-shadow:2px 2px 0 #05060a;letter-spacing:.04em}
+.chNav .chNo small{font-size:.62em;color:#94a0b6;margin-left:.4em;font-style:normal}
+.chNav .chDots{display:flex;justify-content:center;flex-wrap:wrap;gap:3px;margin-top:.2em}
+.chNav .chDots i{width:9px;height:7px;border:1.5px solid #05060a;background:#59606c;transform:skewX(-15deg)}
+.chNav .chDots i.ok{background:#7fdfff}.chNav .chDots i.full{background:#fcee0a}.chNav .chDots i.lock{background:#2b3350;box-shadow:inset 0 0 0 1px #59606c}.chNav .chDots i.on{background:#ff4fd8;transform:skewX(-15deg) scale(1.35)}
+.chSlideL{animation:chSlideL .26s ease-out}.chSlideR{animation:chSlideR .26s ease-out}
+@keyframes chSlideL{from{transform:translateX(38%);opacity:0}to{transform:none;opacity:1}}@keyframes chSlideR{from{transform:translateX(-38%);opacity:0}to{transform:none;opacity:1}}
 .chHead{width:100%;box-sizing:border-box;flex:none;margin:.4em 0 .5em;padding:.55em .8em;border:3px solid #05060a;box-shadow:inset 0 0 0 2px #fcee0a;background:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.5px) 0 0/8px 8px,linear-gradient(90deg,rgba(127,223,255,.2),rgba(255,154,230,.2))}
 .chHead .t{font-weight:900;font-size:1.15em;color:#fcee0a;text-shadow:2px 2px 0 #05060a}.chHead .s{font-size:.78em;opacity:.9;margin-top:.15em}.chHead .s b{color:#fcee0a}
 .lvList{width:100%;display:flex;flex-direction:column;gap:.4em;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
@@ -643,7 +654,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
   </div>
   <div id="story" class="screen">
     <h1>章節</h1>
-    <div class="seg storyTabs" id="storyTabs"></div>
+    <div class="chNav" id="storyTabs"></div>
     <div class="chHead" id="storyHead"></div>
     <button class="btn" id="storyBoxBtn" style="display:none"></button>
     <div class="lvList" id="storyList"></div>
@@ -808,6 +819,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.36.0 chapter screen: ‹ › arrows and swipe replace the 15 chapter tabs, progress dots per chapter
  v0.35.0 painted prop sprites (art/props/*.png): boost, belt, magnet, turntable, switch, pit, spikes, ice, chip, bumper, barrel, laser pylons, rim street lamps
  v0.34.0 track scenery: overhead gantries with GOAL countdown signs, LED chase on the walls, road dressing, skyline backdrop, painted floor textures per chapter (art/floor_*.jpg)
  v0.33.4 logo swapped for Gemini's own two-line version (parallel slanted backplates)
@@ -825,7 +837,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.35.0';
+const GAME_VERSION = 'v0.36.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3140,9 +3152,10 @@ function openStory() {
 }
 function renderStory() {
   const S = storyData(), ch = CHAPTERS[storyCh] || CHAPTERS[0];
-  const tabs = document.getElementById('storyTabs');
-  tabs.innerHTML = CHAPTERS.length > 1 ? CHAPTERS.map((c, i) => `<button data-c="${i}" class="${i === storyCh ? 'on' : ''}">${chUnlocked(c) ? '' : '🔒'}第 ${c.no} 章</button>`).join('') : '';
-  tabs.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const c = CHAPTERS[+b.dataset.c]; if (!chUnlocked(c)) return toast('先打完前一章才能進入'); storyCh = +b.dataset.c; renderStory(); SFX.flip(); });
+  const tabs = document.getElementById('storyTabs'), n = CHAPTERS.length; // v0.36: ‹ › arrows + swipe instead of 15 tabs
+  const chState = c => { if (!chUnlocked(c)) return 'lock'; const g2 = c.levels.reduce((t, l) => t + lvStars(l.id).filter(Boolean).length, 0); return g2 >= c.levels.length * 3 ? 'full' : c.levels.every(l => lvCleared(l.id)) ? 'ok' : ''; };
+  tabs.innerHTML = n > 1 ? `<button class="btn ghost chArr" id="chPrev" ${storyCh <= 0 ? 'disabled' : ''}>‹</button><div class="chMid"><div class="chNo">CHAPTER ${String(ch.no).padStart(2, '0')}${chUnlocked(ch) ? '' : ' 🔒'}<small>${storyCh + 1} / ${n}</small></div><div class="chDots">${CHAPTERS.map((c, i) => `<i class="${chState(c)}${i === storyCh ? ' on' : ''}"></i>`).join('')}</div></div><button class="btn ghost chArr" id="chNext" ${storyCh >= n - 1 ? 'disabled' : ''}>›</button>` : '';
+  if (n > 1) { document.getElementById('chPrev').onclick = () => storyGo(-1); document.getElementById('chNext').onclick = () => storyGo(1); }
   const got = ch.levels.reduce((t, l) => t + lvStars(l.id).filter(Boolean).length, 0), max = ch.levels.length * 3;
   document.getElementById('storyHead').innerHTML = `<div class="t">${ch.name}</div><div class="s">${ch.desc}</div><div class="s">★ <b>${got} / ${max}</b>・全三星獎勵：${rewardText(ch.bonus)}${S.ch[ch.id] ? '（已領取）' : ''}</div>${ch.id === 'c10' && lvCleared('10-10') ? '<button class="sbtn" id="endAgain">▶ 再看一次結局</button>' : ''}`;
   const ea = document.getElementById('endAgain'); if (ea) ea.onclick = showEnding;
@@ -3152,6 +3165,13 @@ function renderStory() {
   list.querySelectorAll('.lvCard').forEach(c => c.onclick = () => openLevel(ch.levels[+c.dataset.i]));
   paintBoxBtn(); paintStoryDot();
 }
+function storyGo(d) { // flip to the previous / next chapter (locked ones can be browsed, their stages stay locked)
+  const k = storyCh + d; if (k < 0 || k >= CHAPTERS.length) return; storyCh = k; renderStory(); SFX.flip();
+  for (const id of ['storyHead', 'storyList']) { const el = document.getElementById(id); el.classList.remove('chSlideL', 'chSlideR'); void el.offsetWidth; el.classList.add(d > 0 ? 'chSlideL' : 'chSlideR'); }
+}
+{ let sx = 0, sy = 0, st = 0; const scr = document.getElementById('story'); // horizontal swipe on the chapter screen
+  scr.addEventListener('touchstart', e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = performance.now(); }, { passive: true });
+  scr.addEventListener('touchend', e => { const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (performance.now() - st < 600 && Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) storyGo(dx < 0 ? 1 : -1); }, { passive: true }); }
 function openLevel(lv) {
   if (!lvUnlocked(lv)) { toast('先過前一關才能挑戰'); return; }
   SFX.flip();
