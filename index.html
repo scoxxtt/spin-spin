@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.37.1</title>
+<title>SPIN! SPIN! v0.38.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -831,6 +831,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.38.0 painted tops pilot (crown = card, weapon ring = weapon, armor = core glow); gantries stand on the wall rims; viaduct piers under the road
  v0.37.1 painted ramp deck (art/props/ramp_top.jpg) mapped up the slope in strips
  v0.37.0 painted UI kit (9-slice buttons/panels, nav + currency icons, chapter arrows), painted card backs by rarity, painted arena floors (normal + boss)
  v0.36.0 chapter screen: ‹ › arrows and swipe replace the 15 chapter tabs, progress dots per chapter
@@ -851,7 +852,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.37.1';
+const GAME_VERSION = 'v0.38.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1424,7 +1425,23 @@ function bladeEdge(g, shape) {
   else if (shape === 'fang') { g.moveTo(14, -7); g.quadraticCurveTo(30, -9, 34, 4); }
   else if (shape === 'knob') { g.arc(26.5, 0, 6.3, Math.PI * 1.1, Math.PI * 1.9); }
 }
+// v0.38 pilot: painted tops = crown (character card) over weapon ring (weapon); the armor shows as the glow underneath
+const TOP_SPR = { c: {}, w: {} }; for (const k of ['berserker', 'guardian', 'hunter']) { const im = new Image(); im.onload = () => { TOP_SPR.c[k] = im; }; im.src = `art/tops/c_${k}.png`; }
+for (const k of ['chainaxe', 'grenade', 'gatling']) { const im = new Image(); im.onload = () => { TOP_SPR.w[k] = im; }; im.src = `art/tops/w_${k}.png`; }
+function drawTopSpr(g, build, angle, opts, cs, ws) {
+  const a = ARMORS[build.a], c = CLASSES[build.c], spin = opts.spin || 0;
+  g.save();
+  if (spin > 0.05) { g.strokeStyle = `rgba(255,255,255,${0.1 * spin})`; g.lineWidth = 3; for (let r = 22; r <= 38; r += 8) { g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); } }
+  g.save(); g.shadowColor = a.color; g.shadowBlur = 16; g.fillStyle = a.color; g.beginPath(); g.arc(0, 0, 25, 0, TAU); g.fill(); g.restore(); // core axle glow = armor colour
+  g.rotate(angle);
+  g.drawImage(ws, -38, -38, 76, 76);
+  g.drawImage(cs, -30, -30, 60, 60);
+  g.restore();
+  if (drawFace(g, build.c, 0, 0, 10.5, opts.faceRot ? angle / 8 : 0)) { g.lineWidth = 2; g.strokeStyle = '#05060a'; g.beginPath(); g.arc(0, 0, 10.5, 0, TAU); g.stroke(); g.lineWidth = 1.4; g.strokeStyle = c.color; g.beginPath(); g.arc(0, 0, 12, 0, TAU); g.stroke(); }
+  const sp = g.createRadialGradient(-12, -14, 1, -10, -12, 26); sp.addColorStop(0, 'rgba(255,255,255,.3)'); sp.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sp; g.beginPath(); g.arc(0, 0, 34, 0, TAU); g.fill();
+}
 function drawTop(g, build, angle, opts = {}) {
+  { const cs = TOP_SPR.c[build.c], ws = TOP_SPR.w[build.w]; if (cs && ws) return drawTopSpr(g, build, angle, opts, cs, ws); }
   const w = WEAPONS[build.w], a = ARMORS[build.a], c = CLASSES[build.c];
   const metal = ATTR_COLOR[w.attr];
   const spin = opts.spin || 0;
@@ -5342,10 +5359,12 @@ function trackBackdrop(g, cam) { // far from the arena the stadium gives way to 
 // overhead gantries across the road every so often: real height, a hanging sign that counts down to the goal
 function trackGantries(g, cam) {
   const T = G.track; if (!T || T.zone !== 'track') return;
-  const HW = TRK.HW, sF = T.len - TRK.FUN, v0 = PSP.on ? cam.y + PSP.uTop - 80 : cam.y - 820, v1 = PSP.on ? cam.y + PSP.uBot + 80 : cam.y + 820, GZ = 190, BH = 20, HC = '#05060a';
+  const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), WZ = 30 + 26 * tk; // stand on the wall rims (same height as drawTrack's walls)
+  const HW = TRK.HW, sF = T.len - TRK.FUN, v0 = PSP.on ? cam.y + PSP.uTop - 80 : cam.y - 820, v1 = PSP.on ? cam.y + PSP.uBot + 80 : cam.y + 820, GZ = WZ + 110, BH = 18, HC = '#05060a';
   for (let sv = 700; sv < sF - 250; sv += 900) { const y = T.y0 - sv; if (y < v0 || y > v1) continue;
-    const xl = CX - HW - 16, xr = CX + HW + 16;
-    for (const [x, nc] of [[xl, '#7fdfff'], [xr, '#ff9ae6']]) { zFill(g, [[x - 9, y, 0], [x + 9, y, 0], [x + 9, y, GZ], [x - 9, y, GZ]], '#1b2028', 3, HC); zLine(g, [[x, y, 8], [x, y, GZ - 6]], nc, 2); }
+    const xl = CX - HW - 12, xr = CX + HW + 12;
+    for (const [x, nc] of [[xl, '#7fdfff'], [xr, '#ff9ae6']]) { zFill(g, [[x - 14, y + 8, WZ], [x + 14, y + 8, WZ], [x + 14, y - 8, WZ], [x - 14, y - 8, WZ]], '#2b323c', 2.5, HC); // base plate bolted to the rim
+      zFill(g, [[x - 8, y, WZ], [x + 8, y, WZ], [x + 8, y, GZ], [x - 8, y, GZ]], '#1b2028', 3, HC); zLine(g, [[x, y, WZ + 6], [x, y, GZ - 6]], nc, 2); }
     zFill(g, [[xl - 12, y, GZ], [xr + 12, y, GZ], [xr + 12, y, GZ + BH], [xl - 12, y, GZ + BH]], '#14181c', 3, HC);
     zLine(g, [[xl - 8, y, GZ + 5], [xr + 8, y, GZ + 5]], '#fcee0a', 6); g.setLineDash([10, 10]); zLine(g, [[xl - 8, y, GZ + 5], [xr + 8, y, GZ + 5]], '#0b0b0b', 6); g.setLineDash([]);
     g.setLineDash([4, 12]); g.lineDashOffset = -G.time * 80; zLine(g, [[xl, y, GZ + BH - 5], [xr, y, GZ + BH - 5]], 'rgba(0,240,255,.95)', 3); g.setLineDash([]);
@@ -5362,6 +5381,8 @@ function drawTrack(g, time, cam) {
   const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), dz = (14 + 40 * tk) / VIEW_K, lean = 5 + 24 * tk;
   const yOf = sv => y0 - sv, ya = Math.max(v0, top), yb = Math.min(v1, y0);
   const floor = () => { g.beginPath(); g.moveTo(CX - HW, y0); g.lineTo(CX - HW, yF); g.lineTo(CX - gw, top); g.lineTo(CX + gw, top); g.lineTo(CX + HW, yF); g.lineTo(CX + HW, y0); g.closePath(); };
+  if (!SETTINGS.lowAuto) for (let sv = Math.floor((y0 - Math.min(v1, y0)) / 320) * 320; sv <= Math.min(sF, y0 - Math.max(v0, top)) + 320; sv += 320) { const y = yOf(sv); // the road is a viaduct: concrete piers drop into the city below
+    if (sv < 0 || sv > sF) continue; for (const sd of [-1, 1]) { const x = CX + sd * (HW + 6); zFill(g, [[x - 13, y, 0], [x + 13, y, 0], [x + 13, y, -200], [x - 13, y, -200]], '#151a24', 2.5, '#05060a'); zLine(g, [[x + sd * 8, y, -8], [x + sd * 8, y, -190]], sd < 0 ? 'rgba(127,223,255,.35)' : 'rgba(255,154,230,.35)', 2); } }
   floor(); g.fillStyle = T.floor[1]; g.fill();
   g.save(); floor(); g.clip();
   g.fillStyle = T.floor[0]; g.globalAlpha = 0.35; g.fillRect(CX - 70, ya, 140, yb - ya); g.globalAlpha = 1;          // lit centre lane
@@ -6933,7 +6954,7 @@ requestAnimationFrame(frame);
 // installable / offline (PWA): only on a real web host — opening the file directly skips it
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { drawTop, drawTop45, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
 showTitle();
 setTimeout(unifyPortraits, 300);
