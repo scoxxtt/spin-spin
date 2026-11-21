@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.34.0</title>
+<title>SPIN! SPIN! v0.35.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -808,6 +808,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.35.0 painted prop sprites (art/props/*.png): boost, belt, magnet, turntable, switch, pit, spikes, ice, chip, bumper, barrel, laser pylons, rim street lamps
  v0.34.0 track scenery: overhead gantries with GOAL countdown signs, LED chase on the walls, road dressing, skyline backdrop, painted floor textures per chapter (art/floor_*.jpg)
  v0.33.4 logo swapped for Gemini's own two-line version (parallel slanted backplates)
  v0.33.3 new logo (angular sliced lettering on a black backplate, stacked into two lines); title screen uses the lobby arena art
@@ -824,7 +825,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.34.0';
+const GAME_VERSION = 'v0.35.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -5165,6 +5166,10 @@ function tfDrawProp(g, P, time) {
     for (let k = 0; k <= 1.001; k += 0.08) { const x = P.x + (P.x2 - P.x) * k, y = P.y + (P.y2 - P.y) * k; zLine(g, [[x, y, 0], [x, y, RZ]], '#59606c', 3); }
     g.lineCap = 'round'; zLine(g, [[P.x, P.y, RZ], [P.x2, P.y2, RZ]], '#05060a', 11); zLine(g, [[P.x, P.y, RZ], [P.x2, P.y2, RZ]], '#fcee0a', 5); zLine(g, [[P.x, P.y, RZ + 1.5], [P.x2, P.y2, RZ + 1.5]], '#ffffff', 1.5); g.lineCap = 'butt';
     g.save(); zBegin(g, RZ, P.x); g.fillStyle = '#fcee0a'; g.beginPath(); g.arc(P.x, P.y, 8, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 2.5; g.stroke(); zEnd(g); g.restore(); return true; }
+  if (P.type === 'belt' && SPR.belt) { const a = clockAng(P.dir), hor = Math.abs(Math.cos(a)) > 0.7, x = P.x - P.w / 2, y = P.y - P.l / 2, dw = hor ? P.l : P.w, dh = hor ? P.w : P.l, im = SPR.belt, seg = dw * im.height / im.width, off = (time * 120 * (P.power || 1)) % seg;
+    g.save(); g.beginPath(); g.rect(x, y, P.w, P.l); g.clip(); g.translate(P.x, P.y); g.rotate(a + Math.PI / 2);
+    for (let k = -1; k * seg < dh + seg; k++) g.drawImage(im, -dw / 2, dh / 2 - (k + 1) * seg - off + seg, dw, seg);
+    g.restore(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.strokeRect(x, y, P.w, P.l); return true; }
   if (P.type === 'belt') { const a = clockAng(P.dir), ca = Math.cos(a), sa = Math.sin(a), x = P.x - P.w / 2, y = P.y - P.l / 2;
     g.save(); g.fillStyle = '#20242e'; g.fillRect(x, y, P.w, P.l); g.beginPath(); g.rect(x, y, P.w, P.l); g.clip();
     g.strokeStyle = '#fcee0a'; g.lineWidth = 5; const R0 = Math.max(P.w, P.l), sp = 46;
@@ -5173,9 +5178,15 @@ function tfDrawProp(g, P, time) {
     g.restore(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.strokeRect(x, y, P.w, P.l); g.fillStyle = '#59606c'; g.fillRect(x - 3, y - 3, P.w + 6, 5); g.fillRect(x - 3, y + P.l - 2, P.w + 6, 5); return true; }
   if (P.type === 'turn') { const a = time * (P.speed || 0.5) * TAU;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(P.x + 4, P.y + 5, P.r, 0, TAU); g.fill();
+    if (SPR.turn) { g.save(); g.translate(P.x, P.y); g.rotate(a); g.drawImage(SPR.turn, -P.r - 4, -P.r - 4, P.r * 2 + 8, P.r * 2 + 8); g.restore(); return true; }
     g.fillStyle = '#2b3350'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke();
     for (let k = 0; k < 6; k++) { const b = a + k * TAU / 6; g.fillStyle = k % 2 ? '#7fdfff' : '#ff9ae6'; g.beginPath(); g.moveTo(P.x, P.y); g.arc(P.x, P.y, P.r - 6, b, b + 0.32); g.closePath(); g.fill(); }
     g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y, 14, 0, TAU); g.fill(); g.strokeStyle = '#fcee0a'; g.lineWidth = 3; g.beginPath(); g.arc(P.x, P.y, P.r * 0.72, a, a + 1.2); g.stroke(); return true; }
+  if (P.type === 'switch' && SPR.switch) { const on = P.on, d = (P.r + 10) * 2;
+    g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(P.x + 3, P.y + 5, d / 2, 0, TAU); g.fill();
+    if (!on) { g.fillStyle = 'rgba(252,238,10,.25)'; g.beginPath(); g.arc(P.x, P.y, d / 2 + 8 + Math.sin(time * 6) * 4, 0, TAU); g.fill(); }
+    if (on) g.filter = 'brightness(.45) saturate(.5)'; g.drawImage(SPR.switch, P.x - d / 2, P.y - d / 2, d, d); g.filter = 'none';
+    signPlate(g, P.x, P.y + P.r + 18, 0, on ? (P.time ? `${Math.ceil(P.offT)}s` : 'OPEN') : 'SWITCH', '#fcee0a', 11, 1); return true; }
   if (P.type === 'switch') { const on = P.on;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(P.x + 3, P.y + 5, P.r + 4, (P.r + 4) * 0.8, 0, 0, TAU); g.fill();
     g.fillStyle = '#05060a'; g.beginPath(); g.ellipse(P.x, P.y, P.r + 4, (P.r + 4) * 0.8, 0, 0, TAU); g.fill();
@@ -5338,6 +5349,8 @@ function drawTrack(g, time, cam) {
       const xs = x + sd * 18; zLine(g, [[xs, y1, WZ], [xs, y2, WZ]], '#fcee0a', 7); g.setLineDash([9, 9]); zLine(g, [[xs, y1, WZ], [xs, y2, WZ]], '#0b0b0b', 7); g.setLineDash([]); // hazard stripe
       zLine(g, [[x, y1, WZ], [x, y2, WZ]], 'rgba(0,240,255,.85)', 2);
       if (yOf(a) < v1 + 40) zFill(g, [[x, y2, 0], [xo, y2, 0], [xo, y2, WZ], [x, y2, WZ]], '#0d1013', 3, HC);                // near end cap
+      if (SPR.lamp && !SETTINGS.lowAuto) for (let sv = Math.ceil((a + 200) / 450) * 450 + (sd > 0 ? 225 : 0); sv < b - 60; sv += 450) { const y = yOf(sv); if (y < y1 || y > y2) continue; const lx = x + sd * 12, im = SPR.lamp, lh = 96, lw = lh * im.width / im.height; // street lamps on the rim, arms over the road
+        g.save(); zBegin(g, WZ, lx); upright(g, lx, y, () => { if (sd > 0) g.scale(-1, 1); g.drawImage(im, -lw * 0.14, -lh, lw, lh); }); zEnd(g); g.restore(); }
     }
     // funnel: the wall drops from road height to the arena wall height at the doorway
     const fx = CX + sd * gw;
@@ -6199,6 +6212,9 @@ function drawRim(g, A0, A1) {
   }
 }
 // ---------- props drawing (floor space, squashed by the 2.5D view) ----------
+// v0.35: painted prop sprites (art/props/*.png, cut from two generated sheets); each draw falls back to the old vector art until loaded
+const SPR = {}; for (const n of ['boost', 'belt', 'magnet', 'turn', 'switch', 'hole', 'spikes', 'ice', 'chip', 'bumper', 'barrel', 'laser', 'lamp', 'crates', 'drone']) { const im = new Image(); im.onload = () => { SPR[n] = im; }; im.src = `art/props/${n}.png`; }
+function sprStand(g, im, x, y, w, hit) { const h = w * im.height / im.width; upright(g, x, y, () => { if (hit) g.filter = 'brightness(1.9)'; g.drawImage(im, -w / 2, -h, w, h); if (hit) g.filter = 'none'; }); }
 function drawPropsFloor(g, time, only) {
   if (!only && G && G.decals && G.decals.length) drawDecals(g);
   if (!only && G && G.track) tfDrawFloor(g, time);
@@ -6207,12 +6223,13 @@ function drawPropsFloor(g, time, only) {
     if (tfDrawProp(g, P, time)) continue;
     if (P.type === 'chip') { if (P.dead) continue; const bob = Math.sin(time * 4 + P.idx) * 4, r = P.r + 2;
       g.save(); g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(P.x, P.y + 6, r * 0.9, r * 0.4, 0, 0, TAU); g.fill();
-      g.globalAlpha = P.had ? 0.45 : 1; g.translate(P.x, P.y - 12 + bob); g.beginPath(); g.moveTo(0, -r * 1.3); g.lineTo(r, 0); g.lineTo(0, r * 1.3); g.lineTo(-r, 0); g.closePath();
+      g.globalAlpha = P.had ? 0.45 : 1; g.translate(P.x, P.y - 12 + bob); if (SPR.chip) { g.drawImage(SPR.chip, -r * 1.5, -r * 1.5, r * 3, r * 3); if (!P.had) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#7fdfff'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, r * 1.9, 0, TAU); g.stroke(); } g.restore(); continue; } g.beginPath(); g.moveTo(0, -r * 1.3); g.lineTo(r, 0); g.lineTo(0, r * 1.3); g.lineTo(-r, 0); g.closePath();
       g.fillStyle = P.had ? '#3a6a7a' : '#00f0ff'; g.fill(); g.lineWidth = 3; g.strokeStyle = '#05060a'; g.stroke(); g.fillStyle = '#ffffff'; g.fillRect(-3, -r * 0.6, 6, r * 1.2); g.fillRect(-r * 0.45, -3, r * 0.9, 6);
       if (!P.had) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#7fdfff'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, r * 1.8, 0, TAU); g.stroke(); } g.restore(); continue; }
     if (P.type === 'ice') {
       g.save(); g.beginPath(); if (P.r) g.arc(P.x, P.y, P.r, 0, TAU); else g.rect(P.x - P.w / 2, P.y - P.l / 2, P.w, P.l);
       g.fillStyle = 'rgba(190,240,255,.42)'; g.fill(); g.clip();
+      if (SPR.ice) { const bw = P.r ? P.r * 2 : P.w, bh = P.r ? P.r * 2 : P.l; g.globalAlpha = 0.8; g.drawImage(SPR.ice, P.x - bw / 2, P.y - bh / 2, bw, bh); g.globalAlpha = 1; }
       g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 2.5; const R0 = P.r || Math.max(P.w, P.l) / 2;
       for (let k = -6; k <= 6; k++) { const o = k * 26 + ((time * 40) % 26); g.beginPath(); g.moveTo(P.x + o - R0, P.y + R0); g.lineTo(P.x + o + R0, P.y - R0); g.globalAlpha = 0.25 + 0.2 * ((k + 7) % 3); g.stroke(); }
       g.globalAlpha = 1; g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.5; for (let k = 0; k < 5; k++) { const a = k * 1.3 + 0.4, x0 = P.x + Math.cos(a) * R0 * 0.5, y0 = P.y + Math.sin(a * 1.7) * R0 * 0.45; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + 14, y0 + 6); g.lineTo(x0 + 22, y0 - 2); g.stroke(); }
@@ -6234,8 +6251,9 @@ function drawPropsFloor(g, time, only) {
       const pull = P.power > 0, col = pull ? '255,79,216' : '0,240,255';
       g.save(); g.fillStyle = `rgba(${col},.08)`; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill();
       for (let k = 0; k < 4; k++) { const ph = ((pull ? -time : time) * 0.7 + k / 4) % 1, f = (ph + 1) % 1; g.strokeStyle = `rgba(${col},${0.55 * Math.sin(f * Math.PI)})`; g.lineWidth = 3; g.beginPath(); g.arc(P.x, P.y, P.r * f, 0, TAU); g.stroke(); }
-      g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y, 16, 0, TAU); g.fill(); g.fillStyle = pull ? '#ff4fd8' : '#00f0ff'; g.beginPath(); g.arc(P.x, P.y, 11, 0, TAU); g.fill();
-      g.fillStyle = '#05060a'; g.fillRect(P.x - 2, P.y - 11, 4, 22); g.restore();
+      if (SPR.magnet) { if (!pull) g.filter = 'hue-rotate(185deg)'; g.drawImage(SPR.magnet, P.x - 36, P.y - 36, 72, 72); g.filter = 'none'; g.restore(); }
+      else { g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y, 16, 0, TAU); g.fill(); g.fillStyle = pull ? '#ff4fd8' : '#00f0ff'; g.beginPath(); g.arc(P.x, P.y, 11, 0, TAU); g.fill();
+      g.fillStyle = '#05060a'; g.fillRect(P.x - 2, P.y - 11, 4, 22); g.restore(); }
       upright(g, P.x, P.y - 22, () => { g.font = 'italic 900 12px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = '#05060a'; g.strokeText(pull ? 'MAGNET' : 'REPEL', 0, 0); g.fillStyle = pull ? '#ff9ae6' : '#7fdfff'; g.fillText(pull ? 'MAGNET' : 'REPEL', 0, 0); });
       continue;
     }
@@ -6244,6 +6262,7 @@ function drawPropsFloor(g, time, only) {
       g.save(); g.lineCap = 'round';
       if (on) { g.strokeStyle = 'rgba(255,42,85,.35)'; g.lineWidth = 16; g.beginPath(); g.moveTo(S.x1, S.y1 - hz2); g.lineTo(S.x2, S.y2 - hz2); g.stroke(); g.strokeStyle = '#ff2a55'; g.lineWidth = 6; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.stroke(); }
       else { g.strokeStyle = soon && Math.sin(time * 40) > 0 ? '#fcee0a' : 'rgba(255,42,85,.35)'; g.lineWidth = 2; g.setLineDash([6, 8]); g.beginPath(); g.moveTo(S.x1, S.y1 - hz2); g.lineTo(S.x2, S.y2 - hz2); g.stroke(); g.setLineDash([]); }
+      if (SPR.laser) { for (const [px, py] of [[S.x1, S.y1], [S.x2, S.y2]]) sprStand(g, SPR.laser, px, py + 3, (hz2 + 14) * SPR.laser.width / SPR.laser.height, false); g.restore(); continue; }
       for (const [px, py] of [[S.x1, S.y1], [S.x2, S.y2]]) { g.fillStyle = '#262e35'; g.fillRect(px - 7, py - hz2 - 6, 14, hz2 + 6); g.strokeStyle = '#05060a'; g.lineWidth = 2; g.strokeRect(px - 7, py - hz2 - 6, 14, hz2 + 6); g.fillStyle = on ? '#ff2a55' : '#59606c'; g.beginPath(); g.arc(px, py - hz2, 5, 0, TAU); g.fill(); }
       g.restore(); continue;
     }
@@ -6263,6 +6282,7 @@ function drawPropsFloor(g, time, only) {
       continue;
     }
     if (P.type === 'pit') {
+      if (SPR.hole) { const d = P.r * 2.9; g.drawImage(SPR.hole, P.x - d / 2, P.y - d / 2, d, d); g.save(); g.strokeStyle = `rgba(255,42,85,${0.35 + 0.35 * Math.sin(time * 6)})`; g.lineWidth = 3; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.stroke(); g.restore(); continue; }
       g.save(); g.fillStyle = '#030305'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 6; g.stroke();
       g.strokeStyle = `rgba(255,42,85,${0.6 + 0.4 * Math.sin(time * 6)})`; g.lineWidth = 3; g.stroke();
       for (let k = 1; k <= 3; k++) { g.strokeStyle = `rgba(255,42,85,${0.3 - k * 0.07})`; g.lineWidth = 2; g.beginPath(); g.arc(P.x, P.y + k * 3, P.r * (1 - k * 0.24), 0, TAU); g.stroke(); }
@@ -6271,7 +6291,8 @@ function drawPropsFloor(g, time, only) {
     if (P.type === 'spikes') {
       if (P.dead) continue;
       const on = spikesOn(P, time), cyc = P.on + P.off, warn = !on && P.on && (((time - (P.t0 || 0)) % cyc) + cyc) % cyc > cyc - 0.7;
-      g.save(); g.fillStyle = on ? 'rgba(255,42,85,.3)' : 'rgba(255,42,85,.08)'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill();
+      g.save(); if (SPR.spikes) { g.save(); g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.clip(); g.drawImage(SPR.spikes, P.x - P.r * 1.1, P.y - P.r * 1.1, P.r * 2.2, P.r * 2.2); g.restore(); }
+      g.fillStyle = on ? 'rgba(255,42,85,.3)' : 'rgba(255,42,85,.08)'; g.beginPath(); g.arc(P.x, P.y, P.r, 0, TAU); g.fill();
       g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke();
       g.strokeStyle = warn && Math.sin(time * 30) > 0 ? '#fcee0a' : '#ff2a55'; g.lineWidth = 2.5; g.setLineDash([8, 6]); g.lineDashOffset = -time * 20; g.stroke(); g.setLineDash([]);
       const hg = on ? 10 : 2;
@@ -6283,8 +6304,9 @@ function drawPropsFloor(g, time, only) {
     } else if (P.type === 'boost') {
       g.save(); g.translate(P.x, P.y); g.rotate(Math.atan2(P.dy, P.dx));
       const L = P.l, Wd = P.w, gr = g.createLinearGradient(-L / 2, 0, L / 2, 0); gr.addColorStop(0, '#7fdfff'); gr.addColorStop(1, '#ff9ae6');
-      g.fillStyle = '#05060a'; g.fillRect(-L / 2 - 3, -Wd / 2 - 3, L + 6, Wd + 6);
-      g.globalAlpha = 0.85; g.fillStyle = gr; g.fillRect(-L / 2, -Wd / 2, L, Wd); g.globalAlpha = 1;
+      if (SPR.boost) { g.save(); g.rotate(Math.PI / 2); g.drawImage(SPR.boost, -Wd / 2 - 4, -L / 2 - 4, Wd + 8, L + 8); g.restore(); g.globalAlpha = 0.45; }
+      else { g.fillStyle = '#05060a'; g.fillRect(-L / 2 - 3, -Wd / 2 - 3, L + 6, Wd + 6);
+      g.globalAlpha = 0.85; g.fillStyle = gr; g.fillRect(-L / 2, -Wd / 2, L, Wd); g.globalAlpha = 1; }
       g.save(); g.beginPath(); g.rect(-L / 2, -Wd / 2, L, Wd); g.clip(); g.lineCap = 'round';
       for (let k = 0; k < 4; k++) { const ph = (time * 1.8 + k / 4) % 1, x = -L / 2 - 10 + ph * (L + 24); g.strokeStyle = `rgba(5,6,10,${0.5 * Math.sin(ph * Math.PI)})`; g.lineWidth = 7; g.beginPath(); g.moveTo(x - 9, -Wd / 2 + 7); g.lineTo(x + 4, 0); g.lineTo(x - 9, Wd / 2 - 7); g.stroke();
         g.strokeStyle = `rgba(255,255,255,${Math.sin(ph * Math.PI)})`; g.lineWidth = 3.5; g.stroke(); }
@@ -6303,6 +6325,7 @@ function drawPropRaised(g, P) {
   const hz = 16 * HK() / VIEW_K, hit = G.time - P.hitAt < 0.22;
   if (P.type === 'barrel') { const { x, y, r } = P, bh = 26 * HK() / VIEW_K;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(x + 4, y + 5, r + 3, 0, TAU); g.fill();
+    if (SPR.barrel) { sprStand(g, SPR.barrel, x, y + r * 0.6, r * 2.3 * (0.85 + 0.15 * HK()), hit); return; }
     g.beginPath(); g.moveTo(x - r, y - bh); g.lineTo(x - r, y); g.arc(x, y, r, Math.PI, 0, true); g.lineTo(x + r, y - bh); g.closePath(); g.fillStyle = '#c4202e'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke();
     g.save(); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x - r, y - bh * 0.62, r * 2, bh * 0.22); g.fillStyle = '#05060a'; for (let k = -3; k <= 3; k++) g.fillRect(x + k * 9 - 2, y - bh * 0.62, 4, bh * 0.22); g.fillStyle = 'rgba(5,6,10,.35)'; g.fillRect(x + r * 0.3, y - bh, r, bh + r); g.restore();
     g.fillStyle = '#e8434f'; g.beginPath(); g.arc(x, y - bh, r, 0, TAU); g.fill(); g.lineWidth = 3; g.stroke(); g.strokeStyle = '#7a0d16'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - bh, r * 0.62, 0, TAU); g.stroke();
@@ -6311,6 +6334,7 @@ function drawPropRaised(g, P) {
   if (P.type === 'bumper') {
     const { x, y, r } = P;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.arc(x + 4, y + 5, r + 3, 0, TAU); g.fill();
+    if (SPR.bumper) { sprStand(g, SPR.bumper, x, y + r * 0.6, r * 2.3 * (0.85 + 0.15 * HK()), hit); return; }
     const sd = g.createLinearGradient(x - r, 0, x + r, 0); sd.addColorStop(0, '#7fdfff'); sd.addColorStop(1, '#ff9ae6');
     g.beginPath(); g.moveTo(x - r, y - hz); g.lineTo(x - r, y); g.arc(x, y, r, Math.PI, 0, true); g.lineTo(x + r, y - hz); g.closePath();
     g.fillStyle = sd; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke();
