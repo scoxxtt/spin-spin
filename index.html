@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.33.4</title>
+<title>SPIN! SPIN! v0.34.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -808,6 +808,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.34.0 track scenery: overhead gantries with GOAL countdown signs, LED chase on the walls, road dressing, skyline backdrop, painted floor textures per chapter (art/floor_*.jpg)
  v0.33.4 logo swapped for Gemini's own two-line version (parallel slanted backplates)
  v0.33.3 new logo (angular sliced lettering on a black backplate, stacked into two lines); title screen uses the lobby arena art
  v0.33.2 Gemini logo (art/logo.png, white background keyed out) on the title screen (beat bounce + light sweep) and in the lobby
@@ -823,7 +824,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.33.4';
+const GAME_VERSION = 'v0.34.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3712,6 +3713,19 @@ function drawDecals(g) { for (const d of G.decals) { const k = Math.min(1, d.lif
   const gr = g.createRadialGradient(0, 0, 2, 0, 0, d.r); gr.addColorStop(0, 'rgba(10,8,6,.9)'); gr.addColorStop(1, 'rgba(10,8,6,0)'); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, d.r, 0, TAU); g.fill();
   g.rotate(d.a); g.strokeStyle = 'rgba(255,160,60,.55)'; g.lineWidth = 2; for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(-d.r * 0.9, i * 6); g.lineTo(d.r * 0.9, i * 6 + 3); g.stroke(); } g.restore(); } }
 // chapter floor textures (drawn under the lane shading, inside the track clip)
+// v0.34: painted floor textures (art/floor_*.jpg, one tile = the road width), chosen per chapter; the old line patterns stay as the fallback
+const FLOOR_TEX_OF = { 1: 'asphalt', 2: 'circuit', 3: 'asphalt', 4: 'steel', 5: 'hex', 6: 'circuit', 7: 'hex', 8: 'asphalt', 9: 'asphalt', 10: 'hex', 11: 'circuit', 12: 'steel', 13: 'asphalt', 14: 'hex', 15: 'steel' };
+const FLOOR_TEX = {}; for (const k of ['asphalt', 'circuit', 'hex', 'steel']) { const im = new Image(); im.onload = () => { FLOOR_TEX[k] = im; }; im.src = `art/floor_${k}.jpg`; }
+function drawFloorTex(g, T, ya, yb, HW) { // returns false when the picture is not ready
+  const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (!im) return false;
+  const P = HW * 2, st = 4, x0 = CX - HW;
+  if (PSP.on) { const R = ctx; R.save(); R.setTransform(1, 0, 0, 1, 0, 0); const sh = im.height * st / P;
+    for (let y = Math.floor(ya / st) * st; y < yb; y += st) { const q = pspQ(y + st / 2 - PSP.camy), Ya = PSP.cy + PSP.zsK * (y - PSP.camy) / pspQ(y - PSP.camy), Yb = PSP.cy + PSP.zsK * (y + st - PSP.camy) / pspQ(y + st - PSP.camy);
+      const sy = ((y % P) + P) % P * im.height / P; R.drawImage(im, 0, sy, im.width, sh, PSP.cx + (x0 - PSP.camx) * PSP.zs / q, Ya, P * PSP.zs / q, Yb - Ya + 0.7); }
+    R.restore(); }
+  else for (let y = Math.floor(ya / P) * P; y < yb; y += P) g.drawImage(im, x0, y, P, P);
+  return true;
+}
 const FLOOR_PAT = { 1: 'tiles', 2: 'circuit', 3: 'cracks', 4: 'plates', 5: 'hex', 6: 'circuit', 7: 'clouds', 8: 'tiles', 9: 'chevron', 10: 'hex', 11: 'circuit', 12: 'plates', 13: 'cracks', 14: 'hex', 15: 'chevron' };
 function drawFloorPattern(g, T, ya, yb, HW) {
   if (SETTINGS.lowAuto) return; const kind = FLOOR_PAT[+T.lv.id.split('-')[0]] || 'tiles', x0 = CX - HW, x1 = CX + HW, step = 64, y0 = Math.floor(ya / step) * step;
@@ -5220,17 +5234,49 @@ function tfDrawOver(g) {
 }
 Object.assign(PROP_DEF, { ramp: { w: 120, l: 80 }, tube: { r: 34 }, rail: {}, belt: { w: 160, l: 200, dir: 12, power: 1 }, turn: { r: 110, speed: 0.5 }, switch: { r: 24 }, oneway: { w: 420 } });
 // ---------- track drawing ----------
-function trackBackdrop(g, cam) { // far from the arena the stadium gives way to a night-city grid sliding past
+let skyCache = null;
+function buildSky() { // v0.34: horizon glow + two layers of skyline, drawn once per screen size
+  const c = document.createElement('canvas'); c.width = cv.width; c.height = cv.height; const x = c.getContext('2d'); x.setTransform(scale, 0, 0, scale, 0, 0);
+  x.fillStyle = '#070912'; x.fillRect(0, 0, W, H);
+  let gr = x.createLinearGradient(0, 0, 0, H * 0.5); gr.addColorStop(0, 'rgba(159,232,255,.28)'); gr.addColorStop(0.45, 'rgba(255,143,220,.32)'); gr.addColorStop(1, 'rgba(255,143,220,0)'); x.fillStyle = gr; x.fillRect(0, 0, W, H * 0.5);
+  let seed = 7; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (const [base, col, hMax, win] of [[H * 0.34, '#1a1d44', H * 0.26, 0.35], [H * 0.42, '#0d1028', H * 0.3, 0.6]]) {
+    for (let bx = -10; bx < W + 10;) { const w = 18 + rr() * 34, h = hMax * (0.35 + rr() * 0.65), top = base - h;
+      x.fillStyle = col; x.fillRect(bx, top, w, H - top); x.strokeStyle = '#05060a'; x.lineWidth = 2; x.strokeRect(bx, top, w, H - top);
+      if (rr() < 0.3) { x.fillRect(bx + w / 2 - 1, top - 14, 2, 14); x.fillStyle = '#ff2a55'; x.fillRect(bx + w / 2 - 2, top - 16, 4, 3); }
+      for (let wy = top + 6; wy < base + 40; wy += 7) for (let wx = bx + 4; wx < bx + w - 4; wx += 6) if (rr() < 0.22) { const q = rr(); x.fillStyle = q < 0.5 ? `rgba(127,223,255,${win})` : q < 0.8 ? `rgba(255,154,230,${win})` : `rgba(252,238,10,${win})`; x.fillRect(wx, wy, 3, 2); }
+      bx += w + rr() * 8; } }
+  gr = x.createLinearGradient(0, H * 0.36, 0, H * 0.62); gr.addColorStop(0, 'rgba(7,9,18,0)'); gr.addColorStop(1, 'rgba(7,9,18,1)'); x.fillStyle = gr; x.fillRect(0, H * 0.36, W, H * 0.64);
+  x.fillStyle = 'rgba(5,6,10,.25)'; for (let y = 0; y < H * 0.5; y += 6) for (let xx = (y / 6 & 1) * 3; xx < W; xx += 6) x.fillRect(xx, y, 1.4, 1.4); // halftone over the sky
+  return c;
+}
+function trackBackdrop(g, cam) { // far from the arena the stadium gives way to the night city below the elevated road
   const k = clamp((cam.y - CY - 150) / 260, 0, 1); if (k <= 0) return;
-  g.setTransform(scale, 0, 0, scale, 0, 0); g.globalAlpha = k;
-  g.fillStyle = '#070912'; g.fillRect(-W, -H, W * 3, H * 3);
-  g.lineWidth = 1;
-  for (let i = 0; i < 13; i++) { const y = ((i * 80 - cam.y * 0.45) % H + H) % H; g.strokeStyle = `rgba(127,223,255,${0.05 + 0.08 * (y / H)})`; g.beginPath(); g.moveTo(-W, y); g.lineTo(W * 2, y); g.stroke(); }
-  g.strokeStyle = 'rgba(255,154,230,.07)'; for (let x = -W; x <= W * 2; x += 60) { g.beginPath(); g.moveTo(x, -H); g.lineTo(x, H * 2); g.stroke(); }
+  if (!skyCache || skyCache.width !== cv.width || skyCache.height !== cv.height) skyCache = buildSky();
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = k; g.drawImage(skyCache, 0, 0); g.setTransform(scale, 0, 0, scale, 0, 0);
+  // the city far below: traffic streams and lit blocks sliding past slowly (parallax)
   let seed = 11; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < 26; i++) { const x = rr() * W * 1.4 - W * 0.2, y0 = rr() * 2400, w = 16 + rr() * 50, y = ((y0 - cam.y * 0.25) % 1200 + 1200) % 1200 - 120; if (x > 40 && x < W - 60) continue;
-    g.fillStyle = i % 3 ? 'rgba(127,223,255,.16)' : 'rgba(255,154,230,.16)'; g.fillRect(x, y, w, 3); g.fillRect(x, y + 9, w * 0.6, 3); }
+  for (let i = 0; i < 34; i++) { const x = rr() * W, y0 = rr() * 2400, w = 10 + rr() * 46, y = ((y0 - cam.y * 0.22) % 1200 + 1200) % 1200 - 120, c = i % 3;
+    if (y < H * 0.4) continue; g.fillStyle = c === 0 ? 'rgba(127,223,255,.18)' : c === 1 ? 'rgba(255,154,230,.18)' : 'rgba(252,238,10,.14)'; g.fillRect(x, y, w, 3); g.fillRect(x, y + 9, w * 0.6, 3); }
+  for (let i = 0; i < 8; i++) { const x = rr() * W, sp = 0.3 + rr() * 0.3, y = ((rr() * 1400 - cam.y * sp - G.time * 60) % 1400 + 1400) % 1400 - 200; if (y < H * 0.42) continue;
+    g.fillStyle = i % 2 ? 'rgba(255,42,85,.35)' : 'rgba(252,238,10,.3)'; g.fillRect(x, y, 2, 26); }
   g.globalAlpha = 1;
+}
+// overhead gantries across the road every so often: real height, a hanging sign that counts down to the goal
+function trackGantries(g, cam) {
+  const T = G.track; if (!T || T.zone !== 'track') return;
+  const HW = TRK.HW, sF = T.len - TRK.FUN, v0 = PSP.on ? cam.y + PSP.uTop - 80 : cam.y - 820, v1 = PSP.on ? cam.y + PSP.uBot + 80 : cam.y + 820, GZ = 190, BH = 20, HC = '#05060a';
+  for (let sv = 700; sv < sF - 250; sv += 900) { const y = T.y0 - sv; if (y < v0 || y > v1) continue;
+    const xl = CX - HW - 16, xr = CX + HW + 16;
+    for (const [x, nc] of [[xl, '#7fdfff'], [xr, '#ff9ae6']]) { zFill(g, [[x - 9, y, 0], [x + 9, y, 0], [x + 9, y, GZ], [x - 9, y, GZ]], '#1b2028', 3, HC); zLine(g, [[x, y, 8], [x, y, GZ - 6]], nc, 2); }
+    zFill(g, [[xl - 12, y, GZ], [xr + 12, y, GZ], [xr + 12, y, GZ + BH], [xl - 12, y, GZ + BH]], '#14181c', 3, HC);
+    zLine(g, [[xl - 8, y, GZ + 5], [xr + 8, y, GZ + 5]], '#fcee0a', 6); g.setLineDash([10, 10]); zLine(g, [[xl - 8, y, GZ + 5], [xr + 8, y, GZ + 5]], '#0b0b0b', 6); g.setLineDash([]);
+    g.setLineDash([4, 12]); g.lineDashOffset = -G.time * 80; zLine(g, [[xl, y, GZ + BH - 5], [xr, y, GZ + BH - 5]], 'rgba(0,240,255,.95)', 3); g.setLineDash([]);
+    const sw = 78; zLine(g, [[CX - sw + 12, y, GZ], [CX - sw + 12, y, GZ - 10]], '#59606c', 3); zLine(g, [[CX + sw - 12, y, GZ], [CX + sw - 12, y, GZ - 10]], '#59606c', 3);
+    zFill(g, [[CX - sw, y, GZ - 10], [CX + sw, y, GZ - 10], [CX + sw, y, GZ - 44], [CX - sw, y, GZ - 44]], '#070912', 3, '#00f0ff');
+    const left = Math.max(0, Math.round((sF - sv) / 10)); g.save(); zBegin(g, GZ - 27, CX);
+    upright(g, CX, y, () => { g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 900 19px Rajdhani, sans-serif'; g.fillStyle = Math.sin(G.time * 3 + sv) > -0.7 ? '#fcee0a' : '#fff6a0'; g.fillText(`GOAL ${left}M ▲`, 0, 1); });
+    zEnd(g); g.restore(); }
 }
 function drawTrack(g, time, cam) {
   const T = G.track, y0 = T.y0, top = TRK.ENT_Y, HW = TRK.HW, gw = T.gw, sF = T.len - TRK.FUN, yF = y0 - sF;
@@ -5242,7 +5288,17 @@ function drawTrack(g, time, cam) {
   floor(); g.fillStyle = T.floor[1]; g.fill();
   g.save(); floor(); g.clip();
   g.fillStyle = T.floor[0]; g.globalAlpha = 0.35; g.fillRect(CX - 70, ya, 140, yb - ya); g.globalAlpha = 1;          // lit centre lane
-  drawFloorPattern(g, T, ya, yb, HW);
+  if (SETTINGS.lowAuto || !drawFloorTex(g, T, Math.max(ya, yF), yb, HW)) drawFloorPattern(g, T, ya, yb, HW);
+  else { g.fillStyle = T.floor[0]; g.globalAlpha = 0.12; g.fillRect(CX - HW, ya, HW * 2, yb - ya); g.globalAlpha = 1; } // chapter tint over the picture
+  { const rr = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); }; // v0.34 road dressing
+    for (const [sd, col] of [[-1, '127,223,255'], [1, '255,154,230']]) for (let i = 0; i < 3; i++) { const w = 22 + i * 28; g.fillStyle = `rgba(${col},${0.07 - i * 0.02})`; g.fillRect(sd < 0 ? CX - HW : CX + HW - w, ya, w, yb - ya); } // neon spill from the walls
+    g.fillStyle = 'rgba(232,237,242,.14)'; for (const sd of [-1, 1]) g.fillRect(CX + sd * (HW - 56) - 2, ya, 4, yb - ya); // lane edge lines
+    g.strokeStyle = 'rgba(0,0,0,.24)'; g.lineWidth = 5; g.lineCap = 'round'; // tyre-less skid marks: scuffs from earlier tops
+    for (let bk = Math.max(1, Math.floor((y0 - yb) / 260)); bk * 260 <= y0 - ya + 260; bk++) { if (rr(bk, 3) > 0.55) continue; const sv = bk * 260 + rr(bk, 5) * 160, x = CX + (rr(bk, 7) - 0.5) * HW * 1.3, y = yOf(sv), c = (rr(bk, 9) - 0.5) * 70;
+      for (const o of [-8, 8]) { g.beginPath(); for (let i = 0; i <= 6; i++) { const t = i / 6; g[i ? 'lineTo' : 'moveTo'](x + o + c * Math.sin(t * 2.4), y + 60 - t * 130); } g.stroke(); } }
+    g.lineCap = 'butt'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 900 64px Rajdhani, sans-serif'; g.fillStyle = 'rgba(252,238,10,.10)';
+    for (let sv = Math.max(500, Math.ceil((y0 - yb) / 500) * 500); sv <= Math.min(sF, y0 - ya); sv += 500) g.fillText(String(sv), CX, yOf(sv) - 60); // distance painted on the road
+    g.fillStyle = 'rgba(0,0,0,.22)'; for (let sv = 700; sv < sF - 250; sv += 900) { const y = yOf(sv); if (y > ya - 30 && y < yb + 30) g.fillRect(CX - HW, y + 4, HW * 2, 16); } } // gantry shadows
   g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(CX - HW, ya, 40, yb - ya); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(CX + HW - 26, ya, 26, yb - ya); // cel shadow under the left wall
   g.fillStyle = 'rgba(0,0,0,.4)';                                                                                  // halftone fading out of the shadow
   for (let y = Math.ceil(ya / 12) * 12; y < yb; y += 12) for (let c = 0; c < 4; c++) { g.beginPath(); g.arc(CX - HW + 46 + c * 11 + ((y / 12) & 1 ? 5 : 0), y, 2.6 - c * 0.6, 0, TAU); g.fill(); }
@@ -5276,6 +5332,8 @@ function drawTrack(g, time, cam) {
       zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ * 0.35], [x, y1, WZ * 0.35]], 'rgba(0,0,0,.35)');                       // cel shadow at the foot
       for (let sv = Math.ceil(a / 120) * 120; sv < b; sv += 120) { const y = yOf(sv); if (y < y1 || y > y2) continue; zLine(g, [[x, y, 0], [x, y, WZ]], 'rgba(0,0,0,.55)', 2); } // panel seams
       g.globalAlpha = 0.55 + 0.45 * tk; zLine(g, [[x, y1, WZ * 0.62], [x, y2, WZ * 0.62]], neon, 3); g.globalAlpha = 1;      // neon strip
+      g.setLineDash([5, 22]); g.lineDashOffset = -time * 320; zLine(g, [[x, y1, WZ * 0.62], [x, y2, WZ * 0.62]], 'rgba(255,255,255,.9)', 3); g.setLineDash([]); // LEDs racing past (speed)
+      zLine(g, [[x, y1, WZ * 0.3], [x, y2, WZ * 0.3]], 'rgba(0,0,0,.45)', 2);
       zFill(g, [[x, y1, WZ], [x, y2, WZ], [xo, y2, WZ], [xo, y1, WZ]], '#14181c', 3, HC);                                     // rim
       const xs = x + sd * 18; zLine(g, [[xs, y1, WZ], [xs, y2, WZ]], '#fcee0a', 7); g.setLineDash([9, 9]); zLine(g, [[xs, y1, WZ], [xs, y2, WZ]], '#0b0b0b', 7); g.setLineDash([]); // hazard stripe
       zLine(g, [[x, y1, WZ], [x, y2, WZ]], 'rgba(0,240,255,.85)', 2);
@@ -6613,7 +6671,7 @@ function render() {
     if (G.track) { for (const m of G.track.mobs) if (!m.dead) items.push({ y: m.y + tfKey(m), f: () => drawTopWorld(g, m) }); if (G.track.zone === 'track') items.push({ y: G.track.boss.y, f: () => drawTopWorld(g, G.track.boss) }); }
     for (const P of PROPS) if ((P.type === 'bumper' || P.type === 'mover' || P.type === 'barrel') && !P.dead) { const S = P.type === 'mover' ? moverSeg(P, G.time) : null; items.push({ y: S ? (S.y1 + S.y2) / 2 : P.y, f: () => drawPropRaised(g, P) }); }
     items.sort((a, b) => a.y - b.y).forEach(it => it.f()); }
-  if (G.track) { tfDrawOver(g); drawBossFx(g); }
+  if (G.track) { trackGantries(g, cam); tfDrawOver(g); drawBossFx(g); }
   for (const w of G.waves) {
     const k = w.t / w.max, r = 8 + (1 - k) * w.R1;
     g.strokeStyle = `rgba(${w.col},${k})`; g.lineWidth = w.w * k + 1; g.beginPath(); g.arc(w.x, w.y, r, 0, TAU); g.stroke();
