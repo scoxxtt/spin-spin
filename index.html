@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.32.2</title>
+<title>SPIN! SPIN! v0.33.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -549,6 +549,18 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 .hmBanner:active{transform:translateY(.15em)}.hmBT{grid-column:1/3;font-weight:900;color:#fcee0a;font-size:.85em}.hmBL{font-size:1.05em}.hmBL b{font:italic 900 1.15em Rajdhani,sans-serif;color:#9fe8ff}.hmBL i{font-style:normal;font-size:.7em;background:#ff2a55;color:#fff;padding:0 .35em;margin-left:.2em}
 .hmBS{grid-column:1;font-size:.8em;color:#94a0b6}.hmGo{grid-column:2;grid-row:2/4;align-self:center;font-weight:900;background:#fcee0a;color:#05060a;border:2px solid #05060a;padding:.35em .7em;border-radius:.35em;box-shadow:0 .18em 0 #05060a}
 .hmBtns{max-width:none;margin-top:.1em}
+
+/* v0.33 title screen, comic tutorial, lobby background */
+#titleScr{position:fixed;inset:0;z-index:9000;background:#05060a;cursor:pointer;transition:opacity .45s,transform .45s}
+#titleScr canvas{width:100%;height:100%;display:block}
+#titleScr.out{opacity:0;transform:scale(1.06)}
+#comic{background:#14161f;padding:.6em .5em 4em !important;justify-content:flex-start}
+#comicCv{width:min(100%,25em);height:auto;aspect-ratio:600/930;display:block;box-shadow:0 .3em 0 #05060a}
+#comic .comicBtns{margin-top:.7em;display:flex;gap:.8em;justify-content:center}
+#comicGo{padding:.6em 2.6em;opacity:.35;transform:scale(.8);pointer-events:none;transition:opacity .3s,transform .3s}
+#comicGo.on{opacity:1;transform:scale(1);pointer-events:auto}
+#comic.show~#topRight,body:has(#comic.show) #topRight{display:none}
+#home.hasBg{background:linear-gradient(rgba(5,6,10,.35),rgba(5,6,10,.7)),url(art/bg_lobby.jpg) center/cover no-repeat}
 </style>
 </head>
 <body>
@@ -648,6 +660,11 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
     <canvas id="tutCv" width="800" height="800"></canvas>
     <div class="tutText" id="tutText"></div>
     <div class="tutBtns"><button class="btn ghost" id="tutSkip">略過</button><button class="btn" id="tutNext">下一步</button></div>
+  </div>
+
+  <div id="comic" class="screen">
+    <canvas id="comicCv" width="1200" height="1860"></canvas>
+    <div class="pairBtns comicBtns"><button class="btn ghost" id="comicSkip">略過</button><button class="btn" id="comicGo">開始！</button></div>
   </div>
 
   <div id="final" class="screen">
@@ -790,6 +807,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.33.0 title screen on every launch (drawn key visual, or art/title_kv.jpg), first-launch 3-panel comic tutorial instead of the 10-page one, lobby background slot art/bg_lobby.jpg
  v0.32.2 layout again on visualViewport / orientation / pageshow changes and after load (Samsung Internet, in-app browsers); tip when a phone shows the desktop version of the page
  v0.32.1 optical centring: centred labels ending/starting with full-width CJK punctuation or carrying letter-spacing get a balancing text-indent (MutationObserver), centred canvas text gets the same nudge; result screen text centred
  v0.32.0 MOVE gets a 'clear' mode: on the road it hunts down every enemy (brakes to turn, goes back for ones it passed, not through locked doors or across drops), fights like attack mode in battles
@@ -800,7 +818,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.32.2';
+const GAME_VERSION = 'v0.33.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1708,7 +1726,7 @@ let invSel = null;  // {k, id} part picked in the inventory
 let invTab = 'c';
 const save = () => { INV.team = collection; saveJSON('topInv', INV); saveJSON('topWins', wins); };
 
-const screens = ['home', 'team', 'versus', 'gacha', 'final', 'tutorial', 'codex', 'quest', 'story'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
+const screens = ['home', 'team', 'versus', 'gacha', 'final', 'tutorial', 'comic', 'codex', 'quest', 'story'].reduce((o, id) => (o[id] = document.getElementById(id), o), {});
 function show(id) { document.getElementById('topRight').classList.toggle('home', id === 'team'); document.getElementById('topRight').classList.toggle('menu', ['home', 'team', 'story', 'quest', 'versus'].includes(id)); if (id === 'team') paintQuestDot(); if (id !== "team") document.querySelectorAll(".tipBubble").forEach(t => t.remove()); for (const k in screens) { const was = screens[k].classList.contains('show'); screens[k].classList.toggle('show', k === id); if (k === id && !was) { screens[k].classList.remove('enter'); void screens[k].offsetWidth; screens[k].classList.add('enter'); } } }
 const anyScreen = () => Object.values(screens).some(e => e.classList.contains('show'));
 
@@ -2674,6 +2692,131 @@ function drawTutorial(dt) { tutT += dt; withStd(() => TUT[tutIdx].draw(tg2, tutT
 function endTutorial() { saveJSON('topTutSeen', true); const d = tutDone; tutDone = null; d && d(); }
 document.getElementById('tutNext').onclick = () => { SFX.init(); if (tutIdx < TUT.length - 1) { tutIdx++; renderTutStep(); } else endTutorial(); };
 document.getElementById('tutSkip').onclick = () => { SFX.init(); endTutorial(); };
+// ---------- v0.33 title screen (every launch) + 3-panel comic tutorial (first launch) ----------
+// Optional art: art/title_kv.jpg (key visual, 9:16) and art/bg_lobby.jpg (lobby background). Without them everything is drawn here.
+const KV_IMG = new Image(); let kvOk = false; KV_IMG.onload = () => { kvOk = true; }; KV_IMG.src = 'art/title_kv.jpg';
+{ const lb = new Image(); lb.onload = () => document.getElementById('home').classList.add('hasBg'); lb.src = 'art/bg_lobby.jpg'; }
+const tiRand = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+const TI_CITY = [0, 1, 2].map(L => { const out = []; let x = -40; while (x < 640) { const w = 26 + tiRand() * (50 - L * 8), h = (90 + tiRand() * 170) * (1 - L * 0.22); out.push({ x, w, h, win: Array.from({ length: 14 }, () => tiRand() < 0.3) }); x += w + 4 + tiRand() * 10; } return out; });
+// logo: two stacked SPIN! with black outline, cyan / pink offset shadows and a halftone shine
+function drawLogo(g, cx, cy, s, t) {
+  g.save(); g.translate(cx, cy); g.rotate(-0.06); g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `italic 900 ${86 * s}px "Russo One", Rajdhani, sans-serif`;
+  [[-48, 0], [48, 0.15]].forEach(([y, ph], i) => { const bump = 1 + Math.max(0, Math.sin((t * 2.2 - ph) * Math.PI)) * 0.05; g.save(); g.translate(i ? 26 * s : -18 * s, y * s); g.scale(bump, bump);
+    g.lineJoin = 'round'; g.fillStyle = '#ff2a55'; g.fillText('SPIN!', -6 * s, 8 * s); g.fillStyle = '#00f0ff'; g.fillText('SPIN!', 6 * s, 4 * s);
+    g.lineWidth = 16 * s; g.strokeStyle = '#05060a'; g.strokeText('SPIN!', 0, 0);
+    const gr = g.createLinearGradient(0, -40 * s, 0, 40 * s); gr.addColorStop(0, '#fffbb0'); gr.addColorStop(0.5, '#fcee0a'); gr.addColorStop(1, '#ffb800'); g.fillStyle = gr; g.fillText('SPIN!', 0, 0);
+    g.globalAlpha = 0.25; g.fillStyle = '#ffffff'; g.fillText('SPIN!', -2 * s, -3 * s); g.globalAlpha = 1; g.restore(); });
+  g.restore();
+}
+// key visual drawn in code: night city with a pastel blue→pink sky, synthwave grid floor, two tops clashing
+function drawTitle(g, W, H, t) {
+  if (kvOk) { const r = Math.max(W / KV_IMG.width, H / KV_IMG.height), w = KV_IMG.width * r, h = KV_IMG.height * r; g.drawImage(KV_IMG, (W - w) / 2, (H - h) / 2, w, h); }
+  else {
+    const hz = H * 0.56, sky = g.createLinearGradient(0, 0, 0, hz); sky.addColorStop(0, '#070a1c'); sky.addColorStop(0.45, '#25205a'); sky.addColorStop(0.8, '#7a6fd0'); sky.addColorStop(1, '#ff9ae6'); g.fillStyle = sky; g.fillRect(0, 0, W, hz);
+    g.fillStyle = 'rgba(255,154,230,.9)'; g.beginPath(); g.arc(W / 2, hz - 20, W * 0.2, Math.PI, 0); g.fill(); // setting sun
+    g.fillStyle = '#25205a'; for (let k = 0; k < 6; k++) g.fillRect(W * 0.28, hz - 34 - k * 15, W * 0.44, 3 + k * 0.6);
+    TI_CITY.forEach((row, L) => { const sc = W / 600, drift = (t * (6 + L * 6)) % 700; g.fillStyle = ['#2a2350', '#171633', '#0a0b1a'][L];
+      for (const b of row) { const x = ((b.x - drift + 700) % 700 - 40) * sc, h = b.h * sc * (H / 1000) * 1.3, w = b.w * sc; g.fillRect(x, hz - h, w, h);
+        if (L === 2) b.win.forEach((on, i) => { if (!on) return; g.fillStyle = i % 3 ? 'rgba(0,240,255,.8)' : 'rgba(252,238,10,.8)'; g.fillRect(x + 4 + (i % 2) * (w / 2 - 2), hz - h + 10 + Math.floor(i / 2) * 18, 5, 7); g.fillStyle = '#0a0b1a'; }); } });
+    const fl = g.createLinearGradient(0, hz, 0, H); fl.addColorStop(0, '#1b1440'); fl.addColorStop(1, '#05060a'); g.fillStyle = fl; g.fillRect(0, hz, W, H - hz);
+    g.strokeStyle = 'rgba(255,79,216,.75)'; g.lineWidth = 2;
+    for (let k = -12; k <= 12; k++) { g.beginPath(); g.moveTo(W / 2 + k * 14, hz); g.lineTo(W / 2 + k * W * 0.2, H); g.stroke(); }
+    for (let k = 0; k < 12; k++) { const u = ((k + (t * 1.2) % 1) / 12), y = hz + (H - hz) * u * u; g.globalAlpha = 0.3 + u * 0.7; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); } g.globalAlpha = 1;
+    // two tops crash into each other in the middle, on a loop
+    const ph = (t % 1.6) / 1.6, cy = H * 0.66, gap = ph < 0.55 ? (1 - easeOut(ph / 0.55)) * W * 0.32 : ph < 0.7 ? 0 : easeOut((ph - 0.7) / 0.3) * W * 0.16, sc = W / 260;
+    if (ph > 0.53 && ph < 0.8) { const k = (ph - 0.53) / 0.27; g.fillStyle = `rgba(255,255,255,${0.6 * (1 - k)})`; g.fillRect(0, 0, W, H); tWave(g, W / 2, cy, k, '252,238,10'); tWave(g, W / 2, cy, k * 0.7, '0,240,255');
+      g.save(); g.translate(W / 2, cy - 70 * sc / 2); g.rotate(-0.12); tLabel(g, 'CLASH!!', 0, 0, '#ffffff', 40 * sc / 2); g.restore(); }
+    tTop(g, TA, W / 2 - 34 * sc / 1.3 - gap, cy, t * 16, sc); tTop(g, TB, W / 2 + 34 * sc / 1.3 + gap, cy, -t * 16, sc);
+  }
+  const vg = g.createLinearGradient(0, H * 0.72, 0, H); vg.addColorStop(0, 'rgba(5,6,10,0)'); vg.addColorStop(1, 'rgba(5,6,10,.85)'); g.fillStyle = vg; g.fillRect(0, H * 0.72, W, H * 0.28);
+  drawLogo(g, W / 2, H * 0.24, W / 430, t);
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `900 ${W * 0.042}px "Noto Sans TC", sans-serif`; g.lineWidth = 5; g.strokeStyle = '#05060a'; g.strokeText('轉起來，撞上去！', W / 2, H * 0.4); g.fillStyle = '#ffffff'; g.fillText('轉起來，撞上去！', W / 2, H * 0.4);
+  const bl = 0.55 + 0.45 * Math.sin(t * 4); g.globalAlpha = bl; g.font = `italic 900 ${W * 0.07}px Rajdhani, sans-serif`; g.lineWidth = 7; g.strokeText('TAP TO START', W / 2, H * 0.88); g.fillStyle = '#fcee0a'; g.fillText('TAP TO START', W / 2, H * 0.88); g.globalAlpha = 1;
+  g.font = `700 ${W * 0.028}px Rajdhani, sans-serif`; g.fillStyle = 'rgba(255,255,255,.55)'; g.fillText('SPIN! SPIN! ' + GAME_VERSION, W / 2, H * 0.955);
+}
+let titleT = 0;
+function showTitle() {
+  if (navigator.webdriver || /[?&]notitle/.test(location.search)) return; // automated checks skip it
+  const el = document.createElement('div'); el.id = 'titleScr'; const cv = document.createElement('canvas'); el.appendChild(cv); document.body.appendChild(el);
+  const g = cv.getContext('2d'); let last = performance.now(), live = true;
+  const loop = now => { if (!live) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; titleT += dt;
+    const W = innerWidth, H = innerHeight, d = Math.min(devicePixelRatio || 1, 2); if (cv.width !== Math.round(W * d) || cv.height !== Math.round(H * d)) { cv.width = Math.round(W * d); cv.height = Math.round(H * d); }
+    g.setTransform(d, 0, 0, d, 0, 0); drawTitle(g, W, H, titleT); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+  el.onclick = () => { SFX.init(); SFX.music('menu'); SFX.attach && SFX.attach(); el.classList.add('out'); setTimeout(() => { live = false; el.remove(); }, 450); };
+}
+// ---------- 3-panel comic tutorial ----------
+const CM_W = 600, CM_H = 930;
+const CM_PANELS = [ // panel outlines (slanted gutters) and caption
+  { pts: [[18, 18], [582, 18], [582, 282], [18, 306]], cap: '往後拉、放開 ── 發射！' },
+  { pts: [[18, 322], [582, 298], [582, 600], [18, 618]], cap: '飛行中拖曳：撞機關、撿晶片！' },
+  { pts: [[18, 634], [582, 616], [582, 912], [18, 912]], cap: '衝進終點，撞破大門就過關！' }];
+let comicT = 0, comicDone = null;
+function cmBox(P) { const xs = P.pts.map(q => q[0]), ys = P.pts.map(q => q[1]); return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }; }
+function cmPath(g, P) { g.beginPath(); P.pts.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); }
+function cmBurst(g, x, y, r, txt, col, t) { g.save(); g.translate(x, y); g.rotate(-0.15); g.beginPath(); for (let k = 0; k < 24; k++) { const a = k / 24 * TAU, rr = r * (k % 2 ? 0.62 : 1) * (1 + 0.04 * Math.sin(t * 20 + k)); g.lineTo(Math.cos(a) * rr * 1.25, Math.sin(a) * rr); } g.closePath();
+  g.fillStyle = col; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); tLabel(g, txt, 0, 0, '#ffffff', r * 0.62); g.restore(); }
+function cmRoad(g, B, cx) { g.fillStyle = '#2b3766'; g.fillRect(cx - 95, B.y0, 190, B.y1 - B.y0); g.fillStyle = '#fcee0a'; for (const sx of [-1, 1]) g.fillRect(cx + sx * 95 - (sx > 0 ? 0 : 8), B.y0, 8, B.y1 - B.y0);
+  g.strokeStyle = 'rgba(127,223,255,.25)'; g.lineWidth = 2; for (let y = B.y0 + 10; y < B.y1; y += 40) { g.beginPath(); g.moveTo(cx - 95, y); g.lineTo(cx + 95, y); g.stroke(); } }
+function cmPanel(g, i, t) {
+  const P = CM_PANELS[i], B = cmBox(P), cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2;
+  g.save(); cmPath(g, P); g.clip();
+  const bg = g.createLinearGradient(B.x0, B.y0, B.x1, B.y1); bg.addColorStop(0, '#7fdfff'); bg.addColorStop(1, '#ff9ae6'); g.fillStyle = bg; g.fillRect(B.x0, B.y0, B.x1 - B.x0, B.y1 - B.y0);
+  g.fillStyle = 'rgba(5,6,10,.14)'; for (let y = B.y0; y < B.y1; y += 12) for (let x = B.x0 + ((y / 12) % 2) * 6; x < B.x1; x += 12) { g.beginPath(); g.arc(x, y, 2.2, 0, TAU); g.fill(); } // halftone
+  if (i === 0) { // pull back, let go, the top shoots off
+    const p = (t % 2.6) / 2.6, tx = cx + 40, base = cy + 5;
+    cmRoad(g, B, tx);
+    if (p < 0.55) { const k = easeOut(p / 0.55), fy = base + 25 + k * 55;
+      g.strokeStyle = '#ffffff'; g.lineWidth = 5; g.setLineDash([12, 9]); g.beginPath(); g.moveTo(tx, base); g.lineTo(tx, fy); g.stroke(); g.setLineDash([]);
+      g.fillStyle = '#fcee0a'; g.strokeStyle = '#05060a'; g.lineWidth = 3; g.beginPath(); g.moveTo(tx, base - 70 - k * 30); g.lineTo(tx - 22, base - 40 - k * 30); g.lineTo(tx + 22, base - 40 - k * 30); g.closePath(); g.fill(); g.stroke();
+      tTop(g, TA, tx + Math.sin(t * 40) * 2 * k, base, t * 10, 1.25); tFinger(g, tx, fy, true); tLabel(g, '往後拉', tx - 130, fy, '#ffffff', 30); }
+    else { const k = (p - 0.55) / 0.45, y = base - easeOut(k) * 330;
+      g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 4; for (let s = 0; s < 7; s++) { const x = tx - 45 + s * 15; g.beginPath(); g.moveTo(x, y + 50 + s % 3 * 12); g.lineTo(x, y + 140 + s % 2 * 30); g.stroke(); }
+      tTop(g, TA, tx, y, t * 30, 1.25); if (k < 0.6) cmBurst(g, tx - 150, base - 40, 58, 'SPIN!', '#ff2a55', t); }
+  }
+  if (i === 1) { // drag sideways in flight: curve into a bumper (POW!), then grab a data chip
+    const p = (t % 3) / 3, rx = cx, by = B.y0 + 70, chipY = B.y0 + 60;
+    cmRoad(g, B, rx);
+    g.fillStyle = '#ff4fd8'; g.strokeStyle = '#05060a'; g.lineWidth = 3; g.beginPath(); g.ellipse(rx - 40, by + 70, 26, 20, 0, 0, TAU); g.fill(); g.stroke(); g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(rx - 44, by + 64, 9, 6, 0, 0, TAU); g.fill();
+    const path = u => u < 0.5 ? { x: rx + 50 - easeOut(u / 0.5) * 70, y: B.y1 - 50 - u / 0.5 * (B.y1 - 50 - by - 120) } : { x: rx - 20 + (u - 0.5) / 0.5 * 60, y: by + 120 - (u - 0.5) / 0.5 * 90 };
+    const q = path(Math.min(1, p / 0.85));
+    if (p < 0.42) { tFinger(g, rx + 150 - easeOut(p / 0.42) * 60, B.y1 - 70, true); tLabel(g, '← 拖曳', rx + 150, B.y1 - 110, '#ffffff', 26); }
+    const gotChip = p > 0.8; if (!gotChip) { g.save(); g.translate(rx + 40, chipY + 10); g.rotate(Math.PI / 4); g.fillStyle = '#00f0ff'; g.strokeStyle = '#05060a'; g.lineWidth = 3; g.fillRect(-11, -11, 22, 22); g.strokeRect(-11, -11, 22, 22); g.restore(); }
+    tTop(g, TB, q.x, q.y, t * 22, 1.05);
+    if (p > 0.45 && p < 0.7) cmBurst(g, rx - 150, by + 60, 50, 'POW!', '#fcee0a', t);
+    if (gotChip && p < 0.98) tLabel(g, 'COMBO +1', rx + 150, chipY + 40, '#fcee0a', 30);
+  }
+  if (i === 2) { // ram the door until it breaks
+    const p = (t % 3.2) / 3.2, gx = cx, gy = B.y0 + 135, hits = Math.min(3, Math.floor(p / 0.25)), broke = p > 0.75;
+    g.fillStyle = '#1b2140'; g.fillRect(gx - 200, B.y0, 400, 120); g.fillStyle = '#05060a'; g.fillRect(gx - 90, gy - 40, 180, 80);
+    if (!broke) { g.fillStyle = '#fcee0a'; g.fillRect(gx - 84, gy - 34, 168, 68); g.fillStyle = '#05060a'; for (let k = 0; k < 8; k++) { g.beginPath(); g.moveTo(gx - 84 + k * 24, gy + 34); g.lineTo(gx - 72 + k * 24, gy + 34); g.lineTo(gx - 48 + k * 24, gy - 34); g.lineTo(gx - 60 + k * 24, gy - 34); g.closePath(); g.fill(); }
+      g.fillStyle = '#05060a'; g.fillRect(gx - 90, gy - 64, 180, 16); g.fillStyle = '#ff2a55'; g.fillRect(gx - 87, gy - 61, 174 * (1 - hits / 3.2), 10); tLabel(g, 'GATE', gx, gy - 86, '#ffffff', 22); }
+    else { cmBurst(g, gx, gy + 10, 80, 'BREAK!!', '#ff2a55', t); }
+    const hitPh = (p % 0.25) / 0.25, ty = broke ? gy + 150 - easeOut((p - 0.75) / 0.25) * 140 : gy + 90 + (hitPh < 0.4 ? (1 - hitPh / 0.4) * 140 : (hitPh - 0.4) / 0.6 * 140);
+    tTop(g, TC, gx, ty, t * 26, 1.2);
+    if (!broke && hitPh < 0.15) { tWave(g, gx, gy + 40, hitPh / 0.15, '252,238,10'); tLabel(g, 'BAM!', gx + 130, gy + 50, '#fcee0a', 34); }
+  }
+  g.restore();
+  // caption box and panel number, then the black frame
+  g.save(); g.font = '900 26px "Noto Sans TC", sans-serif'; const w = g.measureText(P.cap).width + 30, x = P.pts[0][0] + 14, y = P.pts[0][1] + 14;
+  g.fillStyle = '#05060a'; g.fillRect(x + 5, y + 5, w, 44); g.fillStyle = '#fcee0a'; g.fillRect(x, y, w, 44); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.strokeRect(x, y, w, 44);
+  g.fillStyle = '#05060a'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(P.cap, x + 15, y + 23); g.restore();
+  g.save(); cmPath(g, P); g.lineWidth = 8; g.strokeStyle = '#05060a'; g.stroke(); g.restore();
+  const nb = P.pts[1]; g.save(); g.translate(nb[0] - 34, nb[1] + 32); g.fillStyle = '#ff2a55'; g.strokeStyle = '#05060a'; g.lineWidth = 4; g.beginPath(); g.arc(0, 0, 22, 0, TAU); g.fill(); g.stroke(); tLabel(g, String(i + 1), 0, 1, '#ffffff', 26); g.restore();
+}
+function drawComic(dt) {
+  comicT += dt; const cv = document.getElementById('comicCv'), g = cv.getContext('2d'); g.setTransform(cv.width / CM_W, 0, 0, cv.height / CM_H, 0, 0);
+  g.fillStyle = '#f4f1e8'; g.fillRect(0, 0, CM_W, CM_H); // paper
+  CM_PANELS.forEach((P, i) => { const st = comicT - i * 1.1; if (st < 0) return; const B = cmBox(P), k = Math.min(1, st / 0.28), sc = 0.82 + 0.18 * easeOut(k) + (k < 1 ? Math.sin(k * Math.PI) * 0.05 : 0);
+    g.save(); g.translate((B.x0 + B.x1) / 2, (B.y0 + B.y1) / 2); g.scale(sc, sc); g.translate(-(B.x0 + B.x1) / 2, -(B.y0 + B.y1) / 2); g.globalAlpha = k; cmPanel(g, i, Math.max(0, st)); g.restore();
+    if (st < 0.25) { g.fillStyle = `rgba(255,255,255,${0.7 * (1 - st / 0.25)})`; cmPath(g, P); g.fill(); } });
+  const go = document.getElementById('comicGo'); if (comicT > 3.1 && !go.classList.contains('on')) go.classList.add('on');
+}
+function showComic(done) { comicT = 0; comicDone = done; document.getElementById('comicGo').classList.remove('on'); show('comic'); }
+function endComic() { saveJSON('topTutSeen', true); const d = comicDone; comicDone = null; d && d(); }
+document.getElementById('comicGo').onclick = () => { SFX.init(); endComic(); };
+document.getElementById('comicSkip').onclick = () => { SFX.init(); endComic(); };
 // ---------- quests & digital vault ----------
 // daily quests reset at local midnight, weekly ones on Monday. Progress lives in INV.quest.
 const DQ = [['m', '對戰 3 場', 3, 300], ['ex', '使用 EX 5 次', 5, 200], ['draw', '抽卡 1 次', 1, 100], ['merge', '合成 1 次', 1, 200], ['vault', '領取數位保險箱 1 次', 1, 100]], DQ_BONUS = 500;
@@ -2857,7 +3000,7 @@ function openTeam() {
   G = null; swapSel = null; storyCtx = null; applyStage(null); document.getElementById('lvPop').classList.remove('show');
   exBtn.style.display = 'none'; menuBtn.style.display = 'none'; autoBar.style.display = 'none'; exMeter.style.display = 'none'; document.getElementById('assistBtn').style.display = 'none';
   SFX.music('menu');
-  if (!loadJSON('topTutSeen', false)) return showTutorial(openTeam);
+  if (!loadJSON('topTutSeen', false)) return showComic(openTeam); // first launch: the 3-panel comic (the full tutorial stays in settings)
   if (collection.length < 3) return startGacha(3, '初始補給箱', openTeam);
   show('team'); renderTeam(); paintStoryDot();
   if (!loadJSON('topLpTip', false)) setTimeout(() => {
@@ -6609,6 +6752,7 @@ function frame(now) {
   if (anyScreen()) drawPreviews(dt);
   if (screens.gacha.classList.contains('show')) drawPack(dt);
   if (screens.tutorial.classList.contains('show')) drawTutorial(dt);
+  if (screens.comic.classList.contains('show')) drawComic(dt);
   if (G && G.phase !== 'final' && !settingsOpen) update(dt);
   // fast-forward: extra fixed steps while the tops are fighting (launch / countdown stay real-time)
   for (let i = 1; i < (SETTINGS.spd || 1); i++) if (G && G.phase === 'battle' && !settingsOpen) update(dt);
@@ -6625,6 +6769,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') addEventList
 // test hook (used for automated checks; harmless in play)
 window.__topGame = { tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
+showTitle();
 setTimeout(unifyPortraits, 300);
 })();
 </script>
