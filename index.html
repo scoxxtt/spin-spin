@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.32.1</title>
+<title>SPIN! SPIN! v0.32.2</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -790,6 +790,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.32.2 layout again on visualViewport / orientation / pageshow changes and after load (Samsung Internet, in-app browsers); tip when a phone shows the desktop version of the page
  v0.32.1 optical centring: centred labels ending/starting with full-width CJK punctuation or carrying letter-spacing get a balancing text-indent (MutationObserver), centred canvas text gets the same nudge; result screen text centred
  v0.32.0 MOVE gets a 'clear' mode: on the road it hunts down every enemy (brakes to turn, goes back for ones it passed, not through locked doors or across drops), fights like attack mode in battles
  v0.31.2 fake 3D everywhere: the perspective projection takes a height (PG.setZ, zTo/zPoly/zFill/zLine/zBegin) so walls, decks, tubes, ramps, rails, doors, the virus wall and chasm cliffs rise, come closer and spread; arena walls, props and tops stand taller as the camera tilts (HK)
@@ -799,7 +800,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.32.1';
+const GAME_VERSION = 'v0.32.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1337,6 +1338,17 @@ function layout() {
 }
 window.addEventListener('resize', layout);
 layout();
+// v0.32.2 some Android browsers (Samsung Internet, in-app browsers such as LINE / Messenger) report the screen size late or change it without a resize event:
+// lay out again on every viewport change and a few times after loading
+if (window.visualViewport) visualViewport.addEventListener('resize', layout);
+window.addEventListener('orientationchange', () => setTimeout(layout, 250));
+window.addEventListener('pageshow', layout);
+for (const ms of [200, 800, 2000]) setTimeout(layout, ms);
+// a phone showing the desktop version of the page (Samsung Internet's 「電腦版」) lays the page out ~980px wide and shrinks everything: tell the player once
+setTimeout(() => { const touch = navigator.maxTouchPoints > 0, wide = innerWidth > Math.min(screen.width, screen.height) * 1.6 && innerWidth >= 900;
+  if (touch && wide && Math.min(screen.width, screen.height) < 600 && !sessionStorage.getItem('deskTip')) { sessionStorage.setItem('deskTip', '1');
+    const d = document.createElement('div'); d.style.cssText = 'position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:9999;background:#05060a;color:#fcee0a;border:2px solid #fcee0a;padding:12px 16px;font:700 28px sans-serif;border-radius:8px;text-align:center;max-width:90vw';
+    d.textContent = '畫面太小？瀏覽器開到「電腦版網頁」了，請在選單裡關掉它'; d.onclick = () => d.remove(); document.body.appendChild(d); setTimeout(() => d.remove(), 9000); } }, 1200);
 
 // ---------- drawing a top ----------
 function shade(hex, amt) {
