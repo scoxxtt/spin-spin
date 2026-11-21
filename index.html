@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.37.0</title>
+<title>SPIN! SPIN! v0.37.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -831,6 +831,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.37.1 painted ramp deck (art/props/ramp_top.jpg) mapped up the slope in strips
  v0.37.0 painted UI kit (9-slice buttons/panels, nav + currency icons, chapter arrows), painted card backs by rarity, painted arena floors (normal + boss)
  v0.36.0 chapter screen: ‹ › arrows and swipe replace the 15 chapter tabs, progress dots per chapter
  v0.35.0 painted prop sprites (art/props/*.png): boost, belt, magnet, turntable, switch, pit, spikes, ice, chip, bumper, barrel, laser pylons, rim street lamps
@@ -850,7 +851,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.37.0';
+const GAME_VERSION = 'v0.37.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -5204,10 +5205,17 @@ function tfDrawFloor(g, time) {
     const sh = c.st === 1 ? Math.sin(time * 70) * 2 : 0; g.fillStyle = c.st === 1 ? '#5a2a36' : '#39415e'; g.fillRect(x + sh, y, w, l); g.strokeStyle = '#05060a'; g.lineWidth = 2; g.strokeRect(x + sh, y, w, l);
     g.strokeStyle = c.st === 1 ? '#ff2a55' : 'rgba(168,251,255,.35)'; g.lineWidth = c.st === 1 ? 2.5 : 1.5; g.beginPath(); g.moveTo(x + w * 0.2 + sh, y + l * 0.3); g.lineTo(x + w * 0.5 + sh, y + l * 0.5); g.lineTo(x + w * 0.8 + sh, y + l * 0.35); g.moveTo(x + w * 0.5 + sh, y + l * 0.5); g.lineTo(x + w * 0.45 + sh, y + l * 0.85); g.stroke(); }
 }
+const RAMP_TEX = {}; for (const k of ['top', 'side']) { const im = new Image(); im.onload = () => { RAMP_TEX[k] = im; }; im.src = `art/props/ramp_${k}.jpg`; }
 function tfDrawProp(g, P, time) {
   if (P.type === 'ramp') { const x = P.x - P.w / 2, y = P.y - P.l / 2, x1 = x + P.w, yb = y + P.l, RZ = 18; // a real wedge: the far edge stands RZ high
     g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 6, y - 4, P.w, P.l + 8);
     for (const sx of [x, x1]) zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#3a2a5a', 2.5);
+    if (RAMP_TEX.top) { const im = RAMP_TEX.top, st = 4; g.save(); zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.fillStyle = '#3a4150'; g.fill(); zEnd(g); // v0.38: painted deck, drawn in thin strips up the slope
+      for (let yy = y; yy < yb; yy += st) { const z = RZ * (yb - yy - st / 2) / P.l; zBegin(g, z, P.x); g.drawImage(im, 0, (yy - y) / P.l * im.height, im.width, im.height * st / P.l + 1, x, yy, P.w, st + 0.6); zEnd(g); }
+      g.restore(); zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); zEnd(g);
+      zFill(g, [[x, y, RZ], [x1, y, RZ], [x1, y - 8, RZ], [x, y - 8, RZ]], '#14181c', 3);
+      const pu = 0.35 + 0.35 * Math.sin(time * 6); g.globalAlpha = pu; zFill(g, [[x + 6, yb - 6, 1], [x1 - 6, yb - 6, 1], [x1 - 6, y + 6, RZ - 1], [x + 6, y + 6, RZ - 1]], 'rgba(255,154,230,.35)'); g.globalAlpha = 1;
+      return true; }
     zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.fillStyle = '#9fd8ff'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); zEnd(g);
     zFill(g, [[x, y + P.l * 0.5, RZ * 0.5], [x1, y + P.l * 0.5, RZ * 0.5], [x1, y, RZ], [x, y, RZ]], 'rgba(255,154,230,.75)');
     zFill(g, [[x, y, RZ], [x1, y, RZ], [x1, y - 8, RZ], [x, y - 8, RZ]], '#ff4fd8', 3);
