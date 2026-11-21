@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.38.0</title>
+<title>SPIN! SPIN! v0.39.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -585,6 +585,9 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #nav img{width:2.1em;height:2.1em;object-fit:contain;filter:saturate(.35) brightness(.7);transition:transform .12s,filter .12s}
 #nav button.on img{filter:drop-shadow(0 0 6px rgba(252,238,10,.7));transform:scale(1.15) translateY(-2px)}#nav button:active img{transform:scale(.86)}
 img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align:middle}
+#team .slot .stop{width:5.6em;height:5.6em;top:auto;bottom:47%;right:-.7em;z-index:2;filter:drop-shadow(0 .5em .25em rgba(0,0,0,.55));animation:stFloat 2.6s ease-in-out infinite}
+#team .slot:nth-child(2) .stop{animation-delay:-.9s}#team .slot:nth-child(3) .stop{animation-delay:-1.7s}
+@keyframes stFloat{50%{transform:translateY(-.35em) rotate(-4deg)}} /* v0.39 the top floats beside the portrait */
 </style>
 </head>
 <body>
@@ -831,6 +834,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.39.0 all 27 crowns + 12 weapon rings painted, weapon rings share one standard ring body; team slots show a floating top beside the portrait
  v0.38.0 painted tops pilot (crown = card, weapon ring = weapon, armor = core glow); gantries stand on the wall rims; viaduct piers under the road
  v0.37.1 painted ramp deck (art/props/ramp_top.jpg) mapped up the slope in strips
  v0.37.0 painted UI kit (9-slice buttons/panels, nav + currency icons, chapter arrows), painted card backs by rarity, painted arena floors (normal + boss)
@@ -852,7 +856,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.38.0';
+const GAME_VERSION = 'v0.39.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1426,18 +1430,18 @@ function bladeEdge(g, shape) {
   else if (shape === 'knob') { g.arc(26.5, 0, 6.3, Math.PI * 1.1, Math.PI * 1.9); }
 }
 // v0.38 pilot: painted tops = crown (character card) over weapon ring (weapon); the armor shows as the glow underneath
-const TOP_SPR = { c: {}, w: {} }; for (const k of ['berserker', 'guardian', 'hunter']) { const im = new Image(); im.onload = () => { TOP_SPR.c[k] = im; }; im.src = `art/tops/c_${k}.png`; }
-for (const k of ['chainaxe', 'grenade', 'gatling']) { const im = new Image(); im.onload = () => { TOP_SPR.w[k] = im; }; im.src = `art/tops/w_${k}.png`; }
+const TOP_SPR = { c: {}, w: {} }; for (const k of ['berserker', 'guardian', 'hunter', 'assassin', 'mage', 'mechcat', 'rat', 'rex', 'octo', 'rider', 'tesla', 'cactus', 'erin', 'jack', 'dj', 'spam', 'nova', 'raven', 'twins', 'chrono', 'david', 'sheep', 'maiden', 'theseus', 'proteus', 'host', 'undead']) { const im = new Image(); im.onload = () => { TOP_SPR.c[k] = im; }; im.src = `art/tops/c_${k}.png`; }
+for (const k of ['chainaxe', 'grenade', 'gatling', 'vibrosword', 'plasmascythe', 'hydrohammer', 'shotgun', 'railgun', 'smartpistol', 'missilepod', 'flamer', 'emp']) { const im = new Image(); im.onload = () => { TOP_SPR.w[k] = im; }; im.src = `art/tops/w_${k}.png`; }
 function drawTopSpr(g, build, angle, opts, cs, ws) {
   const a = ARMORS[build.a], c = CLASSES[build.c], spin = opts.spin || 0;
   g.save();
   if (spin > 0.05) { g.strokeStyle = `rgba(255,255,255,${0.1 * spin})`; g.lineWidth = 3; for (let r = 22; r <= 38; r += 8) { g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); } }
-  g.save(); g.shadowColor = a.color; g.shadowBlur = 16; g.fillStyle = a.color; g.beginPath(); g.arc(0, 0, 25, 0, TAU); g.fill(); g.restore(); // core axle glow = armor colour
+  g.save(); g.shadowColor = a.color; g.shadowBlur = 16; g.fillStyle = a.color; g.beginPath(); g.arc(0, 0, 30, 0, TAU); g.fill(); g.restore(); // core axle glow = armor colour
   g.rotate(angle);
-  g.drawImage(ws, -38, -38, 76, 76);
-  g.drawImage(cs, -30, -30, 60, 60);
+  g.drawImage(ws, -47, -47, 94, 94);
+  g.drawImage(cs, -27, -27, 54, 54);
   g.restore();
-  if (drawFace(g, build.c, 0, 0, 10.5, opts.faceRot ? angle / 8 : 0)) { g.lineWidth = 2; g.strokeStyle = '#05060a'; g.beginPath(); g.arc(0, 0, 10.5, 0, TAU); g.stroke(); g.lineWidth = 1.4; g.strokeStyle = c.color; g.beginPath(); g.arc(0, 0, 12, 0, TAU); g.stroke(); }
+  if (drawFace(g, build.c, 0, 0, 9.5, opts.faceRot ? angle / 8 : 0)) { g.lineWidth = 2; g.strokeStyle = '#05060a'; g.beginPath(); g.arc(0, 0, 9.5, 0, TAU); g.stroke(); g.lineWidth = 1.4; g.strokeStyle = c.color; g.beginPath(); g.arc(0, 0, 11, 0, TAU); g.stroke(); }
   const sp = g.createRadialGradient(-12, -14, 1, -10, -12, 26); sp.addColorStop(0, 'rgba(255,255,255,.3)'); sp.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sp; g.beginPath(); g.arc(0, 0, 34, 0, TAU); g.fill();
 }
 function drawTop(g, build, angle, opts = {}) {
@@ -1794,7 +1798,7 @@ function drawPreviews(dt) {
   for (const p of previews) {
     const z = p.size / 2;
     p.g.setTransform(1, 0, 0, 1, 0, 0); p.g.clearRect(0, 0, p.size, p.size);
-    p.g.setTransform(z / 38, 0, 0, z / 38, z, z);
+    p.g.setTransform(z / 52, 0, 0, z / 52, z, z);
     p.g.translate(0, -5); drawTop45(p.g, p.b, previewAng * WEAPONS[p.b.w].dir, 0.6);
   }
 }
@@ -1968,7 +1972,7 @@ function renderTeam() {
   collection.slice(0, 3).forEach((b, i) => {
     const el = document.createElement('div'); el.className = 'slot' + (teamSel === i ? ' picked' : ''); el.dataset.idx = i;
     el.insertAdjacentHTML('beforeend', `<div class="snum">${i + 1}</div><img class="sface" draggable="false" src="${PORTRAIT_SRC[b.c]}">`);
-    const pv = previewCanvas(b, 120); pv.className = 'stop'; el.appendChild(pv);
+    const pv = previewCanvas(b, 200); pv.className = 'stop'; el.appendChild(pv);
     el.insertAdjacentHTML('beforeend', `<div class="nm nm2">${nameLines(CLASSES[b.c].name)}</div>`);
     el.appendChild(partChips(b, i));
     el.insertAdjacentHTML('beforeend', `<div class="mini">EX「${CLASSES[b.c].exName}」</div>`);
