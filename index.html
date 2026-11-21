@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.33.0</title>
+<title>SPIN! SPIN! v0.33.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -560,7 +560,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #comicGo{padding:.6em 2.6em;opacity:.35;transform:scale(.8);pointer-events:none;transition:opacity .3s,transform .3s}
 #comicGo.on{opacity:1;transform:scale(1);pointer-events:auto}
 #comic.show~#topRight,body:has(#comic.show) #topRight{display:none}
-#home.hasBg{background:linear-gradient(rgba(5,6,10,.35),rgba(5,6,10,.7)),url(art/bg_lobby.jpg) center/cover no-repeat}
+#home.hasBg{background:linear-gradient(rgba(5,6,10,.12),rgba(5,6,10,.25) 55%,rgba(5,6,10,.6)),url(art/bg_lobby.jpg) center top/cover no-repeat}
 </style>
 </head>
 <body>
@@ -807,6 +807,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.33.1 Gemini key visual (title) and lobby background, graded to the night palette
  v0.33.0 title screen on every launch (drawn key visual, or art/title_kv.jpg), first-launch 3-panel comic tutorial instead of the 10-page one, lobby background slot art/bg_lobby.jpg
  v0.32.2 layout again on visualViewport / orientation / pageshow changes and after load (Samsung Internet, in-app browsers); tip when a phone shows the desktop version of the page
  v0.32.1 optical centring: centred labels ending/starting with full-width CJK punctuation or carrying letter-spacing get a balancing text-indent (MutationObserver), centred canvas text gets the same nudge; result screen text centred
@@ -818,7 +819,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.33.0';
+const GAME_VERSION = 'v0.33.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
