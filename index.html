@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.36.0</title>
+<title>SPIN! SPIN! v0.37.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -573,17 +573,29 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #comic.show~#topRight,body:has(#comic.show) #topRight{display:none}
 #home.hasBg{background:linear-gradient(rgba(5,6,10,.12),rgba(5,6,10,.25) 55%,rgba(5,6,10,.6)),url(art/bg_lobby.jpg) center top/cover no-repeat}
 .hmLogoImg{display:block;height:8em;width:auto;max-width:82%;margin:-.3em auto -.2em;align-self:center;filter:drop-shadow(0 .18em 0 rgba(0,0,0,.55))}
+/* ===== v0.37 painted UI kit (art/ui): 9-slice buttons and panels, painted icons ===== */
+.btn{border-style:solid !important;border-color:transparent !important;border-width:.42em .5em .55em !important;border-image:url(art/ui/btnY.png) 30 33 38 33 fill stretch !important;background:none !important;box-shadow:none !important;border-radius:0 !important;clip-path:none !important}
+.btn:active{transform:translateY(.12em) !important;box-shadow:none !important;filter:brightness(.9)}
+.btn.ghost{border-width:.45em .5em !important;border-image:url(art/ui/btnN.png) 30 32 30 32 fill stretch !important;color:#9fe8ff !important}
+.btn.danger{border-image-source:url(art/ui/btnR.png) !important;color:#fff !important}
+.chNav .chArr{border:0 !important;border-image:none !important;background:url(art/ui/arrL.png) center/contain no-repeat !important;color:transparent !important;width:2.9em;height:2.9em;filter:none}
+.chNav #chNext{background-image:url(art/ui/arrR.png) !important}.chNav .chArr:disabled{opacity:.25}
+.chHead,.askIn{border-style:solid !important;border-color:transparent !important;border-width:.9em !important;border-image:url(art/ui/panel.png) 54 fill stretch !important;background:none !important;box-shadow:none !important;border-radius:0 !important}
+.chHead{padding:.1em .3em !important}
+#nav img{width:2.1em;height:2.1em;object-fit:contain;filter:saturate(.35) brightness(.7);transition:transform .12s,filter .12s}
+#nav button.on img{filter:drop-shadow(0 0 6px rgba(252,238,10,.7));transform:scale(1.15) translateY(-2px)}#nav button:active img{transform:scale(.86)}
+img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align:middle}
 </style>
 </head>
 <body>
 <canvas id="envCv"></canvas>
 <nav id="nav">
-  <button data-go="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>大廳</span></button>
-  <button data-go="team"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3.4"/><circle cx="12" cy="8" r="3.4"/><circle cx="18" cy="12" r="3.4"/><path d="M3 20c1-3 5-4 9-4s8 1 9 4"/></svg><span>隊伍</span></button>
-  <button data-go="story"><svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/></svg><span>章節</span><b class="ndot"></b></button>
-  <button data-go="gacha"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S12 9 12 9c2-4 6-4 6-1.5S12 9 12 9"/></svg><span>抽卡</span><b class="ndot"></b></button>
-  <button data-go="quest"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="1.5"/><path d="M9 9l1.5 1.5L13 8M9 15h6"/></svg><span>任務</span><b class="ndot"></b></button>
-  <button data-go="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>狀態</span></button>
+  <button data-go="home"><img src="art/ui/icHome.png" alt=""><span>大廳</span></button>
+  <button data-go="team"><img src="art/ui/icTeam.png" alt=""><span>隊伍</span></button>
+  <button data-go="story"><img src="art/ui/icFlag.png" alt=""><span>章節</span><b class="ndot"></b></button>
+  <button data-go="gacha"><img src="art/ui/icBox.png" alt=""><span>抽卡</span><b class="ndot"></b></button>
+  <button data-go="quest"><img src="art/ui/icQuest.png" alt=""><span>任務</span><b class="ndot"></b></button>
+  <button data-go="me"><img src="art/ui/icUser.png" alt=""><span>狀態</span></button>
 </nav>
 <div id="wrap">
   <canvas id="cv"></canvas>
@@ -819,6 +831,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.37.0 painted UI kit (9-slice buttons/panels, nav + currency icons, chapter arrows), painted card backs by rarity, painted arena floors (normal + boss)
  v0.36.0 chapter screen: ‹ › arrows and swipe replace the 15 chapter tabs, progress dots per chapter
  v0.35.0 painted prop sprites (art/props/*.png): boost, belt, magnet, turntable, switch, pit, spikes, ice, chip, bumper, barrel, laser pylons, rim street lamps
  v0.34.0 track scenery: overhead gantries with GOAL countdown signs, LED chase on the walls, road dressing, skyline backdrop, painted floor textures per chapter (art/floor_*.jpg)
@@ -837,7 +850,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.36.0';
+const GAME_VERSION = 'v0.37.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1527,11 +1540,12 @@ function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 // Classes, weapons and armors are owned separately: INV[k][id] = { r: rarity 0-3, s: stars 0-3, p: copies toward next star, isNew }.
 // The lineup (collection) is 3 builds {c, w, a} that point into the inventory; a part can sit in only one slot.
 // currency icon: a faceted neon crystal (drawn, so it shows on every phone)
-const ORE = '<svg class="ore" viewBox="0 0 32 32" aria-label="金幣"><g stroke="#10101c" stroke-width="2" stroke-linejoin="round">'
+const ORE_SVG = '<svg class="ore" viewBox="0 0 32 32" aria-label="金幣"><g stroke="#10101c" stroke-width="2" stroke-linejoin="round">'
   + '<path d="M7 20 L4 13 L8 8 L11 14 Z" fill="#00c8e0"/><path d="M25 21 L28 14 L24 9 L21 15 Z" fill="#00c8e0"/>'
   + '<path d="M16 2 L23 10 L21 26 L16 30 L11 26 L9 10 Z" fill="#fcee0a"/><path d="M16 2 L19 11 L16 30 L13 11 Z" fill="#fff7a8"/>'
   + '<path d="M9 10 L13 11 L16 30 L11 26 Z" fill="#e0b800"/><path d="M5 24 L27 24 L24 30 L8 30 Z" fill="#3a2a4a"/></g>'
   + '<circle cx="14" cy="8" r="1.4" fill="#fff"/><path d="M26 4 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1 -2.2 -2.2 -1 2.2 -1z" fill="#00f0ff"/></svg>';
+const ORE = '<img class="ore" src="art/ui/icCoin.png" alt="金幣">'; // v0.37 painted coin
 const KIND = { c: CLASSES, w: WEAPONS, a: ARMORS }, KIND_NAME = { c: '角色卡', w: '武器', a: '鎧甲' };
 const RARITY = [{ n: '白', col: '#e8edf2' }, { n: '紫', col: '#b066ff' }, { n: '紅', col: '#ff2a55' }, { n: '金', col: '#fcee0a' }];
 const R_RATE = [0.85, 0.15, 0, 0], STAR_RATE = [0.90, 0.08, 0.018, 0.002];
@@ -2405,6 +2419,20 @@ function resTag(g, res, x, y, w) {
   g.save(); g.font = `900 ${Math.round(w * 0.07)}px Rajdhani, sans-serif`; g.textAlign = 'right'; g.textBaseline = 'top';
   const tw = g.measureText(T[0]).width + 6; g.fillStyle = T[1]; g.fillRect(x - tw, y, tw, w * 0.09); g.fillStyle = T[2]; g.fillText(T[0], x - 3, y + 1); g.restore();
 }
+const UI_PANEL = new Image(); UI_PANEL.onload = () => { UI_PANEL.ok = true; }; UI_PANEL.src = 'art/ui/panel.png';
+const CARD_BACKS = {};
+function cardBackOf(r) { // 9-slice the panel into a portrait card once per rarity, then recolour it (white→silver, purple, red, gold)
+  if (CARD_BACKS[r]) return CARD_BACKS[r];
+  const im = UI_PANEL, W2 = 240, H2 = 336, c = document.createElement('canvas'); c.width = W2; c.height = H2; const x = c.getContext('2d'), S = 54, D = 44, iw = im.width, ih = im.height;
+  const cols = [[0, S, 0, D], [S, iw - 2 * S, D, W2 - 2 * D], [iw - S, S, W2 - D, D]], rows = [[0, S, 0, D], [S, ih - 2 * S, D, H2 - 2 * D], [ih - S, S, H2 - D, D]];
+  const nine = () => { for (const [sx, sw, dx, dw] of cols) for (const [sy, sh, dy, dh] of rows) x.drawImage(im, sx, sy, sw, sh, dx, dy, dw, dh); }; nine();
+  const tint = ['#c9d2de', '#b066ff', '#ff2a55', '#fcb80a'][r] || '#c9d2de';
+  x.globalCompositeOperation = r === 0 ? 'saturation' : 'color'; x.fillStyle = r === 0 ? '#808080' : tint; x.fillRect(0, 0, W2, H2);
+  const m = document.createElement('canvas'); m.width = W2; m.height = H2; const mx = m.getContext('2d'); for (const [sx, sw, dx, dw] of cols) for (const [sy, sh, dy, dh] of rows) mx.drawImage(im, sx, sy, sw, sh, dx, dy, dw, dh);
+  x.globalCompositeOperation = 'destination-in'; x.drawImage(m, 0, 0); // keep the transparent corners (one mask draw: per-piece destination-in would wipe the rest)
+  x.globalCompositeOperation = 'source-over';
+  return (CARD_BACKS[r] = c);
+}
 function drawCard(g, card, sl, time, appear) {
   const k = card.flip, sxk = Math.max(0.02, Math.abs(Math.cos(Math.PI * k))), face = k > 0.5;
   const { w, h } = sl;
@@ -2415,7 +2443,17 @@ function drawCard(g, card, sl, time, appear) {
     g.fillStyle = gl; g.beginPath(); g.arc(0, 0, w * 1.1, 0, TAU); g.fill();
   }
   roundRectP(g, -w / 2, -h / 2, w, h, 14);
-  if (!face) {
+  if (!face && UI_PANEL.ok) { // v0.37: the painted UI panel as the card back, recoloured by rarity
+    const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0, pc = cardBackOf(hr);
+    if (hr >= 1) { g.save(); g.shadowColor = RARITY[hr].col; g.shadowBlur = 18 + 12 * Math.sin(time * (hr === 3 ? 9 : 6)); g.fillStyle = RARITY[hr].col; g.fillRect(-w / 2 + 6, -h / 2 + 6, w - 12, h - 12); g.restore(); }
+    g.drawImage(pc, -w / 2, -h / 2, w, h);
+    g.save(); g.beginPath(); g.rect(-w / 2 + 10, -h / 2 + 10, w - 20, h - 20); g.clip(); for (let i = -8; i < 10; i++) { g.strokeStyle = 'rgba(255,255,255,.05)'; g.lineWidth = 6; g.beginPath(); g.moveTo(-w / 2 + i * 22, -h / 2); g.lineTo(-w / 2 + i * 22 + 160, h / 2); g.stroke(); } g.restore();
+    const pulse = 0.75 + 0.25 * Math.sin(time * 5), col = hr >= 1 ? RARITY[hr].col : '#fcee0a';
+    g.strokeStyle = col; g.globalAlpha = pulse; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, w * 0.28, 0, TAU); g.stroke(); g.globalAlpha = 1;
+    g.font = `900 ${Math.round(w * 0.32)}px Rajdhani, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineWidth = 6; g.strokeStyle = '#05060a'; g.strokeText('?', 0, 2); g.fillStyle = col; g.fillText('?', 0, 2);
+    if (hr >= 1) { const rb = h * 0.13, ry = h * 0.3; g.fillStyle = '#05060a'; g.fillRect(-w / 2 + 10, ry - rb / 2 - 3, w - 20, rb + 6); g.fillStyle = RARITY[hr].col; g.fillRect(-w / 2 + 12, ry - rb / 2, w - 24, rb);
+      g.font = `900 ${Math.round(w * 0.1)}px Rajdhani, sans-serif`; g.fillStyle = '#fff'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const tx = `${RARITY[hr].n}卡！`; g.strokeText(tx, 0, ry + 1); g.fillText(tx, 0, ry + 1); }
+  } else if (!face) {
     const bg = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); bg.addColorStop(0, '#0b0d10'); bg.addColorStop(1, '#0e3640');
     g.fillStyle = bg; g.fill();
     const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0;
@@ -3013,7 +3051,7 @@ function renderHome() {
   const got = L.reduce((t, l) => t + lvStars(l.id).filter(Boolean).length, 0), max = L.length * 3, lead = collection[0], C = CLASSES[lead.c];
   const pill = (ic, v, col) => `<div class="hmPill" style="--pc:${col}">${ic}<b>${v}</b></div>`;
   document.getElementById('homeIn').innerHTML = `
-    <div class="hmTop">${pill(ORE, INV.coins, '#fcee0a')}${pill('<span class="hmIc">◆</span>', INV.shards || 0, '#b066ff')}${pill('<span class="hmIc">⚡</span>', '+' + Math.round(teamPower() * 100) + '%', '#00f0ff')}</div>
+    <div class="hmTop">${pill(ORE, INV.coins, '#fcee0a')}${pill('<img src="art/ui/icCard.png" alt="">', INV.shards || 0, '#b066ff')}${pill('<span class="hmIc">⚡</span>', '+' + Math.round(teamPower() * 100) + '%', '#00f0ff')}</div>
     <img class="hmLogoImg" src="art/logo.png" alt="SPIN! SPIN!" onerror="this.outerHTML='<div class=hmLogo>SPIN! SPIN!</div>'">
     <div class="hmHero" id="hmHero"><div class="hmBg"></div><img class="hmPic" src="${PORTRAIT_SRC[lead.c]}" alt="">
       <div class="hmName"><small>${facBadge(C.fac, 1)} ${C.fac}・出戰 1 號</small><b>${C.name.split('・').join('<br>')}</b></div>
@@ -5903,6 +5941,7 @@ function update(dt) {
 }
 
 // ---------- render ----------
+const ARENA_IMG = {}; for (const k of ['std', 'boss']) { const im = new Image(); im.onload = () => { ARENA_IMG[k] = im; arenaCache = null; }; im.src = `art/arena_${k}.jpg`; }
 function drawArenaStatic(g, noWall, noBack) {
   if (!noBack) {
   // backdrop: deep vignette + star dust
@@ -5946,8 +5985,10 @@ function drawArenaStatic(g, noWall, noBack) {
   const fl = g.createRadialGradient(-30, -60, 10, 0, 0, AX + 6);
   { const FC = STAGE.floor || ['#2a7383', '#1d5a68', '#123e49']; fl.addColorStop(0, FC[0]); fl.addColorStop(0.55, FC[1]); fl.addColorStop(1, FC[2]); }
   g.fillStyle = fl; g.beginPath(); g.arc(0, 0, AX + 2, 0, TAU); g.fill();
+  const AIM = ARENA_IMG[G && G.track && !G.track.noBoss ? 'boss' : 'std']; // v0.37: painted arena floor (its own hazard rim tucks under our wall)
+  if (AIM) { g.save(); g.beginPath(); g.arc(0, 0, AX + 2, 0, TAU); g.clip(); const R = AX * 1.1; g.drawImage(AIM, -R, -R, R * 2, R * 2); g.fillStyle = 'rgba(5,8,20,.28)'; g.fillRect(-R, -R, R * 2, R * 2); g.restore(); }
   g.lineWidth = 1 * AX / BY;
-  for (let r = 40; r < AX; r += 36) {
+  if (!AIM) for (let r = 40; r < AX; r += 36) {
     g.strokeStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.arc(0, 0, r + 1, 0, TAU); g.stroke();
     g.strokeStyle = 'rgba(0,240,255,.1)'; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
   }
