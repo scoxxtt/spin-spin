@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.40.2</title>
+<title>SPIN! SPIN! v0.40.3</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -835,6 +835,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.40.3 power saving no longer strips the painted textures; one-time reset of the saved power-saving flag; lighter floor strips and top extrusion
  v0.40.2 deck up-slopes get the steel ramp deck + guard rails; chapter dots jump straight to a chapter
  v0.40.1 ramps become tall steel wedges (side plates, struts, lip shadow); belts drawn in strips so they follow the perspective
  v0.40.0 tops extruded along their own outline (weapon ring slab + raised crown step), red controlled crowns for BOSSes, codex top preview, deck tops/slopes get the chapter floor, offline cache covers all art
@@ -860,7 +861,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.40.2';
+const GAME_VERSION = 'v0.40.3';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1444,7 +1445,7 @@ function silOf(im, col) { // the part's silhouette in one flat colour (cached): 
 function drawTopSpr(g, build, angle, opts, cs, ws) {
   const a = ARMORS[build.a], c = CLASSES[build.c], spin = opts.spin || 0, dW = opts.thick || 0, dC = dW ? Math.max(3, dW * 0.65) : 0, WS = 94, CSZ = 54;
   const layer = (im, size, y, sil) => { g.save(); g.translate(0, y); g.rotate(angle); g.drawImage(sil || im, -size / 2, -size / 2, size, size); g.restore(); };
-  const slab = (im, size, y0, y1, col) => { if (y1 <= y0) return; layer(im, size, y1 + 1.2, silOf(im, '#000')); const sl = silOf(im, col); for (let y = y1; y > y0; y -= 1.1) layer(im, size, y, sl); }; // solid edge that follows the outline
+  const slab = (im, size, y0, y1, col) => { if (y1 <= y0) return; layer(im, size, y1 + 1.2, silOf(im, '#000')); const sl = silOf(im, col), n = Math.max(2, Math.ceil((y1 - y0) / 1.8)); for (let i = 0; i < n; i++) layer(im, size, y1 - (y1 - y0) * i / n, sl); }; // ~half the layers of v0.40.0 // solid edge that follows the outline
   g.save();
   if (spin > 0.05) { g.strokeStyle = `rgba(255,255,255,${0.1 * spin})`; g.lineWidth = 3; for (let r = 22; r <= 38; r += 8) { g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); } }
   g.save(); g.shadowColor = a.color; g.shadowBlur = 16; g.fillStyle = a.color; g.beginPath(); g.arc(0, dW * 0.5, 30, 0, TAU); g.fill(); g.restore(); // core axle glow = armor colour
@@ -3660,6 +3661,7 @@ const exBtn = document.getElementById('exBtn');
 const menuBtn = document.getElementById('menuBtn');
 // ---------- settings (saved per player) ----------
 const SETTINGS = Object.assign({ portFx: true, persp: true, music: true, sfx: true, camera: true, camFollow: true, hpPct: true, exSide: 'right', autoLaunch: false, autoEx: false, autoMove: 'off', diff: 'normal', viewK: 0.85, viewZ: 1, autoTilt: true }, loadJSON('topSettings', {}));
+if (!SETTINGS.perf403) { SETTINGS.perf403 = 1; if (SETTINGS.lowAuto) { SETTINGS.lowAuto = false; SETTINGS.persp = true; } } // v0.40.3: give everyone a fresh start after the art got lighter to draw
 VIEW_K = clamp(+SETTINGS.viewK || 0.85, VIEW_K_MIN, VIEW_K_MAX);
 const settingsEl = document.getElementById('settings');
 let settingsOpen = false;
@@ -3670,7 +3672,7 @@ function applySettings() {
   settingsEl.querySelectorAll('[data-ex]').forEach(b => b.classList.toggle('on', b.dataset.ex === SETTINGS.exSide));
   saveJSON('topSettings', SETTINGS);
 }
-settingsEl.querySelectorAll('.tog').forEach(b => b.onclick = () => { SFX.unlock(); SETTINGS[b.dataset.k] = !SETTINGS[b.dataset.k]; applySettings(); if (b.dataset.k === 'sfx' && SETTINGS.sfx) SFX.round(); });
+settingsEl.querySelectorAll('.tog').forEach(b => b.onclick = () => { SFX.unlock(); SETTINGS[b.dataset.k] = !SETTINGS[b.dataset.k]; if (b.dataset.k === 'persp' && SETTINGS.persp) SETTINGS.lowAuto = false; applySettings(); if (b.dataset.k === 'sfx' && SETTINGS.sfx) SFX.round(); });
 settingsEl.querySelectorAll('[data-ex]').forEach(b => b.onclick = () => { SETTINGS.exSide = b.dataset.ex; applySettings(); });
 document.getElementById('gearBtn').onclick = () => { SFX.unlock(); document.querySelectorAll('.tipBubble').forEach(t => t.remove()); document.getElementById('codexBtn').style.display = G && G.phase !== 'final' ? 'none' : ''; settingsOpen = true; settingsEl.classList.add('show'); if (G) G.joy = null; };
 document.getElementById('setClose').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); };
@@ -3825,7 +3827,7 @@ const FLOOR_TEX_OF = { 1: 'asphalt', 2: 'circuit', 3: 'asphalt', 4: 'steel', 5: 
 const FLOOR_TEX = {}; for (const k of ['asphalt', 'circuit', 'hex', 'steel']) { const im = new Image(); im.onload = () => { FLOOR_TEX[k] = im; }; im.src = `art/floor_${k}.jpg`; }
 function drawFloorTex(g, T, ya, yb, HW) { // returns false when the picture is not ready
   const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (!im) return false;
-  const P = HW * 2, st = 4, x0 = CX - HW;
+  const P = HW * 2, st = 6, x0 = CX - HW; // 6-unit bands: plenty smooth, a third fewer draws than 4
   if (PSP.on) { const R = ctx; R.save(); R.setTransform(1, 0, 0, 1, 0, 0); const sh = im.height * st / P;
     for (let y = Math.floor(ya / st) * st; y < yb; y += st) { const q = pspQ(y + st / 2 - PSP.camy), Ya = PSP.cy + PSP.zsK * (y - PSP.camy) / pspQ(y - PSP.camy), Yb = PSP.cy + PSP.zsK * (y + st - PSP.camy) / pspQ(y + st - PSP.camy);
       const sy = ((y % P) + P) % P * im.height / P; R.drawImage(im, 0, sy, im.width, sh, PSP.cx + (x0 - PSP.camx) * PSP.zs / q, Ya, P * PSP.zs / q, Yb - Ya + 0.7); }
@@ -5264,7 +5266,7 @@ function tfDrawProp(g, P, time) {
     if (!RAMP_TEX.top) { g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 6, y - 4, P.w, P.l + 8);
     for (const sx of [x, x1]) zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#3a2a5a', 2.5); }
     if (RAMP_TEX.top) { const im = RAMP_TEX.top, st = 4; g.save(); zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.fillStyle = '#3a4150'; g.fill(); zEnd(g); // v0.38: painted deck, drawn in thin strips up the slope
-      for (let yy = y; yy < yb; yy += st) { const z = RZ * (yb - yy - st / 2) / P.l; zBegin(g, z, P.x); g.drawImage(im, 0, (yy - y) / P.l * im.height, im.width, im.height * st / P.l + 1, x, yy, P.w, st + 0.6); zEnd(g); }
+      for (let yy = y; yy < yb; yy += st) { const z = RZ * (yb - yy - st / 2) / P.l; g.save(); zBegin(g, z, P.x); g.drawImage(im, 0, (yy - y) / P.l * im.height, im.width, im.height * st / P.l + 1, x, yy, P.w, st + 0.6); zEnd(g); g.restore(); } // save/restore: off-perspective zBegin is a translate
       g.restore(); zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); zEnd(g);
       zFill(g, [[x, y, RZ], [x1, y, RZ], [x1, y - 8, RZ], [x, y - 8, RZ]], '#14181c', 3);
       for (let k = 0; k < 6; k++) { const u0 = k / 6, u1 = (k + 1) / 6; zFill(g, [[x, yb - P.l * u0, RZ * u0], [x1, yb - P.l * u0, RZ * u0], [x1, yb - P.l * u1, RZ * u1], [x, yb - P.l * u1, RZ * u1]], `rgba(0,0,0,${0.32 * (1 - u1)})`); } // darker at the foot, lit at the lip
@@ -5340,13 +5342,13 @@ function tfDrawDeck(g, d) {
   const hz = zt - zb; for (let k = 0; k < d.w / 26; k++) { const xa = x0 + k * 26 + 4; if (xa + 12 > x1) break; zFill(g, [[xa, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.75], [xa, yN, zb + hz * 0.75]], 'rgba(252,238,10,.38)'); } // hazard panels
   zLine(g, [[x0, yN, zt - 3], [x1, yN, zt - 3]], 'rgba(0,240,255,.85)', 3);
   zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], col, 3);                  // top face
-  { const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im && !SETTINGS.lowAuto) { const P = d.w, st = 6; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); zBegin(g, zt, d.cx); // v0.40: the deck top gets the chapter floor, lit a step brighter per level
+  { const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im) { const P = d.w, st = PSP.on ? 8 : 40; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); zBegin(g, zt, d.cx); // v0.40: the deck top gets the chapter floor, lit a step brighter per level
       for (let y = Math.floor(yF / st) * st; y < yN; y += st) g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6);
       zEnd(g); g.restore(); zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], `rgba(${hv >= 2 ? '159,232,255' : '255,255,255'},${0.06 + 0.04 * hv})`, 3); } }
   zLine(g, [[x0 + 7, yF + 7, zt], [x1 - 7, yF + 7, zt], [x1 - 7, yN - 7, zt], [x0 + 7, yN - 7, zt], [x0 + 7, yF + 7, zt]], 'rgba(127,223,255,.85)', 2);
   if (d.up) { zFill(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]], shade(col, 0.08), 3);
-    { const im = RAMP_TEX.top; if (im && !SETTINGS.lowAuto) { const L = yS - yN, st = 4; g.save(); zPoly(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); // v0.40.2: up-slopes use the steel ramp deck too
-      for (let y = yN; y < yS; y += st) { zBegin(g, zt + (zb - zt) * (y + st / 2 - yN) / L, d.cx); g.drawImage(im, 0, (y - yN) / L * im.height, im.width, im.height * st / L + 1, x0, y, d.w, st + 0.6); zEnd(g); }
+    { const im = RAMP_TEX.top; if (im) { const L = yS - yN, st = PSP.on ? 5 : 10; g.save(); zPoly(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); // v0.40.2: up-slopes use the steel ramp deck too
+      for (let y = yN; y < yS; y += st) { g.save(); zBegin(g, zt + (zb - zt) * (y + st / 2 - yN) / L, d.cx); g.drawImage(im, 0, (y - yN) / L * im.height, im.width, im.height * st / L + 1, x0, y, d.w, st + 0.6); zEnd(g); g.restore(); }
       g.restore(); for (let k = 0; k < 6; k++) { const u0 = k / 6, u1 = (k + 1) / 6; zFill(g, [[x0, yS - L * u0, zb + (zt - zb) * u0], [x1, yS - L * u0, zb + (zt - zb) * u0], [x1, yS - L * u1, zb + (zt - zb) * u1], [x0, yS - L * u1, zb + (zt - zb) * u1]], `rgba(0,0,0,${0.3 * (1 - u1)})`); }
       zPoly(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]]); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); zEnd(g);
       for (const sx of [x0 - 5, x1 + 5]) { zLine(g, [[sx, yS, zb + 6], [sx, yN, zt + 12]], '#05060a', 8); zLine(g, [[sx, yS, zb + 6], [sx, yN, zt + 12]], '#fcee0a', 4); g.setLineDash([8, 8]); zLine(g, [[sx, yS, zb + 6], [sx, yN, zt + 12]], '#05060a', 4); g.setLineDash([]);
@@ -5437,7 +5439,7 @@ function drawTrack(g, time, cam) {
   floor(); g.fillStyle = T.floor[1]; g.fill();
   g.save(); floor(); g.clip();
   g.fillStyle = T.floor[0]; g.globalAlpha = 0.35; g.fillRect(CX - 70, ya, 140, yb - ya); g.globalAlpha = 1;          // lit centre lane
-  if (SETTINGS.lowAuto || !drawFloorTex(g, T, Math.max(ya, yF), yb, HW)) drawFloorPattern(g, T, ya, yb, HW);
+  if (!drawFloorTex(g, T, Math.max(ya, yF), yb, HW)) drawFloorPattern(g, T, ya, yb, HW);
   else { g.fillStyle = T.floor[0]; g.globalAlpha = 0.12; g.fillRect(CX - HW, ya, HW * 2, yb - ya); g.globalAlpha = 1; } // chapter tint over the picture
   { const rr = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); }; // v0.34 road dressing
     for (const [sd, col] of [[-1, '127,223,255'], [1, '255,154,230']]) for (let i = 0; i < 3; i++) { const w = 22 + i * 28; g.fillStyle = `rgba(${col},${0.07 - i * 0.02})`; g.fillRect(sd < 0 ? CX - HW : CX + HW - w, ya, w, yb - ya); } // neon spill from the walls
