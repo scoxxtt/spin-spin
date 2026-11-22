@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.40.0</title>
+<title>SPIN! SPIN! v0.40.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -835,6 +835,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.40.1 ramps become tall steel wedges (side plates, struts, lip shadow); belts drawn in strips so they follow the perspective
  v0.40.0 tops extruded along their own outline (weapon ring slab + raised crown step), red controlled crowns for BOSSes, codex top preview, deck tops/slopes get the chapter floor, offline cache covers all art
  v0.39.0 all 27 crowns + 12 weapon rings painted, weapon rings share one standard ring body; team slots show a floating top beside the portrait
  v0.38.0 painted tops pilot (crown = card, weapon ring = weapon, armor = core glow); gantries stand on the wall rims; viaduct piers under the road
@@ -858,7 +859,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.40.0';
+const GAME_VERSION = 'v0.40.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -5252,13 +5253,22 @@ function tfDrawFloor(g, time) {
 }
 const RAMP_TEX = {}; for (const k of ['top', 'side']) { const im = new Image(); im.onload = () => { RAMP_TEX[k] = im; }; im.src = `art/props/ramp_${k}.jpg`; }
 function tfDrawProp(g, P, time) {
-  if (P.type === 'ramp') { const x = P.x - P.w / 2, y = P.y - P.l / 2, x1 = x + P.w, yb = y + P.l, RZ = 18; // a real wedge: the far edge stands RZ high
-    g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 6, y - 4, P.w, P.l + 8);
-    for (const sx of [x, x1]) zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#3a2a5a', 2.5);
+  if (P.type === 'ramp' && RAMP_TEX.top) { const x = P.x - P.w / 2, y = P.y - P.l / 2, x1 = x + P.w, yb = y + P.l, RZ = 34; // v0.40.1: a proper steel wedge
+    g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(x - 4, y - 70, P.w + 8, P.l + 70); // shadow thrown past the lip
+    for (const sx of [x, x1]) { zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#20262f', 2.5); zLine(g, [[sx, yb, 0], [sx, y, RZ]], '#fcee0a', 3); // side plates with a yellow edge
+      for (const u of [0.45, 0.8]) zLine(g, [[sx, yb - P.l * u, 0], [sx, yb - P.l * u, RZ * u]], '#59606c', 3); } // struts
+    zFill(g, [[x, y, 0], [x1, y, 0], [x1, y, RZ], [x, y, RZ]], '#0b0e13', 2.5); // back wall (only its top edge peeks out)
+  }
+  if (P.type === 'ramp') { const x = P.x - P.w / 2, y = P.y - P.l / 2, x1 = x + P.w, yb = y + P.l, RZ = RAMP_TEX.top ? 34 : 18; // a real wedge: the far edge stands RZ high
+    if (!RAMP_TEX.top) { g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 6, y - 4, P.w, P.l + 8);
+    for (const sx of [x, x1]) zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#3a2a5a', 2.5); }
     if (RAMP_TEX.top) { const im = RAMP_TEX.top, st = 4; g.save(); zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.fillStyle = '#3a4150'; g.fill(); zEnd(g); // v0.38: painted deck, drawn in thin strips up the slope
       for (let yy = y; yy < yb; yy += st) { const z = RZ * (yb - yy - st / 2) / P.l; zBegin(g, z, P.x); g.drawImage(im, 0, (yy - y) / P.l * im.height, im.width, im.height * st / P.l + 1, x, yy, P.w, st + 0.6); zEnd(g); }
       g.restore(); zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); zEnd(g);
       zFill(g, [[x, y, RZ], [x1, y, RZ], [x1, y - 8, RZ], [x, y - 8, RZ]], '#14181c', 3);
+      for (let k = 0; k < 6; k++) { const u0 = k / 6, u1 = (k + 1) / 6; zFill(g, [[x, yb - P.l * u0, RZ * u0], [x1, yb - P.l * u0, RZ * u0], [x1, yb - P.l * u1, RZ * u1], [x, yb - P.l * u1, RZ * u1]], `rgba(0,0,0,${0.32 * (1 - u1)})`); } // darker at the foot, lit at the lip
+      for (const sx of [x - 5, x1 + 5]) { zLine(g, [[sx, yb, 6], [sx, y, RZ + 12]], '#05060a', 8); zLine(g, [[sx, yb, 6], [sx, y, RZ + 12]], '#fcee0a', 4); g.setLineDash([8, 8]); zLine(g, [[sx, yb, 6], [sx, y, RZ + 12]], '#05060a', 4); g.setLineDash([]); // guard rails climbing with the slope
+        for (const u of [0, 0.5, 1]) zLine(g, [[sx, yb - P.l * u, RZ * u], [sx, yb - P.l * u, RZ * u + 6 + 6 * u]], '#59606c', 3); }
       const pu = 0.35 + 0.35 * Math.sin(time * 6); g.globalAlpha = pu; zFill(g, [[x + 6, yb - 6, 1], [x1 - 6, yb - 6, 1], [x1 - 6, y + 6, RZ - 1], [x + 6, y + 6, RZ - 1]], 'rgba(255,154,230,.35)'); g.globalAlpha = 1;
       return true; }
     zPoly(g, [[x, yb, 0], [x1, yb, 0], [x1, y, RZ], [x, y, RZ]]); g.fillStyle = '#9fd8ff'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 3; g.stroke(); zEnd(g);
@@ -5278,9 +5288,12 @@ function tfDrawProp(g, P, time) {
     g.lineCap = 'round'; zLine(g, [[P.x, P.y, RZ], [P.x2, P.y2, RZ]], '#05060a', 11); zLine(g, [[P.x, P.y, RZ], [P.x2, P.y2, RZ]], '#fcee0a', 5); zLine(g, [[P.x, P.y, RZ + 1.5], [P.x2, P.y2, RZ + 1.5]], '#ffffff', 1.5); g.lineCap = 'butt';
     g.save(); zBegin(g, RZ, P.x); g.fillStyle = '#fcee0a'; g.beginPath(); g.arc(P.x, P.y, 8, 0, TAU); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 2.5; g.stroke(); zEnd(g); g.restore(); return true; }
   if (P.type === 'belt' && SPR.belt) { const a = clockAng(P.dir), hor = Math.abs(Math.cos(a)) > 0.7, x = P.x - P.w / 2, y = P.y - P.l / 2, dw = hor ? P.l : P.w, dh = hor ? P.w : P.l, im = SPR.belt, seg = dw * im.height / im.width, off = (time * 120 * (P.power || 1)) % seg;
-    g.save(); g.beginPath(); g.rect(x, y, P.w, P.l); g.clip(); g.translate(P.x, P.y); g.rotate(a + Math.PI / 2);
-    for (let k = -1; k * seg < dh + seg; k++) g.drawImage(im, -dw / 2, dh / 2 - (k + 1) * seg - off + seg, dw, seg);
-    g.restore(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.strokeRect(x, y, P.w, P.l); return true; }
+    const W2 = Math.ceil(P.w), H2 = Math.ceil(P.l); let cv = P._cv; if (!cv || cv.width !== W2 || cv.height !== H2) { cv = P._cv = document.createElement('canvas'); cv.width = W2; cv.height = H2; } // v0.40.1: paint the scrolling belt flat first...
+    const x2 = cv.getContext('2d'); x2.setTransform(1, 0, 0, 1, 0, 0); x2.clearRect(0, 0, W2, H2); x2.translate(W2 / 2, H2 / 2); x2.rotate(a + Math.PI / 2);
+    for (let k = -1; k * seg < dh + seg; k++) x2.drawImage(im, -dw / 2, dh / 2 - (k + 1) * seg - off + seg, dw, seg);
+    x2.setTransform(1, 0, 0, 1, 0, 0); x2.fillStyle = 'rgba(5,8,20,.28)'; x2.fillRect(0, 0, W2, H2); // ...sit it down a little darker so it reads as floor
+    const st = 4; for (let yy = 0; yy < H2; yy += st) g.drawImage(cv, 0, yy, W2, Math.min(st, H2 - yy), x, y + yy, P.w, Math.min(st, H2 - yy) + 0.6); // ...then lay it in thin strips: proper perspective (a trapezoid)
+    g.strokeStyle = '#05060a'; g.lineWidth = 4; g.strokeRect(x, y, P.w, P.l); return true; }
   if (P.type === 'belt') { const a = clockAng(P.dir), ca = Math.cos(a), sa = Math.sin(a), x = P.x - P.w / 2, y = P.y - P.l / 2;
     g.save(); g.fillStyle = '#20242e'; g.fillRect(x, y, P.w, P.l); g.beginPath(); g.rect(x, y, P.w, P.l); g.clip();
     g.strokeStyle = '#fcee0a'; g.lineWidth = 5; const R0 = Math.max(P.w, P.l), sp = 46;
