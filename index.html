@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.52.3</title>
+<title>SPIN! SPIN! v0.53.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -693,6 +693,20 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 .pfAvaOpt{padding:0;border:2px solid #2b3350;background:#0b0f1e;color:#cfd8e6;font-size:.6em;line-height:1.3}.pfAvaOpt img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
 .pfAvaOpt.on{border-color:#fcee0a;box-shadow:0 0 .6em rgba(252,238,10,.6);color:#fcee0a}
 .lvCard.boss{box-shadow:0 .2em 0 #05060a,inset 0 2px 0 rgba(255,255,255,.07) !important;border-color:#05060a !important}
+
+/* v0.53: stage result fits one screen — no scrolling; panels share the score panel look, three buttons in one row */
+#final.story{display:grid !important;grid-template-columns:1fr 1fr 1.3fr;column-gap:.45em;grid-template-rows:auto 1fr auto auto;align-content:stretch;justify-items:center;overflow:hidden;padding:2.4em 4% .8em;font-size:min(1em,2.25vh)}
+#final.story>*{grid-column:1/-1;margin:0}#final.story .big{grid-row:1;align-self:end}#final.story .score{grid-row:2}#final.story #boxBtn{grid-row:3}
+#final.story .big{font-size:3em;margin:0;line-height:1.05}
+#final.story .score{margin:0;width:100%;font-size:1.15em;align-self:center}#final.story .fsRows{font-size:.8em}#final.story .fsR{padding:.18em 0}#final.story .fsRank{font-size:3.6em}
+#final.story .fScore,#final.story .fStory{width:94%;max-width:400px;box-sizing:border-box;margin:.35em auto 0}
+#final.story .fStory{display:grid;grid-template-columns:1fr auto;column-gap:.8em;font-size:.76em;line-height:1.5;padding:.6em .9em;border:2px solid #05060a;background:rgba(5,8,20,.75);box-shadow:inset 0 0 0 2px rgba(252,238,10,.45)}
+#final.story .fStory .fsT{grid-column:1/-1}#final.story .fRew{grid-column:2;grid-row:2/5;align-self:center;margin:0;text-align:right;font-size:.95em}
+#final.story #boxBtn{width:94%;max-width:24em}
+#final.story #toTeamBtn,#final.story #retryBtn,#final.story .nextRow{grid-row:4;width:100%;margin:0;align-self:stretch}
+#final.story #toTeamBtn{grid-column:1}#final.story #retryBtn{grid-column:2}#final.story .nextRow{grid-column:3}
+#final.story #toTeamBtn,#final.story #retryBtn,#final.story #nextBtn{font-size:.82em;padding-left:.3em;padding-right:.3em;min-height:3.2em;white-space:normal;line-height:1.15;width:100%}
+#final.story #nextCount{display:none}
 </style>
 </head>
 <body>
@@ -974,7 +988,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.52.3';
+const GAME_VERSION = 'v0.53.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3530,7 +3544,7 @@ function storyFinal(win) {
   storyNext = win && nx && lvUnlocked(nx) ? nx : null;
   document.getElementById('nextBtn').textContent = storyNext ? `下一關 ${storyNext.id} ▶` : '回到章節';
   document.getElementById('autoNextBtn').style.display = 'none';
-  document.getElementById('retryBtn').textContent = win ? '再挑戰本關（補星星）' : '再挑戰本關';
+  document.getElementById('retryBtn').textContent = win && !full3(now) ? '再挑戰（補星）' : '再挑戰';
   document.getElementById('drawBtn').style.display = 'none';
   document.getElementById('toTeamBtn').textContent = '回到章節';
 }
@@ -3605,7 +3619,7 @@ const SFX = (() => {
       try { const bin = atob(VO_COUNT_B64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); ac.decodeAudioData(u8.buffer, b => { voBuf = b; }, () => {}); } catch (e) {}
       const comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination);
       // music bus with a tempo-synced echo for the arpeggios
-      musicGain = ac.createGain(); musicGain.gain.value = 0; duckG = ac.createGain(); musicGain.connect(duckG); duckG.connect(comp); // duckG: music dips under big hits
+      musicGain = ac.createGain(); musicGain.gain.value = 0; pumpG = ac.createGain(); pumpG.connect(musicGain); duckG = ac.createGain(); musicGain.connect(duckG); duckG.connect(comp); // duckG: music dips under big hits
       delayIn = ac.createDelay(1); const fb = ac.createGain(), wet = ac.createGain();
       fb.gain.value = 0.32; wet.gain.value = 0.45; delayIn.connect(fb); fb.connect(delayIn); delayIn.connect(wet); wet.connect(musicGain);
       setInterval(schedule, 30);
@@ -3615,25 +3629,50 @@ const SFX = (() => {
   // ---------- background music: two step-sequenced Cyberpunk loops, synthesized live ----------
   let duckG = null;
   let musicGain = null, delayIn = null, musicOn = true, track = null, want = 'menu', nextStep = 0, stepIdx = 0, fadeT = null;
+  // v0.53: music rewritten as 80s French-house / filter-disco loops, synthesized live (no files).
+  // Four-on-the-floor kick, everything else "pumps" under it (sidechain), a filter that slowly opens and closes over 8 bars,
+  // square-wave arps, chord stabs, an octave bass, and a lead motif in the second half. Each chapter has its own key, tempo and colour.
+  let pumpG = null; // instruments go through this; the kick ducks it
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
-  // 4-bar lead line for the battle track: step -> [midi note, length in 16ths]
-  const MELODY = {
-    0: [72, 2], 2: [76, 2], 4: [79, 4], 8: [77, 2], 10: [76, 2], 12: [72, 4],
-    16: [71, 2], 18: [74, 2], 20: [76, 4], 24: [80, 4], 28: [76, 4],
-    32: [72, 2], 34: [76, 2], 36: [79, 2], 38: [81, 6], 44: [79, 2], 46: [76, 2],
-    48: [74, 4], 52: [77, 4], 56: [76, 4], 60: [72, 4],
-  };
-  // each bar: [bass root, chord] — menu in A minor (Am F C G), battle in E minor (Em C G D)
+  // preset: bpm, key (midi of the tonic, minor), prog (scale degrees per bar of 0..6 in natural minor), bass pattern, arp, lead seed, colours
+  const MINOR = [0, 2, 3, 5, 7, 8, 10];
+  const P = (bpm, key, prog, o) => Object.assign({ bpm, key, prog, vol: 0.55, bass: 'oct', arp: 1, lead: 1, stab: 'saw', cut: [400, 3200], swing: 0, seed: key * 7 + bpm }, o || {});
   const TRACKS = {
-    menu: { bpm: 90, vol: 0.5, prog: [[45, [57, 60, 64]], [41, [57, 60, 65]], [48, [55, 60, 64]], [43, [55, 59, 62]]] },
-    // night-drive city pop: Fmaj7 - E7 - Am7 - Gm7/C7
-    battle: { bpm: 125, vol: 0.5, prog: [[41, [57, 60, 64, 65]], [40, [56, 59, 62, 64]], [45, [55, 60, 64, 67]], [43, [58, 62, 65, 67], 36, [58, 60, 64, 67]]] },
+    menu: P(108, 57, [0, 5, 2, 6], { bass: 'walk', arp: 0, lead: 0, stab: 'keys', cut: [700, 2600], vol: 0.5 }),
+    battle: P(124, 52, [0, 5, 6, 4], {}),
+    boss: P(128, 50, [0, 1, 0, 6], { bass: 'drive', stab: 'brass', cut: [300, 2400], vol: 0.6 }),
+    ch1: P(120, 57, [0, 5, 2, 6], { bass: 'oct' }),                       // A minor, classic filter-house loop
+    ch2: P(122, 59, [0, 3, 5, 4], { stab: 'keys', bass: 'funk' }),        // B minor, glassy keys
+    ch3: P(118, 55, [0, 6, 5, 6], { bass: 'funk', swing: 0.08 }),         // G minor, a little swing (desert disco)
+    ch4: P(126, 52, [0, 0, 5, 6], { bass: 'drive', stab: 'brass' }),      // E minor, factory drive
+    ch5: P(120, 54, [0, 5, 3, 4], { stab: 'organ' }),                     // F# minor, temple organ
+    ch6: P(124, 49, [0, 3, 0, 5], { bass: 'drive', arp: 2 }),            // C# minor, dark net
+    ch7: P(112, 56, [0, 5, 2, 6], { stab: 'keys', bass: 'walk', cut: [600, 2400] }), // G# minor, dreamy and slower
+    ch8: P(124, 53, [0, 6, 5, 4], { bass: 'funk', stab: 'brass' }),       // F minor, old arena
+    ch9: P(126, 58, [0, 2, 5, 6], { arp: 2 }),                            // A# minor, the road of kings
+    ch10: P(128, 50, [0, 5, 1, 6], { bass: 'drive', stab: 'brass', arp: 2, vol: 0.6 }), // D minor, the core
+    ch11: P(122, 55, [0, 3, 6, 5], { stab: 'keys', arp: 2 }),             // G minor, echoes
+    ch12: P(126, 52, [0, 5, 0, 6], { bass: 'drive', stab: 'organ' }),     // E minor, scrapyard
+    ch13: P(118, 57, [0, 6, 5, 6], { bass: 'funk', swing: 0.08, stab: 'keys' }), // A minor, wild forest
+    ch14: P(114, 54, [0, 5, 2, 4], { stab: 'organ', bass: 'walk', cut: [600, 2600] }), // F# minor, void temple
+    ch15: P(130, 50, [0, 1, 5, 6], { bass: 'drive', stab: 'brass', arp: 2, vol: 0.62 }), // D minor, final
   };
+  const deg = (T, d, oct) => T.key + MINOR[((d % 7) + 7) % 7] + 12 * (Math.floor(d / 7) + (oct || 0));
+  const chordOf = (T, d) => [deg(T, d), deg(T, d + 2), deg(T, d + 4), deg(T, d + 6)]; // minor 7th-ish stacks
+  // a short original 2-bar motif per track, built from its seed (scale steps), repeated with a variation
+  const motifCache = {};
+  function motifOf(name, T) {
+    if (motifCache[name]) return motifCache[name];
+    let r = T.seed * 9301 + 49297; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
+    const m = {}; let d = 7 + Math.floor(rnd() * 3);
+    for (let st = 0; st < 32; ) { const len = [2, 2, 3, 1, 4][Math.floor(rnd() * 5)]; if (rnd() < 0.78) m[st] = [d, Math.min(len, 32 - st)]; st += len; d += [-2, -1, 1, 2, 0, -3, 3][Math.floor(rnd() * 7)]; d = Math.max(4, Math.min(12, d)); }
+    return (motifCache[name] = m);
+  }
   function mNote(t, f, dur, type, vol, cutoff, echo, att) {
     const o = ac.createOscillator(), fl = ac.createBiquadFilter(), g = ac.createGain();
     o.type = type; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = cutoff;
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(fl); fl.connect(g); g.connect(musicGain); if (echo) g.connect(delayIn);
+    o.connect(fl); fl.connect(g); g.connect(pumpG || musicGain); if (echo) g.connect(delayIn);
     o.start(t); o.stop(t + dur + 0.05);
   }
   function mPad(t, notes, dur, vol) {
@@ -3641,7 +3680,7 @@ const SFX = (() => {
       const o = ac.createOscillator(), fl = ac.createBiquadFilter(), g = ac.createGain();
       o.type = 'sawtooth'; o.frequency.value = mtof(n); o.detune.value = det; fl.type = 'lowpass'; fl.frequency.value = 900;
       g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.4); g.gain.setValueAtTime(vol, t + dur - 0.3); g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.4);
-      o.connect(fl); fl.connect(g); g.connect(musicGain); o.start(t); o.stop(t + dur + 0.5);
+      o.connect(fl); fl.connect(g); g.connect(pumpG || musicGain); o.start(t); o.stop(t + dur + 0.5);
     }
   }
   function mKick(t, v) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); o.connect(g); g.connect(musicGain); o.start(t); o.stop(t + 0.25); }
@@ -3650,38 +3689,48 @@ const SFX = (() => {
     const s2 = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); s2.buffer = noiseBuf; f.type = type; f.frequency.value = freq;
     g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); s2.connect(f); f.connect(g); g.connect(musicGain); s2.start(t); s2.stop(t + dur + 0.02);
   }
-  function playStep(name, i, t, spb) {
-    const T = TRACKS[name], s = i % 16, [root, chord] = T.prog[Math.floor(i / 16) % 4];
-    if (name === 'menu') {
-      if (s === 0) mPad(t, chord, spb * 16, 0.035);
-      if (s === 0 || s === 8) mKick(t, 0.32);
-      if (s === 4 || s === 12) mNoise(t, 0.05, 'highpass', 7000, 0.05);
-      if (s === 0 || s === 6 || s === 8 || s === 14) mNote(t, mtof(root), spb * 1.8, 'sawtooth', 0.1, 500);
-      if (s % 2 === 0) mNote(t, mtof(chord[(s / 2) % 3] + 12 + (s >= 8 ? 12 : 0)), spb * 1.6, 'triangle', 0.03, 2600, true);
-    } else {
-      // city pop / retro racing groove
-      const second = s >= 8 && T.prog[Math.floor(i / 16) % 4][2];
-      const r0 = second ? T.prog[Math.floor(i / 16) % 4][2] : root, ch = second ? T.prog[Math.floor(i / 16) % 4][3] : chord;
-      if (s === 0 || s === 7 || s === 8) mKick(t, 0.5);
-      if (s === 4 || s === 12) { mNoise(t, 0.26, 'bandpass', 1600, 0.22); mNote(t, 185, 0.09, 'triangle', 0.08, 2000); } // gated 80s snare
-      mNoise(t, s % 2 ? 0.025 : 0.05, 'highpass', 8000, s === 14 ? 0.16 : 0.035);
-      // funky octave bass
-      const bp = { 0: 0, 3: 12, 4: 0, 6: 0, 7: 12, 10: 0, 11: 12, 14: 7 };
-      if (s in bp) mNote(t, mtof(r0 + bp[s]), spb * 0.85, 'square', 0.085, 900);
-      // electric-piano stabs (sine + octave sine for a bell-ish Rhodes)
-      if (s === 2 || s === 7 || s === 10 || (s === 0 && second)) for (const n of ch) { mNote(t, mtof(n), spb * 3, 'sine', 0.035, 4000); mNote(t, mtof(n + 12), spb * 1.2, 'sine', 0.012, 5000); }
-      // synth-brass lead with soft attack and echo
-      const L = MELODY[i % 64];
-      if (L) mNote(t, mtof(L[0]), spb * L[1] * 0.95, 'sawtooth', 0.045, 2200, true, 0.04);
-      if (s === 0) mPad(t, ch, spb * 16, 0.02);
+  function mClap(t, v) { for (const k of [0, 0.011, 0.023]) mNoise(t + k, v * (k ? 0.6 : 1), 'bandpass', 1300, 0.12); }
+  function mStab(t, T, notes, dur, cut) {
+    const kind = T.stab;
+    for (const n of notes) {
+      if (kind === 'keys') { mNote(t, mtof(n + 12), dur, 'sine', 0.03, 5000); mNote(t, mtof(n + 24), dur * 0.4, 'triangle', 0.01, 6000); continue; }
+      if (kind === 'organ') { mNote(t, mtof(n + 12), dur, 'square', 0.014, cut * 0.8); mNote(t, mtof(n + 24), dur, 'sine', 0.012, 4000); continue; }
+      for (const det of [-11, 11]) { const o = ac.createOscillator(), fl = ac.createBiquadFilter(), g = ac.createGain(); o.type = 'sawtooth'; o.frequency.value = mtof(n + 12); o.detune.value = det; fl.type = 'lowpass'; fl.frequency.value = cut; fl.Q.value = kind === 'brass' ? 2 : 6;
+        const v = kind === 'brass' ? 0.022 : 0.016; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + (kind === 'brass' ? 0.03 : 0.005)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(fl); fl.connect(g); g.connect(pumpG || musicGain); o.start(t); o.stop(t + dur + 0.05); }
     }
+  }
+  function playStep(name, i, t, spb) {
+    const T = TRACKS[name] || TRACKS.battle, s = i % 16, bar = Math.floor(i / 16), d = T.prog[bar % T.prog.length], ch = chordOf(T, d), root = deg(T, d, -2);
+    const sweep = 0.5 - 0.5 * Math.cos(Math.PI * 2 * (i % 128) / 128), cut = T.cut[0] + (T.cut[1] - T.cut[0]) * sweep; // the filter breathes over 8 bars
+    const second = bar % 8 >= 4, beat = spb * 4;
+    if (s % 2 && T.swing) t += spb * T.swing;
+    // drums: four on the floor, claps on 2 and 4, open hats on the off-beats, a fill every 8 bars
+    if (s % 4 === 0) { mKick(t, name === 'menu' ? 0.42 : 0.6); if (pumpG) { pumpG.gain.cancelScheduledValues(t); pumpG.gain.setValueAtTime(0.28, t); pumpG.gain.linearRampToValueAtTime(1, t + beat * 0.7); } }
+    if (s === 4 || s === 12) mClap(t, name === 'menu' ? 0.12 : 0.2);
+    if (s % 4 === 2) mNoise(t, 0.07, 'highpass', 7500, spb * 1.6);
+    else if (name !== 'menu') mNoise(t, 0.018, 'highpass', 9500, 0.03);
+    if (bar % 8 === 7 && s >= 12) mClap(t, 0.12);
+    // bass
+    const BP = { oct: { 0: 0, 2: 12, 4: 0, 6: 12, 8: 0, 10: 12, 12: 0, 14: 12 }, funk: { 0: 0, 3: 12, 6: 0, 7: 10, 10: 12, 12: 0, 14: 7 }, drive: { 0: 0, 1: 0, 2: 12, 3: 0, 4: 0, 5: 0, 6: 12, 7: 0, 8: 0, 9: 0, 10: 12, 11: 0, 12: 0, 13: 0, 14: 12, 15: 0 }, walk: { 0: 0, 4: 7, 8: 12, 10: 10, 12: 7, 14: 3 } }[T.bass];
+    if (s in BP) mNote(t, mtof(root + BP[s]), spb * (T.bass === 'drive' ? 0.8 : 1.5), T.bass === 'walk' ? 'triangle' : 'square', T.bass === 'drive' ? 0.07 : 0.09, 500 + cut * 0.25);
+    // chord stabs on the off-beat pushes (keys/organ hold longer)
+    const STAB = T.stab === 'keys' || T.stab === 'organ' ? [0, 6, 10] : [2, 6, 10, 14];
+    if (STAB.includes(s)) mStab(t, T, ch.slice(0, 3), T.stab === 'keys' || T.stab === 'organ' ? spb * 3.5 : spb * 1.3, cut);
+    // arp: 16ths up the chord, an octave jump on 2-bar boundaries (arp 2 = always on, arp 1 = second half only)
+    if (T.arp === 2 || (T.arp === 1 && second)) { const n = ch[s % 4] + 24 + (s >= 8 && bar % 2 ? 12 : 0); mNote(t, mtof(n), spb * 0.9, 'square', 0.016, 1200 + cut, true); }
+    // lead motif in the second half (and the whole loop for the menu pad)
+    if (T.lead && second) { const M = motifOf(name, T), L = M[i % 32]; if (L) { const n = deg(T, L[0] + (bar % 4 === 3 ? 1 : 0), 1); mNote(t, mtof(n), spb * L[1] * 0.92, 'sawtooth', 0.04, 2600, true, 0.02); mNote(t, mtof(n + 12), spb * L[1] * 0.6, 'square', 0.012, 3000); } }
+    if (name === 'menu' && s === 0) mPad(t, ch.slice(0, 3), spb * 16, 0.026);
+    // riser into the top of each 8-bar loop
+    if (bar % 8 === 7 && s === 0) { const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.setValueAtTime(mtof(T.key), t); o.frequency.exponentialRampToValueAtTime(mtof(T.key + 24), t + beat * 4); f.type = 'bandpass'; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(5000, t + beat * 4); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.03, t + beat * 3.8); g.gain.exponentialRampToValueAtTime(0.0001, t + beat * 4); o.connect(f); f.connect(g); g.connect(musicGain); o.start(t); o.stop(t + beat * 4 + 0.05); }
   }
   function schedule() {
     if (!ac || !track || ac.state !== 'running') return;
     if (!musicOn) { nextStep = ac.currentTime + 0.05; return; }
-    const spb = 60 / TRACKS[track].bpm / 4;
+    const spb = 60 / (TRACKS[track] || TRACKS.battle).bpm / 4;
     if (nextStep < ac.currentTime) nextStep = ac.currentTime + 0.05;
-    while (nextStep < ac.currentTime + 0.15) { playStep(track, stepIdx, nextStep, spb); nextStep += spb; stepIdx = (stepIdx + 1) % 64; }
+    while (nextStep < ac.currentTime + 0.15) { playStep(track, stepIdx, nextStep, spb); nextStep += spb; stepIdx = (stepIdx + 1) % 128; }
   }
   function setTrack(name) {
     if (!ac || !musicGain) { want = name; return; }
@@ -3691,9 +3740,9 @@ const SFX = (() => {
     clearTimeout(fadeT);
     fadeT = setTimeout(() => {
       track = name; stepIdx = 0; nextStep = ac.currentTime + 0.05;
-      delayIn.delayTime.value = 60 / TRACKS[name].bpm * 0.75;
+      delayIn.delayTime.value = 60 / (TRACKS[name] || TRACKS.battle).bpm * 0.75;
       const t2 = ac.currentTime; musicGain.gain.cancelScheduledValues(t2); musicGain.gain.setValueAtTime(0, t2);
-      musicGain.gain.linearRampToValueAtTime(musicOn ? TRACKS[name].vol : 0, t2 + 0.8);
+      musicGain.gain.linearRampToValueAtTime(musicOn ? (TRACKS[name] || TRACKS.battle).vol : 0, t2 + 0.8);
     }, track ? 520 : 0);
   }
   // Mobile unlock. iOS only lets audio start from a "finished" tap (touchend / click / pointerup), not from
@@ -3942,7 +3991,7 @@ function newMatch(lineup, aiTeam) {
   startRound();
   show(null);
   document.querySelectorAll('.tipBubble').forEach(t => t.remove()); exBtn.style.display = 'block'; menuBtn.style.display = 'block'; autoBar.style.display = 'flex'; exMeter.style.display = 'flex'; paintAuto();
-  SFX.music('battle');
+  SFX.music(G.level ? 'ch' + (CHAPTERS.indexOf(chapterOf(G.level)) + 1) : 'battle'); // v0.53: each chapter has its own track
   exBtn.innerHTML = 'EX';
 }
 
@@ -5223,7 +5272,7 @@ function trackGoal() {
 // through the doorway: the entrance slams shut and becomes a DEAD exit, the BOSS wakes up
 function trackEnterBoss() {
   const T = G.track, p = G.tops[0], b = T.boss;
-  T.zone = 'boss'; T.best = T.len; T.mobs = [];
+  T.zone = 'boss'; T.best = T.len; T.mobs = []; SFX.music('boss');
   applyStage(Object.assign({ exits: 'std' }, T.lv.boss.stage));
   G.tops[1] = b; T.safe = { x: CX, y: CY + 90 };
   p.spin = Math.min(1, p.spin + 0.4); p.hitT = 0; p.ringCD = Math.max(p.ringCD, 0.6);
@@ -5731,7 +5780,7 @@ function drawTrack(g, time, cam) {
   // walls: inner face (seen because the top leans outward), rim with hazard stripes, and the near end cap where a wall stops at a gap
   const stripes = (x, y, w, hh) => { g.save(); g.beginPath(); g.rect(x, y, w, hh); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x, y, w, hh); g.fillStyle = '#0b0b0b'; for (let k = Math.floor(y / 18) - 1; k * 18 < y + hh + 18; k++) { g.beginPath(); g.moveTo(x, k * 18); g.lineTo(x + w, k * 18 - 8); g.lineTo(x + w, k * 18 + 1); g.lineTo(x, k * 18 + 9); g.closePath(); g.fill(); } g.restore(); };
   const quad = (p1, p2, p3, p4, col, lw = 3) => { g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.lineTo(p3[0], p3[1]); g.lineTo(p4[0], p4[1]); g.closePath(); g.fillStyle = col; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = lw; g.stroke(); };
-  const WZ = 14 + 10 * tk, AW = WALL_H * HK() / ZV().zy, HC = '#030405'; // corridor wall height; the arena wall height in the same units
+  const WZ = 14 + 10 * tk, AW = WALL_H * WALL_VIS * HK() / ZV().zy, HC = '#030405'; // corridor wall height; the arena wall height in the same units
   for (const sd of [-1, 1]) {
     let segs = [[0, sF]];
     for (const gp of T.gaps) if (gp.side === sd) segs = segs.flatMap(([a, b]) => gp.to <= a || gp.from >= b ? [[a, b]] : [[a, gp.from], [gp.to, b]].filter(q => q[1] > q[0]));
@@ -6205,6 +6254,7 @@ function finish() {
   const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）'; document.getElementById('toTeamBtn').textContent = '回到陣容';
   document.getElementById('toTeamBtn').style.display = '';
   document.getElementById('nextBtn').textContent = '開始下一局 ▶'; document.getElementById('autoNextBtn').style.display = '';
+  document.getElementById('final').classList.toggle('story', !!G.level);
   if (G.level) storyFinal(win);
   paintBoxBtn();
   show('final'); paintNext(); armNext();
@@ -6401,6 +6451,27 @@ function paintArc(g, txt, a, r, size, col, alpha) {
   });
   g.restore();
 }
+// v0.53: centre basin you can actually see — the far inner face shows, the near lip throws a shadow, the floor sits lower
+function drawBasin(g) {
+  const R = AX * 0.62, Rb = BY * 0.62, D = BASIN_D(), N = 48;
+  g.save(); g.beginPath(); g.ellipse(CX, CY, R, Rb, 0, 0, TAU); g.clip();
+  g.fillStyle = 'rgba(0,0,0,.34)'; g.fillRect(CX - R - 4, CY - Rb - 4, R * 2 + 8, Rb * 2 + 8);
+  const face = () => { g.beginPath(); for (let i = 0; i <= N; i++) { const t = Math.PI + Math.PI * i / N; g.lineTo(CX + Math.cos(t) * R, CY + Math.sin(t) * Rb); } for (let i = N; i >= 0; i--) { const t = Math.PI + Math.PI * i / N; g.lineTo(CX + Math.cos(t) * R, CY + Math.sin(t) * Rb + D); } g.closePath(); };
+  face(); const fg = g.createLinearGradient(0, CY - Rb, 0, CY - Rb + D); fg.addColorStop(0, '#7d93a1'); fg.addColorStop(0.45, '#4b5d69'); fg.addColorStop(0.47, '#2a3640'); fg.addColorStop(1, '#1a242c'); g.fillStyle = fg; g.fill();
+  g.save(); face(); g.clip(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 1.2; // pen hatching, denser toward the sides
+  for (let k = 0; k <= 64; k++) { const u = k / 64, e = Math.abs(u - 0.5) * 2; if (e < 0.5 && k % 3) continue; const t = Math.PI + Math.PI * u, x = CX + Math.cos(t) * R, y = CY + Math.sin(t) * Rb; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + D); g.stroke(); }
+  g.restore();
+  // cast shadow along the foot of the far face, and under the near lip
+  g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 6; g.beginPath(); g.ellipse(CX, CY + D + 3, R, Rb, 0, Math.PI * 1.05, Math.PI * 1.95); g.stroke();
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); for (let i = 0; i <= N; i++) { const t = Math.PI * i / N; g.lineTo(CX + Math.cos(t) * R, CY + Math.sin(t) * Rb); } for (let i = N; i >= 0; i--) { const t = Math.PI * i / N; g.lineTo(CX + Math.cos(t) * R * 0.97, CY + Math.sin(t) * Rb - D * 0.8); } g.closePath(); g.fill();
+  g.restore();
+  // the lip: ink line all round, a lit edge on the far side, a cyan glow line on the near edge
+  g.strokeStyle = '#05060a'; g.lineWidth = 4; g.beginPath(); g.ellipse(CX, CY, R, Rb, 0, 0, TAU); g.stroke();
+  g.strokeStyle = 'rgba(0,240,255,.8)'; g.lineWidth = 2.5; g.beginPath(); g.ellipse(CX, CY + 2, R, Rb, 0, Math.PI * 1.1, Math.PI * 1.9); g.stroke();
+  g.strokeStyle = 'rgba(0,240,255,.55)'; g.lineWidth = 2; g.beginPath(); g.ellipse(CX, CY - 1.5, R, Rb, 0, Math.PI * 0.12, Math.PI * 0.88); g.stroke();
+}
+// how far a top on the arena floor drops into the basin (0 outside, full depth inside, a short slope at the lip)
+function basinDrop(t) { const r = Math.hypot((t.x - CX) / (AX * 0.62), (t.y - CY) / (BY * 0.62)); return BASIN_D() * clamp((1 - r) / 0.12, 0, 1); }
 function drawArena(g, time) {
   const ell = (m, a0, a1, ccw) => g.ellipse(CX, CY, AX + m, BY + m, 0, a0 === undefined ? 0 : a0, a1 === undefined ? TAU : a1, !!ccw);
   // rim glow (skips the exits)
@@ -6444,6 +6515,8 @@ function drawArena(g, time) {
         g.fillStyle = gt.txt; g.strokeStyle = '#05060a'; g.lineWidth = 2; g.beginPath(); g.moveTo(-8, -4); g.lineTo(0, 3); g.lineTo(8, -4); g.lineTo(8, 0); g.lineTo(0, 7); g.lineTo(-8, 0); g.closePath(); g.stroke(); g.fill(); g.restore();
       } }
   }
+  drawBasin(g);
+  g.save(); g.translate(0, BASIN_D()); // the core sits on the basin floor
   // battle heart (core ring)
   if (CORE_Q > 0) {
     const holders = G && G.tops ? G.tops.filter(t => t.inCore && !t.dead) : [];
@@ -6459,9 +6532,14 @@ function drawArena(g, time) {
     g.fillStyle = `rgba(${col},.75)`; g.font = '900 11px Rajdhani, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     signPlate(g, CX, CY + BY * CORE_Q + 2, 0, holders.length === 2 ? 'CORE CLASH!' : 'CORE', holders.length === 2 ? '#fcee0a' : `rgb(${col})`, 11, holders.length ? 1 : 0.85);
   }
+  g.restore();
   drawPropsFloor(g, time);
   // speed rails (two ears with the opening at 12 o'clock): yellow guide rails, cyan track, chevrons
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+  const RL = 7 * HK() / VIEW_K; // v0.53: the speed rails stand a little proud of the floor
+  for (const r of RAILS) { g.save(); railPath(g, r); g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 34; g.stroke(); // contact shadow
+    for (let k = 0; k <= RL; k += 1.5) { g.translate(0, -1.5); railPath(g, r); g.strokeStyle = k + 1.5 > RL ? '#05060a' : '#1b4650'; g.lineWidth = 27; g.stroke(); } g.restore(); }
+  g.translate(0, -RL);
   for (const r of RAILS) {
     railPath(g, r); g.strokeStyle = '#030405'; g.lineWidth = 27; g.stroke();
     railPath(g, r); g.strokeStyle = '#0f3d47'; g.lineWidth = 21; g.stroke();
@@ -6592,7 +6670,7 @@ function gateCuts(a0, a1) {
   return segs;
 }
 function drawFarWall(g) {
-  const dz = WALL_H * HK() / VIEW_K;
+  const dz = WALL_H * WALL_VIS * HK() / VIEW_K;
   // inner wall face of the back half: from the floor edge up to the rim
   for (const [a0, a1] of gateCuts(Math.PI, TAU)) {
     g.beginPath();
@@ -6609,14 +6687,14 @@ function drawFarWall(g) {
     g.strokeStyle = 'rgba(0,240,255,.75)'; g.lineWidth = 2; g.beginPath(); g.ellipse(CX, CY - 2, AX + 1, AX + 1, 0, a0, a1); g.stroke();
   }
   // WORMHOLE: a tunnel sign mounted on the back wall, right above the rail opening (stays upright like a real sign)
-  if (RAILS.length) { const dz2 = WALL_H * HK() / VIEW_K; upright(g, CX, CY - AX - dz2 * 0.45, () => {
+  if (RAILS.length) { const dz2 = WALL_H * WALL_VIS * HK() / VIEW_K; upright(g, CX, CY - AX - dz2 * 0.45, () => {
       signPlate(g, 0, 0, 0, 'WORMHOLE', '#fcee0a', 13);
       g.strokeStyle = '#00f0ff'; g.lineWidth = 2; g.beginPath(); for (let k = 0; k < 26; k++) { const an = k * 0.5 + G.time * 4, rr = 1 + k * 0.28; g.lineTo(-62 + Math.cos(an) * rr, Math.sin(an) * rr); } g.stroke();
     }); }
   drawRim(g, Math.PI, TAU);
 }
 function drawRim(g, A0, A1) {
-  const dz = WALL_H * HK() / VIEW_K;
+  const dz = WALL_H * WALL_VIS * HK() / VIEW_K;
   for (const [a0, a1] of gateCuts(A0, A1)) {
     wallRange(g, a0, a1, AX + 1, AX + 26, dz); g.fillStyle = '#14181c'; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = 4; g.stroke();
     // hazard stripes on the rim top
@@ -6791,7 +6869,7 @@ function drawPropRaised(g, P) {
   }
 }
 function drawNearWall(g) {
-  const dz = WALL_H * HK() / VIEW_K;
+  const dz = WALL_H * WALL_VIS * HK() / VIEW_K;
   for (const [a0, a1] of gateCuts(0, Math.PI)) {
     // outer front face below the rim
     g.beginPath();
@@ -6857,7 +6935,7 @@ function drawTopWorld0(g, t) {
   if (t.side === 1 && G && !G.track && (G.phase === 'launch' || G.phase === 'count')) return; // the CPU's drop point stays secret until SPIN!
   g.save();
   g.translate(t.x, t.y);
-  const tz = G && G.track ? tfZ(t) : null; if (tz && tz.z) { g.translate(-t.x, -t.y); zBegin(g, tz.z, t.x); g.translate(t.x, t.y); } // standing on a higher floor: drawn that high (rises, comes closer, spreads out)
+  const tz = G && G.track ? tfZ(t) : null; if (tz && tz.z) { g.translate(-t.x, -t.y); zBegin(g, tz.z, t.x); g.translate(t.x, t.y); } else if (!t.ringOut) g.translate(0, basinDrop(t)); // v0.53: down in the basin // standing on a higher floor: drawn that high (rises, comes closer, spreads out)
   if (t.rad) g.scale(t.rad / TR, t.rad / TR); // BOSS / small enemies
   if (t.invT > 0) g.globalAlpha = 0.5 + 0.4 * Math.sin(G.time * 40);
   let sc = 1;
@@ -6947,6 +7025,8 @@ function perspSetup(cam, sx, sy) {
 const pspQ = u => Math.max(0.3, 1 - PSP.P * u);
 // fake 3D heights (v0.31.2): everything with a height (walls, raised floors, tubes, the virus wall…) is drawn with zTo / zPoly.
 // With perspective on, PG lifts the point Z units and spreads it away from the camera line; with it off, the same idea is faked here.
+const WALL_VIS = 1.7; // v0.53: arena wall drawn 1.7x taller than its physics height (looks like a real stadium wall)
+const BASIN_D = () => 15 * HK() / VIEW_K; // depth of the centre basin, drawn
 const HK = () => 0.8 + 0.9 * clamp((0.97 - VIEW_K) / 0.32, 0, 1); // fake-3D height boost: things stand taller the more the camera tilts
 const ZV = () => { const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1); return { tk, zy: 0.4 + 0.6 * tk, zk: 0.0012 + 0.0022 * tk }; };
 function zTo(g, x, y, z, move) { if (g.isProj) { g.setZ(z); move ? g.moveTo(x, y) : g.lineTo(x, y); return; } const v = ZV(), X = CX + (x - CX) * (1 + z * v.zk), Y = y - z * v.zy / VIEW_K; move ? g.moveTo(X, Y) : g.lineTo(X, Y); }
@@ -7285,7 +7365,7 @@ requestAnimationFrame(frame);
 // installable / offline (PWA): only on a real web host — opening the file directly skips it
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { PK, drawTop, drawTop45, pj, CXv: () => CX, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { SFX, PK, drawTop, drawTop45, pj, CXv: () => CX, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
 showTitle();
 setTimeout(unifyPortraits, 300);
