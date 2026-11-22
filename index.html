@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.42.1</title>
+<title>SPIN! SPIN! v0.43.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -589,6 +589,23 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #team .slot:nth-child(2) .stop{animation-delay:-.9s}#team .slot:nth-child(3) .stop{animation-delay:-1.7s}
 @keyframes stFloat{50%{transform:translateY(-.35em) rotate(-4deg)}} /* v0.39 the top floats beside the portrait */
 #cxPop .cxTop{display:block;width:7.5em;height:7.5em;margin:-3.2em auto .1em;position:relative;filter:drop-shadow(0 .5em .3em rgba(0,0,0,.6));animation:stFloat 2.6s ease-in-out infinite}
+/* v0.43 pause + settings: the game stays visible behind, tabs instead of one long list */
+#settings{background:rgba(5,6,12,.38) !important;backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px)}
+#settings .spanel{width:84%;max-width:24em;clip-path:none !important;box-shadow:none !important;background:none !important;border-style:solid !important;border-color:transparent !important;border-width:1em !important;border-image:url(art/ui/panel.png) 54 fill stretch !important;padding:.3em .4em .5em !important}
+#settings .spanel{display:none}#settings.pause #pausePane,#settings.set #setPane{display:flex}
+#pausePane{align-items:center !important;gap:.55em}#pausePane .btn{width:82%;font-size:1.05em}
+.pzT{font-family:Rajdhani,sans-serif;font-style:italic;font-weight:900;font-size:2.4em;color:#fcee0a;letter-spacing:.12em;text-shadow:3px 3px 0 #05060a,-2px 0 #00f0ff,2px 0 #ff2a55;line-height:1}
+.pzSub{font-size:.8em;color:#9fe8ff;margin-bottom:.4em;text-align:center}
+.setTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:.3em;margin-bottom:.5em}
+.setTabs button{padding:.45em 0;font-weight:900;font-size:.9em;background:#0b0f1e;color:#7f8aa3;border:2px solid #2b3350;clip-path:polygon(8% 0,100% 0,92% 100%,0 100%)}
+.setTabs button.on{background:#fcee0a;color:#05060a;border-color:#05060a}
+.setBody{height:17.5em;overflow-y:auto;margin-bottom:.6em;padding-right:.2em}
+.stPg{display:none}.stPg.on{display:block}
+#setPane .opt{display:grid;grid-template-columns:1fr 5.2em;align-items:center;gap:.6em;padding:.55em .1em;min-height:2.9em}
+#setPane .opt>span{min-width:0}#setPane .opt .tog,#setPane .opt>.sbtn,#setPane .opt .seg{width:100%;justify-self:end}
+#setPane .opt .vRange{width:100%}#setPane .opt:has(.vRange){grid-template-columns:1fr 8em}#setPane .opt:has(.seg){grid-template-columns:1fr 8em}
+#setPane .opt .seg{display:grid;grid-template-columns:1fr 1fr;gap:.2em}
+#setPane .setBtns{display:grid !important;grid-template-columns:1fr 1fr;gap:.5em;border:0}#setPane .setBtns .sbtn{width:100%;padding:.8em 0}
 </style>
 </head>
 <body>
@@ -611,21 +628,19 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
   <button id="menuBtn">✕ 離開</button>
   <div id="topRight"><button id="questOpen" class="topB">任務<b class="tdot" id="questDot"></b></button><button id="codexOpen" class="topB">圖鑑</button><button id="gearBtn">⚙ 設定</button></div>
   <div id="settings">
-    <div class="spanel">
+    <div class="spanel" id="pausePane">
+      <div class="pzT">PAUSE</div><div class="pzSub" id="pzSub"></div>
+      <button class="btn" id="pzGo">▶ 繼續</button><button class="btn ghost" id="pzSet">⚙ 設定</button><button class="btn danger" id="pzQuit">✕ 離開這一場</button>
+    </div>
+    <div class="spanel" id="setPane">
       <h2>設定</h2>
-      <div class="opt"><span>背景音樂</span><button class="tog" data-k="music"></button></div>
-      <div class="opt"><span>音效</span><button class="tog" data-k="sfx"></button></div>
-      <div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div>
-      <div class="opt"><span>動態運鏡</span><button class="tog" data-k="camFollow"></button></div>
-      <div class="opt"><span>視角自動傾斜<small class="optS">（拉近變斜、拉遠回正圓）</small></span><button class="tog" data-k="autoTilt"></button></div>
-      <div class="opt"><span>透視效果<small class="optS">（近大遠小，越斜越明顯；手機太卡可關掉）</small></span><button class="tog" data-k="persp"></button></div>
-      <div class="opt"><span>視角傾斜（基準）<small class="optS">（對戰中雙指上下滑也能調）</small></span><input type="range" id="viewKIn" min="0" max="100" class="vRange"></div>
-      <div class="opt"><span>場地縮放<small class="optS">（雙指捏合／滾輪）</small></span><input type="range" id="viewZIn" min="0" max="100" class="vRange"></div>
-      <div class="opt"><span>視角</span><button class="sbtn" id="viewReset">重設視角</button></div>
-      <div class="opt"><span>頭像統一色調<small class="optS">（所有頭像套同一套色調、網點與黑邊；重新開啟遊戲後生效）</small></span><button class="tog" data-k="portFx"></button></div>
-      <div class="opt"><span>頭上血條</span><button class="tog" data-k="hpPct"></button></div>
-      <div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div>
-      <div class="opt setBtns"><button class="sbtn" id="tutBtn">玩法教學</button><button class="sbtn" id="codexBtn">圖鑑</button><button class="sbtn" id="saveOutBtn">匯出存檔</button><button class="sbtn" id="saveInBtn">匯入存檔</button><button class="sbtn warn" id="resetBtn">重置進度</button></div>
+      <div class="setTabs"><button data-st="cam" class="on">鏡頭</button><button data-st="look">畫面</button><button data-st="snd">聲音</button><button data-st="etc">其他</button></div>
+      <div class="setBody">
+        <div class="stPg on" data-pg="cam"><div class="opt"><span>透視效果<small class="optS">（近大遠小，越斜越明顯；手機太卡可關掉）</small></span><button class="tog" data-k="persp"></button></div><div class="opt"><span>視角自動傾斜<small class="optS">（拉近變斜、拉遠回正圓）</small></span><button class="tog" data-k="autoTilt"></button></div><div class="opt"><span>動態運鏡</span><button class="tog" data-k="camFollow"></button></div><div class="opt"><span>鏡頭特效</span><button class="tog" data-k="camera"></button></div><div class="opt"><span>視角傾斜（基準）<small class="optS">（對戰中雙指上下滑也能調）</small></span><input type="range" id="viewKIn" min="0" max="100" class="vRange"></div><div class="opt"><span>場地縮放<small class="optS">（雙指捏合／滾輪）</small></span><input type="range" id="viewZIn" min="0" max="100" class="vRange"></div><div class="opt"><span>視角</span><button class="sbtn" id="viewReset">重設視角</button></div></div>
+        <div class="stPg" data-pg="look"><div class="opt"><span>頭上血條</span><button class="tog" data-k="hpPct"></button></div><div class="opt"><span>頭像統一色調<small class="optS">（所有頭像套同一套色調、網點與黑邊；重新開啟遊戲後生效）</small></span><button class="tog" data-k="portFx"></button></div><div class="opt"><span>EX 按鈕位置</span><div class="seg"><button data-ex="left">左下</button><button data-ex="right">右下</button></div></div></div>
+        <div class="stPg" data-pg="snd"><div class="opt"><span>背景音樂</span><button class="tog" data-k="music"></button></div><div class="opt"><span>音效</span><button class="tog" data-k="sfx"></button></div></div>
+        <div class="stPg" data-pg="etc"><div class="opt setBtns"><button class="sbtn" id="tutBtn">玩法教學</button><button class="sbtn" id="codexBtn">圖鑑</button><button class="sbtn" id="saveOutBtn">匯出存檔</button><button class="sbtn" id="saveInBtn">匯入存檔</button><button class="sbtn warn" id="resetBtn">重置進度</button></div></div>
+      </div>
       <button class="btn" id="setClose">關閉</button>
     </div>
   </div>
@@ -835,6 +850,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.43.0 pause menu in matches (game visible behind), tabbed settings with even rows; road camera follows floors only (not jumps)
  v0.42.1 asphalt texture rebuilt so detail spans the whole road (its plain dark edges read as no road); far down-slopes textured; the corridor walls' inner faces get the painted steel side plates (they no longer read as dark empty road)
  v0.42.0 road camera follows the top's height (decks, ramps, tubes) and pitches with the slope
  v0.41.0 automatic power saving removed (perspective only via the settings toggle; weather, debris, glitch, piers, lamps, speed arcs always on)
@@ -864,7 +880,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.42.1';
+const GAME_VERSION = 'v0.43.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2161,6 +2177,7 @@ for (const fn of ['fillText', 'strokeText']) { const orig = CanvasRenderingConte
       if (e !== b) { const m = /(\d+(?:\.\d+)?)px/.exec(this.font), fs = m ? +m[1] : 16; x += (e ? 0.25 : -0.25) * fs; } }
     return orig.call(this, txt, x, y, ...r); }; }
 function navSync() { // highlight the current page, mirror the red dots, dim the bar during a battle
+  { const gb = document.getElementById('gearBtn'), lb = typeof inMatch === 'function' && inMatch() ? '❚❚ 暫停' : '⚙ 設定'; if (gb.textContent !== lb) gb.textContent = lb; }
   const pop = id => document.getElementById(id).classList.contains('show');
   const on = inBattle() ? '' : pop('profilePop') ? 'me' : pop('shopPop') ? 'gacha' : screens.story.classList.contains('show') ? 'story' : screens.quest.classList.contains('show') ? 'quest' : screens.home.classList.contains('show') ? 'home' : screens.versus.classList.contains('show') ? 'home' : document.getElementById('profilePop').classList.contains('show') ? 'me' : document.getElementById('shopPop').classList.contains('show') ? 'gacha' : screens.team.classList.contains('show') ? 'team' : '';
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === on));
@@ -3677,8 +3694,16 @@ function applySettings() {
 }
 settingsEl.querySelectorAll('.tog').forEach(b => b.onclick = () => { SFX.unlock(); SETTINGS[b.dataset.k] = !SETTINGS[b.dataset.k];  applySettings(); if (b.dataset.k === 'sfx' && SETTINGS.sfx) SFX.round(); });
 settingsEl.querySelectorAll('[data-ex]').forEach(b => b.onclick = () => { SETTINGS.exSide = b.dataset.ex; applySettings(); });
-document.getElementById('gearBtn').onclick = () => { SFX.unlock(); document.querySelectorAll('.tipBubble').forEach(t => t.remove()); document.getElementById('codexBtn').style.display = G && G.phase !== 'final' ? 'none' : ''; settingsOpen = true; settingsEl.classList.add('show'); if (G) G.joy = null; };
-document.getElementById('setClose').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); };
+const inMatch = () => !!(inBattle() && G.phase !== 'final');
+function openSettings(mode) { settingsEl.classList.remove('pause', 'set'); settingsEl.classList.add(mode); }
+document.getElementById('gearBtn').onclick = () => { SFX.unlock(); document.querySelectorAll('.tipBubble').forEach(t => t.remove()); document.getElementById('codexBtn').style.display = G && G.phase !== 'final' ? 'none' : ''; settingsOpen = true;
+  const m = inMatch(); if (m) { const T = G.track; document.getElementById('pzSub').textContent = (G.level ? `STAGE ${G.level.id}　` : '自由對戰　') + (T ? `進度 ${Math.round(clamp((T.y0 - G.tops[0].y) / Math.max(1, T.len - TRK.FUN), 0, 1) * 100)}%` : ''); }
+  openSettings(m ? 'pause' : 'set'); settingsEl.classList.add('show'); if (G) G.joy = null; };
+document.getElementById('pzGo').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); };
+document.getElementById('pzSet').onclick = () => openSettings('set');
+document.getElementById('pzQuit').onclick = () => { settingsOpen = false; settingsEl.classList.remove('show'); menuBtn.click(); };
+settingsEl.querySelectorAll('.setTabs button').forEach(b => b.onclick = () => { settingsEl.querySelectorAll('.setTabs button').forEach(x => x.classList.toggle('on', x === b)); settingsEl.querySelectorAll('.stPg').forEach(pg => pg.classList.toggle('on', pg.dataset.pg === b.dataset.st)); SFX.flip(); });
+document.getElementById('setClose').onclick = () => { if (inMatch()) return openSettings('pause'); settingsOpen = false; settingsEl.classList.remove('show'); }; // in a match 關閉 goes back to the pause menu
 applySettings();
 let G = null; // current match
 
@@ -4026,7 +4051,7 @@ function camFollowStep(dt) {
   const pinching = two && two.mode === 'pinch';
   if (G.track && G.track.zone === 'gate') ty -= 44; // keep the door at the top clear of the HUD
   if (onTrack() && a && G.phase === 'battle') { // v0.42: the road camera rides with the top's height and pitches with the slope
-    const q = tfZ(a), zt = q ? q.z + 0.35 * (q.a || 0) : 0, prev = G.camHT == null ? zt : G.camHT; G.camHT = zt;
+    const q = tfZ(a), zt = q ? q.z : 0, /* floors only: following jumps too kept sliding the whole road down (it looked like the road kept narrowing) */ prev = G.camHT == null ? zt : G.camHT; G.camHT = zt;
     const vz = (zt - prev) / Math.max(dt, 1e-3); G.camPitch = (G.camPitch || 0) + (clamp(vz / 220, -1, 1) - (G.camPitch || 0)) * (1 - Math.exp(-dt * 3));
     G.camH = G.camH == null ? zt : G.camH + (zt - G.camH) * (1 - Math.exp(-dt * 5)); }
   else { G.camH = (G.camH || 0) * (1 - Math.min(1, dt * 4)); G.camPitch = (G.camPitch || 0) * (1 - Math.min(1, dt * 4)); G.camHT = null; }
