@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.54.1</title>
+<title>SPIN! SPIN! v0.54.2</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -732,6 +732,10 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #teamSub,.sub{font-size:max(11.5px,.68em) !important}
 .pfAva i{font-size:max(10px,.6em) !important}
 .benchHd,.invTab{font-size:max(11px,1em) !important}.slot i{font-size:max(10px,1em) !important}
+#topView{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.5px) 0 0/10px 10px,rgba(4,6,14,.985)}
+#topView.show{display:flex}#tvCv{width:min(96vw,88vh);height:min(96vw,88vh);max-height:78vh;touch-action:none;cursor:grab}#tvCv:active{cursor:grabbing}
+.tvHint{font-size:max(11px,.75em);color:#94a0b6;margin:.2em 0 .6em;text-align:center;padding:0 1em}.tvBtns{display:flex;gap:.6em}.tvBtns .btn{min-width:7.5em}
+.cxZoom{text-align:center;font-size:max(11px,.7em);color:#7fdfff;margin:-.2em 0 .3em;cursor:pointer}#cxPop .cxTop{cursor:zoom-in}
 </style>
 </head>
 <body>
@@ -1012,7 +1016,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.54.1';
+const GAME_VERSION = 'v0.54.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1967,6 +1971,36 @@ function previewCanvas(build, size) {
   return pc;
 }
 let previewAng = 0;
+// v0.54.2: full-screen top viewer — drag left/right to turn it, up/down to tilt the camera, wheel / pinch to zoom, double-tap to reset
+const TV = { on: false, b: null, ang: 0, tilt: 0.62, zoom: 1, auto: true, drag: null, pts: new Map() };
+function openTopView(b) {
+  let el = document.getElementById('topView');
+  if (!el) { el = document.createElement('div'); el.id = 'topView'; el.innerHTML = '<canvas id="tvCv"></canvas><div class="tvHint">左右拖曳＝旋轉・上下拖曳＝視角・滾輪／雙指＝縮放・點兩下重設</div><div class="tvBtns"><button class="btn ghost" id="tvSpin">⏸ 停止旋轉</button><button class="btn" id="tvClose">關閉</button></div>'; document.body.appendChild(el);
+    const cv = el.querySelector('#tvCv');
+    cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); TV.pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); TV.drag = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    cv.addEventListener('pointermove', e => { if (!TV.pts.has(e.pointerId)) return; const P = TV.pts.get(e.pointerId);
+      if (TV.pts.size >= 2) { const [a, c] = [...TV.pts.values()], d0 = Math.hypot(a.x - c.x, a.y - c.y); P.x = e.clientX; P.y = e.clientY; const [a2, c2] = [...TV.pts.values()], d1 = Math.hypot(a2.x - c2.x, a2.y - c2.y); if (d0 > 10) TV.zoom = clamp(TV.zoom * d1 / d0, 0.6, 2.2); return; }
+      const dx = e.clientX - P.x, dy = e.clientY - P.y; P.x = e.clientX; P.y = e.clientY; TV.ang += dx * 0.012; TV.tilt = clamp(TV.tilt - dy * 0.004, 0.42, 1); });
+    const up = e => { TV.pts.delete(e.pointerId); };
+    cv.addEventListener('pointerup', e => { const D = TV.drag; up(e); if (D && performance.now() - D.t < 250 && Math.hypot(e.clientX - D.x, e.clientY - D.y) < 8) { if (TV.lastTap && performance.now() - TV.lastTap < 320) { TV.tilt = 0.62; TV.zoom = 1; TV.ang = 0; } TV.lastTap = performance.now(); } });
+    cv.addEventListener('pointercancel', up);
+    cv.addEventListener('wheel', e => { e.preventDefault(); TV.zoom = clamp(TV.zoom * (e.deltaY < 0 ? 1.1 : 0.9), 0.6, 2.2); }, { passive: false });
+    el.querySelector('#tvClose').onclick = () => { el.classList.remove('show'); TV.on = false; };
+    el.querySelector('#tvSpin').onclick = e => { TV.auto = !TV.auto; e.target.textContent = TV.auto ? '⏸ 停止旋轉' : '▶ 自動旋轉'; }; }
+  TV.b = b; TV.tilt = 0.62; TV.zoom = 1; TV.ang = 0; el.classList.add('show'); if (!TV.on) { TV.on = true; let t0 = performance.now(); const loop = now => { if (!TV.on) return; const dt = Math.min(0.05, (now - t0) / 1000); t0 = now; drawTopView(dt); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
+}
+function drawTopView(dt) {
+  const cv = document.getElementById('tvCv'); if (!cv) return; const dpr = Math.min(2, devicePixelRatio || 1), W2 = cv.clientWidth, H2 = cv.clientHeight;
+  if (cv.width !== Math.round(W2 * dpr) || cv.height !== Math.round(H2 * dpr)) { cv.width = Math.round(W2 * dpr); cv.height = Math.round(H2 * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W2, H2);
+  if (TV.auto && !TV.pts.size) TV.ang += dt * 1.2;
+  const k = TV.tilt, R = Math.min(W2, H2) * 0.42 * TV.zoom, sc = R / 50, th = Math.min(9, 11 * Math.sqrt(Math.max(0, 1 - k * k)));
+  const fl = g.createRadialGradient(W2 / 2, H2 * 0.56, 10, W2 / 2, H2 * 0.56, R * 1.6); fl.addColorStop(0, 'rgba(0,240,255,.16)'); fl.addColorStop(1, 'rgba(0,240,255,0)'); g.fillStyle = fl; g.fillRect(0, 0, W2, H2);
+  g.save(); g.translate(W2 / 2, H2 * 0.5); g.scale(sc, sc);
+  g.save(); g.scale(1, k); g.fillStyle = 'rgba(0,0,0,.5)'; g.beginPath(); g.ellipse(3, th / k + 8, 44, 44, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(0,240,255,.35)'; g.lineWidth = 1.2; g.beginPath(); g.ellipse(0, th / k + 8, 56, 56, 0, 0, TAU); g.stroke(); g.restore();
+  g.save(); g.scale(1, k); drawTop(g, TV.b, TV.ang * WEAPONS[TV.b.w].dir, { spin: 0.4, thick: th }); g.restore();
+  g.restore();
+}
 function drawPreviews(dt) {
   previewAng += dt * 3;
   previews = previews.filter(p => p.g.canvas.isConnected);
@@ -3324,7 +3358,7 @@ function cxShow(e) {
   const pic = e.src ? `<img class="big${e.has ? '' : ' no'}" src="${e.src}">` : `<div class="bigI${e.has ? '' : ' no'}">${e.icon}</div>`;
   const cxB = e.has && (cxTab === 'c' || cxTab === 'w' || cxTab === 'b') && e.id ? (cxTab !== 'w' ? { c: e.id, w: (collection[0] || {}).w || 'vibrosword', a: (collection[0] || {}).a || 'hover' } : { c: (collection[0] || {}).c || 'berserker', w: e.id, a: (collection[0] || {}).a || 'hover' }) : null;
   inn.innerHTML = `${pic}<div class="t">${e.has ? e.name : (e.soon ? e.name : '？？？')}</div><div class="tg" style="color:${e.col}">${cxTab === 'c' ? facBadge(e.tag, 1.4) + ' ' : ''}${e.tag}・${e.has ? '已取得' : e.soon ? '即將登場' : '未取得'}</div><div class="d">${e.has ? e.d : e.soon ? e.d : '還沒抽到，打開補給箱收集它！'}</div>`;
-  if (cxB && CLASSES[cxB.c] && WEAPONS[cxB.w]) { const pv = previewCanvas(cxB, 220); pv.className = 'cxTop'; inn.insertBefore(pv, inn.children[1]); }
+  if (cxB && CLASSES[cxB.c] && WEAPONS[cxB.w]) { const pv = previewCanvas(cxB, 220); pv.className = 'cxTop'; pv.title = '點一下放大檢視'; pv.onclick = e => { e.stopPropagation(); openTopView(cxB); }; inn.insertBefore(pv, inn.children[1]); const hz = document.createElement('div'); hz.className = 'cxZoom'; hz.textContent = '⤢ 點陀螺放大'; hz.onclick = pv.onclick; inn.insertBefore(hz, pv.nextSibling); }
   pop.classList.add('show'); SFX.flip();
 }
 document.getElementById('cxPop').onclick = () => document.getElementById('cxPop').classList.remove('show');
