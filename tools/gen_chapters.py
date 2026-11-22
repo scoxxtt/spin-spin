@@ -33,7 +33,12 @@ def seg_ice(y, c):      return S([dict(type='ice', x=0, y=y + 150, l=260, w=380)
 def seg_portal(y, c):
     c['pid'] = c.get('pid', 0) + 1; a, b = f"p{c['pid']}a", f"p{c['pid']}b"; sx = R.choice([-0.45, 0.45])
     return S([dict(type='portal', id=a, x=sx, y=y + 80, to=b), dict(type='portal', id=b, x=-sx * 0.6, y=y + 470), dict(type='spikes', x=-sx * 0.5, y=y + 260, r=42, on=2, off=2), dict(type='laser', x=0.21, y=y + 330, len=300, on=1.1, off=2.1)], sign=('WARP', '#ff9ae6'), used=540)
-def seg_spikes(y, c):   return S([dict(type='spikes', x=-0.35, y=y + 100, r=42, on=2, off=2, skin=c['skin']), dict(type='spikes', x=0.35, y=y + 240, r=42, on=2, off=2, phase=1, skin=c['skin'])], used=340)
+def seg_spikes(y, c):   # v0.54 (mechanism B): from chapter 2 every other spike section is a SWITCH ROUTE — hit the side switch and the spikes sink, hidden boosters light up
+    if c['no'] >= 2 and (y // 100) % 2 == 0:
+        c['sid'] = c.get('sid', 0) + 1; i = f"r{c['sid']}"; s = 1 if (y // 100) % 4 == 0 else -1
+        return S([dict(type='switch', x=round(s * 0.66, 2), y=y + 60, id=i, route=1)] + [dict(type='spikes', x=xx, y=y + 230, r=40, on=3, off=1, unless=i, skin=c['skin']) for xx in (-0.34, 0.0, 0.34)] +
+                 [dict(type='boost', x=0, y=y + 120, when=i), dict(type='boost', x=0, y=y + 330, when=i)], sign=('SWITCH ROUTE', '#fcee0a'), used=420)
+    return S([dict(type='spikes', x=-0.35, y=y + 100, r=42, on=2, off=2, skin=c['skin']), dict(type='spikes', x=0.35, y=y + 240, r=42, on=2, off=2, phase=1, skin=c['skin'])], used=340)
 def seg_gap(y, c):
     s = R.choice(['L', 'R']); return S([dict(type='bumper', x=0.3 if s == 'L' else -0.3, y=y + 140)], [dict(side=s, **{'from': y + 60}, to=y + 200)], ('DANGER GAP', '#ff2a55'), 300)
 def seg_slide(y, c):    return S([dict(type='mover', x=0, y=y + 140, len=90, rot=12, move='slide', span=70, period=2.6)], used=280)
@@ -95,11 +100,15 @@ def seg_crumble(y, c):  # collapsing floor across the road (from chapter 11 behi
     return S(p, sign=('CRUMBLE', '#ff9f1a'), used=380, crumble=[dict(x=0, y=y + 190, w=380, l=192)])
 def seg_lift(y, c):     # a lift across the whole road: drive on while it is down, ride it up, drop off the far end
     return S([dict(type='boost', x=0, y=y + 40)], sign=('LIFT', '#7fdfff'), used=560, decks=[dict(x=0, w=380, y=y + 200, l=220, h=1, b=0, lift=3.6, ph=round(R.uniform(0, 3), 1))])
+# v0.54 (mechanism C): signature set pieces, one kind per chapter, twice a chapter
+def seg_sweeper(y, c):  return S([dict(type='boost', x=0, y=y + 40), dict(type='mover', x=0, y=y + 300, len=330, move='spin', speed=0.09, skin='sweep', sig='MEGA SWEEPER')], sign=('MEGA SWEEPER', '#ff2a55'), used=560)
+def seg_laserwave(y, c): return S([dict(type='laser', x=(0.21 if k % 2 else -0.21), y=y + 100 + k * 90, len=300, on=0.9, off=1.5, phase=round(k * 0.6, 1), **({'sig': 'LASER WAVE'} if k == 0 else {})) for k in range(4)], sign=('LASER WAVE', '#ff2a55'), used=500)
+def seg_magcar(y, c):   return S([dict(type='magnet', x=0, y=y + 240, r=150, slide=1.4, span=0.55, sig='MAG CRUSHER'), dict(type='spikes', x=0, y=y + 240, r=34, on=9, off=0, slide=1.4, span=0.55)], sign=('MAG CRUSHER', '#00f0ff'), used=480)
 SEGS = {k[4:]: v for k, v in globals().items() if k.startswith('seg_')}
 PN = dict(bumpers='彈力柱', wind='強風', barrels='炸藥桶＋防火牆', firewall='防火牆', magnet='磁鐵', laser='雷射', spinner='旋轉擋板', ice='冰面', portal='傳送門', spikes='地刺', gap='缺口', slide='推板',
           ramp='跳台', deck='高台 2F', deck2='高台 3F', deck3='高台 4F', belt='輸送帶', tube='蟲洞管道', rail='滑軌', bridge='獨木橋', jumpgap='跳台飛越深淵', railgap='滑軌跨越深淵', turn='旋轉圓盤', switch='開關門',
           branch='分岔路', crumble='崩塌地板', lift='升降台', dark='黑暗區', lowg='低重力', chase='病毒牆')
-EXPL = dict(ramp='第一次出現跳台：夠快衝上去就會飛起來，越過前面的障礙。', bumpers='彈力柱會把你大力彈開，可以借力轉彎。', deck='第一次出現高台：從斜坡開上 2F，邊緣會掉回下一層，不會死但會頓一下。',
+EXPL = dict(sweeper='招牌機關「巨型掃臂」：一支橫跨整條路的旋轉長臂，看準它轉開的空檔衝過去，被掃到會被甩飛。', laserwave='招牌機關「雷射波」：四道雷射依序亮起像一波浪，跟著熄滅的節奏一道一道穿過去。', magcar='招牌機關「磁力粉碎車」：會左右來回移動的磁鐵車，中間有地刺，靠太近會被吸進去，趁它移到另一邊再過。', ramp='第一次出現跳台：夠快衝上去就會飛起來，越過前面的障礙。', bumpers='彈力柱會把你大力彈開，可以借力轉彎。', deck='第一次出現高台：從斜坡開上 2F，邊緣會掉回下一層，不會死但會頓一下。',
             spikes='地刺一亮一滅，踩在上面轉速會一直掉。', belt='第一次出現輸送帶：會一路把你往箭頭方向送。', spinner='旋轉擋板被掃到會被打飛，等它轉過去再衝。',
             ice='第一次出現冰面：在上面拖曳幾乎沒用，進去前先對好方向。', tube='第一次出現蟲洞管道：鑽進粉紅色洞口，會從管子一路被送到很前面。', bridge='第一次出現深淵：沒有地板的地方只能走獨木橋，掉下去算一條命。',
             portal='第一次出現傳送門：衝進 WARP 門會從 EXIT 門出來。', firewall='第一次出現防火牆：有血條的灰牆，用力撞破才過得去。', gap='第一次出現牆的缺口：缺口那一側沒有牆，衝出去就出界。',
@@ -180,7 +189,7 @@ def plan_for(c, i, isb):
     known = list(dict.fromkeys(SEEN))  # everything from earlier chapters / levels
     intro = [k for j, k in enumerate(F['new']) if j < len(INTRO_AT) and INTRO_AT[j] <= i]
     theme = list(dict.fromkeys(F['new'][:len(intro)] + [k for k in F['new'] if k in known]))
-    pool = [k for k in known if k not in ('chase', 'dark', 'lowg')] + F.get('base', [])
+    pool = [k for k in known if k not in ('chase', 'dark', 'lowg', 'sweeper', 'laserwave', 'magcar')] + F.get('base', [])
     cnt = F['nseg'] - (2 if isb else 0) + (1 if i == 7 else 0)
     must = F['new'][INTRO_AT.index(i)] if i in INTRO_AT and INTRO_AT.index(i) < len(F['new']) else (R.choice(theme) if theme else None)
     plan = [must] if must else []
@@ -206,6 +215,7 @@ STAR_KILLS = lambda st, nm, chase: [s if s[0] != 'kills' else (['lives', 3] if c
 def level(c, i, L, base=None):
     n = c['no']; lid = f'{n}-{i + 1}'; isb = i + 1 in (5, 9, 10)
     plan = plan_for(c, i, isb)
+    if n >= 2 and i in (3, 6) and i not in FEAT[n]['chase']: plan.insert(len(plan) // 2, ['sweeper', 'laserwave', 'magcar'][n % 3])  # v0.54: signature set piece
     F = FEAT[n]; mods = [m for m in ('dark', 'lowg', 'chase') if i in F[m]]
     news = [k for k in dict.fromkeys(plan + mods) if k not in SEEN]
     for k in plan + mods:

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.53.5</title>
+<title>SPIN! SPIN! v0.54.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -1012,7 +1012,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.53.5';
+const GAME_VERSION = 'v0.54.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3001,7 +3001,7 @@ const GUIDE = [
   { t: '這就是你的陀螺', b: '每顆陀螺由三層組成：<b>頂冠＝角色卡</b>（決定能力與 EX 大招）、<b>武裝環＝武器</b>（撞擊力道與招式系別）、<b>核心＝鎧甲</b>（底下的光圈顏色，決定耐打程度）。隊伍排 3 顆，依 1→2→3 號上場。', x: 'top' },
   { t: '拉、放、發射！', b: '<b>按住往後拉、放開</b>就發射，拉越長越快。倒數喊到<b>第二聲 SPIN!</b> 的瞬間點一下畫面＝<b>PERFECT</b>，速度和轉速都加成！', x: 'launch' },
   { t: '飛行中也能控制', b: '<b>按住拖曳</b>調整方向追著對手撞；<b>點畫面</b>充能 EX，滿了按 EX 放大招。右上的 <b>AUTO／EX／MOVE</b> 可以交給電腦，MOVE 還有「清敵」模式專門打小兵。', x: 'move' },
-  { t: '賽道關卡', b: '3 顆陀螺＝<b>3 條命</b>，衝到終點撞破大門或打倒 BOSS 就過關。路上有加速帶、跳台、彈力柱，也有陷阱洞、地刺、深淵——<b>窄窄的跳台和高台是捷徑</b>，可能在左、中、右，選好路線再衝！' + SPR_ROW('boost', 'bumper', 'hole', 'spikes', 'barrel'), x: '' },
+  { t: '賽道關卡', b: '3 顆陀螺＝<b>3 條命</b>，衝到終點撞破大門或打倒 BOSS 就過關。路上有加速帶、跳台、彈力柱，也有陷阱洞、地刺、深淵——<b>窄窄的跳台和高台是捷徑</b>，可能在左、中、右，選好路線再衝！把敵人<b>撞進陷阱、地刺、雷射</b>能直接打爆；連撞 3 根彈力柱會<b>充能</b>，下一擊傷害 ×2；踩路邊的<b>開關</b>能收起地刺、打開隱藏加速帶。' + SPR_ROW('boost', 'bumper', 'hole', 'spikes', 'barrel'), x: '' },
   { t: '拿星星、衝高分', b: '每關 3 顆星。沿路撿 <b>資料晶片</b>、連續撞擊累積 <b>COMBO</b>，結算時算總分與 <b>S／A／B／C</b> 評價。章節清單上的「差 N★」就是還沒拿滿的關卡。' + SPR_ROW('chip'), x: '' },
   { t: '抽卡與成長', b: '金幣拿去<b>抽補給箱</b>，PICK UP 角色每天換一位。重複的零件拿來<b>升星</b>，3★ 後吃同陣營素材<b>升階</b>（白→紫→紅→金）。同陣營排在一起還有<b>羈絆加成</b>！', x: '' },
 ];
@@ -3557,7 +3557,7 @@ function storyFinal(win) {
   if (ch.bonus && !S.ch[ch.id] && ch.levels.every(l => full3(lvStars(l.id)))) { S.ch[ch.id] = 1; grant(ch.bonus, rew, `${ch.name} 全三星`); }
   save();
   let scoreHtml = ''; if (G.track) { const T = G.track, left = Math.max(0, G.lineup.length - T.idx), chips = (T.chips || []).filter(c => c.now).length, t = G.time || 0, par = T.len / 220 + (lv.boss ? 40 : 25);
-    const rows = [['過關', win ? 1 : 0, 1000], ['剩餘陀螺', win ? left : 0, 500], ['打爆敵人', T.kills || 0, 150], ['COMBO', T.maxCombo || 0, 40], ['資料晶片', chips, 300], ['高台捷徑', Math.round((T.sky || 0) / 100), 60], ['飛躍', T.airs || 0, 120], ['時間獎勵', win ? Math.max(0, Math.round(par - t)) : 0, 20]];
+    const rows = [['過關', win ? 1 : 0, 1000], ['剩餘陀螺', win ? left : 0, 500], ['打爆敵人', T.kills || 0, 150], ['COMBO', T.maxCombo || 0, 40], ['資料晶片', chips, 300], ['高台捷徑', Math.round((T.sky || 0) / 100), 60], ['飛躍', T.airs || 0, 120], ['機關擊殺', T.trapKills || 0, 250], ['時間獎勵', win ? Math.max(0, Math.round(par - t)) : 0, 20]];
     const total = rows.reduce((a, r) => a + r[1] * r[2], 0), rank = !win ? 'C' : left >= G.lineup.length && chips >= 3 ? 'S' : left >= 2 ? 'A' : 'B';
     S.best = S.best || {}; const prev = S.best[lv.id] || 0, nb = total > prev; if (nb) { S.best[lv.id] = total; save(); }
     scoreHtml = `<div class="fScore"><div class="fsRank r${rank}">${rank}</div><div class="fsRows">${rows.map((r, i) => `<div class="fsR" style="animation-delay:${0.15 + i * 0.18}s"><span>${r[0]}${r[0] === '時間獎勵' ? '' : ` ×${r[1]}`}</span><b>+${r[1] * r[2]}</b></div>`).join('')}</div><div class="fsTot"><span>SCORE</span><b data-to="${total}">0</b>${nb ? '<em>NEW BEST!</em>' : `<small>最佳 ${prev}</small>`}</div></div>`;
@@ -4804,6 +4804,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
   let dmg = spd * 0.03 * (0.6 + att.s.w.atk * 0.25) * bf * mult / defense(def) * (def.bond ? def.bond.dmgIn : 1) * (att.bond ? att.bond.all : 1);
   if (att.bond && att.bond.crit && attN > 260 && Math.random() < 0.25) { dmg *= 1.5; addText(att.x, att.y - 58, '暴擊！', '#fcee0a', 18); }
   if (def.weakT > 0) dmg *= 1.5; // stunned BOSS
+  if (att.ochT > 0 && G.track) dmg *= ochDmg(att);
   if (def.shA != null && !(def.stunT > 0) && !(def.holdT > 0) && Math.cos(Math.atan2(att.y - def.y, att.x - def.x) - def.shA) > 0.42) { dmg *= 0.6; def.shHit = 0.25; if (G.comicCD <= 0) { addText(def.x, def.y - 84, '盾擋住了！繞到背後', '#fcee0a', 16); G.comicCD = 0.6; } } // hit on the shield side
   if (def.aegisT > 0) { dmg = 0; if (G.comicCD <= 0) { addText(def.x, def.y - 84, '聖域護盾！等它消失再打', '#fcee0a', 16); G.comicCD = 0.6; } } // 聖域壁壘
   if (att.dmgOut) dmg *= att.dmgOut;
@@ -4883,7 +4884,7 @@ function hitResolve(att, def, nx, ny, vrel, sameDir, attN) {
 // The 3 lineup tops are the 3 lives: when one is lost the next launches from where it fell.
 // ===================================================================================
 const TRK = { HW: 190, FUN: 260, ENT_Y: CY + 218 }; // corridor half-width, length of the funnel before the entrance, entrance y
-const TOP_TIMERS = ['launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT', 'holdT', 'shHit', 'iceT', 'portCD', 'frzT', 'lzCD', 'invCtl', 'aegisT', 'ghost', 'hugArm', 'rampTip', 'railCD', 'owTip'];
+const TOP_TIMERS = ['ochT', 'launchedT', 'shieldT', 'markT', 'stunT', 'ringCD', 'boostT', 'flash', 'hitT', 'bigT', 'nearT', 'comboT', 'hopT', 'invT', 'weakT', 'chargeT', 'teleT', 'holdT', 'shHit', 'iceT', 'portCD', 'frzT', 'lzCD', 'invCtl', 'aegisT', 'ghost', 'hugArm', 'rampTip', 'railCD', 'owTip'];
 const onTrack = () => !!(G && G.track && G.track.zone === 'track');
 const trkHalf = (T, sv) => sv <= T.len - TRK.FUN ? TRK.HW : TRK.HW + (T.gw - TRK.HW) * Math.min(1, (sv - (T.len - TRK.FUN)) / TRK.FUN);
 const LOSE_TEXT = { BREAK: '爆甲', SURVIVE: '停轉', '停轉': '停轉', OUT: '出界', TRAP: '掉進陷阱', DEAD: '掉進 DEAD', BLOOD: '掉進 BLOOD', 'RING OUT': 'RING OUT', CAUGHT: '被病毒牆吞掉' };
@@ -4949,6 +4950,7 @@ function startTrack(lv) {
     noBoss: !lv.boss, zone: 'track', idx: 0, started: false, mobs: [], phase: 1, bossLives: bs.lives || 1, best: 0, safe: null, kills: 0 };
   GATES = [{ door: true, a: Math.PI / 2, half: GATE_HALF, pts: 0, name: 'GATE', col: '0,240,255', txt: '#00f0ff', x: CX, y: CY + BY }];
   PROPS = (tr.props || []).map(p => makeProp({ ...p, px: CX + (p.x || 0) * TRK.HW, py: T.y0 - p.y, ...(p.x2 != null ? { x2: CX + p.x2 * TRK.HW, y2: T.y0 - p.y2 } : {}), ...(p.ex != null ? { ex: CX + p.ex * TRK.HW, ey: T.y0 - p.ey } : {}) })); linkPortals();
+  T.parked = PROPS.filter(P => P.when); PROPS = PROPS.filter(P => !P.when); // v0.54: props that only exist once their switch is on
   { const got = (storyData().chip || {})[lv.id] || 0; T.chips = chipSpots(lv).map((q, i) => ({ had: !!(got >> i & 1), now: false })); chipSpots(lv).forEach((q, i) => { const Q = makeProp({ type: 'chip', px: CX + q.x * TRK.HW, py: T.y0 - q.y }); Q.idx = i; Q.had = T.chips[i].had; PROPS.push(Q); }); }
   arenaCache = null;
   T.mobs = (tr.mobs || []).map(m => makeMob(m, tr.mobLv || 0, CX + (m.x || 0) * TRK.HW, T.y0 - m.y));
@@ -5040,6 +5042,8 @@ function mobStep(m, p, h) {
     if (m.mob === 'guard' || m.cd < 1.5) { m.vx += ((tx - m.x) * kp - m.vx * 6) * h; m.vy += ((m.hy - m.y) * kp - m.vy * 6) * h; }
   }
   m.vx *= 1 - 0.6 * h; m.vy *= 1 - 0.6 * h; m.x += m.vx * h; m.y += m.vy * h;
+  if (m.hitT > 0 && PROPS.length && !m.dead) propStep(m, h); // v0.54: a knocked enemy flies into hazards (pits, spikes, lasers, bumpers)
+  if (m.dead) return;
   if (G.track.zone === 'track') { trackBounds(m, h); tfAfterMove(m, h, m.x - m.vx * h, m.y - m.vy * h); }
   else if (qOf(m.x, m.y, 16) > 1) { const n = eNormal(m.x, m.y), c = eClamp(m.x, m.y, 16), vn = m.vx * n.x + m.vy * n.y; m.x = c.x; m.y = c.y; if (vn > 0) { m.vx -= 1.8 * vn * n.x; m.vy -= 1.8 * vn * n.y; } }
 }
@@ -5206,7 +5210,9 @@ function trackPhysics(h) {
   }
   for (const m of T.mobs) if (!m.dead) { mobStep(m, p, h); if (tfMeet(p, m)) collide(p, m, h); if (G.phase !== 'battle') return; }
   if (T.zone === 'track') tfStep(T, p, h);
-  for (const P of PROPS) { if (P.fuse > 0 && (P.fuse -= h) <= 0) barrelBoom(P); if (P.life && !P.dead && (P.life -= h) <= 0) { P.dead = true; if (P.skin !== 'fire') sparks(P.x, P.y, 10, '#7fdfff', 160); } }
+  for (const P of PROPS) { if (P.slide) { if (P.bx == null) P.bx = P.x; P.x = P.bx + Math.sin(G.time * P.slide) * (P.span || 0.5) * TRK.HW; } // v0.54: the magnet car rolls side to side
+    if (P.sig && !P.sigShown && p && !p.dead && P.y < p.y && p.y - P.y < 620) { P.sigShown = 1; comicPop(CX, P.y - 40, P.sig + '!!', 46, '#fcee0a', '#ff2a55', 1.3); addText(p.x, p.y - 70, 'WARNING', '#ff2a55', 24); G.shake = Math.max(G.shake, 10); G.flash = 0.1; G.flashCol = '255,42,85'; SFX.gate(); }
+    if (P.fuse > 0 && (P.fuse -= h) <= 0) barrelBoom(P); if (P.life && !P.dead && (P.life -= h) <= 0) { P.dead = true; if (P.skin !== 'fire') sparks(P.x, P.y, 10, '#7fdfff', 160); } }
   if (T.shots) shotsStep(h);
   if (p.dead || p.falling) return;
   if (T.zone === 'track') {
@@ -5239,7 +5245,7 @@ function gateHit(t, vn) {
   const gt = G.track.gate; if (!gt || gt.open || gt.hitCD > 0 || vn < 140) return;
   const a = Math.atan2(t.y - CY, t.x - CX); if (Math.abs(((a - gt.a + Math.PI * 3) % TAU) - Math.PI) > gt.half + 0.05) return;
   comboAdd(1, t.x, t.y);
-  const dmg = vn * 0.03 * (0.6 + t.s.w.atk * 0.25) * (t.dashMult || 1) * (t.bond ? t.bond.all : 1) * GATE_DMG;
+  const dmg = vn * 0.03 * (0.6 + t.s.w.atk * 0.25) * (t.dashMult || 1) * (t.bond ? t.bond.all : 1) * GATE_DMG * ochDmg(t);
   gt.hp -= dmg; gt.hitCD = 0.12; gt.flash = 0.16; t.spin = Math.min(1, t.spin + 0.05); // ramming the door keeps the top alive: attacking is the way through if (t.markT <= 0) t.energy = Math.min(100, t.energy + 5);
   addText(t.x, t.y - 46, '-' + Math.round(dmg), '#fcee0a', 18 + Math.min(14, dmg * 0.4)); sparks(t.x, t.y - TR, Math.min(26, 6 + dmg), '#fcee0a', 200 + vn * 0.4, true); G.shake = Math.max(G.shake, Math.min(12, 3 + dmg * 0.3));
   if (dmg > 14 && G.comicCD <= 0) { comicPop(t.x, t.y - 70, pick(['BANG!', 'WHAM!', 'KRAK!']), 26 + Math.min(18, dmg * 0.5), '#ffffff', '#ff2a55', 0.55); G.comicCD = 0.3; }
@@ -5476,7 +5482,7 @@ function tfStep(T, p, h) {
     else if (c.st === 1) { if ((c.t -= h) <= 0) { c.st = 2; c.t = 3.5; sparks(c.x, c.y, 6, '#59606c', 160); } }
     else if ((c.t -= h) <= 0 && !(Math.abs(p.x - c.x) < c.sw && Math.abs(p.y - c.y) < c.sl)) { c.st = 0; }
   }
-  for (const P of PROPS) if (P.type === 'switch' && P.on && P.time && (P.offT -= h) <= 0) { P.on = false; for (const D of PROPS) if (D.lock === P.id) { D.dead = false; sparks((D.x), D.y, 12, '#fcee0a', 200); } addText(P.x, P.y - 40, '門關上了', '#ff2a55', 16); }
+  for (const P of PROPS) if (P.type === 'switch' && P.on && P.time && (P.offT -= h) <= 0) { P.on = false; routeSw(P.id, false); for (const D of PROPS) if (D.lock === P.id) { D.dead = false; sparks((D.x), D.y, 12, '#fcee0a', 200); } addText(P.x, P.y - 40, '門關上了', '#ff2a55', 16); }
   const C = T.chase; if (!C) return;
   C.t += h; if (C.t > C.delay) C.y -= C.speed * h;
   C.y = Math.min(C.y, p.y + 820); // it never falls too far behind: the pressure stays on
@@ -5512,8 +5518,8 @@ function tfProp(t, P, h) {
     if (d < P.r && d > 4) { const w = (P.speed || 0.5) * TAU, tx = -dy / d, ty = dx / d, vt = t.vx * tx + t.vy * ty, k = Math.min(1, 2.6 * h); t.vx += tx * (w * d - vt) * k + dx / d * w * w * d * 0.12 * h; t.vy += ty * (w * d - vt) * k + dy / d * w * w * d * 0.12 * h; }
     return true; }
   if (P.type === 'switch') {
-    if (isP && !P.on && len(t.x - P.x, t.y - P.y) < P.r + TR * 0.6) { P.on = true; P.offT = P.time || 0; let n = 0; for (const D of PROPS) if (D.lock === P.id && !D.dead) { D.dead = true; n++; sparks(D.x, D.y, 26, '#fcee0a', 320, true); wave(D.x, D.y, '252,238,10', 100, 6, 0.4); }
-      SFX.gate(); G.shake = Math.max(G.shake, 6); comboAdd(1, t.x, t.y); comicPop(t.x, t.y - 70, 'UNLOCK!', 34, '#05060a', '#fcee0a', 0.7); addText(t.x, t.y - 40, P.time ? `門開了！${P.time} 秒內通過` : '門開了！', '#fcee0a', 20); }
+    if (isP && !P.on && len(t.x - P.x, t.y - P.y) < P.r + TR * 0.6) { P.on = true; P.offT = P.time || 0; let n = 0; if (routeSw(P.id, true)) { comicPop(t.x, t.y - 70, 'ROUTE OPEN!', 34, '#05060a', '#7fdfff', 0.8); addText(P.x, P.y - 50, '地刺收起・加速帶開啟', '#7fdfff', 18); comboAdd(2, t.x, t.y); SFX.boost && SFX.boost(); } for (const D of PROPS) if (D.lock === P.id && !D.dead) { D.dead = true; n++; sparks(D.x, D.y, 26, '#fcee0a', 320, true); wave(D.x, D.y, '252,238,10', 100, 6, 0.4); }
+      SFX.gate(); G.shake = Math.max(G.shake, 6); comboAdd(1, t.x, t.y); if (!P.route) { comicPop(t.x, t.y - 70, 'UNLOCK!', 34, '#05060a', '#fcee0a', 0.7); addText(t.x, t.y - 40, P.time ? `門開了！${P.time} 秒內通過` : '門開了！', '#fcee0a', 20); } }
     return true; }
   if (P.type === 'oneway') {
     const R = (t.rad || TR) * 0.7; if (t.vy > 0 && t.y > P.y - R && t.y < P.y + R + 8 && Math.abs(t.x - P.x) < P.w / 2) { t.y = P.y - R; t.vy *= -0.7; if (isP && !(t.owTip > 0)) { t.owTip = 1.5; addText(t.x, t.y - 40, '單向閘門：只能往前', '#00f0ff', 16); } }
@@ -5961,13 +5967,16 @@ function propStep(t, h) {
     if (P.type === 'chip') { if (!P.dead && t === G.tops[0] && !t.dead && len(t.x - P.x, t.y - P.y) < P.r + TR * 0.85) chipGot(P); continue; }
     if (G.track && G.track.decks && G.track.zone === 'track') { if (t.air || t.grind || t.tube || Math.abs((t.lvl || 0) - (P.lvl || 0)) > 0.45) continue; if (tfProp(t, P, h)) continue; }
     if (P.type === 'pit') {
+      if (t.mob && !t.dead && t.hitT > 0 && len(t.x - P.x, t.y - P.y) < P.r - 4) { trapKill(t, 'DROP KILL!', '#ff2a55'); continue; }
       if (t.side === 0 && !t.mob && !(t.invT > 0) && !t.falling && len(t.x - P.x, t.y - P.y) < P.r - 8) { t.falling = 0.7; t.fellIn = { pts: 0, name: 'TRAP' }; t.vx *= 0.25; t.vy *= 0.25; addText(t.x, t.y - 50, '掉進陷阱！', '#ff2a55', 26); comicPop(t.x, t.y - 100, 'TRAP!!', 40, '#ffffff', '#ff2a55', 1); SFX.gate(); G.shake = 10; return; }
       continue;
     }
     if (P.type === 'bumper') {
       const dx = t.x - P.x, dy = t.y - P.y, d = len(dx, dy), R0 = P.r + PROP_TR;
       if (d < R0 && d > 0) { const nx = dx / d, ny = dy / d, vn = -(t.vx * nx + t.vy * ny); t.x = P.x + nx * R0; t.y = P.y + ny * R0;
-        if (vn > 0) propHit(t, P, nx, ny, Math.max(vn, 140), 1.25, P.x + nx * P.r, P.y + ny * P.r); }
+        if (vn > 0) { propHit(t, P, nx, ny, Math.max(vn, 140), 1.25, P.x + nx * P.r, P.y + ny * P.r);
+          if (t === G.tops[0] && G.track && P.lastBy !== G.time) { P.lastBy = G.time; t.bumpN = G.time - (t.bumpAt || -9) < 2.5 ? (t.bumpN || 0) + 1 : 1; t.bumpAt = G.time;
+            if (t.bumpN >= 3 && !(t.ochT > 0)) { t.ochT = 6; t.bumpN = 0; comicPop(t.x, t.y - 70, 'OVERCHARGE!', 36, '#ffffff', '#ff4fd8', 0.8); SFX.ex && SFX.ex(); addText(t.x, t.y - 34, '下一擊傷害 ×2', '#ff9ae6', 18); } } } }
     } else if (P.type === 'portal') {
       if (!P.dst || t.portCD > 0 || t.falling || len(t.x - P.x, t.y - P.y) > P.r * 0.65) continue;
       const sp = len(t.vx, t.vy), d = sp > 30 ? { x: t.vx / sp, y: t.vy / sp } : { x: 0, y: -1 }, Q = P.dst;
@@ -5989,7 +5998,7 @@ function propStep(t, h) {
       const S = moverSeg(P, 0), ex = S.x2 - S.x1, ey = S.y2 - S.y1, k = clamp(((t.x - S.x1) * ex + (t.y - S.y1) * ey) / (ex * ex + ey * ey), 0, 1), cx = S.x1 + ex * k, cy = S.y1 + ey * k;
       const dx = t.x - cx, dy = t.y - cy, d = len(dx, dy), R0 = PROP_TR + 4;
       if (d < R0 && d > 0) { const nx = dx / d, ny = dy / d, vn = -(t.vx * nx + t.vy * ny); t.x = cx + nx * R0; t.y = cy + ny * R0; t.vx += nx * (Math.max(vn, 0) * 1.7 + 260); t.vy += ny * (Math.max(vn, 0) * 1.7 + 260);
-        if (!(t.lzCD > 0) && !(t.invT > 0)) { t.lzCD = 0.5; const dmg = t.s.maxHp * (t.mob ? 0.2 : t.boss ? 0.02 : 0.04); t.hp = Math.max(t.mob ? 0 : 1, t.hp - dmg); t.flash = 0.2; sparks(cx, cy, 16, '#ff2a55', 300, true); if (t.side === 0 && !t.mob) { addText(t.x, t.y - 44, '-' + Math.round(dmg), '#ff2a55', 20); SFX.wall(700); } if (t.mob && t.hp <= 0) { t.dead = true; } } }
+        if (!(t.lzCD > 0) && !(t.invT > 0)) { t.lzCD = 0.5; const dmg = t.s.maxHp * (t.mob ? 0.55 : t.boss ? 0.02 : 0.04); t.hp = Math.max(t.mob ? 0 : 1, t.hp - dmg); t.flash = 0.2; sparks(cx, cy, 16, '#ff2a55', 300, true); if (t.side === 0 && !t.mob) { addText(t.x, t.y - 44, '-' + Math.round(dmg), '#ff2a55', 20); SFX.wall(700); } if (t.mob && t.hp <= 0) { t.dead = false; trapKill(t, 'ZAPPED!', '#ff2a55'); } } }
     } else if (P.type === 'ice') {
       const inside = P.r ? len(t.x - P.x, t.y - P.y) < P.r : Math.abs(t.x - P.x) < P.w / 2 && Math.abs(t.y - P.y) < P.l / 2;
       if (inside) { t.iceT = 0.1; if (t.side === 0 && !t.mob && !(t.iceTip > 0) && G.time - (t.iceAt || -9) > 3) { addText(t.x, t.y - 36, '好滑！', '#a8fbff', 18); t.iceAt = G.time; } }
@@ -6014,6 +6023,7 @@ function propStep(t, h) {
       }
     } else if (P.type === 'spikes') {
       if (!spikesOn(P, T) || len(t.x - P.x, t.y - P.y) > P.r) continue;
+      if (t.mob && !t.dead) { t.hp -= t.s.maxHp * 1.6 * h; t.flash = 0.1; if (t.hp <= 0) { trapKill(t, 'SPIKED!', '#ff2a55'); continue; } }
       t.spin -= 0.07 * h; t.vx *= 1 - 0.8 * h; t.vy *= 1 - 0.8 * h;
       if (Math.random() < h * 14) sparks(t.x, t.y + 6, 2, '#ff2a55', 120);
       if (!(t.spikeT > 0)) { t.spikeT = 0.9; addText(t.x, t.y - 34, '轉速流失！', '#ff2a55', 16); }
@@ -6021,13 +6031,30 @@ function propStep(t, h) {
   }
   if (t.padT > 0) t.padT -= h; if (t.spikeT > 0) t.spikeT -= h;
 }
+// v0.54 (mechanism A): knock enemies into hazards to finish them; three bumpers in a row overcharge your next hit
+// v0.54 (mechanism B): a switch rewires the road — props marked unless:id vanish, props marked when:id appear (and swap back when it times out)
+function routeSw(id, on) {
+  const T = G.track; if (!T) return 0; T.parked = T.parked || []; let n = 0;
+  const out = PROPS.filter(Q => on ? Q.unless === id : Q.when === id), back = T.parked.filter(Q => on ? Q.when === id : Q.unless === id);
+  if (!out.length && !back.length) return 0;
+  PROPS = PROPS.filter(Q => !out.includes(Q)).concat(back); T.parked = T.parked.filter(Q => !back.includes(Q)).concat(out);
+  for (const Q of out) { sparks(Q.x, Q.y, 14, on ? '#ff2a55' : '#7fdfff', 220, true); n++; } for (const Q of back) { wave(Q.x, Q.y, on ? '0,240,255' : '255,42,85', 70, 5, 0.35); n++; }
+  return n;
+}
+function trapKill(t, txt, col) {
+  if (!t.mob || t.dead) return; t.dead = true; t.trapK = 1; const T = G.track; if (T) T.trapKills = (T.trapKills || 0) + 1;
+  comboAdd(2, t.x, t.y); sparks(t.x, t.y, 26, col || '#ff2a55', 320, true); wave(t.x, t.y, '255,42,85', 90, 8, 0.4);
+  comicPop(t.x, t.y - 60, txt || 'TRAP KILL!', 34, '#ffffff', col || '#ff2a55', 0.8); G.shake = Math.max(G.shake, 8); SFX.wall(900);
+}
+function ochDmg(t) { if (!(t.ochT > 0)) return 1; t.ochT = 0; comicPop(t.x, t.y - 80, 'OVERDRIVE!!', 40, '#ffffff', '#ff4fd8', 0.8); G.flash = 0.12; G.flashCol = '255,79,216'; G.shake = Math.max(G.shake, 12); return 2; }
 const laserOn = (P, T) => ((T + P.phase) % (P.on + P.off) + (P.on + P.off)) % (P.on + P.off) < P.on;
 // explosive barrel: everything close is thrown outward and hurt; nearby barrels go off a moment later
 function barrelBoom(P) {
   if (P.dead) return; P.dead = true; const R0 = 125, tops = G.track ? [G.tops[0], G.tops[1], ...G.track.mobs] : G.tops;
   for (const t of tops) { if (!t || t.dead || t.ghost) continue; const dx = t.x - P.x, dy = t.y - P.y, d = len(dx, dy); if (d > R0) continue;
     const n = d > 1 ? { x: dx / d, y: dy / d } : { x: 0, y: -1 }, k = 1 - d / R0, kb = 260 + 560 * k; t.vx += n.x * kb; t.vy += n.y * kb; t.hitT = Math.max(t.hitT, 0.4); t.launchedT = Math.max(t.launchedT, 0.3); detach(t, 0.4);
-    if (!(t.invT > 0)) { const dmg = t.s.maxHp * (t.mob ? 0.45 : t.boss ? 0.05 : 0.07) * (0.5 + 0.5 * k); t.hp = Math.max(t.mob ? 0 : 1, t.hp - dmg); t.flash = 0.25; if (t.mob && t.hp <= 0) t.dead = true; } }
+    if (!(t.invT > 0)) { const dmg = t.s.maxHp * (t.mob ? 0.45 : t.boss ? 0.05 : 0.07) * (0.5 + 0.5 * k); t.hp = Math.max(t.mob ? 0 : 1, t.hp - dmg); t.flash = 0.25; if (t.mob && t.hp <= 0) trapKill(t, 'BLAST KILL!', '#ff7a1a'); } }
+  for (const Q of PROPS) if (Q.type === 'mover' && Q.hp != null && !Q.dead && len(Q.x - P.x, Q.y - P.y) < R0 + (Q.len || 120) / 2) { Q.hp -= (Q.hp0 || 60) * 0.6; Q.flash = 0.2; if (Q.hp <= 0) { Q.dead = true; comicPop(Q.x, Q.y - 50, 'CHAIN CRASH!!', 34, '#ffffff', '#ff7a1a', 0.8); } } // the blast cracks firewalls
   sparks(P.x, P.y, 50, '#ff7a1a', 520, true); sparks(P.x, P.y, 30, '#fcee0a', 380, true); wave(P.x, P.y, '255,122,26', R0, 14, 0.5); comicPop(P.x, P.y - 60, 'KA-BOOM!!', 44, '#fcee0a', '#ff2a55', 0.9);
   G.shake = Math.max(G.shake, 14); G.flash = 0.12; G.flashCol = '255,160,60'; SFX.gate(); SFX.wall(1000);
   for (const Q of PROPS) if (Q.type === 'barrel' && !Q.dead && !(Q.fuse > 0) && len(Q.x - P.x, Q.y - P.y) < R0) Q.fuse = 0.15; // chain reaction a beat later
@@ -6036,7 +6063,7 @@ function barrelBoom(P) {
 function crackHit(P, t, vn, cx, cy) {
   if (vn < 120 || P.dead) return;
   if (t === G.tops[0]) comboAdd(1, cx, cy);
-  const dmg = vn * 0.03 * (0.6 + t.s.w.atk * 0.25) * (t.dashMult || 1);
+  const dmg = vn * 0.03 * (0.6 + t.s.w.atk * 0.25) * (t.dashMult || 1) * ochDmg(t);
   P.hp -= dmg; P.flash = 0.15; t.spin = Math.min(1, t.spin + 0.03); addText(cx, cy - 30, '-' + Math.round(dmg), '#fcee0a', 16); // like the door: attacking keeps the top spinning
   if (P.hp <= 0) { P.dead = true; sparks(cx, cy, 30, P.skin === 'popup' ? '#7fdfff' : '#c9ced6', 360, true); comicPop(cx, cy - 50, P.skin === 'popup' ? 'CLOSE!' : 'CRASH!!', P.skin === 'popup' ? 26 : 36, '#ffffff', '#ff2a55', 0.7); G.shake = Math.max(G.shake, 8); SFX.wall(900); if (t.markT <= 0) t.energy = Math.min(100, t.energy + 8); }
 }
@@ -6848,6 +6875,11 @@ function drawPropsFloor(g, time, only) {
   }
 }
 function drawPropRaised(g, P) {
+  if (P.skin === 'door' && SPR.door) { const S = moverSeg(P, 0), L = Math.hypot(S.x2 - S.x1, S.y2 - S.y1), n = Math.max(1, Math.round(L / 110)); // v0.53.3: painted blast gate
+    g.lineWidth = 16; g.strokeStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.moveTo(S.x1, S.y1 + 6); g.lineTo(S.x2, S.y2 + 6); g.stroke();
+    for (let k = 0; k < n; k++) { const u = (k + 0.5) / n; sprStand(g, SPR.door, S.x1 + (S.x2 - S.x1) * u, S.y1 + (S.y2 - S.y1) * u + 8, (L / n) * 1.06, G.time - P.hitAt < 0.15); }
+    upright(g, (S.x1 + S.x2) / 2, (S.y1 + S.y2) / 2 - 70 * HK() / VIEW_K, () => { g.font = 'italic 900 13px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText('LOCKED', 0, 0); g.fillStyle = '#fcee0a'; g.fillText('LOCKED', 0, 0); });
+    return; }
   if (P.skin === 'door') { const S = moverSeg(P, 0), DZ = 48, x0 = Math.min(S.x1, S.x2), w = Math.abs(S.x2 - S.x1) || 22, x1 = x0 + w, y = (S.y1 + S.y2) / 2; // a solid gate DZ high
     g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x0 + 8, y - 4, w, 16);
     zFill(g, [[x0, y - 8, DZ], [x1, y - 8, DZ], [x1, y, DZ], [x0, y, DZ]], '#05060a', 2);
@@ -6898,6 +6930,15 @@ function drawPropRaised(g, P) {
       for (let k = 0; k < Math.round((1 - f) * 7); k++) { const t0 = rr(), sx = S.x1 + (S.x2 - S.x1) * t0, sy = S.y1 + (S.y2 - S.y1) * t0 - H2; g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + (rr() - 0.5) * 18, sy + rr() * 10 + 2); g.lineTo(sx + (rr() - 0.5) * 22, sy + rr() * 14 + 6); g.stroke(); }
       g.fillStyle = '#fcee0a'; g.fillRect((S.x1 + S.x2) / 2 - 3, (S.y1 + S.y2) / 2 - H2 - 3, 6, 6); }
     upright(g, (S.x1 + S.x2) / 2, (S.y1 + S.y2) / 2 - H2 - 14, () => { const w = 40; g.fillStyle = '#05060a'; g.fillRect(-w / 2 - 2, -4, w + 4, 7); g.fillStyle = '#3a1016'; g.fillRect(-w / 2, -2, w, 3); g.fillStyle = f > 0.35 ? '#fcee0a' : '#ff2a55'; g.fillRect(-w / 2, -2, w * f, 3); });
+  } else if (P.skin === 'sweep') { // v0.54: MEGA SWEEPER — a fat hazard arm on a big hub
+    const S = moverSeg(P, G.time), ang = Math.atan2(S.y2 - S.y1, S.x2 - S.x1), th = 16, nx = -Math.sin(ang) * th, ny = Math.cos(ang) * th, H = 30 * HK() / VIEW_K;
+    const q = l => [[S.x1 + nx, S.y1 + ny - l], [S.x2 + nx, S.y2 + ny - l], [S.x2 - nx, S.y2 - ny - l], [S.x1 - nx, S.y1 - ny - l]], poly = Q => { g.beginPath(); g.moveTo(Q[0][0], Q[0][1]); for (let i = 1; i < 4; i++) g.lineTo(Q[i][0], Q[i][1]); g.closePath(); };
+    g.save(); g.translate(6, 8); poly(q(0)); g.fillStyle = 'rgba(0,0,0,.45)'; g.fill(); g.restore();
+    const B = q(0), T2 = q(H); g.strokeStyle = '#05060a'; g.lineWidth = 3;
+    for (let i = 0; i < 4; i++) { const j = (i + 1) % 4; g.beginPath(); g.moveTo(B[i][0], B[i][1]); g.lineTo(B[j][0], B[j][1]); g.lineTo(T2[j][0], T2[j][1]); g.lineTo(T2[i][0], T2[i][1]); g.closePath(); g.fillStyle = i % 2 ? '#3a1218' : '#5a1a22'; g.fill(); g.stroke(); }
+    g.save(); poly(T2); g.fillStyle = hit ? '#ffffff' : '#ff2a55'; g.fill(); g.clip(); g.fillStyle = '#0b0b0b'; const cx = (S.x1 + S.x2) / 2, cy = (S.y1 + S.y2) / 2 - H; for (let k = -16; k <= 16; k++) { g.beginPath(); g.moveTo(cx + k * 18 - 40, cy - 60); g.lineTo(cx + k * 18 - 31, cy - 60); g.lineTo(cx + k * 18 + 31, cy + 60); g.lineTo(cx + k * 18 + 22, cy + 60); g.closePath(); g.fill(); } g.restore();
+    poly(T2); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke();
+    g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y - H, 22, 0, TAU); g.fill(); g.fillStyle = '#fcee0a'; g.beginPath(); g.arc(P.x, P.y - H, 12, 0, TAU); g.fill(); g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y - H, 5, 0, TAU); g.fill();
   } else if (P.lock && SPR.door) { // v0.53.3: painted blast gate, tiled along the doorway
     const S = moverSeg(P, G.time), L = Math.hypot(S.x2 - S.x1, S.y2 - S.y1), n = Math.max(1, Math.round(L / 110));
     g.lineWidth = 16; g.strokeStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.moveTo(S.x1, S.y1 + 6); g.lineTo(S.x2, S.y2 + 6); g.stroke();
@@ -7014,6 +7055,7 @@ function drawTopWorld0(g, t) {
     // spinning tip under the body
     g.fillStyle = '#c9d2dc'; g.beginPath(); g.ellipse(0, side + 3 / viewK, 5, 5, 0, 0, TAU); g.fill();
   }
+  if (t.ochT > 0) { g.save(); g.shadowColor = '#ff4fd8'; g.shadowBlur = 22; g.strokeStyle = `rgba(255,79,216,${0.6 + 0.4 * Math.sin(G.time * 20)})`; g.lineWidth = 4; g.beginPath(); for (let k = 0; k <= 24; k++) { const a = k / 24 * TAU, r = 40 + (k % 2 ? 6 : -2) * Math.sin(G.time * 30 + k); g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.stroke(); g.restore(); }
   if (t.launchedT > 0 || t.boostT > 0 || (t.ex && t.ex.type === 'dash')) {
     g.save(); g.shadowColor = t.s.c.color; g.shadowBlur = 25; g.strokeStyle = t.s.c.color; g.lineWidth = 3;
     g.beginPath(); g.arc(0, 0, 34 * sc, 0, TAU); g.stroke(); g.restore();
@@ -7416,7 +7458,7 @@ requestAnimationFrame(frame);
 // installable / offline (PWA): only on a real web host — opening the file directly skips it
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { SFX, PK, drawTop, drawTop45, pj, CXv: () => CX, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { propsNow: () => PROPS, SFX, PK, drawTop, drawTop45, pj, CXv: () => CX, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
 showTitle();
 setTimeout(unifyPortraits, 300);
