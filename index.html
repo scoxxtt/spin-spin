@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.42.0</title>
+<title>SPIN! SPIN! v0.42.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -835,6 +835,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.42.1 asphalt texture rebuilt so detail spans the whole road (its plain dark edges read as no road); far down-slopes textured; the corridor walls' inner faces get the painted steel side plates (they no longer read as dark empty road)
  v0.42.0 road camera follows the top's height (decks, ramps, tubes) and pitches with the slope
  v0.41.0 automatic power saving removed (perspective only via the settings toggle; weather, debris, glitch, piers, lamps, speed arcs always on)
  v0.40.3 power saving no longer strips the painted textures; one-time reset of the saved power-saving flag; lighter floor strips and top extrusion
@@ -863,7 +864,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.42.0';
+const GAME_VERSION = 'v0.42.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -5344,7 +5345,10 @@ function tfDrawDeck(g, d) {
   const col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))], zb = b * FLOOR_Z, zt = hv * FLOOR_Z;
   zFill(g, [[x0 + 14, yE + 10, zb], [x1 + 22, yE + 10, zb], [x1 + 22, yS + 14, zb], [x0 + 14, yS + 14, zb]], `rgba(0,0,0,${0.3 + 0.08 * (hv - b)})`); // cast shadow on the floor below
   for (const sx of [x0, x1]) zFill(g, [[sx, yN, zb], [sx, yF, zb], [sx, yF, zt], [sx, yN, zt]], shade(col, -0.45), 2.5); // side walls (the one facing away hides under the top)
-  if (d.down) zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]], shade(col, -0.12), 3);
+  if (d.down) { zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]], shade(col, -0.12), 3);
+    const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im) { const L = yF - yE, P = d.w, st = PSP.on ? 5 : 10; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]]); zEnd(g); g.clip(); // v0.42.1: the far down-slope (seen once the camera rides up) carries the floor too
+      for (let y = yE; y < yF; y += st) { g.save(); zBegin(g, zb + (zt - zb) * (y + st / 2 - yE) / L, d.cx); g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6); zEnd(g); g.restore(); }
+      g.restore(); zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]], 'rgba(0,0,0,.28)', 3); } }
   zFill(g, [[x0, yN, zb], [x1, yN, zb], [x1, yN, zt], [x0, yN, zt]], '#1b2140', 3);            // front face toward the camera
   const hz = zt - zb; for (let k = 0; k < d.w / 26; k++) { const xa = x0 + k * 26 + 4; if (xa + 12 > x1) break; zFill(g, [[xa, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.75], [xa, yN, zb + hz * 0.75]], 'rgba(252,238,10,.38)'); } // hazard panels
   zLine(g, [[x0, yN, zt - 3], [x1, yN, zt - 3]], 'rgba(0,240,255,.85)', 3);
@@ -5434,6 +5438,15 @@ function trackGantries(g, cam) {
     upright(g, CX, y, () => { g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 900 19px Rajdhani, sans-serif'; g.fillStyle = Math.sin(G.time * 3 + sv) > -0.7 ? '#fcee0a' : '#fff6a0'; g.fillText(`GOAL ${left}M ▲`, 0, 1); });
     zEnd(g); g.restore(); }
 }
+function pj(x, y, z) { const u = y - PSP.camy, q = pspQ(u), f = 1 + z * PSP.zk; return [PSP.cx + (x - PSP.camx) * PSP.zs * f / q, PSP.cy + (PSP.zsK * u - z * PSP.zy) / q]; } // same projection as PG's at()
+function wallFaceTex(im, x, y1, y2, WZ, sd) { // map a vertical plate picture onto the wall's inner face, one short slice at a time
+  const per = WZ * 2 * im.width / im.height / 2, st = 18, R = ctx; R.save();
+  for (let y = Math.floor(y1 / st) * st; y < y2; y += st) { const ya = Math.max(y, y1), yb = Math.min(y + st, y2); if (yb <= ya) continue;
+    const B0 = pj(x, ya, 0), B1 = pj(x, yb, 0), T0 = pj(x, ya, WZ), sx = (((ya % per) + per) % per) / per * im.width, sw = Math.max(1, (yb - ya) / per * im.width);
+    R.setTransform((B1[0] - B0[0]) / sw, (B1[1] - B0[1]) / sw, (B0[0] - T0[0]) / im.height, (B0[1] - T0[1]) / im.height, T0[0], T0[1]);
+    R.drawImage(im, Math.min(sx, im.width - sw), 0, sw, im.height, 0, 0, sw * 1.04, im.height); }
+  R.restore();
+}
 function drawTrack(g, time, cam) {
   const T = G.track, y0 = T.y0, top = TRK.ENT_Y, HW = TRK.HW, gw = T.gw, sF = T.len - TRK.FUN, yF = y0 - sF;
   const v0 = PSP.on ? cam.y + PSP.uTop - 60 : cam.y - 820, v1 = PSP.on ? cam.y + PSP.uBot + 60 : cam.y + 820; if (v1 < top - 30) return;
@@ -5487,6 +5500,7 @@ function drawTrack(g, time, cam) {
     const x = CX + sd * HW, xo = x + sd * 24, neon = sd < 0 ? '#7fdfff' : '#ff9ae6';
     for (const [a, b] of segs) { const y1 = Math.max(yOf(b), v0 - 40), y2 = Math.min(yOf(a), v1 + 40); if (y2 <= y1) continue;
       zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ], [x, y1, WZ]], '#232b33', 3, HC);                                       // inner face (a real height now)
+      if (PSP.on && RAMP_TEX.side) wallFaceTex(RAMP_TEX.side, x, y1, y2, WZ, sd);                                              // v0.42.1: steel side plates so the wall reads as a wall, not as empty road
       zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ * 0.35], [x, y1, WZ * 0.35]], 'rgba(0,0,0,.35)');                       // cel shadow at the foot
       for (let sv = Math.ceil(a / 120) * 120; sv < b; sv += 120) { const y = yOf(sv); if (y < y1 || y > y2) continue; zLine(g, [[x, y, 0], [x, y, WZ]], 'rgba(0,0,0,.55)', 2); } // panel seams
       g.globalAlpha = 0.55 + 0.45 * tk; zLine(g, [[x, y1, WZ * 0.62], [x, y2, WZ * 0.62]], neon, 3); g.globalAlpha = 1;      // neon strip
@@ -7017,7 +7031,7 @@ requestAnimationFrame(frame);
 // installable / offline (PWA): only on a real web host — opening the file directly skips it
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { drawTop, drawTop45, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { drawTop, drawTop45, pj, CXv: () => CX, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
 showTitle();
 setTimeout(unifyPortraits, 300);
