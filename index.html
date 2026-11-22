@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.44.0</title>
+<title>SPIN! SPIN! v0.45.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -617,6 +617,21 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #team .tile.r1{border-image-source:url(art/ui/cardframe_1.png) !important}#team .tile.r2{border-image-source:url(art/ui/cardframe_2.png) !important}#team .tile.r3{border-image-source:url(art/ui/cardframe_3.png) !important}
 #team .tile::before,#team .tile::after{display:none !important}
 #team .tile .tn{height:1.25em;line-height:1.25em}
+/* v0.45 draw page: featured banner, pity counter, odds behind an i button */
+.shopCard{width:92% !important;max-width:26em}
+.gBan{position:relative;width:100%;aspect-ratio:1.15;overflow:hidden;border:3px solid #05060a;margin:.3em 0 .6em;background:#0b0f1e}
+.gBanBg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gBan::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,6,12,.75),rgba(5,6,12,0) 60%),linear-gradient(0deg,rgba(5,6,12,.8),rgba(5,6,12,0) 40%);pointer-events:none}
+.gBanFace{position:absolute;left:-3%;bottom:0;height:80%;width:62%;object-fit:cover;object-position:50% 20%;clip-path:polygon(8% 0,100% 0,88% 100%,0 100%);border-right:3px solid #fcee0a;filter:drop-shadow(0 0 1em rgba(176,102,255,.8))}
+.gBanTx{position:absolute;right:.6em;top:.5em;text-align:right;z-index:1}
+.gBanTx b{display:inline-block;font-family:Rajdhani,sans-serif;font-style:italic;font-weight:900;font-size:1.5em;color:#05060a;background:#fcee0a;padding:0 .4em;transform:skewX(-12deg);box-shadow:3px 3px 0 #05060a}
+.gBanTx span{display:block;margin-top:.3em;font-weight:900;font-size:1.25em;line-height:1.15;color:#fff;text-shadow:2px 2px 0 #05060a,0 0 .6em #b066ff}
+.gBanTx small{display:block;color:#d6aaff;font-size:.75em;font-weight:700}
+.gPity{position:absolute;left:0;right:0;bottom:.4em;text-align:center;z-index:1;font-weight:900;font-size:.9em;color:#fff;text-shadow:2px 2px 0 #05060a}.gPity b{color:#fcee0a;font-size:1.3em}
+.gInfo{position:absolute;right:.4em;bottom:.4em;z-index:2;width:1.8em;height:1.8em;border-radius:50%;border:2px solid #00f0ff;background:#0b0f1e;color:#00f0ff;font-weight:900;font-style:italic}
+.gBuy{display:grid;grid-template-columns:1fr 1fr;gap:.5em;width:100%}
+.shopNote{display:none}.shopNote.open{display:block}
+.shopCard #shop{flex-direction:column !important;gap:0 !important}
 </style>
 </head>
 <body>
@@ -897,7 +912,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.44.0';
+const GAME_VERSION = 'v0.45.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2272,12 +2287,15 @@ let invDragged = false;
 })();
 function renderShop() {
   const sh = document.getElementById('shop');
-  sh.innerHTML = `<button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>${ORE}${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>10連抽+1<small>${ORE}${PRICE10}・保底紫</small></button>`;
+  const day = Math.floor(Date.now() / 864e5), feat = PHILO[day % PHILO.length], fc = CLASSES[feat], left = Math.max(1, 10 - ((INV.pity && INV.pity.r) || 0)); // v0.45: a featured purple card that rotates daily
+  sh.innerHTML = `<div class="gBan"><img class="gBanBg" src="art/gacha_bg.jpg" alt=""><img class="gBanFace" src="${PORTRAIT_SRC[feat] || ''}" alt=""><div class="gBanTx"><b>PICK UP</b><span>${fc.name.replace('・', '<br>')}</span><small>紫卡・${fc.fac}</small></div><div class="gPity">再 <b>${left}</b> 抽必出紫卡</div><button class="gInfo" id="gInfo">i</button></div>
+    <div class="gBuy"><button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>${ORE}${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>10連抽+1<small>${ORE}${PRICE10}・保底紫</small></button></div>`;
+  document.getElementById('gInfo').onclick = e => { e.stopPropagation(); document.querySelector('.shopNote').classList.toggle('open'); };
   document.getElementById('buy1').onclick = () => buy(1); document.getElementById('buy10').onclick = () => buy(10);
 }
 const shopPop = document.getElementById('shopPop');
 function openShop() { renderShop(); document.getElementById('shopCoins').innerHTML = `持有 ${ORE} ${INV.coins}`; shopPop.classList.add('show'); SFX.init(); SFX.flip(); }
-shopPop.addEventListener('click', e => { if (!e.target.closest('.shopBtn')) shopPop.classList.remove('show'); });
+shopPop.addEventListener('click', e => { if (!e.target.closest('.shopBtn') && !e.target.closest('.gInfo') && !e.target.closest('.shopNote')) shopPop.classList.remove('show'); });
 document.getElementById('drawOpen').onclick = openShop;
 function buy(n) {
   const price = n === 10 ? PRICE10 : PRICE1; if (INV.coins < price) return;
@@ -2400,7 +2418,7 @@ function startGacha(n, title, done, opt) {
   { const rk = b => Math.max(b.r.c, b.r.w, b.r.a); builds.sort((a, b) => rk(a) - rk(b)); } // v0.44: rarest card comes out (and is placed) last
   PK.best = Math.max(...builds.map(b => b.r.c));
   Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, banner: null, title, done, fx: [], emblem: randomTop(),
-    cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })), spot: null });
+    cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })), spot: null, tease: 0, teaseC: 0, tz1: 0, tz2: 0 });
   gachaBar.style.display = 'none';
   show('gacha');
 }
@@ -2421,6 +2439,7 @@ packCv.addEventListener('pointerdown', e => {
     PK.taps++; PK.shake = 0.3;
     packFx(PW / 2 - 120 + 240 * PK.taps / 3, 262, 14, '#fffbd0', 260);
     SFX.tear(PK.taps);
+    if (PK.taps >= 3 && PK.best >= 1 && !PK.tease) { PK.tease = 1; PK.teaseT = 0; PK.teaseC = 0; SFX.rev(0.5, 60, 300, 0.1); return; } // purple or better inside: hold, the seam glow changes colour first
     if (PK.taps >= 3) { PK.st = 'burst'; PK.t = 0; SFX.burst(); SFX.ex(); SFX.rev(0.6, 80, 220, 0.12); packFx(PW / 2, 330, 70, null, 620); }
   } else if (PK.spot) { PK.spot.t = Math.max(PK.spot.t, 1.9); // tap skips the close-up
   } else if (PK.st === 'cards') {
@@ -2442,7 +2461,26 @@ okBtn.onclick = () => {
 function roundRectP(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 // supply crate: front panel, lid, three clamps across the seam; the seam leaks light in the colour of the best pull inside
 const CRATE_GLOW = ['0,240,255', '176,102,255', '255,42,85', '252,238,10', '255,215,90'];
+const CRATE_IMG = new Image(); CRATE_IMG.onload = () => { CRATE_IMG.ok = true; }; CRATE_IMG.src = 'art/ui/crate.png';
+const GACHA_BG = new Image(); GACHA_BG.onload = () => { GACHA_BG.ok = true; }; GACHA_BG.src = 'art/gacha_bg.jpg';
+const CRATE_CLAMPS = [[0.44, 0.40], [0.665, 0.40], [0.87, 0.40]], CRATE_SEAM = 0.436; // clamp positions / lid seam on the picture (fractions)
+function drawCrateSpr(g, cx, cy, time, tear, lidOff, lidRot, alpha) { // v0.45: the painted crate; the lid half lifts off on the burst
+  const im = CRATE_IMG, w = 330, h = w * im.height / im.width, x0 = cx - w / 2, y0 = cy - h / 2, sy = im.height * CRATE_SEAM, sh = h * CRATE_SEAM;
+  const glow = CRATE_GLOW[PK.tease ? PK.teaseC : 0], open = Math.min(3, Math.round(tear * 3));
+  g.save(); g.globalAlpha = alpha;
+  g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(cx, y0 + h - 6, w * 0.46, 18, 0, 0, TAU); g.fill();
+  g.drawImage(im, 0, sy, im.width, im.height - sy, x0, y0 + sh, w, h - sh);                                                   // body
+  if (open > 0 || lidOff) { const k = lidOff ? 1 : open / 3, gl = g.createLinearGradient(0, y0 + sh - 30, 0, y0 + sh + 10); gl.addColorStop(0, `rgba(${glow},0)`); gl.addColorStop(1, `rgba(${glow},${0.35 + 0.5 * k})`);
+    g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gl; g.fillRect(x0 + w * 0.08, y0 + sh - 30, w * 0.84, 40); g.restore(); }          // light leaking out of the seam
+  g.save(); g.translate(cx, y0 + sh + lidOff * 0.4); g.rotate(lidRot); g.translate(-cx, -(y0 + sh));
+  g.drawImage(im, 0, 0, im.width, sy, x0, y0, w, sh); g.restore();                                                             // lid
+  CRATE_CLAMPS.forEach(([fx, fy], i) => { if (i >= open || lidOff) return; const x = x0 + w * fx, y = y0 + h * fy; // opened clamps: a burst of light where the clamp was
+    g.save(); g.globalCompositeOperation = 'lighter'; const r = 22 + 5 * Math.sin(time * 9 + i); const rg = g.createRadialGradient(x, y, 2, x, y, r); rg.addColorStop(0, 'rgba(255,255,220,.95)'); rg.addColorStop(1, `rgba(${glow},0)`); g.fillStyle = rg; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); g.restore();
+  });
+  g.restore();
+}
 function drawPackBody(g, cx, cy, time, tear, lidOff, lidRot, alpha) {
+  if (CRATE_IMG.ok) return drawCrateSpr(g, cx, cy, time, tear, lidOff, lidRot, alpha);
   const w = 300, h = 210, d = 64, x0 = cx - w / 2, x1 = cx + w / 2, yT = cy - h / 2 + 30, yB = yT + h;
   const glow = CRATE_GLOW[PK.best || 0], open = Math.min(3, Math.round(tear * 3));
   g.save(); g.globalAlpha = alpha; g.lineJoin = 'round';
@@ -2607,6 +2645,7 @@ function drawPack(dt) {
   PK.t += dt; const time = performance.now() / 1000;
   const g = pg; g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, PW, PH);
   // light rays behind everything
+  if (GACHA_BG.ok) { const k = Math.max(PW / GACHA_BG.width, PH / GACHA_BG.height); g.globalAlpha = 0.4; g.drawImage(GACHA_BG, PW / 2 - GACHA_BG.width * k / 2, PH / 2 - GACHA_BG.height * k / 2, GACHA_BG.width * k, GACHA_BG.height * k); g.globalAlpha = 1; g.fillStyle = 'rgba(5,6,12,.35)'; g.fillRect(0, 0, PW, PH); }
   const rayK = PK.st === 'drop' || PK.st === 'pack' ? 0.35 : 1;
   g.save(); g.translate(PW / 2, 400);
   for (let i = 0; i < 16; i++) {
@@ -2625,7 +2664,13 @@ function drawPack(dt) {
     if (PK.shake > 0) { PK.shake -= dt; cx += rnd(-1, 1) * 14 * PK.shake / 0.3; cy += rnd(-1, 1) * 8 * PK.shake / 0.3; }
     g.save(); g.shadowColor = 'rgba(0,240,255,.8)'; g.shadowBlur = 40;
     drawPackBody(g, cx, cy, time, PK.taps / 3, 0, 0, 1); g.restore();
-    if (PK.st === 'pack') prompt(`點擊解開鎖扣！（還有 ${3 - PK.taps} 個）`);
+    if (PK.st === 'pack' && PK.tease) { PK.teaseT += dt; const T2 = PK.teaseT; PK.teaseC = T2 < 0.45 ? 0 : T2 < 1 ? 1 : Math.max(1, PK.best); PK.shake = Math.max(PK.shake, 0.12 + T2 * 0.1);
+      if (T2 > 0.45 && !PK.tz1) { PK.tz1 = 1; PK.flash = 0.45; PK.flashCol = '176,102,255'; SFX.ex(); if (navigator.vibrate) navigator.vibrate(30); }
+      if (T2 > 1 && PK.best >= 2 && !PK.tz2) { PK.tz2 = 1; PK.flash = 0.8; PK.flashCol = PK.best >= 3 ? '252,238,10' : '255,42,85'; SFX.burst(); if (navigator.vibrate) navigator.vibrate([40, 50, 70]); }
+      const tt = PK.teaseC >= 3 ? 'LEGEND!!!' : PK.teaseC === 2 ? 'SUPER RARE!!' : PK.teaseC === 1 ? 'RARE!' : '...!?', z = 1 + 0.15 * Math.sin(T2 * 18);
+      g.save(); g.translate(PW / 2, 210); g.rotate(-0.08); g.scale(z, z); g.font = 'italic 900 52px Rajdhani, sans-serif'; g.lineWidth = 10; g.strokeStyle = '#05060a'; g.strokeText(tt, 0, 0); g.fillStyle = PK.teaseC ? RARITY[PK.teaseC].col : '#fff'; g.fillText(tt, 0, 0); g.restore();
+      if (T2 > (PK.best >= 2 ? 1.7 : 1.2)) { PK.tease = 0; PK.tz1 = PK.tz2 = 0; PK.st = 'burst'; PK.t = 0; SFX.burst(); SFX.ex(); SFX.rev(0.6, 80, 220, 0.12); packFx(PW / 2, 330, 70, null, 620); } }
+    else if (PK.st === 'pack') prompt(`點擊解開鎖扣！（還有 ${3 - PK.taps} 個）`);
   } else if (PK.st === 'burst') {
     const k = PK.t;
     { const glow = CRATE_GLOW[PK.best || 0], bw = 120 + k * 260, ba = Math.max(0, 1 - k * 0.9);
