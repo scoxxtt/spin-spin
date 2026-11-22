@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.48.0</title>
+<title>SPIN! SPIN! v0.48.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -946,7 +946,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.48.0';
+const GAME_VERSION = 'v0.48.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2930,7 +2930,7 @@ const GUIDE = [
   { t: '這就是你的陀螺', b: '每顆陀螺由三層組成：<b>頂冠＝角色卡</b>（決定能力與 EX 大招）、<b>武裝環＝武器</b>（撞擊力道與招式系別）、<b>核心＝鎧甲</b>（底下的光圈顏色，決定耐打程度）。隊伍排 3 顆，依 1→2→3 號上場。', x: 'top' },
   { t: '拉、放、發射！', b: '<b>按住往後拉、放開</b>就發射，拉越長越快。倒數喊到<b>第二聲 SPIN!</b> 的瞬間點一下畫面＝<b>PERFECT</b>，速度和轉速都加成！', x: 'launch' },
   { t: '飛行中也能控制', b: '<b>按住拖曳</b>調整方向追著對手撞；<b>點畫面</b>充能 EX，滿了按 EX 放大招。右上的 <b>AUTO／EX／MOVE</b> 可以交給電腦，MOVE 還有「清敵」模式專門打小兵。', x: 'move' },
-  { t: '賽道關卡', b: '3 顆陀螺＝<b>3 條命</b>，衝到終點撞破大門或打倒 BOSS 就過關。路上有加速帶、跳台、彈力柱，也有陷阱洞、地刺、深淵——<b>高台會往一側偏</b>，看清路線再衝！' + SPR_ROW('boost', 'bumper', 'hole', 'spikes', 'barrel'), x: '' },
+  { t: '賽道關卡', b: '3 顆陀螺＝<b>3 條命</b>，衝到終點撞破大門或打倒 BOSS 就過關。路上有加速帶、跳台、彈力柱，也有陷阱洞、地刺、深淵——<b>窄窄的跳台和高台是捷徑</b>，可能在左、中、右，選好路線再衝！' + SPR_ROW('boost', 'bumper', 'hole', 'spikes', 'barrel'), x: '' },
   { t: '拿星星、衝高分', b: '每關 3 顆星。沿路撿 <b>資料晶片</b>、連續撞擊累積 <b>COMBO</b>，結算時算總分與 <b>S／A／B／C</b> 評價。章節清單上的「差 N★」就是還沒拿滿的關卡。' + SPR_ROW('chip'), x: '' },
   { t: '抽卡與成長', b: '金幣拿去<b>抽補給箱</b>，PICK UP 角色每天換一位。重複的零件拿來<b>升星</b>，3★ 後吃同陣營素材<b>升階</b>（白→紫→紅→金）。同陣營排在一起還有<b>羈絆加成</b>！', x: '' },
 ];
