@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.43.0</title>
+<title>SPIN! SPIN! v0.43.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -850,6 +850,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.43.1 fix: the road (and decks) pinched toward the middle the further you drove under a tilted camera — near corners far behind the camera were projected; lower kerb-like walls
  v0.43.0 pause menu in matches (game visible behind), tabbed settings with even rows; road camera follows floors only (not jumps)
  v0.42.1 asphalt texture rebuilt so detail spans the whole road (its plain dark edges read as no road); far down-slopes textured; the corridor walls' inner faces get the painted steel side plates (they no longer read as dark empty road)
  v0.42.0 road camera follows the top's height (decks, ramps, tubes) and pitches with the slope
@@ -880,7 +881,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.43.0';
+const GAME_VERSION = 'v0.43.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -5366,7 +5367,8 @@ function tfDeckItems(items, g) {
 // raised floors (v0.31.2): drawn with real heights through zTo / zPoly, so a higher floor rises, comes closer and spreads out
 const FLOOR_Z = 40; // height of one floor, in the same units as the corridor walls
 function tfDrawDeck(g, d) {
-  const T = G.track, hv = deckLv(d), b = d.b, x0 = d.cx - d.w / 2, x1 = d.cx + d.w / 2, yN = T.y0 - d.y, yF = T.y0 - d.y - d.l, yS = yN + d.up, yE = yF - d.down;
+  const T = G.track, hv = deckLv(d), b = d.b, x0 = d.cx - d.w / 2, x1 = d.cx + d.w / 2, VB = PSP.on ? PSP.camy + PSP.uBot + 60 : Infinity, yN0 = T.y0 - d.y, yF = T.y0 - d.y - d.l, yS0 = yN0 + d.up, yE = yF - d.down;
+  if (yF > VB) return; const yN = Math.min(yN0, VB), yS = Math.min(yS0, VB); // same near-side clamp as the road
   const col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))], zb = b * FLOOR_Z, zt = hv * FLOOR_Z;
   zFill(g, [[x0 + 14, yE + 10, zb], [x1 + 22, yE + 10, zb], [x1 + 22, yS + 14, zb], [x0 + 14, yS + 14, zb]], `rgba(0,0,0,${0.3 + 0.08 * (hv - b)})`); // cast shadow on the floor below
   for (const sx of [x0, x1]) zFill(g, [[sx, yN, zb], [sx, yF, zb], [sx, yF, zt], [sx, yN, zt]], shade(col, -0.45), 2.5); // side walls (the one facing away hides under the top)
@@ -5374,15 +5376,16 @@ function tfDrawDeck(g, d) {
     const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im) { const L = yF - yE, P = d.w, st = PSP.on ? 5 : 10; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]]); zEnd(g); g.clip(); // v0.42.1: the far down-slope (seen once the camera rides up) carries the floor too
       for (let y = yE; y < yF; y += st) { g.save(); zBegin(g, zb + (zt - zb) * (y + st / 2 - yE) / L, d.cx); g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6); zEnd(g); g.restore(); }
       g.restore(); zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]], 'rgba(0,0,0,.28)', 3); } }
-  zFill(g, [[x0, yN, zb], [x1, yN, zb], [x1, yN, zt], [x0, yN, zt]], '#1b2140', 3);            // front face toward the camera
-  const hz = zt - zb; for (let k = 0; k < d.w / 26; k++) { const xa = x0 + k * 26 + 4; if (xa + 12 > x1) break; zFill(g, [[xa, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.75], [xa, yN, zb + hz * 0.75]], 'rgba(252,238,10,.38)'); } // hazard panels
+  if (yN0 <= VB) zFill(g, [[x0, yN, zb], [x1, yN, zb], [x1, yN, zt], [x0, yN, zt]], '#1b2140', 3);            // front face toward the camera
+  const hz = zt - zb; if (yN0 <= VB) for (let k = 0; k < d.w / 26; k++) { const xa = x0 + k * 26 + 4; if (xa + 12 > x1) break; zFill(g, [[xa, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.75], [xa, yN, zb + hz * 0.75]], 'rgba(252,238,10,.38)'); } // hazard panels
   zLine(g, [[x0, yN, zt - 3], [x1, yN, zt - 3]], 'rgba(0,240,255,.85)', 3);
   zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], col, 3);                  // top face
   { const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im) { const P = d.w, st = PSP.on ? 8 : 40; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); zBegin(g, zt, d.cx); // v0.40: the deck top gets the chapter floor, lit a step brighter per level
       for (let y = Math.floor(yF / st) * st; y < yN; y += st) g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6);
       zEnd(g); g.restore(); zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], `rgba(${hv >= 2 ? '159,232,255' : '255,255,255'},${0.06 + 0.04 * hv})`, 3); } }
   zLine(g, [[x0 + 7, yF + 7, zt], [x1 - 7, yF + 7, zt], [x1 - 7, yN - 7, zt], [x0 + 7, yN - 7, zt], [x0 + 7, yF + 7, zt]], 'rgba(127,223,255,.85)', 2);
-  if (d.up) { zFill(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]], shade(col, 0.08), 3);
+  if (d.up && yN0 <= VB) { const zb = b * FLOOR_Z + (zt - b * FLOOR_Z) * (yS0 - yS) / Math.max(1, yS0 - yN0); // a slope cut at the screen bottom starts part-way up
+    zFill(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]], shade(col, 0.08), 3);
     { const im = RAMP_TEX.top; if (im) { const L = yS - yN, st = PSP.on ? 5 : 10; g.save(); zPoly(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); // v0.40.2: up-slopes use the steel ramp deck too
       for (let y = yN; y < yS; y += st) { g.save(); zBegin(g, zt + (zb - zt) * (y + st / 2 - yN) / L, d.cx); g.drawImage(im, 0, (y - yN) / L * im.height, im.width, im.height * st / L + 1, x0, y, d.w, st + 0.6); zEnd(g); g.restore(); }
       g.restore(); for (let k = 0; k < 6; k++) { const u0 = k / 6, u1 = (k + 1) / 6; zFill(g, [[x0, yS - L * u0, zb + (zt - zb) * u0], [x1, yS - L * u0, zb + (zt - zb) * u0], [x1, yS - L * u1, zb + (zt - zb) * u1], [x0, yS - L * u1, zb + (zt - zb) * u1]], `rgba(0,0,0,${0.3 * (1 - u1)})`); }
@@ -5448,7 +5451,7 @@ function trackBackdrop(g, cam) { // far from the arena the stadium gives way to 
 // overhead gantries across the road every so often: real height, a hanging sign that counts down to the goal
 function trackGantries(g, cam) {
   const T = G.track; if (!T || T.zone !== 'track') return;
-  const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), WZ = 30 + 26 * tk; // stand on the wall rims (same height as drawTrack's walls)
+  const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), WZ = 14 + 10 * tk; // stand on the wall rims (same height as drawTrack's walls)
   const HW = TRK.HW, sF = T.len - TRK.FUN, v0 = PSP.on ? cam.y + PSP.uTop - 80 : cam.y - 820, v1 = PSP.on ? cam.y + PSP.uBot + 80 : cam.y + 820, GZ = WZ + 110, BH = 18, HC = '#05060a';
   for (let sv = 700; sv < sF - 250; sv += 900) { const y = T.y0 - sv; if (y < v0 || y > v1) continue;
     const xl = CX - HW - 12, xr = CX + HW + 12;
@@ -5478,7 +5481,8 @@ function drawTrack(g, time, cam) {
   // corridor walls get taller and lean outward as the camera tilts (fake perspective), so the tilt reads on the long straight road
   const tk = clamp((0.97 - VIEW_K) / 0.32, 0, 1), dz = (14 + 40 * tk) / VIEW_K, lean = 5 + 24 * tk;
   const yOf = sv => y0 - sv, ya = Math.max(v0, top), yb = Math.min(v1, y0);
-  const floor = () => { g.beginPath(); g.moveTo(CX - HW, y0); g.lineTo(CX - HW, yF); g.lineTo(CX - gw, top); g.lineTo(CX + gw, top); g.lineTo(CX + HW, yF); g.lineTo(CX + HW, y0); g.closePath(); };
+  const yn = Math.min(y0, v1); // v0.43.1: never project the road's near corners from far behind the camera (they came out pinched toward the middle, more so the further you drove)
+  const floor = () => { g.beginPath(); g.moveTo(CX - HW, yn); g.lineTo(CX - HW, Math.min(yF, yn)); g.lineTo(CX - gw, top); g.lineTo(CX + gw, top); g.lineTo(CX + HW, Math.min(yF, yn)); g.lineTo(CX + HW, yn); g.closePath(); };
   for (let sv = Math.floor((y0 - Math.min(v1, y0)) / 320) * 320; sv <= Math.min(sF, y0 - Math.max(v0, top)) + 320; sv += 320) { const y = yOf(sv); // the road is a viaduct: concrete piers drop into the city below
     if (sv < 0 || sv > sF) continue; for (const sd of [-1, 1]) { const x = CX + sd * (HW + 6); zFill(g, [[x - 13, y, 0], [x + 13, y, 0], [x + 13, y, -200], [x - 13, y, -200]], '#151a24', 2.5, '#05060a'); zLine(g, [[x + sd * 8, y, -8], [x + sd * 8, y, -190]], sd < 0 ? 'rgba(127,223,255,.35)' : 'rgba(255,154,230,.35)', 2); } }
   floor(); g.fillStyle = T.floor[1]; g.fill();
@@ -5518,13 +5522,13 @@ function drawTrack(g, time, cam) {
   // walls: inner face (seen because the top leans outward), rim with hazard stripes, and the near end cap where a wall stops at a gap
   const stripes = (x, y, w, hh) => { g.save(); g.beginPath(); g.rect(x, y, w, hh); g.clip(); g.fillStyle = '#fcee0a'; g.fillRect(x, y, w, hh); g.fillStyle = '#0b0b0b'; for (let k = Math.floor(y / 18) - 1; k * 18 < y + hh + 18; k++) { g.beginPath(); g.moveTo(x, k * 18); g.lineTo(x + w, k * 18 - 8); g.lineTo(x + w, k * 18 + 1); g.lineTo(x, k * 18 + 9); g.closePath(); g.fill(); } g.restore(); };
   const quad = (p1, p2, p3, p4, col, lw = 3) => { g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.lineTo(p3[0], p3[1]); g.lineTo(p4[0], p4[1]); g.closePath(); g.fillStyle = col; g.fill(); g.strokeStyle = '#030405'; g.lineWidth = lw; g.stroke(); };
-  const WZ = 30 + 26 * tk, AW = WALL_H * HK() / ZV().zy, HC = '#030405'; // corridor wall height; the arena wall height in the same units
+  const WZ = 14 + 10 * tk, AW = WALL_H * HK() / ZV().zy, HC = '#030405'; // corridor wall height; the arena wall height in the same units
   for (const sd of [-1, 1]) {
     let segs = [[0, sF]];
     for (const gp of T.gaps) if (gp.side === sd) segs = segs.flatMap(([a, b]) => gp.to <= a || gp.from >= b ? [[a, b]] : [[a, gp.from], [gp.to, b]].filter(q => q[1] > q[0]));
     const x = CX + sd * HW, xo = x + sd * 24, neon = sd < 0 ? '#7fdfff' : '#ff9ae6';
     for (const [a, b] of segs) { const y1 = Math.max(yOf(b), v0 - 40), y2 = Math.min(yOf(a), v1 + 40); if (y2 <= y1) continue;
-      zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ], [x, y1, WZ]], '#232b33', 3, HC);                                       // inner face (a real height now)
+      zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ], [x, y1, WZ]], '#3b4654', 3, HC);                                       // inner face (a real height now)
       if (PSP.on && RAMP_TEX.side) wallFaceTex(RAMP_TEX.side, x, y1, y2, WZ, sd);                                              // v0.42.1: steel side plates so the wall reads as a wall, not as empty road
       zFill(g, [[x, y1, 0], [x, y2, 0], [x, y2, WZ * 0.35], [x, y1, WZ * 0.35]], 'rgba(0,0,0,.35)');                       // cel shadow at the foot
       for (let sv = Math.ceil(a / 120) * 120; sv < b; sv += 120) { const y = yOf(sv); if (y < y1 || y > y2) continue; zLine(g, [[x, y, 0], [x, y, WZ]], 'rgba(0,0,0,.55)', 2); } // panel seams
