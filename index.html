@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.43.5</title>
+<title>SPIN! SPIN! v0.43.6</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -850,6 +850,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.43.6 card back uses the same frame as the face (star art inside), so both sides have one shape
  v0.43.5 card faces get the painted holo frame (art/ui/cardframe.png), recoloured per rarity
  v0.43.4 card back keeps its own proportions
  v0.43.3 card backs use the painted holographic star card (art/ui/cardback.png), recoloured per rarity
@@ -885,7 +886,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.43.5';
+const GAME_VERSION = 'v0.43.6';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2493,6 +2494,7 @@ function resTag(g, res, x, y, w) {
 const UI_PANEL = new Image(); UI_PANEL.onload = () => { UI_PANEL.ok = true; }; UI_PANEL.src = 'art/ui/panel.png';
 const CARD_FRAME = new Image(); CARD_FRAME.onload = () => { CARD_FRAME.ok = true; }; CARD_FRAME.src = 'art/ui/cardframe.png'; // v0.43.5: painted frame around the card face
 const CARD_FRAMES = {};
+const frameBox = (w, h) => { const k2 = Math.min(w / CARD_FRAME.width, h / CARD_FRAME.height) * 1.06, fw = CARD_FRAME.width * k2, fh = CARD_FRAME.height * k2; return { fw, fh, s: Math.min(fw * 0.764 / w, fh * 0.767 / h), oy: -fh * 0.026, ww: fw * 0.79, wh: fh * 0.79 }; };
 function cardFrameOf(r) { if (CARD_FRAMES[r]) return CARD_FRAMES[r]; const im = CARD_FRAME, c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d');
   x.drawImage(im, 0, 0); const tint = [null, '#b066ff', '#ff2a55', '#fcb80a'][r]; if (tint) { x.globalCompositeOperation = 'color'; x.globalAlpha = 0.7; x.fillStyle = tint; x.fillRect(0, 0, c.width, c.height); x.globalAlpha = 1; x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0); }
   return (CARD_FRAMES[r] = c); }
@@ -2515,7 +2517,17 @@ function drawCard(g, card, sl, time, appear) {
     g.fillStyle = gl; g.beginPath(); g.arc(0, 0, w * 1.1, 0, TAU); g.fill();
   }
   roundRectP(g, -w / 2, -h / 2, w, h, 14);
-  if (!face && CARD_BACK.ok) { // v0.43.3: the painted star card as the back, recoloured by rarity
+  if (!face && CARD_BACK.ok && CARD_FRAME.ok) { // v0.43.6: back = the same frame as the face, the star card's centre inside it
+    const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0, pc = cardBackOf(hr), F = frameBox(w, h);
+    if (hr >= 1) { g.save(); g.shadowColor = RARITY[hr].col; g.shadowBlur = 18 + 12 * Math.sin(time * (hr === 3 ? 9 : 6)); g.fillStyle = RARITY[hr].col; g.fillRect(-F.ww / 2, F.oy - F.wh / 2, F.ww, F.wh); g.restore(); }
+    const cx0 = pc.width * 0.16, cy0 = pc.height * 0.14, cw = pc.width * 0.68, ch = pc.height * 0.72; // crop the art inside the star card's own border
+    g.save(); g.beginPath(); g.rect(-F.ww / 2, F.oy - F.wh / 2, F.ww, F.wh); g.clip(); const kk = Math.max(F.ww / cw, F.wh / ch); g.drawImage(pc, cx0, cy0, cw, ch, -cw * kk / 2, F.oy - ch * kk / 2, cw * kk, ch * kk);
+    g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.16 + 0.12 * Math.sin(time * 5); g.drawImage(pc, cx0, cy0, cw, ch, -cw * kk / 2, F.oy - ch * kk / 2, cw * kk, ch * kk); g.restore();
+    g.drawImage(cardFrameOf(hr), -F.fw / 2, -F.fh / 2, F.fw, F.fh);
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    if (hr >= 1) { const rb = h * 0.11, ry = h * 0.3; g.fillStyle = '#05060a'; g.fillRect(-F.ww / 2, ry - rb / 2 - 3, F.ww, rb + 6); g.fillStyle = RARITY[hr].col; g.fillRect(-F.ww / 2 + 2, ry - rb / 2, F.ww - 4, rb);
+      g.font = `900 ${Math.round(w * 0.1)}px Rajdhani, sans-serif`; g.fillStyle = '#fff'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const tx = `${RARITY[hr].n}卡！`; g.strokeText(tx, 0, ry + 1); g.fillText(tx, 0, ry + 1); }
+  } else if (!face && CARD_BACK.ok) { // v0.43.3: the painted star card as the back, recoloured by rarity
     const hr = card.b.r ? Math.max(card.b.r.c, card.b.r.w, card.b.r.a) : 0, pc = cardBackOf(hr);
     if (hr >= 1) { g.save(); g.shadowColor = RARITY[hr].col; g.shadowBlur = 18 + 12 * Math.sin(time * (hr === 3 ? 9 : 6)); g.fillStyle = RARITY[hr].col; g.fillRect(-w / 2 + 6, -h / 2 + 6, w - 12, h - 12); g.restore(); }
     { const k = Math.min(w / pc.width, h / pc.height) * 1.08, dw = pc.width * k, dh = pc.height * k; g.drawImage(pc, -dw / 2, -dh / 2, dw, dh); };
@@ -2541,7 +2553,7 @@ function drawCard(g, card, sl, time, appear) {
       const tx = `${RARITY[hr].n}卡！`; g.strokeText(tx, 0, ry + 1); g.fillText(tx, 0, ry + 1);
     }
   } else {
-    const b = card.b, c = CLASSES[b.c], fr = CARD_FRAME.ok ? (() => { const k2 = Math.min(w / CARD_FRAME.width, h / CARD_FRAME.height) * 1.06, fw = CARD_FRAME.width * k2, fh = CARD_FRAME.height * k2; return { fw, fh, s: Math.min(fw * 0.764 / w, fh * 0.767 / h), oy: -fh * 0.026 }; })() : null;
+    const b = card.b, c = CLASSES[b.c], fr = CARD_FRAME.ok ? frameBox(w, h) : null;
     if (fr) { g.save(); g.translate(0, fr.oy); g.scale(fr.s, fr.s); roundRectP(g, -w / 2, -h / 2, w, h, 6); } // the face shrinks into the frame's window
     const fg = g.createLinearGradient(0, -h / 2, 0, h / 2); fg.addColorStop(0, shade(c.color, -0.35)); fg.addColorStop(1, '#0d0c1e');
     g.fillStyle = fg; g.fill();
