@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.48.1</title>
+<title>SPIN! SPIN! v0.49.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -665,6 +665,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #team .slot .sfac{position:absolute;left:.1em;top:1.7em;z-index:2}
 #team .slot .spad{position:absolute;right:-.1em;bottom:53%;width:3.8em;z-index:1;pointer-events:none;filter:drop-shadow(0 .3em .3em rgba(0,0,0,.6))}
 #team .slot .stop{z-index:3;bottom:56% !important;width:4.8em !important;height:4.8em !important}
+.pfw{position:relative;display:block;width:76%;margin:.5em auto .45em}.pfw img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border:0 !important;margin:0 !important}.pfw .pfF{position:absolute;left:-23.5%;top:-23.5%;width:147%;max-width:none;object-fit:contain;pointer-events:none}
 </style>
 </head>
 <body>
@@ -946,7 +947,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.48.1';
+const GAME_VERSION = 'v0.49.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3437,7 +3438,7 @@ function openLevel(lv) {
   document.getElementById('lvPopIn').innerHTML = `<div class="lvT"><b>${lv.id}</b>${lv.name}${lv.boss ? '<span class="bossTag">BOSS</span>' : ''}</div>
     <div class="lvD">${lv.desc}</div>${lv.track ? `<div class="lvD" style="color:#7fdfff">◆ 資料晶片 ${chipsOf(lv.id)} / 3（藏在危險的地方，第一次拿到給金幣）</div>` : ''}<div class="lvTagRow">${levelTags(lv).map(x => `<span>${x}</span>`).join('')}</div>
     <div class="lvH">${lv.boss ? 'BOSS：' + F.name + '・' + D.name : lv.track ? '途中敵人' : '對手：' + F.name + '・' + D.name}</div>
-    <div class="lvFoe">${F.team.map((b, i) => `<div><img src="${PORTRAIT_SRC[b.c]}" alt=""><i>${F.tags ? F.tags[i] : (i + 1) + ' 號'}</i><i>${CLASSES[b.c].name}</i></div>`).join('')}</div>
+    <div class="lvFoe">${F.team.map((b, i) => `<div><span class="pfw"><img src="${PORTRAIT_SRC[b.c]}" alt="">${pfKey(b.c) ? `<img class="pfF" src="art/ui/pf_${pfKey(b.c)}.png" alt="">` : ''}</span><i>${F.tags ? F.tags[i] : (i + 1) + ' 號'}</i><i>${CLASSES[b.c].name}</i></div>`).join('')}</div>
     <div class="lvH">星星條件</div>${lv.stars.map((x, i) => `<div class="lvRow${st[i] ? ' ok' : ''}">${st[i] ? '★' : '☆'} ${starText(x)}</div>`).join('')}
     <div class="lvH">獎勵</div><div class="lvRow${st[0] ? ' ok' : ''}">首次過關：${rewardText(R.first)}${st[0] ? '（已領）' : ''}</div>${R.star3 ? `<div class="lvRow${full3(st) ? ' ok' : ''}">三顆星：${rewardText(R.star3)}${full3(st) ? '（已領）' : ''}</div>` : ''}
     <div class="lvRow">每場另有一般勝敗金幣（${D.name} ×${D.coin}）</div>
@@ -5782,11 +5783,16 @@ function bossAlarm(g) {
 // HUD centre plate in track mode: the three lives (lineup order) and progress up the road / BOSS health
 function trackHudPlate(g, T0) {
   const T = G.track, n = G.lineup.length;
-  for (let i = 0; i < n; i++) { const x = CX + (i - (n - 1) / 2) * 36, y = T0 + 64, lost = i < T.idx, cur = i === T.idx;
+  if (PF.iron) { for (let i = 0; i < n; i++) { const s2 = i === T.idx ? 26 : 20, x = CX + (i - (n - 1) / 2) * 31 - s2 / 2, y = T0 + 62 - s2 / 2, lost = i < T.idx; // the three tops as framed portraits
+      framedFace(g, G.lineup[i].c, x, y, s2, lost); if (lost) { g.font = 'italic 900 22px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText('×', x + s2 / 2, y + s2 / 2 + 1); g.fillStyle = '#ff2a55'; g.fillText('×', x + s2 / 2, y + s2 / 2 + 1); } }
+    if (T.zone !== 'boss' && !T.gate) { const pr = clamp((T.y0 - G.tops[0].y) / Math.max(1, T.len - TRK.FUN), 0, 1), bx = CX - 42, by = T0 + 86, bw = 78; // progress bar with a goal flag
+      g.fillStyle = '#05060a'; g.fillRect(bx - 2, by - 2, bw + 4, 9); const gr = g.createLinearGradient(bx, 0, bx + bw, 0); gr.addColorStop(0, '#9fe8ff'); gr.addColorStop(1, '#ff8fdc'); g.fillStyle = gr; g.fillRect(bx, by, bw * pr, 5);
+      g.font = '12px sans-serif'; g.textAlign = 'center'; g.fillText('🏁', bx + bw + 9, by + 3); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(bx + bw * pr, by - 4); g.lineTo(bx + bw * pr + 4, by + 2.5); g.lineTo(bx + bw * pr, by + 9); g.lineTo(bx + bw * pr - 4, by + 2.5); g.closePath(); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 1.5; g.stroke(); }
+  } else for (let i = 0; i < n; i++) { const x = CX + (i - (n - 1) / 2) * 36, y = T0 + 64, lost = i < T.idx, cur = i === T.idx;
     g.beginPath(); g.arc(x, y, 13, 0, TAU); g.fillStyle = lost ? '#1a1e26' : cur ? '#fcee0a' : 'rgba(252,238,10,.35)'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = lost ? '#3a4250' : cur ? '#00f0ff' : '#fcee0a'; g.lineWidth = 2; g.stroke();
     g.font = 'italic 900 14px Rajdhani, sans-serif'; g.textAlign = 'center'; g.fillStyle = lost ? '#59606c' : '#05060a'; g.fillText(lost ? '×' : String(i + 1), x, y + 1); }
   const b = T.boss, txt = T.zone === 'boss' ? `BOSS ${Math.max(0, Math.ceil(b.hp / b.s.maxHp * 100))}%` : T.gate ? (T.gate.open ? 'GATE OPEN!' : `GATE ${Math.max(0, Math.ceil(T.gate.hp / T.gate.max * 100))}%`) : `${Math.round(T.best / T.len * 100)}%`;
-  g.font = 'italic 900 17px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; g.strokeText(txt, CX, T0 + 94); g.fillStyle = T.zone === 'boss' || (T.gate && !T.gate.open) ? '#ff2a55' : '#7fdfff'; g.fillText(txt, CX, T0 + 94);
+  g.font = 'italic 900 17px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const ty = PF.iron && T.zone !== 'boss' && !T.gate ? T0 + 104 : T0 + 94; g.strokeText(txt, CX, ty); g.fillStyle = T.zone === 'boss' || (T.gate && !T.gate.open) ? '#ff2a55' : '#7fdfff'; g.fillText(txt, CX, ty);
 }
 // story screen helpers for track levels
 function levelFoe(lv) {
@@ -6472,14 +6478,26 @@ function drawExArc(g) {
   }
   g.restore();
 }
+// v0.49: faction portrait frames (art/ui/pf_*.png, window ≈ 16%–84%) and the painted panel behind the HUD
+const PF = {}; for (const k of ['iron', 'wild', 'hack', 'philo']) { const im = new Image(); im.onload = () => { PF[k] = im; }; im.src = `art/ui/pf_${k}.png`; }
+const pfKey = id => { const c = CLASSES[baseCls(id)]; return c ? FAC_IMG[c.fac] : null; };
+function framedFace(g, id, x, y, s, dim) { // portrait of size s at (x, y) with its faction frame around it
+  g.save(); g.beginPath(); g.rect(x, y, s, s); g.fillStyle = '#000'; g.fill(); g.clip(); drawPortrait(g, id, x, y, s, s); if (dim) { g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(x, y, s, s); } g.restore();
+  const f = PF[pfKey(id)]; if (f) { const fs = s / 0.68; g.drawImage(f, x + s / 2 - fs / 2, y + s / 2 - fs / 2, fs, fs); } else { g.strokeStyle = '#05060a'; g.lineWidth = 4; g.strokeRect(x, y, s, s); }
+}
+let hudPanel = null;
+function hudPanelOf(w, h) { if (hudPanel && hudPanel.width === w && hudPanel.height === h) return hudPanel; const im = UI_PANEL, c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'), S = 54, D = 26, iw = im.width, ih = im.height;
+  for (const [sx, sw, dx, dw] of [[0, S, 0, D], [S, iw - 2 * S, D, w - 2 * D], [iw - S, S, w - D, D]]) for (const [sy, sh, dy, dh] of [[0, S, 0, D], [S, ih - 2 * S, D, h - 2 * D], [ih - S, S, h - D, D]]) x.drawImage(im, sx, sy, sw, sh, dx, dy, dw, dh);
+  return (hudPanel = c); }
 function drawHUD(g) {
   const [p, a] = G.tops, T = 48, B = 172;
   g.textBaseline = 'middle'; g.lineJoin = 'round';
   // frame
   const frame = () => { g.beginPath(); g.moveTo(10, T); g.lineTo(W - 10, T); g.lineTo(W - 10, B - 12); g.lineTo(W - 22, B); g.lineTo(22, B); g.lineTo(10, B - 12); g.closePath(); };
-  frame(); g.fillStyle = 'rgba(5,6,10,.8)'; g.fill();
+  if (UI_PANEL.ok) { g.globalAlpha = 0.94; g.drawImage(hudPanelOf(W - 8, B - T + 10), 4, T - 5); g.globalAlpha = 1; }
+  else { frame(); g.fillStyle = 'rgba(5,6,10,.8)'; g.fill();
   g.save(); frame(); g.clip(); g.globalAlpha = 0.18; g.fillStyle = dotPattern(g); g.fillRect(10, T, W - 20, B - T); g.restore();
-  frame(); g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = 'rgba(0,240,255,.55)'; g.lineWidth = 1.5; g.stroke();
+  frame(); g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = 'rgba(0,240,255,.55)'; g.lineWidth = 1.5; g.stroke(); }
   g.fillStyle = 'rgba(0,240,255,.25)'; g.fillRect(22, T + 30, W - 44, 1.5);
   // names row
   g.font = 'italic 900 18px Rajdhani, sans-serif'; g.lineWidth = 4; g.strokeStyle = '#05060a';
@@ -6488,17 +6506,15 @@ function drawHUD(g) {
   g.textAlign = 'center'; g.font = 'italic 900 13px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.75)';
   g.fillText(G.track ? `STAGE ${G.level.id}` : G.sudden ? 'SUDDEN DEATH' : `ROUND ${G.round} / 3`, CX, T + 16);
   // score plate
-  g.beginPath(); g.moveTo(CX - 62, T + 40); g.lineTo(CX + 70, T + 40); g.lineTo(CX + 62, T + 108); g.lineTo(CX - 70, T + 108); g.closePath();
+  g.beginPath(); g.moveTo(CX - 48, T + 40); g.lineTo(CX + 56, T + 40); g.lineTo(CX + 48, T + 108); g.lineTo(CX - 56, T + 108); g.closePath();
   g.fillStyle = '#0b0e14'; g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 4; g.stroke(); g.strokeStyle = 'rgba(252,238,10,.7)'; g.lineWidth = 1.5; g.stroke();
   g.font = 'italic 900 44px Rajdhani, sans-serif';
   if (G.track) trackHudPlate(g, T); else { const sc = `${G.score[0]} : ${G.score[1]}`, sy = T + 76; g.lineWidth = 8; g.strokeStyle = '#05060a'; g.strokeText(sc, CX + 3, sy + 3); g.strokeText(sc, CX, sy); g.fillStyle = '#05060a'; g.fillText(sc, CX + 3, sy + 3); g.fillStyle = '#fcee0a'; g.fillText(sc, CX, sy); }
   // each side: portrait, card name, parts, bars, status tags
   const side = (t, align, col) => {
-    const L = align === 'left', ps = 54, px = L ? 22 : W - 22 - ps, py = T + 40, x = L ? px + ps + 8 : px - 8 - 118, tw = 118;
-    const tile = () => { g.beginPath(); g.moveTo(px, py); g.lineTo(px + ps, py); g.lineTo(px + ps, py + ps - 10); g.lineTo(px + ps - 10, py + ps); g.lineTo(px, py + ps); g.closePath(); };
-    g.save(); tile(); g.fillStyle = '#000'; g.fill(); g.clip(); drawPortrait(g, t.build.c, px, py, ps, ps); g.restore();
-    tile(); g.strokeStyle = '#05060a'; g.lineWidth = 5; g.stroke(); g.strokeStyle = col; g.lineWidth = 2.2; g.stroke();
-    if (t.dead || t.falling) { g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(px, py, ps, ps); }
+    const L = align === 'left', ps = 46, px = L ? 24 : W - 24 - ps, py = T + 44, x = L ? px + ps + 15 : px - 15 - 100, tw = 100;
+    framedFace(g, t.build.c, px, py, ps, t.dead || t.falling);
+    g.fillStyle = col; g.fillRect(px + 4, py + ps + 9, ps - 8, 3); // side colour under the frame
     const ax = L ? x : x + tw; g.textAlign = L ? 'left' : 'right';
     g.font = '900 14px Rajdhani, sans-serif'; g.fillStyle = '#ffffff'; fitText(g, CLASSES[t.build.c].name, ax, py + 7, tw);
     g.font = '10px Rajdhani, sans-serif'; g.fillStyle = 'rgba(255,255,255,.6)'; fitText(g, `${t.s.w.name}・${t.s.a.name}`, ax, py + 22, tw);
