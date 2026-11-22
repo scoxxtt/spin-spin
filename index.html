@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.53.2</title>
+<title>SPIN! SPIN! v0.53.3</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -571,7 +571,7 @@ h1{font-style:italic;text-shadow:-2px -2px 0 #05060a,2px -2px 0 #05060a,-2px 2px
 #comicGo{padding:.6em 2.6em;opacity:.35;transform:scale(.8);pointer-events:none;transition:opacity .3s,transform .3s}
 #comicGo.on{opacity:1;transform:scale(1);pointer-events:auto}
 #comic.show~#topRight,body:has(#comic.show) #topRight{display:none}
-#home.hasBg{background:linear-gradient(rgba(5,6,10,.12),rgba(5,6,10,.25) 55%,rgba(5,6,10,.6)),url(art/bg_lobby.jpg) center top/cover no-repeat}
+#home.hasBg{background:linear-gradient(rgba(5,6,10,.12),rgba(5,6,10,.25) 55%,rgba(5,6,10,.6)),url(art/bg_lobby.jpg) center 62%/cover no-repeat}
 .hmLogoImg{display:block;height:8em;width:auto;max-width:82%;margin:-.3em auto -.2em;align-self:center;filter:drop-shadow(0 .18em 0 rgba(0,0,0,.55))}
 /* ===== v0.37 painted UI kit (art/ui): 9-slice buttons and panels, painted icons ===== */
 .btn{border-style:solid !important;border-color:transparent !important;border-width:.42em .5em .55em !important;border-image:url(art/ui/btnY.png) 30 33 38 33 fill stretch !important;background:none !important;box-shadow:none !important;border-radius:0 !important;clip-path:none !important}
@@ -708,6 +708,14 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #final.story #toTeamBtn,#final.story #retryBtn,#final.story #nextBtn{font-size:.82em;padding-left:.3em;padding-right:.3em;min-height:3.2em;white-space:normal;line-height:1.15;width:100%}
 #final.story #nextCount{display:none}
 #versus .vsBtns .btn{font-size:.9em;padding-left:.4em;padding-right:.4em;white-space:nowrap}
+#finalText.img{text-shadow:none !important;transform:none !important;line-height:0}#finalText.img img{height:min(10em,24vh);width:auto;max-width:90vw;animation:ftPop .5s cubic-bezier(.3,1.6,.5,1) both;filter:drop-shadow(0 6px 0 rgba(0,0,0,.5))}
+#final.story #finalText.img img{height:min(8.5em,19vh)}
+@keyframes ftPop{0%{transform:scale(.3) rotate(-8deg);opacity:0}100%{transform:none;opacity:1}}
+/* v0.53.3: painted chapter header and stage cards (number sits in the round slot) */
+.chHead{border-image:url(art/ui/chframe.png) 64 58 74 58 fill stretch !important;border-width:.95em .9em 1.05em !important}
+.lvCard{border-style:solid !important;border-color:transparent !important;border-width:.55em .55em .55em 3em !important;border-image:url(art/ui/lvframe.png) 30 30 30 165 fill stretch !important;background:none !important;box-shadow:none !important;clip-path:none !important;border-radius:0 !important;min-height:2.6em;padding:.15em .4em .15em .2em !important}
+.lvCard .lvNo{margin-left:-2.95em;width:2.55em;min-width:0;text-align:center;font-size:1em;letter-spacing:-.02em}
+.lvCard.lock{filter:grayscale(.85) brightness(.7)}
 </style>
 </head>
 <body>
@@ -989,7 +997,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.53.2';
+const GAME_VERSION = 'v0.53.3';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -6240,7 +6248,8 @@ function afterRound() {
 function finish() {
   G.phase = 'final';
   const win = G.score[0] > G.score[1];
-  document.getElementById('finalText').textContent = win ? 'VICTORY!' : 'DEFEAT...';
+  { const ft = document.getElementById('finalText'), tr = !!G.track, src = `art/ui/t_${tr ? (win ? 'clear' : 'over') : (win ? 'victory' : 'defeat')}.png`; // v0.53.3: painted comic title
+    ft.textContent = win ? 'VICTORY!' : 'DEFEAT...'; ft.classList.remove('img'); const im = new Image(); im.onload = () => { ft.innerHTML = ''; ft.appendChild(im); ft.classList.add('img'); }; im.src = src; }
   document.getElementById('finalText').style.color = win ? '#fcee0a' : '#ff2a55';
   const today = new Date().toDateString(), daily = win && INV.day !== today;
   const D = DIFF[G.diff] || DIFF.normal, got = Math.round((win ? WIN_COIN : LOSE_COIN) * D.coin) + (daily ? DAILY_COIN : 0);
@@ -6250,7 +6259,7 @@ function finish() {
   { const S = INV.stats; S.matches++; if (win) { S.wins++; S.streak++; S.best = Math.max(S.best, S.streak); } else { S.losses++; S.streak = 0; } S.coins += got;
     for (const b of collection) S.use[b.c] = (S.use[b.c] || 0) + 1; }
   save();
-  document.getElementById('finalScore').innerHTML = `<b class="fsc">${G.track ? (win ? 'STAGE CLEAR!' : 'GAME OVER') : `YOU ${G.score[0]} : ${G.score[1]} CPU`}</b><br><span class="coinGot">${ORE} +${got}${daily ? `（含每日首勝 +${DAILY_COIN}）` : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
+  document.getElementById('finalScore').innerHTML = `${G.track ? '' : `<b class="fsc">YOU ${G.score[0]} : ${G.score[1]} CPU</b><br>`}<span class="coinGot">${ORE} +${got}${daily ? `（含每日首勝 +${DAILY_COIN}）` : ''}${D.coin !== 1 ? `（${D.name} ×${D.coin}）` : ''}</span><br><span style="font-size:.6em;opacity:.7">持有 ${ORE}${INV.coins}・${win ? '100 金幣可以抽一次' : '輸了也有金幣，調整零件再試試'}</span>`;
   if (gift) document.getElementById('finalScore').insertAdjacentHTML('beforeend', `<div class="coinGot" style="margin-top:.4em;color:#fcee0a;font-weight:900">🎁 新手禮：${ORE} +10000，快去抽補給箱！</div>`);
   const db = document.getElementById('drawBtn'); db.innerHTML = `立即單抽（${ORE}${PRICE1}）`; db.style.display = INV.coins >= PRICE1 ? '' : 'none';
   const rb = document.getElementById('retryBtn'); rb.style.display = ''; rb.textContent = win ? '再戰一場（換新對手）' : '再挑戰（換新對手）'; document.getElementById('toTeamBtn').textContent = '回到陣容';
@@ -6710,7 +6719,9 @@ function drawRim(g, A0, A1) {
 }
 // ---------- props drawing (floor space, squashed by the 2.5D view) ----------
 // v0.35: painted prop sprites (art/props/*.png, cut from two generated sheets); each draw falls back to the old vector art until loaded
-const SPR = {}; for (const n of ['boost', 'belt', 'magnet', 'turn', 'switch', 'hole', 'spikes', 'ice', 'chip', 'bumper', 'barrel', 'laser', 'lamp', 'crates', 'drone']) { const im = new Image(); im.onload = () => { SPR[n] = im; }; im.src = `art/props/${n}.png`; }
+const MOB_SPR = []; for (let i = 0; i < 9; i++) { const im = new Image(); im.onload = () => { MOB_SPR[i] = im; }; im.src = `art/mobs/m${i}.png`; } // v0.53.3: track enemies are machines / bio-creatures, not tops
+const MOB_SKIN = { guard: [0, 6, 8, 3], rush: [2, 4, 7, 1, 5] }; let mobSkinN = 0;
+const SPR = {}; for (const n of ['boost', 'belt', 'magnet', 'turn', 'switch', 'hole', 'spikes', 'ice', 'chip', 'bumper', 'barrel', 'laser', 'lamp', 'crates', 'drone', 'fw', 'fw_dmg', 'door', 'portal']) { const im = new Image(); im.onload = () => { SPR[n] = im; }; im.src = `art/props/${n}.png`; }
 function flatImg(g, im, x, y, w, h) { const st = 6, sh = im.height / h; for (let yy = 0; yy < h; yy += st) { const hh = Math.min(st, h - yy); g.drawImage(im, 0, yy * sh, im.width, hh * sh, x, y + yy, w, hh + 0.6); } } // v0.52.1: floor art laid in thin strips so it follows the perspective (a trapezoid)
 function sprStand(g, im, x, y, w, hit) { const h = w * im.height / im.width; upright(g, x, y, () => { if (hit) g.filter = 'brightness(1.9)'; g.drawImage(im, -w / 2, -h, w, h); if (hit) g.filter = 'none'; }); }
 function drawPropsFloor(g, time, only) {
@@ -6770,6 +6781,10 @@ function drawPropsFloor(g, time, only) {
       g.restore(); continue; }
     if (P.type === 'portal') {
       const io = !!P.dst, c1 = io ? '#7fdfff' : '#ff9ae6', c2 = io ? '#ff9ae6' : '#7fdfff', hit = time - P.hitAt < 0.3, r = P.r;
+      if (SPR.portal) { const d = r * 2.7, h = d * SPR.portal.height / SPR.portal.width; g.save(); if (io) g.filter = 'hue-rotate(-110deg) saturate(1.2)'; if (hit) g.filter = 'brightness(1.8)'; flatImg(g, SPR.portal, P.x - d / 2, P.y - h / 2, d, h); g.filter = 'none';
+        g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 5); g.strokeStyle = c1; g.lineWidth = 3; g.beginPath(); g.arc(P.x, P.y, r * (0.5 + 0.15 * Math.sin(time * 3)), time * 3, time * 3 + 3.5); g.stroke(); g.restore();
+        upright(g, P.x, P.y + r + 12, () => { g.font = 'italic 900 11px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = '#05060a'; const tx = io ? 'WARP' : 'EXIT'; g.strokeText(tx, 0, 0); g.fillStyle = c1; g.fillText(tx, 0, 0); });
+        continue; }
       g.save(); g.fillStyle = '#05060a'; g.beginPath(); g.arc(P.x, P.y, r + 5, 0, TAU); g.fill();
       const gr = g.createRadialGradient(P.x, P.y, 2, P.x, P.y, r); gr.addColorStop(0, '#05060a'); gr.addColorStop(0.55, io ? 'rgba(127,223,255,.35)' : 'rgba(255,154,230,.35)'); gr.addColorStop(1, c1);
       g.fillStyle = gr; g.beginPath(); g.arc(P.x, P.y, r, 0, TAU); g.fill();
@@ -6840,6 +6855,13 @@ function drawPropRaised(g, P) {
     g.fillStyle = hit ? '#ffffff' : '#141823'; g.beginPath(); g.arc(x, y - hz, r, 0, TAU); g.fill(); g.lineWidth = 3; g.stroke();
     g.strokeStyle = hit ? '#fcee0a' : '#ff4fd8'; g.lineWidth = 3; g.beginPath(); g.arc(x, y - hz, r - 6, 0, TAU); g.stroke();
     g.fillStyle = hit ? '#ff4fd8' : '#7fdfff'; g.beginPath(); g.arc(x, y - hz, 4, 0, TAU); g.fill();
+  } else if (P.hp != null && P.skin !== 'popup' && SPR.fw) { // v0.53.3: painted firewall, tiled along the wall; cracks when it is below half
+    const S = moverSeg(P, G.time), f = Math.max(0, P.hp / P.hp0), fl = P.flash > 0, L = Math.hypot(S.x2 - S.x1, S.y2 - S.y1), n = Math.max(1, Math.round(L / 95)), im = f < 0.5 && SPR.fw_dmg ? SPR.fw_dmg : SPR.fw;
+    if (P.flash > 0) P.flash -= 1 / 60;
+    g.fillStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.moveTo(S.x1, S.y1 + 6); g.lineTo(S.x2, S.y2 + 6); g.lineWidth = 16; g.strokeStyle = 'rgba(0,0,0,.4)'; g.stroke();
+    for (let k = 0; k < n; k++) { const u = (k + 0.5) / n; sprStand(g, im, S.x1 + (S.x2 - S.x1) * u, S.y1 + (S.y2 - S.y1) * u + 8, (L / n) * 1.08, fl); }
+    const H2 = 60 * HK() / VIEW_K;
+    upright(g, (S.x1 + S.x2) / 2, (S.y1 + S.y2) / 2 - H2, () => { const w = 40; g.fillStyle = '#05060a'; g.fillRect(-w / 2 - 2, -4, w + 4, 7); g.fillStyle = '#3a1016'; g.fillRect(-w / 2, -2, w, 3); g.fillStyle = f > 0.35 ? '#00f0ff' : '#ff2a55'; g.fillRect(-w / 2, -2, w * f, 3); });
   } else if (P.hp != null) { // breakable wall (concrete slab) or popup window
     const S = moverSeg(P, G.time), ang = Math.atan2(S.y2 - S.y1, S.x2 - S.x1), th = P.skin === 'popup' ? 7 : 11, nx = -Math.sin(ang) * th, ny = Math.cos(ang) * th, f = Math.max(0, P.hp / P.hp0), fl = P.flash > 0;
     if (P.flash > 0) P.flash -= 1 / 60;
@@ -6856,6 +6878,10 @@ function drawPropRaised(g, P) {
       for (let k = 0; k < Math.round((1 - f) * 7); k++) { const t0 = rr(), sx = S.x1 + (S.x2 - S.x1) * t0, sy = S.y1 + (S.y2 - S.y1) * t0 - H2; g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + (rr() - 0.5) * 18, sy + rr() * 10 + 2); g.lineTo(sx + (rr() - 0.5) * 22, sy + rr() * 14 + 6); g.stroke(); }
       g.fillStyle = '#fcee0a'; g.fillRect((S.x1 + S.x2) / 2 - 3, (S.y1 + S.y2) / 2 - H2 - 3, 6, 6); }
     upright(g, (S.x1 + S.x2) / 2, (S.y1 + S.y2) / 2 - H2 - 14, () => { const w = 40; g.fillStyle = '#05060a'; g.fillRect(-w / 2 - 2, -4, w + 4, 7); g.fillStyle = '#3a1016'; g.fillRect(-w / 2, -2, w, 3); g.fillStyle = f > 0.35 ? '#fcee0a' : '#ff2a55'; g.fillRect(-w / 2, -2, w * f, 3); });
+  } else if (P.lock && SPR.door) { // v0.53.3: painted blast gate, tiled along the doorway
+    const S = moverSeg(P, G.time), L = Math.hypot(S.x2 - S.x1, S.y2 - S.y1), n = Math.max(1, Math.round(L / 110));
+    g.lineWidth = 16; g.strokeStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.moveTo(S.x1, S.y1 + 6); g.lineTo(S.x2, S.y2 + 6); g.stroke();
+    for (let k = 0; k < n; k++) { const u = (k + 0.5) / n; sprStand(g, SPR.door, S.x1 + (S.x2 - S.x1) * u, S.y1 + (S.y2 - S.y1) * u + 8, (L / n) * 1.06, hit); }
   } else {
     const S = moverSeg(P, G.time), ang = Math.atan2(S.y2 - S.y1, S.x2 - S.x1), th = 9, nx = -Math.sin(ang) * th, ny = Math.cos(ang) * th;
     const quad = lift => [[S.x1 + nx, S.y1 + ny - lift], [S.x2 + nx, S.y2 + ny - lift], [S.x2 - nx, S.y2 - ny - lift], [S.x1 - nx, S.y1 - ny - lift]];
@@ -6973,7 +6999,10 @@ function drawTopWorld0(g, t) {
     g.beginPath(); g.arc(0, 0, 34 * sc, 0, TAU); g.stroke(); g.restore();
   }
   g.scale(sc, sc);
-  drawTop(g, t.build, t.angle, { spin: t.spin, faceRot: true, thick: painted && viewK < 1 ? side * 0.6 : 0 });
+  const msk = t.mob ? (t.mobSkin != null ? t.mobSkin : (t.mobSkin = (MOB_SKIN[t.mob] || MOB_SKIN.guard)[mobSkinN++ % (MOB_SKIN[t.mob] || MOB_SKIN.guard).length])) : -1, mim = msk >= 0 ? MOB_SPR[msk] : null;
+  if (mim) { const vx = t.vx || 0; if (Math.abs(vx) > 20) t.mobFace = vx < 0 ? -1 : 1; const bob = Math.sin(G.time * 7 + t.x * 0.05) * 2.5, w = 92, h = w * mim.height / mim.width;
+    upright(g, 0, 10 + side * 0.4, () => { if (t.mobFace < 0) g.scale(-1, 1); if (t.flash > 0) g.filter = 'brightness(2)'; g.drawImage(mim, -w / 2, -h + bob, w, h); g.filter = 'none'; }); }
+  else drawTop(g, t.build, t.angle, { spin: t.spin, faceRot: true, thick: painted && viewK < 1 ? side * 0.6 : 0 });
   if (t.flash > 0) { g.fillStyle = `rgba(255,255,255,${t.flash * 3})`; g.beginPath(); g.arc(0, 0, 32, 0, TAU); g.fill(); }
   if (t.poison) { g.strokeStyle = 'rgba(134,255,143,.6)'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 33, 0, TAU * t.poison / 3); g.stroke(); }
   if (t.shieldT > 0) {
