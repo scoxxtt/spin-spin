@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.43.6</title>
+<title>SPIN! SPIN! v0.44.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -606,6 +606,17 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #setPane .opt .vRange{width:100%}#setPane .opt:has(.vRange){grid-template-columns:1fr 8em}#setPane .opt:has(.seg){grid-template-columns:1fr 8em}
 #setPane .opt .seg{display:grid;grid-template-columns:1fr 1fr;gap:.2em}
 #setPane .setBtns{display:grid !important;grid-template-columns:1fr 1fr;gap:.5em;border:0}#setPane .setBtns .sbtn{width:100%;padding:.8em 0}
+/* v0.44 team screen: the painted holo card frame on the slots and the library tiles, even rows */
+#team .slot{clip-path:none !important;border-style:solid !important;border-color:transparent !important;border-width:.62em .6em .85em !important;border-image:url(art/ui/cardframe_0.png) 50 50 76 50 stretch !important;padding:.15em .1em .2em !important;background:linear-gradient(180deg,rgba(20,26,52,.95),rgba(8,10,22,.95)) padding-box !important;box-shadow:none !important}
+#team .slot .sface{border-bottom:2px solid #fcee0a}
+#team .slot .nm{height:2.3em;display:flex;align-items:center;justify-content:center;white-space:normal;line-height:1.15;overflow:hidden;margin:.15em 0 .1em}
+#team .slot .chips{gap:.18em}#team .slot .chip{height:1.9em}
+#team .slot .mini{height:1.3em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;width:100%}
+#team .slot .snum{left:.05em;top:.05em}
+#team .tile{clip-path:none !important;border-style:solid !important;border-color:transparent !important;border-width:.42em .4em .55em !important;border-image:url(art/ui/cardframe_0.png) 50 50 76 50 stretch !important;padding:.05em .05em .1em !important;background-color:rgba(14,18,40,.95) !important;background-clip:padding-box !important;box-shadow:none !important}
+#team .tile.r1{border-image-source:url(art/ui/cardframe_1.png) !important}#team .tile.r2{border-image-source:url(art/ui/cardframe_2.png) !important}#team .tile.r3{border-image-source:url(art/ui/cardframe_3.png) !important}
+#team .tile::before,#team .tile::after{display:none !important}
+#team .tile .tn{height:1.25em;line-height:1.25em}
 </style>
 </head>
 <body>
@@ -886,7 +897,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.43.6';
+const GAME_VERSION = 'v0.44.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2386,9 +2397,10 @@ function startGacha(n, title, done, opt) {
   for (const b of builds) { b.res = {}; for (const k of 'cwa') b.res[k] = addPart(k, b[k], b.r[k], b.s[k]); }
   if (collection.length < 3) { collection = builds.slice(0, 3).map(b => ({ c: b.c, w: b.w, a: b.a })); fixTeam(); }
   save();
+  { const rk = b => Math.max(b.r.c, b.r.w, b.r.a); builds.sort((a, b) => rk(a) - rk(b)); } // v0.44: rarest card comes out (and is placed) last
   PK.best = Math.max(...builds.map(b => b.r.c));
   Object.assign(PK, { st: 'drop', t: 0, taps: 0, shake: 0, flash: 0, banner: null, title, done, fx: [], emblem: randomTop(),
-    cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })) });
+    cards: builds.map(b => ({ b, flip: 0, flipping: false, glow: 0 })), spot: null });
   gachaBar.style.display = 'none';
   show('gacha');
 }
@@ -2410,6 +2422,7 @@ packCv.addEventListener('pointerdown', e => {
     packFx(PW / 2 - 120 + 240 * PK.taps / 3, 262, 14, '#fffbd0', 260);
     SFX.tear(PK.taps);
     if (PK.taps >= 3) { PK.st = 'burst'; PK.t = 0; SFX.burst(); SFX.ex(); SFX.rev(0.6, 80, 220, 0.12); packFx(PW / 2, 330, 70, null, 620); }
+  } else if (PK.spot) { PK.spot.t = Math.max(PK.spot.t, 1.9); // tap skips the close-up
   } else if (PK.st === 'cards') {
     const onCard = PK.cards.some((c, i) => { const sl = cardSlot(i, PK.cards.length); return Math.abs(x - sl.x) < sl.w / 2 && Math.abs(y - sl.y) < sl.h / 2; });
     if (!onCard) { let d = 0; PK.cards.forEach(c => { if (!c.flipping && c.flip === 0) { setTimeout(() => { c.flipping = true; SFX.flip(); }, d); d += 90; } }); return; }
@@ -2622,11 +2635,12 @@ function drawPack(dt) {
     drawPackBody(g, PW / 2, 410 + Math.max(0, k - 0.3) * 420, time, 1, -k * 700, -k * 1.4, Math.max(0, 1 - k * 1.4));
     const n = PK.cards.length;
     PK.cards.forEach((c, i) => {
-      const sl = cardSlot(i, n), m = clamp((k - 0.3) / 0.7, 0, 1), e = easeOut(m);
-      drawCard(g, c, { ...sl, x: PW / 2 + (sl.x - PW / 2) * e, y: 430 + (sl.y - 430) * e }, time, Math.max(0.05, e));
+      const sl = cardSlot(i, n), m = clamp((k - 0.3 - i * 0.06) / 0.45, 0, 1), e = easeBack(m); if (m <= 0) return; // one by one out of the crate
+      if (m > 0 && !c.out) { c.out = 1; SFX.flip(); }
+      drawCard(g, c, { ...sl, x: PW / 2 + (sl.x - PW / 2) * e, y: 430 + (sl.y - 430) * e }, time, Math.max(0.05, Math.min(1, e)));
     });
     if (k < 0.35) { g.fillStyle = `rgba(255,255,255,${(0.35 - k) * 2.6})`; g.fillRect(0, 0, PW, PH); }
-    if (k >= 1.05) { PK.st = 'cards'; PK.t = 0; }
+    if (k >= 0.8 + n * 0.06) { PK.st = 'cards'; PK.t = 0; }
   } else {
     let flippedAll = true;
     PK.cards.forEach((c, i) => {
@@ -2635,6 +2649,7 @@ function drawPack(dt) {
         if (c.flip >= 1) {
           c.flipping = false; c.glow = 1; const sl = cardSlot(i, PK.cards.length); packFx(sl.x, sl.y, 40, null, 480); SFX.reveal();
           const tr = c.b.r ? Math.max(c.b.r.c, c.b.r.w, c.b.r.a) : 0;
+          if (tr >= 1 && i === PK.cards.length - 1 && PK.cards.length > 1) PK.spot = { i, t: 0 }; // the rarest card gets a close-up
           if (tr >= 1) { // purple / red / gold: flash, shake, a shower in the rarity colour
             if (tr === 1) { PK.flash = 0.5; PK.flashCol = '176,102,255'; PK.shake = 0.25; packFx(sl.x, sl.y, 60, RARITY[1].col, 600); SFX.ex(); if (navigator.vibrate) navigator.vibrate(25); } else { // red / yellow: flash, shake, a shower in the rarity colour
             PK.flash = tr === 3 ? 1 : 0.6; PK.flashCol = tr === 3 ? '252,238,10' : '255,42,85'; PK.shake = tr === 3 ? 0.6 : 0.35;
@@ -2648,7 +2663,7 @@ function drawPack(dt) {
       drawCard(g, c, cardSlot(i, PK.cards.length), time, 1);
     });
     if (PK.st === 'cards' && !flippedAll) prompt(PK.cards.length > 1 ? `點擊卡片翻開（還有 ${PK.cards.filter(c => c.flip < 1 && !c.flipping).length} 張${PK.cards.length > 3 ? '・點空白處全部翻開' : ''}）` : '點擊卡片翻開');
-    if (PK.st === 'cards' && flippedAll) {
+    if (PK.st === 'cards' && flippedAll && !PK.spot) { PK.sum = null;
       PK.st = 'done';
       okBtn.textContent = '收進零件庫';
       gachaBar.style.display = 'flex';
@@ -2656,7 +2671,18 @@ function drawPack(dt) {
       g1.innerHTML = `再抽一次<small>${ORE}${PRICE1}</small>`; g10.innerHTML = `10連抽+1<small>${ORE}${PRICE10}</small>`;
       g1.disabled = INV.coins < PRICE1; g10.disabled = INV.coins < PRICE10;
     }
-    if (PK.st === 'done') { const sl = cardSlot(PK.cards.length - 1, PK.cards.length); g.fillStyle = 'rgba(255,255,255,.7)'; g.font = '15px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・零件已放進零件庫', PW / 2, sl.y + sl.h / 2 + 34); }
+    if (PK.st === 'done') { const sl = cardSlot(PK.cards.length - 1, PK.cards.length), y2 = sl.y + sl.h / 2 + 30; // haul summary
+      if (!PK.sum) { const t = { new: 0, mat: 0, star: 0, shard: 0 }; for (const c of PK.cards) for (const k of 'cwa') { const r = c.b.res && c.b.res[k]; if (r === 'new') t.new++; else if (r === 'star' || r === 'up') t.star++; else if (r === 'shard') t.shard++; else if (r) t.mat++; } PK.sum = t; }
+      const S = PK.sum, parts = [S.new && `新零件 ×${S.new}`, S.star && `升星 ×${S.star}`, S.mat && `升星素材 ×${S.mat}`, S.shard && `萬能卡 ×${S.shard}`].filter(Boolean);
+      g.font = '900 19px Rajdhani, sans-serif'; g.lineJoin = 'round'; g.lineWidth = 5; g.strokeStyle = '#05060a'; const tx = parts.join('　'); g.strokeText(tx, PW / 2, y2); g.fillStyle = '#fcee0a'; g.fillText(tx, PW / 2, y2);
+      g.fillStyle = 'rgba(255,255,255,.65)'; g.font = '14px Rajdhani, sans-serif'; g.fillText('點卡片看零件詳情・零件已放進零件庫', PW / 2, y2 + 26); }
+    if (PK.spot) { const sp = PK.spot; sp.t += dt; const c = PK.cards[sp.i], a = Math.min(1, sp.t / 0.25) * Math.min(1, Math.max(0, (2.2 - sp.t) / 0.3)), z = easeBack(Math.min(1, sp.t / 0.35));
+      g.fillStyle = `rgba(5,6,12,${0.72 * a})`; g.fillRect(0, 0, PW, PH);
+      const tr = Math.max(c.b.r.c, c.b.r.w, c.b.r.a); g.save(); g.globalAlpha = a; g.translate(PW / 2, 400); g.rotate(time * 0.4);
+      for (let i = 0; i < 18; i++) { g.fillStyle = i % 2 ? `${RARITY[tr].col}55` : 'rgba(255,255,255,.12)'; g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 520, i * TAU / 18, (i + 0.5) * TAU / 18); g.closePath(); g.fill(); } g.restore();
+      g.save(); g.globalAlpha = a; drawCard(g, c, { x: PW / 2, y: 400, w: 230 * z, h: 330 * z }, time, 1);
+      g.font = 'italic 900 46px Rajdhani, sans-serif'; g.lineWidth = 9; g.strokeStyle = '#05060a'; const tt = ['', 'RARE!', 'SUPER RARE!!', 'LEGEND!!!'][tr]; g.strokeText(tt, PW / 2, 175); g.fillStyle = RARITY[tr].col; g.fillText(tt, PW / 2, 175); g.restore();
+      if (sp.t > 2.2) PK.spot = null; }
   }
   if (PK.banner) {
     const b = PK.banner, e = b.max - b.t, a = Math.min(1, b.t / 0.4), sl2 = Math.min(1, e / 0.2);
