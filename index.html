@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.54.4</title>
+<title>SPIN! SPIN! v0.54.5</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -732,8 +732,8 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #teamSub,.sub{font-size:max(11.5px,.68em) !important}
 .pfAva i{font-size:max(10px,.6em) !important}
 .benchHd,.invTab{font-size:max(11px,1em) !important}.slot i{font-size:max(10px,1em) !important}
-#topView{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.5px) 0 0/10px 10px,rgba(4,6,14,.985)}
-#topView.show{display:flex}#tvCv{width:min(96vw,88vh);height:min(96vw,88vh);max-height:78vh;touch-action:none;cursor:grab}#tvCv:active{cursor:grabbing}
+#topView{position:fixed;inset:0 0 var(--nb,0px) 0;z-index:80;box-sizing:border-box;padding:.6em 0;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.5px) 0 0/10px 10px,rgba(4,6,14,.985)}
+#topView.show{display:flex}#tvCv{width:min(96vw,calc(100vh - var(--nb,0px) - 9em));height:min(96vw,calc(100vh - var(--nb,0px) - 9em));flex:none;touch-action:none;cursor:grab}#tvCv:active{cursor:grabbing}
 .tvHint{font-size:max(11px,.75em);color:#94a0b6;margin:.2em 0 .6em;text-align:center;padding:0 1em}.tvBtns{display:flex;gap:.6em}.tvBtns .btn{min-width:7.5em}
 .cxZoom{text-align:center;font-size:max(11px,.7em);color:#7fdfff;margin:-.2em 0 .3em;cursor:pointer}#cxPop .cxTop{cursor:zoom-in}
 </style>
@@ -1016,7 +1016,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.54.4';
+const GAME_VERSION = 'v0.54.5';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2003,6 +2003,7 @@ function openTopView(b, mode) {
     cv.addEventListener('wheel', e => { e.preventDefault(); TV.zoom = clamp(TV.zoom * (e.deltaY < 0 ? 1.1 : 0.9), 0.6, 2.2); }, { passive: false });
     el.querySelector('#tvClose').onclick = () => { el.classList.remove('show'); TV.on = false; };
     el.querySelector('#tvSpin').onclick = e => { TV.auto = !TV.auto; e.target.textContent = TV.auto ? '⏸ 停止旋轉' : '▶ 自動旋轉'; }; }
+  { const nv = document.getElementById('nav'); el.style.setProperty('--nb', (nv && getComputedStyle(nv).display !== 'none' ? nv.getBoundingClientRect().height : 0) + 'px'); } // v0.54.5: stop above the bottom bar
   TV.b = b; TV.mode = mode || null; TV.tilt = 0.62; TV.zoom = 1; TV.ang = 0; el.classList.add('show'); if (!TV.on) { TV.on = true; let t0 = performance.now(); const loop = now => { if (!TV.on) return; const dt = Math.min(0.05, (now - t0) / 1000); t0 = now; drawTopView(dt); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
 }
 function drawTopView(dt) {
@@ -2341,7 +2342,7 @@ const NAV_GO = { home: () => openHome(), team: () => openTeam(), story: () => { 
 const inBattle = () => G && !anyScreen();
 function navGo(k) {
   SFX.init(); if (screens.gacha.classList.contains('show')) return; // let a pack opening finish
-  const go = () => { ['profilePop', 'shopPop', 'lvPop'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('show'); }); if (G && k !== 'team' && k !== 'home') openTeam(); NAV_GO[k](); navSync(); };
+  const go = () => { { const tv = document.getElementById('topView'); if (tv) tv.classList.remove('show'); TV.on = false; } ['profilePop', 'shopPop', 'lvPop', 'cxPop'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('show'); }); if (G && k !== 'team' && k !== 'home') openTeam(); NAV_GO[k](); navSync(); };
   if (inBattle()) ask('要離開目前的戰鬥嗎？<br><small style="opacity:.75">這一場的進度不會保留</small>', go); else go();
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => navGo(b.dataset.go));
