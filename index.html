@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.43.4</title>
+<title>SPIN! SPIN! v0.43.5</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -850,6 +850,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.43.5 card faces get the painted holo frame (art/ui/cardframe.png), recoloured per rarity
  v0.43.4 card back keeps its own proportions
  v0.43.3 card backs use the painted holographic star card (art/ui/cardback.png), recoloured per rarity
  v0.43.2 white card backs keep the panel colours (no grey wash); rarity tints at 75%
@@ -884,7 +885,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.43.4';
+const GAME_VERSION = 'v0.43.5';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2490,6 +2491,11 @@ function resTag(g, res, x, y, w) {
   const tw = g.measureText(T[0]).width + 6; g.fillStyle = T[1]; g.fillRect(x - tw, y, tw, w * 0.09); g.fillStyle = T[2]; g.fillText(T[0], x - 3, y + 1); g.restore();
 }
 const UI_PANEL = new Image(); UI_PANEL.onload = () => { UI_PANEL.ok = true; }; UI_PANEL.src = 'art/ui/panel.png';
+const CARD_FRAME = new Image(); CARD_FRAME.onload = () => { CARD_FRAME.ok = true; }; CARD_FRAME.src = 'art/ui/cardframe.png'; // v0.43.5: painted frame around the card face
+const CARD_FRAMES = {};
+function cardFrameOf(r) { if (CARD_FRAMES[r]) return CARD_FRAMES[r]; const im = CARD_FRAME, c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d');
+  x.drawImage(im, 0, 0); const tint = [null, '#b066ff', '#ff2a55', '#fcb80a'][r]; if (tint) { x.globalCompositeOperation = 'color'; x.globalAlpha = 0.7; x.fillStyle = tint; x.fillRect(0, 0, c.width, c.height); x.globalAlpha = 1; x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0); }
+  return (CARD_FRAMES[r] = c); }
 const CARD_BACK = new Image(); CARD_BACK.onload = () => { CARD_BACK.ok = true; }; CARD_BACK.src = 'art/ui/cardback.png'; // v0.43.3: the holographic star card as the card back
 const CARD_BACKS = {};
 function cardBackOf(r) { // the purple star card recoloured per rarity: white = silver-cyan, purple = as painted, red, gold
@@ -2535,7 +2541,8 @@ function drawCard(g, card, sl, time, appear) {
       const tx = `${RARITY[hr].n}卡！`; g.strokeText(tx, 0, ry + 1); g.fillText(tx, 0, ry + 1);
     }
   } else {
-    const b = card.b, c = CLASSES[b.c];
+    const b = card.b, c = CLASSES[b.c], fr = CARD_FRAME.ok ? (() => { const k2 = Math.min(w / CARD_FRAME.width, h / CARD_FRAME.height) * 1.06, fw = CARD_FRAME.width * k2, fh = CARD_FRAME.height * k2; return { fw, fh, s: Math.min(fw * 0.764 / w, fh * 0.767 / h), oy: -fh * 0.026 }; })() : null;
+    if (fr) { g.save(); g.translate(0, fr.oy); g.scale(fr.s, fr.s); roundRectP(g, -w / 2, -h / 2, w, h, 6); } // the face shrinks into the frame's window
     const fg = g.createLinearGradient(0, -h / 2, 0, h / 2); fg.addColorStop(0, shade(c.color, -0.35)); fg.addColorStop(1, '#0d0c1e');
     g.fillStyle = fg; g.fill();
     const topR = b.r ? Math.max(b.r.c, b.r.w, b.r.a) : 0;
@@ -2566,6 +2573,7 @@ function drawCard(g, card, sl, time, appear) {
     }
     g.fillStyle = '#fcee0a'; g.font = `700 ${Math.round(w * 0.068)}px Rajdhani, sans-serif`;
     if (!b.r) g.fillText(`EX「${c.exName}」`, 0, h * 0.43);
+    if (fr) { g.restore(); const topR = b.r ? Math.max(b.r.c, b.r.w, b.r.a) : 0; g.drawImage(cardFrameOf(topR), -fr.fw / 2, -fr.fh / 2, fr.fw, fr.fh); }
   }
   g.restore();
 }
@@ -7057,7 +7065,7 @@ requestAnimationFrame(frame);
 // installable / offline (PWA): only on a real web host — opening the file directly skips it
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 // test hook (used for automated checks; harmless in play)
-window.__topGame = { drawTop, drawTop45, pj, CXv: () => CX, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
+window.__topGame = { PK, drawTop, drawTop45, pj, CXv: () => CX, tfAuto, trackAuto, gradePortrait, PSP, pspToWorld, TRK, CHAPTERS, startLevel, applyStage, storyData, openStory, get STAGE() { return STAGE; }, get PROPS() { return PROPS; }, CLASSES, rankUp: (k, key) => rankUp(k, key), get INV() { return INV; }, SETTINGS, buy, PK, addPart, equip, get G() { return G; }, newMatch, doLaunch: (dx, dy, p) => G && G.phase === 'launch' && doLaunch(dx, dy, p), update: dt => G && update(dt), BUILDS, randomTop, railNearest, RAILS, SFX, get collection() { return collection; } };
 openHome();
 showTitle();
 setTimeout(unifyPortraits, 300);
