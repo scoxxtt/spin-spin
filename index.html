@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.46.0</title>
+<title>SPIN! SPIN! v0.47.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -645,6 +645,20 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #final{overflow-y:auto;justify-content:flex-start !important;padding-top:3.2em;padding-bottom:1.2em}#final>*{flex-shrink:0}#final .big{margin-top:0}
 .fsTot em{font-style:italic;color:#05060a;background:#fcee0a;padding:0 .4em;font-size:.8em;animation:fsPop .5s 1.6s both}.fsTot small{color:#94a0b6;font-size:.7em}
 @keyframes fsIn{from{opacity:0;transform:translateX(-1em)}}@keyframes fsPop{from{opacity:0;transform:scale(2.4)}60%{transform:scale(.9)}}
+/* v0.47 comic tutorial */
+#guide{position:fixed;inset:0;z-index:85;display:none;align-items:center;justify-content:center;background:rgba(3,5,12,.82)}#guide.show{display:flex}
+.gdIn{width:92%;max-width:26em;display:flex;flex-direction:column;gap:.6em}
+.gdTop{display:flex;justify-content:space-between;align-items:center;font-family:Rajdhani,sans-serif;font-style:italic;font-weight:900;color:#fcee0a;text-shadow:2px 2px 0 #05060a;letter-spacing:.1em}
+.gdX{width:2em;height:2em;border:2px solid #00f0ff;background:#0b0f1e;color:#00f0ff;font-weight:900}
+.gdPanel{position:relative;min-height:22em;padding:1em;border:4px solid #05060a;background:radial-gradient(rgba(255,255,255,.07) 1.2px,transparent 1.6px) 0 0/8px 8px,linear-gradient(160deg,#9fe8ff 0%,#ff8fdc 100%);box-shadow:6px 6px 0 #05060a;display:flex;flex-direction:column;gap:.6em;overflow:hidden}
+.gdIn2{animation:gdSlide .3s ease-out}@keyframes gdSlide{from{transform:translateX(30%) rotate(2deg);opacity:0}}
+.gdBot{align-self:flex-start;width:8.5em;height:8.5em;filter:drop-shadow(4px 4px 0 rgba(5,6,10,.6))}.gdBot img{width:100%;height:100%;object-fit:contain}.gdBotX{font-size:5em;line-height:1.6}
+.gdBub{position:relative;background:#fff;color:#05060a;border:3px solid #05060a;border-radius:.6em;padding:.7em .8em;box-shadow:4px 4px 0 #05060a}
+.gdBub::before{content:'';position:absolute;left:2.2em;top:-1.1em;border:.55em solid transparent;border-bottom:1em solid #05060a}
+.gdT{font-weight:900;font-size:1.25em;font-style:italic;margin-bottom:.3em;color:#05060a;text-shadow:2px 2px 0 #fcee0a}
+.gdB{font-size:.92em;line-height:1.6}.gdB b{color:#d0146a}
+.gdRow{display:flex;justify-content:center;gap:.4em;margin-top:.5em}.gdRow img{width:2.8em;height:2.8em;object-fit:contain}
+.gdDemo{position:absolute;right:.4em;top:.4em;width:8em;height:8em}.gdTopPv{width:100%;height:100%;animation:stFloat 2.6s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -761,11 +775,12 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
   </div>
 </div>
 
+<div id="guide"><div class="gdIn"><div class="gdTop"><span id="gdNo"></span><button class="gdX" id="gdX">✕</button></div><div class="gdPanel" id="gdPanel"></div><div class="pairBtns"><button class="btn ghost" id="gdPrev">上一頁</button><button class="btn" id="gdNext">下一頁</button></div></div></div>
 <div id="infoPop"></div>
 <div id="profilePop"></div>
 <div id="shopPop"><div class="ipCard shopCard"><div class="ipHead"><div><div class="t">抽卡</div><div class="s" id="shopCoins"></div></div></div>
   <div id="shop"></div>
-  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：三大陣營各 30%、異哲團 10%<br>保底：10連抽+1 必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後自己挑 2 張同陣營、同品階的 3★ 卡當素材</div>
+  <div class="k shopNote">抽卡只會抽到白卡 85%・紫卡 15%（同一抽的角色卡、武器、鎧甲同色）<br>白卡：起始角色 50%，其餘平均分給三大陣營・紫卡：<b style="color:#fcee0a">一半是本日 PICK UP 角色</b>，另一半三大陣營各 30%、異哲團 10%（PICK UP 每天換一位異哲團角色）<br>保底：10連抽+1 必出 1 紫・連續 10 抽沒出紫，第 10 抽必紫<br>紅、金品階要靠升階：3★ 後自己挑 2 張同陣營、同品階的 3★ 卡當素材</div>
   <div class="ipClose">點其他地方關閉</div></div></div>
 <div id="gmPanel"><div class="gmIn"><h3>GM 測試模式</h3>
   <div class="gmG">資源</div>
@@ -925,7 +940,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.46.0';
+const GAME_VERSION = 'v0.47.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2300,8 +2315,8 @@ let invDragged = false;
 })();
 function renderShop() {
   const sh = document.getElementById('shop');
-  const day = Math.floor(Date.now() / 864e5), feat = PHILO[day % PHILO.length], fc = CLASSES[feat], left = Math.max(1, 10 - ((INV.pity && INV.pity.r) || 0)); // v0.45: a featured purple card that rotates daily
-  sh.innerHTML = `<div class="gBan"><img class="gBanBg" src="art/gacha_bg.jpg" alt=""><img class="gBanFace" src="${PORTRAIT_SRC[feat] || ''}" alt=""><div class="gBanTx"><b>PICK UP</b><span>${fc.name.replace('・', '<br>')}</span><small>紫卡・${fc.fac}</small></div><div class="gPity">再 <b>${left}</b> 抽必出紫卡</div><button class="gInfo" id="gInfo">i</button></div>
+  const feat = pickUpOf(), fc = CLASSES[feat], left = Math.max(1, 10 - ((INV.pity && INV.pity.r) || 0)); // v0.45: a featured purple card that rotates daily
+  sh.innerHTML = `<div class="gBan"><img class="gBanBg" src="art/gacha_bg.jpg" alt=""><img class="gBanFace" src="${PORTRAIT_SRC[feat] || ''}" alt=""><div class="gBanTx"><b>PICK UP</b><span>${fc.name.replace('・', '<br>')}</span><small>紫卡・${fc.fac}・出紫時 50% 是他</small></div><div class="gPity">再 <b>${left}</b> 抽必出紫卡</div><button class="gInfo" id="gInfo">i</button></div>
     <div class="gBuy"><button class="btn shopBtn" id="buy1" ${INV.coins < PRICE1 ? 'disabled' : ''}>單抽<small>${ORE}${PRICE1}</small></button><button class="btn shopBtn ten" id="buy10" ${INV.coins < PRICE10 ? 'disabled' : ''}>10連抽+1<small>${ORE}${PRICE10}・保底紫</small></button></div>`;
   document.getElementById('gInfo').onclick = e => { e.stopPropagation(); document.querySelector('.shopNote').classList.toggle('open'); };
   document.getElementById('buy1').onclick = () => buy(1); document.getElementById('buy10').onclick = () => buy(10);
@@ -2398,7 +2413,8 @@ const FAC3 = ['鐵心幫', '元森域', '虛駭組'];
 const tierPick = list => { const wt = k => [0, 3, 2, 1][CLASSES[k].tier || 1]; let x = Math.random() * list.reduce((t, k) => t + wt(k), 0); for (const k of list) { x -= wt(k); if (x < 0) return k; } return list[0]; };
 const facPool = f => Object.keys(CLASSES).filter(k => CLASSES[k].fac === f && !CLASSES[k].hidden && !STARTERS.includes(k));
 function whitePick() { return Math.random() < 0.5 ? pick(STARTERS) : tierPick(facPool(pick(FAC3))); }
-function purplePick() { const x = Math.random(); return x < 0.1 ? pick(PHILO) : tierPick(facPool(FAC3[Math.min(2, Math.floor((x - 0.1) / 0.3))])); }
+const pickUpOf = () => PHILO[Math.floor(Date.now() / 864e5) % PHILO.length]; // v0.47: today's PICK UP (異哲團, one a day)
+function purplePick() { if (Math.random() < 0.5) return pickUpOf(); const x = Math.random(); return x < 0.1 ? pick(PHILO) : tierPick(facPool(FAC3[Math.min(2, Math.floor((x - 0.1) / 0.3))])); }
 function rollTop(base, opt) {
   const b = base || randomTop(); b.r = {}; b.s = {};
   const rr = rollFrom(R_RATE); for (const k of 'cwa') { b.r[k] = rr; b.s[k] = rollFrom(STAR_RATE); }
@@ -2901,7 +2917,32 @@ const TUT = [
       if (ph > 2.9) tLabel(g, 'RING OUT +2', CX, CY - 130, '#7fdfff', 24);
   } },
 ];
-function showTutorial(done) { tutIdx = 0; tutT = 0; tutDone = done; renderTutStep(); show('tutorial'); }
+function showTutorialOld(done) { tutIdx = 0; tutT = 0; tutDone = done; renderTutStep(); show('tutorial'); }
+// v0.47: the 10-page tutorial is now a 6-panel comic hosted by the guide robot (art/ui/guide_1..6.png)
+const SPR_ROW = (...ns) => `<div class="gdRow">${ns.map(n => `<img src="art/props/${n}.png" alt="">`).join('')}</div>`;
+const GUIDE = [
+  { t: '這就是你的陀螺', b: '每顆陀螺由三層組成：<b>頂冠＝角色卡</b>（決定能力與 EX 大招）、<b>武裝環＝武器</b>（撞擊力道與招式系別）、<b>核心＝鎧甲</b>（底下的光圈顏色，決定耐打程度）。隊伍排 3 顆，依 1→2→3 號上場。', x: 'top' },
+  { t: '拉、放、發射！', b: '<b>按住往後拉、放開</b>就發射，拉越長越快。倒數喊到<b>第二聲 SPIN!</b> 的瞬間點一下畫面＝<b>PERFECT</b>，速度和轉速都加成！', x: 'launch' },
+  { t: '飛行中也能控制', b: '<b>按住拖曳</b>調整方向追著對手撞；<b>點畫面</b>充能 EX，滿了按 EX 放大招。右上的 <b>AUTO／EX／MOVE</b> 可以交給電腦，MOVE 還有「清敵」模式專門打小兵。', x: 'move' },
+  { t: '賽道關卡', b: '3 顆陀螺＝<b>3 條命</b>，衝到終點撞破大門或打倒 BOSS 就過關。路上有加速帶、跳台、彈力柱，也有陷阱洞、地刺、深淵——<b>高台會往一側偏</b>，看清路線再衝！' + SPR_ROW('boost', 'bumper', 'hole', 'spikes', 'barrel'), x: '' },
+  { t: '拿星星、衝高分', b: '每關 3 顆星。沿路撿 <b>資料晶片</b>、連續撞擊累積 <b>COMBO</b>，結算時算總分與 <b>S／A／B／C</b> 評價。章節清單上的「差 N★」就是還沒拿滿的關卡。' + SPR_ROW('chip'), x: '' },
+  { t: '抽卡與成長', b: '金幣拿去<b>抽補給箱</b>，PICK UP 角色每天換一位。重複的零件拿來<b>升星</b>，3★ 後吃同陣營素材<b>升階</b>（白→紫→紅→金）。同陣營排在一起還有<b>羈絆加成</b>！', x: '' },
+];
+let gdIdx = 0, gdDone = null;
+function gdRender() {
+  const P = GUIDE[gdIdx], pose = `art/ui/guide_${gdIdx + 1}.png`;
+  document.getElementById('gdNo').textContent = `HOW TO PLAY　${gdIdx + 1} / ${GUIDE.length}`;
+  document.getElementById('gdPanel').innerHTML = `<div class="gdBot"><img src="${pose}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'gdBotX',textContent:'🤖'}))"></div><div class="gdBub"><div class="gdT">${P.t}</div><div class="gdB">${P.b}</div></div>${P.x === 'top' ? '<div class="gdDemo" id="gdDemo"></div>' : ''}`;
+  if (P.x === 'top') { const pv = previewCanvas(collection[0] || { c: 'berserker', w: 'chainaxe', a: 'hover' }, 260); pv.className = 'gdTopPv'; document.getElementById('gdDemo').appendChild(pv); }
+  document.getElementById('gdPrev').style.visibility = gdIdx ? 'visible' : 'hidden';
+  document.getElementById('gdNext').textContent = gdIdx === GUIDE.length - 1 ? '開始玩！' : '下一頁';
+  const pn = document.getElementById('gdPanel'); pn.classList.remove('gdIn2'); void pn.offsetWidth; pn.classList.add('gdIn2');
+}
+function showTutorial(done) { gdIdx = 0; gdDone = done; gdRender(); document.getElementById('guide').classList.add('show'); SFX.flip && SFX.flip(); }
+function gdClose() { document.getElementById('guide').classList.remove('show'); gdDone && gdDone(); }
+document.getElementById('gdNext').onclick = () => { if (gdIdx < GUIDE.length - 1) { gdIdx++; gdRender(); SFX.flip && SFX.flip(); } else gdClose(); };
+document.getElementById('gdPrev').onclick = () => { if (gdIdx > 0) { gdIdx--; gdRender(); } };
+document.getElementById('gdX').onclick = gdClose;
 // strategy pages reuse the drag / lineup animations
 TUT.push(
   { title: '攻略①・拖曳追擊', text: '<div class="tutRules">・<b>別站著不動</b>：開場後馬上<b>按住拖曳</b>追著對手跑，速度就是傷害<br>・<b>從側面撞</b>：繞到對手側後方，朝<b>出口方向</b>撞，最容易撞出 BLOOD／DEAD<br>・<b>對手靠近出口</b>：從反方向全速衝過去補一下<br>・<b>撞牆大招</b>：對手貼牆時全速重擊，有機會直接撞飛過牆 <b>RING OUT +2</b><br>・<b>耐力也能贏</b>：對手先停轉，你就拿 <b>SURVIVE +1</b><br>・<b>被逼到牆邊</b>：往中央 CORE 拖回來，CORE 裡撞擊 +20%、EX 累積更快<br>・<b>EX 留著用</b>：等對手靠近出口或剛撞完牆再放<br>・<b>另一隻手</b>點畫面充能，邊追邊集 EX</div>', draw: TUT[2].draw },
@@ -5401,7 +5442,9 @@ const RAMP_TEX = {}; for (const k of ['top', 'side']) { const im = new Image(); 
 function tfDrawProp(g, P, time) {
   if (P.type === 'ramp' && RAMP_TEX.top) { const x = P.x - P.w / 2, y = P.y - P.l / 2, x1 = x + P.w, yb = y + P.l, RZ = 34; // v0.40.1: a proper steel wedge
     g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(x - 4, y - 70, P.w + 8, P.l + 70); // shadow thrown past the lip
-    for (const sx of [x, x1]) { zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#20262f', 2.5); zLine(g, [[sx, yb, 0], [sx, y, RZ]], '#fcee0a', 3); // side plates with a yellow edge
+    for (const sx of [x, x1]) { zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], '#20262f', 2.5);
+      if (PSP.on && RAMP_TEX.side) { g.save(); zPoly(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]]); zEnd(g); g.clip(); wallFaceTex(RAMP_TEX.side, sx, y, yb, RZ, 1, 0, 0.95); g.restore(); zFill(g, [[sx, yb, 0], [sx, y, 0], [sx, y, RZ]], null, 2.5); }
+      zLine(g, [[sx, yb, 0], [sx, y, RZ]], '#fcee0a', 3); // side plates with a yellow edge
       for (const u of [0.45, 0.8]) zLine(g, [[sx, yb - P.l * u, 0], [sx, yb - P.l * u, RZ * u]], '#59606c', 3); } // struts
     zFill(g, [[x, y, 0], [x1, y, 0], [x1, y, RZ], [x, y, RZ]], '#0b0e13', 2.5); // back wall (only its top edge peeks out)
   }
@@ -5480,14 +5523,17 @@ function tfDrawDeck(g, d) {
   if (yF > VB) return; const yN = Math.min(yN0, VB), yS = Math.min(yS0, VB); // same near-side clamp as the road
   const col = ['#3d4f86', '#4a5fa3', '#5a70bd', '#6a82d6'][Math.min(3, Math.round(hv))], zb = b * FLOOR_Z, zt = hv * FLOOR_Z;
   zFill(g, [[x0 + 14, yE + 10, zb], [x1 + 22, yE + 10, zb], [x1 + 22, yS + 14, zb], [x0 + 14, yS + 14, zb]], `rgba(0,0,0,${0.3 + 0.08 * (hv - b)})`); // cast shadow on the floor below
-  for (const sx of [x0, x1]) zFill(g, [[sx, yN, zb], [sx, yF, zb], [sx, yF, zt], [sx, yN, zt]], shade(col, -0.45), 2.5); // side walls (the one facing away hides under the top)
+  for (const sx of [x0, x1]) { zFill(g, [[sx, yN, zb], [sx, yF, zb], [sx, yF, zt], [sx, yN, zt]], shade(col, -0.45), 2.5); // side walls (the one facing away hides under the top)
+    if (PSP.on && RAMP_TEX.side) { wallFaceTex(RAMP_TEX.side, sx, Math.max(yF, PSP.camy + PSP.uTop - 40), yN, zt, 1, zb, 0.95); zFill(g, [[sx, yN, zb], [sx, yF, zb], [sx, yF, zt], [sx, yN, zt]], null, 2.5); } }
   if (d.down) { zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]], shade(col, -0.12), 3);
     const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im) { const L = yF - yE, P = d.w, st = PSP.on ? 5 : 10; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]]); zEnd(g); g.clip(); // v0.42.1: the far down-slope (seen once the camera rides up) carries the floor too
       for (let y = yE; y < yF; y += st) { g.save(); zBegin(g, zb + (zt - zb) * (y + st / 2 - yE) / L, d.cx); g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6); zEnd(g); g.restore(); }
       g.restore(); zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yE, zb], [x0, yE, zb]], 'rgba(0,0,0,.28)', 3); } }
-  if (yN0 <= VB) zFill(g, [[x0, yN, zb], [x1, yN, zb], [x1, yN, zt], [x0, yN, zt]], '#1b2140', 3);            // front face toward the camera
+  if (yN0 <= VB) { zFill(g, [[x0, yN, zb], [x1, yN, zb], [x1, yN, zt], [x0, yN, zt]], '#1b2140', 3);            // front face toward the camera
+    if (PSP.on && RAMP_TEX.side) { faceTexX(RAMP_TEX.side, x0, x1, yN, zb, zt); zFill(g, [[x0, yN, zb], [x1, yN, zb], [x1, yN, zt], [x0, yN, zt]], null, 3); } }
   const hz = zt - zb; if (yN0 <= VB) for (let k = 0; k < d.w / 26; k++) { const xa = x0 + k * 26 + 4; if (xa + 12 > x1) break; zFill(g, [[xa, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.75], [xa, yN, zb + hz * 0.75]], 'rgba(252,238,10,.38)'); } // hazard panels
   zLine(g, [[x0, yN, zt - 3], [x1, yN, zt - 3]], 'rgba(0,240,255,.85)', 3);
+  zLine(g, [[x0, yN, zt], [x1, yN, zt]], '#fcee0a', 6); g.setLineDash([10, 10]); zLine(g, [[x0, yN, zt], [x1, yN, zt]], '#0b0b0b', 6); g.setLineDash([]); // hazard lip on the near edge
   zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], col, 3);                  // top face
   { const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im) { const P = d.w, st = PSP.on ? 8 : 40; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); zBegin(g, zt, d.cx); // v0.40: the deck top gets the chapter floor, lit a step brighter per level
       for (let y = Math.floor(yF / st) * st; y < yN; y += st) g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6);
@@ -5576,10 +5622,17 @@ function trackGantries(g, cam) {
     zEnd(g); g.restore(); }
 }
 function pj(x, y, z) { const u = y - PSP.camy, q = pspQ(u), f = 1 + z * PSP.zk; return [PSP.cx + (x - PSP.camx) * PSP.zs * f / q, PSP.cy + (PSP.zsK * u - z * PSP.zy) / q]; } // same projection as PG's at()
-function wallFaceTex(im, x, y1, y2, WZ, sd) { // map a vertical plate picture onto the wall's inner face, one short slice at a time
-  const per = WZ * 2 * im.width / im.height / 2, st = 18, R = ctx; R.save();
+function wallFaceTex(im, x, y1, y2, WZ, sd, zb = 0, a = 1) { // map a vertical plate picture onto a face running along the road (x fixed), one short slice at a time
+  const per = (WZ - zb) * 2 * im.width / im.height / 2, st = 18, R = ctx; R.save(); R.globalAlpha = a;
   for (let y = Math.floor(y1 / st) * st; y < y2; y += st) { const ya = Math.max(y, y1), yb = Math.min(y + st, y2); if (yb <= ya) continue;
-    const B0 = pj(x, ya, 0), B1 = pj(x, yb, 0), T0 = pj(x, ya, WZ), sx = (((ya % per) + per) % per) / per * im.width, sw = Math.max(1, (yb - ya) / per * im.width);
+    const B0 = pj(x, ya, zb), B1 = pj(x, yb, zb), T0 = pj(x, ya, WZ), sx = (((ya % per) + per) % per) / per * im.width, sw = Math.max(1, (yb - ya) / per * im.width);
+    R.setTransform((B1[0] - B0[0]) / sw, (B1[1] - B0[1]) / sw, (B0[0] - T0[0]) / im.height, (B0[1] - T0[1]) / im.height, T0[0], T0[1]);
+    R.drawImage(im, Math.min(sx, im.width - sw), 0, sw, im.height, 0, 0, sw * 1.04, im.height); }
+  R.restore();
+}
+function faceTexX(im, x0, x1, y, zb, zt, a = 1) { // the same for a face across the road (y fixed): deck fronts
+  const per = (zt - zb) * 2 * im.width / im.height, st = 16, R = ctx; R.save(); R.globalAlpha = a;
+  for (let x = x0; x < x1; x += st) { const xb = Math.min(x + st, x1), B0 = pj(x, y, zb), B1 = pj(xb, y, zb), T0 = pj(x, y, zt), sx = (((x - x0) % per) + per) % per / per * im.width, sw = Math.max(1, (xb - x) / per * im.width);
     R.setTransform((B1[0] - B0[0]) / sw, (B1[1] - B0[1]) / sw, (B0[0] - T0[0]) / im.height, (B0[1] - T0[1]) / im.height, T0[0], T0[1]);
     R.drawImage(im, Math.min(sx, im.width - sw), 0, sw, im.height, 0, 0, sw * 1.04, im.height); }
   R.restore();

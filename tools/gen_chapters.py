@@ -41,14 +41,16 @@ def seg_slide(y, c):    return S([dict(type='mover', x=0, y=y + 140, len=90, rot
 def seg_ramp(y, c):     # jump ramp over a bumper (early) or live spikes; the landing zone is kept clear
     n = c['no']; over = dict(type='bumper', x=0, y=y + 440) if n < 3 else dict(type='spikes', x=0, y=y + 440, r=44, on=2, off=1.5)
     return S([dict(type='boost', x=0, y=y + 40), dict(type='ramp', x=0, y=y + 230, w=140, l=80), over], sign=('JUMP', '#fcee0a'), used=1000)
-def seg_deck(y, c):     # 2F deck the whole road climbs over (a narrow ground lane on each side)
-    return S([dict(type='boost', x=0, y=y + 30)], sign=('2F', '#7fdfff'), used=820, decks=[dict(x=0, w=250, y=y + 200, l=380, h=1, up=150, down=150)])
-def seg_deck2(y, c):    # 2F with a 3F block on top: drop back to 2F off its end
-    s = sd() * 0.2
-    return S([dict(type='boost', x=0, y=y + 30)], sign=('3F', '#7fdfff'), used=990, decks=[dict(x=0, w=300, y=y + 190, l=560, h=1, up=150, down=150), dict(x=s, w=160, y=y + 270, l=280, h=2, up=100)])
-def seg_deck3(y, c):    # up to 4F
-    s = sd() * 0.15
-    return S([dict(type='boost', x=0, y=y + 30)], sign=('4F', '#ff9ae6'), used=1180, decks=[dict(x=0, w=320, y=y + 190, l=760, h=1, up=150, down=150), dict(x=s, w=220, y=y + 260, l=500, h=2, up=100), dict(x=s, w=130, y=y + 360, l=230, h=3, up=90)])
+def dside(y): return 1 if (y // 100) % 2 else -1   # v0.47: decks lean to one wall (deterministic: no draw from R, so the rest of every level stays the same)
+def seg_deck(y, c):     # 2F deck pushed against one wall: the ground lane stays open on the other side only
+    k = dside(y) * 0.3
+    return S([dict(type='boost', x=k, y=y + 30)], sign=('2F', '#7fdfff'), used=820, decks=[dict(x=k, w=250, y=y + 200, l=380, h=1, up=150, down=150)])
+def seg_deck2(y, c):    # 2F off-centre with a 3F block stepping further over: drop back to 2F off its end
+    k = dside(y) * 0.2; s = k + dside(y) * 0.22
+    return S([dict(type='boost', x=k, y=y + 30)], sign=('3F', '#7fdfff'), used=990, decks=[dict(x=k, w=300, y=y + 190, l=560, h=1, up=150, down=150), dict(x=s, w=160, y=y + 270, l=280, h=2, up=100)])
+def seg_deck3(y, c):    # up to 4F, each floor stepping toward the other wall: a zig-zag climb
+    k = dside(y) * 0.12; s = -dside(y) * 0.2; t = dside(y) * 0.25
+    return S([dict(type='boost', x=k, y=y + 30)], sign=('4F', '#ff9ae6'), used=1180, decks=[dict(x=k, w=320, y=y + 190, l=760, h=1, up=150, down=150), dict(x=s, w=220, y=y + 260, l=500, h=2, up=100), dict(x=t, w=130, y=y + 360, l=230, h=3, up=90)])
 def seg_belt(y, c):
     n = c['no']
     if n < 4: return S([dict(type='belt', x=0, y=y + 170, w=200, l=280, dir=12, power=0.8), dict(type='bumper', x=-0.62, y=y + 170), dict(type='bumper', x=0.62, y=y + 170)], sign=('BELT', '#fcee0a'), used=400)
