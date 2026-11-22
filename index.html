@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.39.0</title>
+<title>SPIN! SPIN! v0.40.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -588,6 +588,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #team .slot .stop{width:5.6em;height:5.6em;top:auto;bottom:47%;right:-.7em;z-index:2;filter:drop-shadow(0 .5em .25em rgba(0,0,0,.55));animation:stFloat 2.6s ease-in-out infinite}
 #team .slot:nth-child(2) .stop{animation-delay:-.9s}#team .slot:nth-child(3) .stop{animation-delay:-1.7s}
 @keyframes stFloat{50%{transform:translateY(-.35em) rotate(-4deg)}} /* v0.39 the top floats beside the portrait */
+#cxPop .cxTop{display:block;width:7.5em;height:7.5em;margin:-3.2em auto .1em;position:relative;filter:drop-shadow(0 .5em .3em rgba(0,0,0,.6));animation:stFloat 2.6s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -834,6 +835,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
  v0.28.0 lobby page (大廳: currencies, lead character, chapter banner, free battle) + team page; UI skin: chunky press-down buttons, layered panels, hierarchy
  v0.29.0 art pass: rarity frames (purple sparkles, red flame, gold holo), portrait unification (grade + halftone + rim), page wipe, button shine, chapter floor textures, spin arcs, display font for the logo
  v0.30.0 chapters 11-15 (50 levels): 15 returning BOSSes with move pools and recoloured portraits; ending also plays after 15-10
+ v0.40.0 tops extruded along their own outline (weapon ring slab + raised crown step), red controlled crowns for BOSSes, codex top preview, deck tops/slopes get the chapter floor, offline cache covers all art
  v0.39.0 all 27 crowns + 12 weapon rings painted, weapon rings share one standard ring body; team slots show a floating top beside the portrait
  v0.38.0 painted tops pilot (crown = card, weapon ring = weapon, armor = core glow); gantries stand on the wall rims; viaduct piers under the road
  v0.37.1 painted ramp deck (art/props/ramp_top.jpg) mapped up the slope in strips
@@ -856,7 +858,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.39.0';
+const GAME_VERSION = 'v0.40.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1432,20 +1434,39 @@ function bladeEdge(g, shape) {
 // v0.38 pilot: painted tops = crown (character card) over weapon ring (weapon); the armor shows as the glow underneath
 const TOP_SPR = { c: {}, w: {} }; for (const k of ['berserker', 'guardian', 'hunter', 'assassin', 'mage', 'mechcat', 'rat', 'rex', 'octo', 'rider', 'tesla', 'cactus', 'erin', 'jack', 'dj', 'spam', 'nova', 'raven', 'twins', 'chrono', 'david', 'sheep', 'maiden', 'theseus', 'proteus', 'host', 'undead']) { const im = new Image(); im.onload = () => { TOP_SPR.c[k] = im; }; im.src = `art/tops/c_${k}.png`; }
 for (const k of ['chainaxe', 'grenade', 'gatling', 'vibrosword', 'plasmascythe', 'hydrohammer', 'shotgun', 'railgun', 'smartpistol', 'missilepod', 'flamer', 'emp']) { const im = new Image(); im.onload = () => { TOP_SPR.w[k] = im; }; im.src = `art/tops/w_${k}.png`; }
+const SIL = new Map();
+function silOf(im, col) { // the part's silhouette in one flat colour (cached): used to extrude its own shape into a solid edge
+  const key = im.src + col; let c = SIL.get(key); if (c) return c;
+  c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, c.width, c.height); SIL.set(key, c); return c;
+}
 function drawTopSpr(g, build, angle, opts, cs, ws) {
-  const a = ARMORS[build.a], c = CLASSES[build.c], spin = opts.spin || 0;
+  const a = ARMORS[build.a], c = CLASSES[build.c], spin = opts.spin || 0, dW = opts.thick || 0, dC = dW ? Math.max(3, dW * 0.65) : 0, WS = 94, CSZ = 54;
+  const layer = (im, size, y, sil) => { g.save(); g.translate(0, y); g.rotate(angle); g.drawImage(sil || im, -size / 2, -size / 2, size, size); g.restore(); };
+  const slab = (im, size, y0, y1, col) => { if (y1 <= y0) return; layer(im, size, y1 + 1.2, silOf(im, '#000')); const sl = silOf(im, col); for (let y = y1; y > y0; y -= 1.1) layer(im, size, y, sl); }; // solid edge that follows the outline
   g.save();
   if (spin > 0.05) { g.strokeStyle = `rgba(255,255,255,${0.1 * spin})`; g.lineWidth = 3; for (let r = 22; r <= 38; r += 8) { g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); } }
-  g.save(); g.shadowColor = a.color; g.shadowBlur = 16; g.fillStyle = a.color; g.beginPath(); g.arc(0, 0, 30, 0, TAU); g.fill(); g.restore(); // core axle glow = armor colour
-  g.rotate(angle);
-  g.drawImage(ws, -47, -47, 94, 94);
-  g.drawImage(cs, -27, -27, 54, 54);
+  g.save(); g.shadowColor = a.color; g.shadowBlur = 16; g.fillStyle = a.color; g.beginPath(); g.arc(0, dW * 0.5, 30, 0, TAU); g.fill(); g.restore(); // core axle glow = armor colour
+  slab(ws, WS, 0, dW, shade(ATTR_COLOR[WEAPONS[build.w].attr], -0.7));   // weapon ring: its own outline extruded down
+  layer(ws, WS, 0);
+  slab(cs, CSZ, -dC, 0, shade(c.color, -0.62));                             // crown sits a step higher than the weapon ring
+  layer(cs, CSZ, -dC);
+  if (CLASSES[build.c] && CLASSES[build.c].bossOf) { g.save(); g.translate(0, -dC); g.globalAlpha = 0.45 + 0.35 * Math.sin(performance.now() / 160); g.strokeStyle = '#ff2a55'; g.lineWidth = 3; g.shadowColor = '#ff2a55'; g.shadowBlur = 12; g.beginPath(); g.arc(0, 0, 25, 0, TAU); g.stroke(); g.restore(); }
   g.restore();
+  g.save(); g.translate(0, -dC);
   if (drawFace(g, build.c, 0, 0, 9.5, opts.faceRot ? angle / 8 : 0)) { g.lineWidth = 2; g.strokeStyle = '#05060a'; g.beginPath(); g.arc(0, 0, 9.5, 0, TAU); g.stroke(); g.lineWidth = 1.4; g.strokeStyle = c.color; g.beginPath(); g.arc(0, 0, 11, 0, TAU); g.stroke(); }
-  const sp = g.createRadialGradient(-12, -14, 1, -10, -12, 26); sp.addColorStop(0, 'rgba(255,255,255,.3)'); sp.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sp; g.beginPath(); g.arc(0, 0, 34, 0, TAU); g.fill();
+  const sp = g.createRadialGradient(-12, -14, 1, -10, -12, 26); sp.addColorStop(0, 'rgba(255,255,255,.3)'); sp.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sp; g.beginPath(); g.arc(0, 0, 30, 0, TAU); g.fill();
+  g.restore();
 }
+const baseCls = id => { let c = CLASSES[id]; while (c && c.bossOf) { id = c.bossOf; c = CLASSES[id]; } return id; };
+const BOSS_TINT = new Map();
+function bossCrown(im) { // controlled version: the crown soaked in red with dark edges
+  let c = BOSS_TINT.get(im); if (c) return c; c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d');
+  x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(255,30,60,.42)'; x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'multiply'; x.fillStyle = 'rgba(120,40,60,.5)'; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0); BOSS_TINT.set(im, c); return c; }
+const crownOf = id => { const b = baseCls(id), im = TOP_SPR.c[b]; return im && b !== id ? bossCrown(im) : im; };
+const topSpr = b => !!(crownOf(b.c) && TOP_SPR.w[b.w]);
 function drawTop(g, build, angle, opts = {}) {
-  { const cs = TOP_SPR.c[build.c], ws = TOP_SPR.w[build.w]; if (cs && ws) return drawTopSpr(g, build, angle, opts, cs, ws); }
+  { const cs = crownOf(build.c), ws = TOP_SPR.w[build.w]; if (cs && ws) return drawTopSpr(g, build, angle, opts, cs, ws); }
   const w = WEAPONS[build.w], a = ARMORS[build.a], c = CLASSES[build.c];
   const metal = ATTR_COLOR[w.attr];
   const spin = opts.spin || 0;
@@ -2633,6 +2654,7 @@ function tutArenaBg(g) {
 // a top seen from 45 degrees (ground shadow, side drum, squashed face) for menus, tutorial and cards
 function drawTop45(g, b, ang, spin) {
   g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(4, 20, 32, 11, 0, 0, TAU); g.fill();
+  if (topSpr(b)) { g.fillStyle = '#c9d2dc'; g.beginPath(); g.ellipse(0, 17, 4.5, 3, 0, 0, TAU); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke(); g.save(); g.translate(0, 4); g.scale(1, 0.8); drawTop(g, b, ang, { spin: spin == null ? 1 : spin, thick: 9 }); g.restore(); return; }
   g.fillStyle = '#0b0e13'; g.beginPath(); g.ellipse(0, 7, 32, 25, 0, 0, TAU); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 3; g.stroke();
   g.fillStyle = shade(ATTR_COLOR[WEAPONS[b.w].attr], -0.45); g.fillRect(-31, 0, 62, 7);
   g.fillStyle = '#c9d2dc'; g.beginPath(); g.ellipse(0, 19, 4.5, 3, 0, 0, TAU); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();
@@ -3055,7 +3077,9 @@ function cxShow(e) {
   const pop = document.getElementById('cxPop'), inn = document.getElementById('cxPopIn');
   inn.style.borderColor = e.col;
   const pic = e.src ? `<img class="big${e.has ? '' : ' no'}" src="${e.src}">` : `<div class="bigI${e.has ? '' : ' no'}">${e.icon}</div>`;
+  const cxB = e.has && (cxTab === 'c' || cxTab === 'w' || cxTab === 'b') && e.id ? (cxTab !== 'w' ? { c: e.id, w: (collection[0] || {}).w || 'vibrosword', a: (collection[0] || {}).a || 'hover' } : { c: (collection[0] || {}).c || 'berserker', w: e.id, a: (collection[0] || {}).a || 'hover' }) : null;
   inn.innerHTML = `${pic}<div class="t">${e.has ? e.name : (e.soon ? e.name : '？？？')}</div><div class="tg" style="color:${e.col}">${cxTab === 'c' ? facBadge(e.tag, 1.4) + ' ' : ''}${e.tag}・${e.has ? '已取得' : e.soon ? '即將登場' : '未取得'}</div><div class="d">${e.has ? e.d : e.soon ? e.d : '還沒抽到，打開補給箱收集它！'}</div>`;
+  if (cxB && CLASSES[cxB.c] && WEAPONS[cxB.w]) { const pv = previewCanvas(cxB, 220); pv.className = 'cxTop'; inn.insertBefore(pv, inn.children[1]); }
   pop.classList.add('show'); SFX.flip();
 }
 document.getElementById('cxPop').onclick = () => document.getElementById('cxPop').classList.remove('show');
@@ -5302,8 +5326,14 @@ function tfDrawDeck(g, d) {
   const hz = zt - zb; for (let k = 0; k < d.w / 26; k++) { const xa = x0 + k * 26 + 4; if (xa + 12 > x1) break; zFill(g, [[xa, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.15], [xa + 12, yN, zb + hz * 0.75], [xa, yN, zb + hz * 0.75]], 'rgba(252,238,10,.38)'); } // hazard panels
   zLine(g, [[x0, yN, zt - 3], [x1, yN, zt - 3]], 'rgba(0,240,255,.85)', 3);
   zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], col, 3);                  // top face
+  { const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im && !SETTINGS.lowAuto) { const P = d.w, st = 6; g.save(); zPoly(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); zBegin(g, zt, d.cx); // v0.40: the deck top gets the chapter floor, lit a step brighter per level
+      for (let y = Math.floor(yF / st) * st; y < yN; y += st) g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6);
+      zEnd(g); g.restore(); zFill(g, [[x0, yF, zt], [x1, yF, zt], [x1, yN, zt], [x0, yN, zt]], `rgba(${hv >= 2 ? '159,232,255' : '255,255,255'},${0.06 + 0.04 * hv})`, 3); } }
   zLine(g, [[x0 + 7, yF + 7, zt], [x1 - 7, yF + 7, zt], [x1 - 7, yN - 7, zt], [x0 + 7, yN - 7, zt], [x0 + 7, yF + 7, zt]], 'rgba(127,223,255,.85)', 2);
   if (d.up) { zFill(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]], shade(col, 0.08), 3);
+    { const im = FLOOR_TEX[FLOOR_TEX_OF[+T.lv.id.split('-')[0]]]; if (im && !SETTINGS.lowAuto) { const P = d.w, st = 5; g.save(); zPoly(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]]); zEnd(g); g.clip(); // the up-slope uses the same floor, a shade darker
+      for (let y = yN; y < yS; y += st) { zBegin(g, zt + (zb - zt) * (y + st / 2 - yN) / (yS - yN), d.cx); g.drawImage(im, 0, ((y % P) + P) % P * im.height / P, im.width, im.height * st / P, x0, y, d.w, st + 0.6); zEnd(g); }
+      g.restore(); zFill(g, [[x0, yS, zb], [x1, yS, zb], [x1, yN, zt], [x0, yN, zt]], 'rgba(0,0,0,.12)', 3); } }
     for (let k = 0; k < 3; k++) { const u = (k + 0.7) / 3.4, y = yS - (yS - yN) * u, z = zb + (zt - zb) * u; zLine(g, [[d.cx - 26, y + 9, z], [d.cx, y - 6, z], [d.cx + 26, y + 9, z]], '#fcee0a', 4); } }
   g.save(); zBegin(g, zt, d.cx); drawPropsFloor(g, G.time, d); zEnd(g); g.restore();
   g.save(); zBegin(g, zt, x0 + 24); upright(g, x0 + 24, yN - 18, () => { g.font = 'italic 900 18px Rajdhani, sans-serif'; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#05060a'; const s = d.lift ? 'LIFT' : `${d.h + 1}F`; g.strokeText(s, 0, 0); g.fillStyle = '#fcee0a'; g.fillText(s, 0, 0); }); zEnd(g); g.restore();
@@ -6549,7 +6579,10 @@ function drawTopWorld0(g, t) {
   const hop = (t.hopT > 0 ? Math.sin(Math.PI * (1 - t.hopT / 0.38)) * (t.hopH || 12) : 0) + (tz ? tz.a : 0);
   const hk = HK(), lift = (TOP_LIFT * hk + hop + roLift + (t.falling && !t.ringOut ? -75 * (1 - sc) * (1 - sc) : 0)) / viewK, side = TOP_SIDE * hk / viewK;
   g.translate(0, -lift);
-  if (viewK < 1) {
+  const painted = topSpr(t.build);
+  if (viewK < 1 && painted) { const wob = (1 - t.spin) * 0.25; if (wob > 0.01) g.rotate(Math.sin(G.time * (8 + 10 * t.spin)) * wob * 0.3);
+    g.fillStyle = '#c9d2dc'; g.beginPath(); g.ellipse(0, side + 3 / viewK, 5, 5, 0, 0, TAU); g.fill(); g.translate(0, side * 0.45); }
+  else if (viewK < 1) {
     const wob = (1 - t.spin) * 0.25;
     if (wob > 0.01) g.rotate(Math.sin(G.time * (8 + 10 * t.spin)) * wob * 0.3);
     // body side: a darker drum under the face
@@ -6566,7 +6599,7 @@ function drawTopWorld0(g, t) {
     g.beginPath(); g.arc(0, 0, 34 * sc, 0, TAU); g.stroke(); g.restore();
   }
   g.scale(sc, sc);
-  drawTop(g, t.build, t.angle, { spin: t.spin, faceRot: true });
+  drawTop(g, t.build, t.angle, { spin: t.spin, faceRot: true, thick: painted && viewK < 1 ? side * 0.6 : 0 });
   if (t.flash > 0) { g.fillStyle = `rgba(255,255,255,${t.flash * 3})`; g.beginPath(); g.arc(0, 0, 32, 0, TAU); g.fill(); }
   if (t.poison) { g.strokeStyle = 'rgba(134,255,143,.6)'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 33, 0, TAU * t.poison / 3); g.stroke(); }
   if (t.shieldT > 0) {

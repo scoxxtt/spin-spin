@@ -2,7 +2,7 @@
 import os, re
 root = os.path.join(os.path.dirname(__file__), '..'); os.chdir(root)
 v = re.search(r"const GAME_VERSION = '([^']+)'", open('index.html', encoding='utf8').read()).group(1)
-arts = sorted('art/portraits/' + f for f in os.listdir('art/portraits') if f.endswith('.jpg'))
+arts = sorted(os.path.join(dp, f).replace(os.sep, '/') for dp, dn, fn in os.walk('art') for f in fn if f.endswith(('.jpg', '.png')))  # v0.40: every picture under art/, not just portraits
 files = ['./', 'index.html', 'js/assets.js', 'js/chapters.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png'] + arts
 tpl = open('sw.js', encoding='utf8').read()
 tpl = re.sub(r"const CACHE = '[^']*';", "const CACHE = 'spin-%s';" % v, tpl)
