@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.54.0</title>
+<title>SPIN! SPIN! v0.54.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -1012,7 +1012,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.54.0';
+const GAME_VERSION = 'v0.54.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3661,9 +3661,9 @@ const SFX = (() => {
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
   // preset: bpm, key (midi of the tonic, minor), prog (scale degrees per bar of 0..6 in natural minor), bass pattern, arp, lead seed, colours
   const MINOR = [0, 2, 3, 5, 7, 8, 10];
-  const P = (bpm, key, prog, o) => Object.assign({ bpm, key, prog, vol: 0.55, bass: 'oct', arp: 1, lead: 1, stab: 'saw', cut: [400, 3200], swing: 0, seed: key * 7 + bpm }, o || {});
+  const P = (bpm, key, prog, o) => Object.assign({ bpm: (o && o.tron === 0) ? bpm : Math.min(140, bpm + 10), tron: 1, key, prog, vol: 0.55, bass: 'oct', arp: 1, lead: 1, stab: 'saw', cut: [400, 3200], swing: 0, seed: key * 7 + bpm }, o || {});
   const TRACKS = {
-    menu: P(108, 57, [0, 5, 2, 6], { bass: 'walk', arp: 0, lead: 0, stab: 'keys', cut: [700, 2600], vol: 0.5 }),
+    menu: P(108, 57, [0, 5, 2, 6], { tron: 0, bass: 'walk', arp: 0, lead: 0, stab: 'keys', cut: [700, 2600], vol: 0.5 }),
     battle: P(124, 52, [0, 5, 6, 4], {}),
     boss: P(128, 50, [0, 1, 0, 6], { bass: 'drive', stab: 'brass', cut: [300, 2400], vol: 0.6 }),
     ch1: P(120, 57, [0, 5, 2, 6], { bass: 'oct' }),                       // A minor, classic filter-house loop
@@ -3686,6 +3686,14 @@ const SFX = (() => {
   const chordOf = (T, d) => [deg(T, d), deg(T, d + 2), deg(T, d + 4), deg(T, d + 6)]; // minor 7th-ish stacks
   // a short original 2-bar motif per track, built from its seed (scale steps), repeated with a variation
   const motifCache = {};
+  function hookOf(name, T) { // v0.54.1: a one-bar riff (16ths) that loops all the way through, like a film-score ostinato
+    const k = 'h' + name; if (motifCache[k]) return motifCache[k];
+    let r = T.seed * 7919 + 104729; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
+    const RH = [[0, 3, 6, 8, 10, 12, 14], [0, 2, 3, 6, 8, 11, 14], [0, 3, 6, 9, 12, 14], [0, 2, 4, 7, 8, 10, 12, 15]][Math.floor(rnd() * 4)];
+    const steps = [0, 2, 4, 7, 4, 2, 9, 7, 6, 4], h = {}; let j = Math.floor(rnd() * 3);
+    RH.forEach((st, q) => { h[st] = steps[(j + q * (1 + Math.floor(rnd() * 2))) % steps.length]; });
+    return (motifCache[k] = h);
+  }
   function motifOf(name, T) {
     if (motifCache[name]) return motifCache[name];
     let r = T.seed * 9301 + 49297; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
@@ -3736,16 +3744,26 @@ const SFX = (() => {
     if (s % 4 === 2) mNoise(t, 0.07, 'highpass', 7500, spb * 1.6);
     else if (name !== 'menu') mNoise(t, 0.018, 'highpass', 9500, 0.03);
     if (bar % 8 === 7 && s >= 12) mClap(t, 0.12);
+    if (T.tron) { // v0.54.1: driving 16th-note pulse bass (gallop accents), the looping hook, a wide brass pad under it
+      const acc = s % 4 === 0 ? 1 : s % 4 === 3 ? 0.8 : 0.55, pn = root + (s % 8 === 6 ? 12 : 0);
+      mNote(t, mtof(pn), spb * 0.85, 'sawtooth', 0.075 * acc, 380 + cut * 0.35);
+      if (s % 2 === 0) mNote(t, mtof(pn - 12), spb * 1.6, 'square', 0.04, 260);
+      const H = hookOf(name, T), hd = H[s]; if (hd != null) { const n = deg(T, d + hd + (bar % 4 === 3 && s >= 12 ? 1 : 0), 1); const lv = second ? 0.05 : 0.036;
+        mNote(t, mtof(n), spb * 1.7, 'sawtooth', lv, 1800 + cut * 0.6, true, 0.006); mNote(t, mtof(n + 12), spb * 0.9, 'square', lv * 0.35, 3200); }
+      if (s === 0) for (const n of ch.slice(0, 3)) for (const det of [-9, 9]) { const o = ac.createOscillator(), fl = ac.createBiquadFilter(), g = ac.createGain(); o.type = 'sawtooth'; o.frequency.value = mtof(n); o.detune.value = det; fl.type = 'lowpass'; fl.frequency.value = 700 + cut * 0.4;
+        g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.012, t + 0.25); g.gain.setValueAtTime(0.012, t + spb * 14); g.gain.linearRampToValueAtTime(0.0001, t + spb * 16); o.connect(fl); fl.connect(g); g.connect(pumpG || musicGain); o.start(t); o.stop(t + spb * 16 + 0.05); }
+    } else {
     // bass
     const BP = { oct: { 0: 0, 2: 12, 4: 0, 6: 12, 8: 0, 10: 12, 12: 0, 14: 12 }, funk: { 0: 0, 3: 12, 6: 0, 7: 10, 10: 12, 12: 0, 14: 7 }, drive: { 0: 0, 1: 0, 2: 12, 3: 0, 4: 0, 5: 0, 6: 12, 7: 0, 8: 0, 9: 0, 10: 12, 11: 0, 12: 0, 13: 0, 14: 12, 15: 0 }, walk: { 0: 0, 4: 7, 8: 12, 10: 10, 12: 7, 14: 3 } }[T.bass];
     if (s in BP) mNote(t, mtof(root + BP[s]), spb * (T.bass === 'drive' ? 0.8 : 1.5), T.bass === 'walk' ? 'triangle' : 'square', T.bass === 'drive' ? 0.07 : 0.09, 500 + cut * 0.25);
+    }
     // chord stabs on the off-beat pushes (keys/organ hold longer)
     const STAB = T.stab === 'keys' || T.stab === 'organ' ? [0, 6, 10] : [2, 6, 10, 14];
-    if (STAB.includes(s)) mStab(t, T, ch.slice(0, 3), T.stab === 'keys' || T.stab === 'organ' ? spb * 3.5 : spb * 1.3, cut);
+    if (STAB.includes(s) && !(T.tron && s % 4 === 2 && bar % 2)) mStab(t, T, ch.slice(0, 3), T.stab === 'keys' || T.stab === 'organ' ? spb * 3.5 : spb * 1.3, cut);
     // arp: 16ths up the chord, an octave jump on 2-bar boundaries (arp 2 = always on, arp 1 = second half only)
     if (T.arp === 2 || (T.arp === 1 && second)) { const n = ch[s % 4] + 24 + (s >= 8 && bar % 2 ? 12 : 0); mNote(t, mtof(n), spb * 0.9, 'square', 0.016, 1200 + cut, true); }
     // lead motif in the second half (and the whole loop for the menu pad)
-    if (T.lead && second) { const M = motifOf(name, T), L = M[i % 32]; if (L) { const n = deg(T, L[0] + (bar % 4 === 3 ? 1 : 0), 1); mNote(t, mtof(n), spb * L[1] * 0.92, 'sawtooth', 0.04, 2600, true, 0.02); mNote(t, mtof(n + 12), spb * L[1] * 0.6, 'square', 0.012, 3000); } }
+    if (T.lead && second && !T.tron) { const M = motifOf(name, T), L = M[i % 32]; if (L) { const n = deg(T, L[0] + (bar % 4 === 3 ? 1 : 0), 1); mNote(t, mtof(n), spb * L[1] * 0.92, 'sawtooth', 0.04, 2600, true, 0.02); mNote(t, mtof(n + 12), spb * L[1] * 0.6, 'square', 0.012, 3000); } }
     if (name === 'menu' && s === 0) mPad(t, ch.slice(0, 3), spb * 16, 0.026);
     // riser into the top of each 8-bar loop
     if (bar % 8 === 7 && s === 0) { const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.setValueAtTime(mtof(T.key), t); o.frequency.exponentialRampToValueAtTime(mtof(T.key + 24), t + beat * 4); f.type = 'bandpass'; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(5000, t + beat * 4); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.03, t + beat * 3.8); g.gain.exponentialRampToValueAtTime(0.0001, t + beat * 4); o.connect(f); f.connect(g); g.connect(musicGain); o.start(t); o.stop(t + beat * 4 + 0.05); }
