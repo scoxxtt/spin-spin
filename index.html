@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.45.1</title>
+<title>SPIN! SPIN! v0.45.2</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -912,7 +912,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.45.1';
+const GAME_VERSION = 'v0.45.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2463,7 +2463,7 @@ function roundRectP(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arc
 const CRATE_GLOW = ['0,240,255', '176,102,255', '255,42,85', '252,238,10', '255,215,90'];
 const CRATE_IMG = new Image(); CRATE_IMG.onload = () => { CRATE_IMG.ok = true; }; CRATE_IMG.src = 'art/ui/crate.png';
 const GACHA_BG = new Image(); GACHA_BG.onload = () => { GACHA_BG.ok = true; }; GACHA_BG.src = 'art/gacha_bg.jpg';
-const CRATE_CLAMPS = [[0.47, 0.44], [0.67, 0.41], [0.86, 0.37]], CRATE_SEAM = [[-0.02, 0.27], [0.2, 0.43], [0.42, 0.405], [0.62, 0.365], [0.93, 0.3], [1.02, 0.285]]; // latch centres / the lid seam (the cyan line) traced on the picture, as fractions
+const CRATE_CLAMPS = [[0.47, 0.44], [0.67, 0.41], [0.86, 0.37]], CRATE_SEAM = [[-0.02, 0.276], [0.02, 0.282], [0.06, 0.302], [0.1, 0.328], [0.14, 0.358], [0.18, 0.384], [0.2, 0.421], [0.24, 0.447], [0.32, 0.453], [0.37, 0.451], [0.4, 0.425], [0.44, 0.416], [0.52, 0.399], [0.58, 0.395], [0.62, 0.386], [0.72, 0.358], [0.8, 0.339], [0.9, 0.321], [0.96, 0.311], [0.98, 0.302], [1.02, 0.296]]; // latch centres / the lid seam (the cyan line) traced on the picture, as fractions
 function drawCrateSpr(g, cx, cy, time, tear, lidOff, lidRot, alpha) { // v0.45: the painted crate; the lid half lifts off on the burst
   const im = CRATE_IMG, w = 330, h = w * im.height / im.width, x0 = cx - w / 2, y0 = cy - h / 2, P = CRATE_SEAM.map(([fx, fy]) => [x0 + w * fx, y0 + h * fy]);
   const glow = CRATE_GLOW[PK.tease ? PK.teaseC : 0], open = Math.min(3, Math.round(tear * 3));
