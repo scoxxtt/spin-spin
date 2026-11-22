@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.52.2</title>
+<title>SPIN! SPIN! v0.52.3</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -974,7 +974,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.52.2';
+const GAME_VERSION = 'v0.52.3';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3853,7 +3853,7 @@ const SFX = (() => {
           [o1, o2, o3, lfo].forEach(o => o.start());
           e = engines[i] = { o1, o2, o3, lfo, dep, amp, lp, last: 0, pop: 0 };
         }
-        const base = i ? 0.82 : 1, vol = i ? 0.045 : 0.085;
+        const base = i ? 0.82 : 1, vol = i ? 0.02 : 0.04; // v0.52.3: engine about half as loud
         const F = (34 + 150 * q.spd + 22 * q.spin + (q.onRing ? 70 : 0)) * base;
         e.o1.frequency.setTargetAtTime(F, t, 0.06); e.o2.frequency.setTargetAtTime(F / 2, t, 0.06); e.o3.frequency.setTargetAtTime(F * 1.008, t, 0.06);
         e.lfo.frequency.setTargetAtTime(F / 2, t, 0.06);
