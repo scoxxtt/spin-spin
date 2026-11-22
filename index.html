@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.51.2</title>
+<title>SPIN! SPIN! v0.52.0</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -640,7 +640,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 .fScore{display:grid;grid-template-columns:auto 1fr;gap:.2em .7em;align-items:center;margin:.3em auto .5em;width:92%;max-width:22em;padding:.5em .7em;background:rgba(5,8,20,.75);border:2px solid #05060a;box-shadow:inset 0 0 0 2px rgba(0,240,255,.35)}
 .fsRank{grid-row:1/3;font-family:Rajdhani,sans-serif;font-style:italic;font-weight:900;font-size:3em;line-height:1;padding:0 .1em;text-shadow:3px 3px 0 #05060a;animation:fsPop .5s 1.4s both}
 .fsRank.rS{color:#fcee0a}.fsRank.rA{color:#ff4fd8}.fsRank.rB{color:#7fdfff}.fsRank.rC{color:#94a0b6}
-.fsRows{font-size:.72em;text-align:left;display:grid;grid-template-columns:1fr 1fr;column-gap:.8em}.fsR{display:flex;justify-content:space-between;padding:.08em 0;border-bottom:1px dashed rgba(255,255,255,.12);animation:fsIn .3s both}.fsR b{color:#fcee0a}
+.fsRows{font-size:.68em;text-align:left;display:grid;grid-template-columns:1fr 1fr;column-gap:.8em}.fsR{display:flex;justify-content:space-between;padding:.08em 0;border-bottom:1px dashed rgba(255,255,255,.12);animation:fsIn .3s both}.fsR b{color:#fcee0a}
 .fsTot{grid-column:2;display:flex;align-items:baseline;gap:.5em;justify-content:flex-end;font-family:Rajdhani,sans-serif;font-weight:900}.fsTot span{font-size:.8em;color:#9fe8ff;font-style:italic}.fsTot b{font-size:1.6em;color:#fff;text-shadow:2px 2px 0 #05060a}
 #final{overflow-y:auto;justify-content:flex-start !important;padding-top:3.2em;padding-bottom:1.2em}#final>*{flex-shrink:0}#final .big{margin-top:0}
 .fsTot em{font-style:italic;color:#05060a;background:#fcee0a;padding:0 .4em;font-size:.8em;animation:fsPop .5s 1.6s both}.fsTot small{color:#94a0b6;font-size:.7em}
@@ -974,7 +974,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.51.2';
+const GAME_VERSION = 'v0.52.0';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3518,7 +3518,7 @@ function storyFinal(win) {
   if (ch.bonus && !S.ch[ch.id] && ch.levels.every(l => full3(lvStars(l.id)))) { S.ch[ch.id] = 1; grant(ch.bonus, rew, `${ch.name} 全三星`); }
   save();
   let scoreHtml = ''; if (G.track) { const T = G.track, left = Math.max(0, G.lineup.length - T.idx), chips = (T.chips || []).filter(c => c.now).length, t = G.time || 0, par = T.len / 220 + (lv.boss ? 40 : 25);
-    const rows = [['過關', win ? 1 : 0, 1000], ['剩餘陀螺', win ? left : 0, 500], ['打爆敵人', T.kills || 0, 150], ['COMBO', T.maxCombo || 0, 40], ['資料晶片', chips, 300], ['時間獎勵', win ? Math.max(0, Math.round(par - t)) : 0, 20]];
+    const rows = [['過關', win ? 1 : 0, 1000], ['剩餘陀螺', win ? left : 0, 500], ['打爆敵人', T.kills || 0, 150], ['COMBO', T.maxCombo || 0, 40], ['資料晶片', chips, 300], ['高台捷徑', Math.round((T.sky || 0) / 100), 60], ['飛躍', T.airs || 0, 120], ['時間獎勵', win ? Math.max(0, Math.round(par - t)) : 0, 20]];
     const total = rows.reduce((a, r) => a + r[1] * r[2], 0), rank = !win ? 'C' : left >= G.lineup.length && chips >= 3 ? 'S' : left >= 2 ? 'A' : 'B';
     S.best = S.best || {}; const prev = S.best[lv.id] || 0, nb = total > prev; if (nb) { S.best[lv.id] = total; save(); }
     scoreHtml = `<div class="fScore"><div class="fsRank r${rank}">${rank}</div><div class="fsRows">${rows.map((r, i) => `<div class="fsR" style="animation-delay:${0.15 + i * 0.18}s"><span>${r[0]}${r[0] === '時間獎勵' ? '' : ` ×${r[1]}`}</span><b>+${r[1] * r[2]}</b></div>`).join('')}</div><div class="fsTot"><span>SCORE</span><b data-to="${total}">0</b>${nb ? '<em>NEW BEST!</em>' : `<small>最佳 ${prev}</small>`}</div></div>`;
@@ -4248,7 +4248,10 @@ function camFollowStep(dt) {
   if (onTrack() && a && G.phase === 'battle') { // v0.42: the road camera rides with the top's height and pitches with the slope
     const q = tfZ(a), zt = q ? q.z : 0, /* floors only: following jumps too kept sliding the whole road down (it looked like the road kept narrowing) */ prev = G.camHT == null ? zt : G.camHT; G.camHT = zt;
     const vz = (zt - prev) / Math.max(dt, 1e-3); G.camPitch = (G.camPitch || 0) + (clamp(vz / 220, -1, 1) - (G.camPitch || 0)) * (1 - Math.exp(-dt * 3));
-    G.camH = G.camH == null ? zt : G.camH + (zt - G.camH) * (1 - Math.exp(-dt * 5)); }
+    G.camH = G.camH == null ? zt : G.camH + (zt - G.camH) * (1 - Math.exp(-dt * 5));
+    const Tk = G.track; if (q && q.z > 0 && !(q.a > 0)) { Tk.sky = (Tk.sky || 0) + Math.hypot(a.vx, a.vy) * dt; // v0.52: riding a raised shortcut scores, with a pop when you get on
+      if (!G.onSky) { G.onSky = 1; comicPop(a.x, a.y - 70, ['SKYWAY!', 'HIGH ROAD!', 'NICE LINE!'][(Tk.skyN = (Tk.skyN || 0) + 1) % 3], 30, '#ffffff', '#ff4fd8', 0.6); comboAdd(1, a.x, a.y); }
+      if (Math.random() < dt * 14) sparks(a.x, a.y + 6, 2, '#ff9ae6', 140, true); } else if (!q || q.z <= 0) G.onSky = 0; }
   else { G.camH = (G.camH || 0) * (1 - Math.min(1, dt * 4)); G.camPitch = (G.camPitch || 0) * (1 - Math.min(1, dt * 4)); G.camHT = null; }
   const k = 1 - Math.exp(-dt * kf);
   if (!pinching) { f.x += (tx - f.x) * k; f.y += (ty - f.y) * k; f.z += (tz - f.z) * k; } // two fingers on screen = the player drives the camera
@@ -5354,7 +5357,7 @@ function tfLand(t, S, e2) {
   if (t.side !== 0 || t.mob) return;
   const big = air.dur > 0.8;
   G.shake = Math.max(G.shake, big ? 9 : 4); sparks(t.x, t.y, big ? 26 : 12, '#fcee0a', big ? 340 : 220, true); wave(t.x, t.y, '252,238,10', big ? 110 : 70, 6, 0.3); SFX.thump(big ? 0.8 : 0.45);
-  if (air.H > 30) { comboAdd(big ? 2 : 1, t.x, t.y); t.spin = Math.min(1, t.spin + (big ? 0.06 : 0.03));
+  if (air.H > 30) { G.track.airs = (G.track.airs || 0) + 1; comboAdd(big ? 2 : 1, t.x, t.y); t.spin = Math.min(1, t.spin + (big ? 0.06 : 0.03));
     if (G.comicCD <= 0) { comicPop(t.x, t.y - 70, up > 0.5 ? 'UP!!' : big ? 'BIG AIR!!' : 'LANDING!', big ? 40 : 28, '#ffffff', '#00b8d4', 0.6); G.comicCD = 0.3; } }
 }
 function tfDrop(t, nl) {

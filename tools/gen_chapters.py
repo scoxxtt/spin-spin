@@ -43,9 +43,18 @@ def lane(y, k=0): return LANES[(y // 100 + k) % 3]          # deterministic (no 
 def seg_ramp(y, c):     # narrow jump ramp in one lane: fly over the hazard in that lane, or go round it on the open road
     n = c['no']; x = lane(y); over = dict(type='bumper', x=x, y=y + 440) if n < 3 else dict(type='spikes', x=x, y=y + 440, r=44, on=2, off=1.5)
     return S([dict(type='boost', x=x, y=y + 40), dict(type='ramp', x=x, y=y + 230, w=110, l=80), over], sign=('JUMP', '#fcee0a'), used=1000)
-def seg_deck(y, c):     # narrow 2F side road in one lane: a raised shortcut, the open road stays beside it
-    k = lane(y)
-    return S([dict(type='boost', x=k, y=y + 30)], sign=('2F', '#7fdfff'), used=820, decks=[dict(x=k, w=120, y=y + 200, l=380, h=1, up=150, down=150)])
+def seg_deck(y, c):     # v0.52: 2F side road in four shapes, so the shortcuts are not all alike
+    k = lane(y); v = (y // 100) % 4; nb = lane(y, 1)
+    if v == 0:   # short hop
+        return S([dict(type='boost', x=k, y=y + 30)], sign=('2F', '#7fdfff'), used=700, decks=[dict(x=k, w=120, y=y + 200, l=260, h=1, up=130, down=130)])
+    if v == 1:   # long skyway
+        return S([dict(type='boost', x=k, y=y + 30)], sign=('SKYWAY', '#7fdfff'), used=1080, decks=[dict(x=k, w=120, y=y + 200, l=640, h=1, up=150, down=150)])
+    if v == 2:   # snake: three linked platforms stepping across the lanes (left→middle→right or back)
+        seq = [-0.62, 0.0, 0.62] if k <= 0 else [0.62, 0.0, -0.62]
+        ds = [dict(x=seq[0], w=120, y=y + 200, l=300, h=1, up=150), dict(x=seq[1], w=120, y=y + 450, l=300, h=1), dict(x=seq[2], w=120, y=y + 700, l=300, h=1, down=150)]
+        return S([dict(type='boost', x=seq[0], y=y + 30)], sign=('SNAKE', '#ff9ae6'), used=1220, decks=ds)
+    # twin: two lanes of different lengths side by side
+    return S([dict(type='boost', x=k, y=y + 30)], sign=('2F', '#7fdfff'), used=900, decks=[dict(x=k, w=120, y=y + 200, l=420, h=1, up=150, down=150), dict(x=nb, w=110, y=y + 330, l=260, h=1, up=130, down=130)])
 def seg_deck2(y, c):    # 2F lane with a narrower 3F block on it: drop back to 2F off its end
     k = lane(y)
     return S([dict(type='boost', x=k, y=y + 30)], sign=('3F', '#7fdfff'), used=990, decks=[dict(x=k, w=124, y=y + 190, l=560, h=1, up=150, down=150), dict(x=k, w=96, y=y + 270, l=280, h=2, up=100)])
@@ -217,7 +226,7 @@ def level(c, i, L, base=None):
     k3 = len(tr['mobs']); chase = 'chase' in mods
     if base: out['stars'] = STAR_KILLS(base['stars'], k3, chase); out['reward'] = base['reward']
     else:
-        st = [['win'], ['lives', 2], R.choice([['kills', min(k3, 3 + (i > 5))], ['lives', 3], ['ex', 4]])] if not isb else [['win'], ['lives', 2], (['ex', 5] if i == 9 else ['lives', 3] if i == 4 else ['kills', 2])]
+        st = [['win'], ['lives', 2], R.choice([['kills', min(k3, 3 + (i > 5))], ['lives', 3], ['ex', 2]])] if not isb else [['win'], ['lives', 2], (['ex', 3] if i == 9 else ['lives', 3] if i == 4 else ['kills', 2])]
         out['stars'] = STAR_KILLS(st, k3, chase)
         b0 = c['coin'] + i * c['coin'] // 20
         out['reward'] = dict(first=dict(coins=b0 * (2 if isb else 1) + (c['coin'] if i == 9 else 0), **({'box': 'purple'} if isb else {})), star3=dict(coins=b0 * 6 // 10 * (2 if isb else 1), **({'box': 'white'} if i in (6, 7) else {})))
