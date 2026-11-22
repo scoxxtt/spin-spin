@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.52.1</title>
+<title>SPIN! SPIN! v0.52.2</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -974,7 +974,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.52.1';
+const GAME_VERSION = 'v0.52.2';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -3301,13 +3301,13 @@ function openHome() { openTeam(); if (!screens.team.classList.contains('show')) 
 let homeCoins = null;
 function renderHome() {
   const S = storyData(), L = allLevels(), nx = L.find(l => lvUnlocked(l) && !lvCleared(l.id)) || L[L.length - 1], ch = CHAPTERS.find(c => c.levels.includes(nx));
-  const got = L.reduce((t, l) => t + lvStars(l.id).filter(Boolean).length, 0), max = L.length * 3, lead = collection[0], C = CLASSES[lead.c];
+  const got = L.reduce((t, l) => t + lvStars(l.id).filter(Boolean).length, 0), max = L.length * 3, lead = collection[0], hc = myAva(), C = CLASSES[hc], own = hc !== lead.c; // v0.52.2: lobby hero follows the chosen avatar
   const pill = (ic, v, col) => `<div class="hmPill" style="--pc:${col}">${ic}<b>${v}</b></div>`;
   document.getElementById('homeIn').innerHTML = `
     <div class="hmTop">${pill(ORE, INV.coins, '#fcee0a')}${pill('<img src="art/ui/icCard.png" alt="">', INV.shards || 0, '#b066ff')}${pill('<span class="hmIc">⚡</span>', '+' + Math.round(teamPower() * 100) + '%', '#00f0ff')}</div>
     <img class="hmLogoImg" src="art/logo.png" alt="SPIN! SPIN!" onerror="this.outerHTML='<div class=hmLogo>SPIN! SPIN!</div>'">
-    <div class="hmHero" id="hmHero"><div class="hmBg"></div><img class="hmPic" src="${PORTRAIT_SRC[lead.c]}" alt="">
-      <div class="hmName"><small>${facBadge(C.fac, 1)} ${C.fac}・出戰 1 號</small><b>${C.name.split('・').join('<br>')}</b></div>
+    <div class="hmHero" id="hmHero"><div class="hmBg"></div><img class="hmPic" src="${PORTRAIT_SRC[hc]}" alt="">
+      <div class="hmName"><small>${facBadge(C.fac, 1)} ${C.fac}${own ? '' : '・出戰 1 號'}</small><b>${C.name.split('・').join('<br>')}</b></div>
       <div class="hmTeam">${collection.map((b, i) => `<img src="${PORTRAIT_SRC[b.c]}" alt="" title="${i + 1}">`).join('')}<span>隊伍編成 ▶</span></div></div>
     <button class="hmBanner" id="hmStory"><span class="hmBT">${ch.name}</span><span class="hmBL">下一關 <b>${nx.id}</b> ${nx.name}${nx.boss ? ' <i>BOSS</i>' : ''}</span><span class="hmBS">★ ${got} / ${max}</span><span class="hmGo">繼續冒險 ▶</span></button>
     <div class="pairBtns hmBtns"><button class="btn ghost" id="hmFree">自由對戰</button><button class="btn" id="hmGoStory">章節</button></div>`;
