@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.45.0</title>
+<title>SPIN! SPIN! v0.45.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -912,7 +912,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.45.0';
+const GAME_VERSION = 'v0.45.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2463,17 +2463,18 @@ function roundRectP(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arc
 const CRATE_GLOW = ['0,240,255', '176,102,255', '255,42,85', '252,238,10', '255,215,90'];
 const CRATE_IMG = new Image(); CRATE_IMG.onload = () => { CRATE_IMG.ok = true; }; CRATE_IMG.src = 'art/ui/crate.png';
 const GACHA_BG = new Image(); GACHA_BG.onload = () => { GACHA_BG.ok = true; }; GACHA_BG.src = 'art/gacha_bg.jpg';
-const CRATE_CLAMPS = [[0.44, 0.40], [0.665, 0.40], [0.87, 0.40]], CRATE_SEAM = 0.436; // clamp positions / lid seam on the picture (fractions)
+const CRATE_CLAMPS = [[0.47, 0.44], [0.67, 0.41], [0.86, 0.37]], CRATE_SEAM = [[-0.02, 0.27], [0.2, 0.43], [0.42, 0.405], [0.62, 0.365], [0.93, 0.3], [1.02, 0.285]]; // latch centres / the lid seam (the cyan line) traced on the picture, as fractions
 function drawCrateSpr(g, cx, cy, time, tear, lidOff, lidRot, alpha) { // v0.45: the painted crate; the lid half lifts off on the burst
-  const im = CRATE_IMG, w = 330, h = w * im.height / im.width, x0 = cx - w / 2, y0 = cy - h / 2, sy = im.height * CRATE_SEAM, sh = h * CRATE_SEAM;
+  const im = CRATE_IMG, w = 330, h = w * im.height / im.width, x0 = cx - w / 2, y0 = cy - h / 2, P = CRATE_SEAM.map(([fx, fy]) => [x0 + w * fx, y0 + h * fy]);
   const glow = CRATE_GLOW[PK.tease ? PK.teaseC : 0], open = Math.min(3, Math.round(tear * 3));
+  const seam = () => P.forEach(([x, y], k) => k ? g.lineTo(x, y) : g.moveTo(x, y));
   g.save(); g.globalAlpha = alpha;
   g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(cx, y0 + h - 6, w * 0.46, 18, 0, 0, TAU); g.fill();
-  g.drawImage(im, 0, sy, im.width, im.height - sy, x0, y0 + sh, w, h - sh);                                                   // body
-  if (open > 0 || lidOff) { const k = lidOff ? 1 : open / 3, gl = g.createLinearGradient(0, y0 + sh - 30, 0, y0 + sh + 10); gl.addColorStop(0, `rgba(${glow},0)`); gl.addColorStop(1, `rgba(${glow},${0.35 + 0.5 * k})`);
-    g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gl; g.fillRect(x0 + w * 0.08, y0 + sh - 30, w * 0.84, 40); g.restore(); }          // light leaking out of the seam
-  g.save(); g.translate(cx, y0 + sh + lidOff * 0.4); g.rotate(lidRot); g.translate(-cx, -(y0 + sh));
-  g.drawImage(im, 0, 0, im.width, sy, x0, y0, w, sh); g.restore();                                                             // lid
+  g.save(); g.beginPath(); seam(); g.lineTo(x0 + w + 20, y0 + h + 20); g.lineTo(x0 - 20, y0 + h + 20); g.closePath(); g.clip(); g.drawImage(im, x0, y0, w, h); g.restore(); // body: below the seam
+  if (open > 0 || lidOff) { const k = lidOff ? 1 : open / 3; g.save(); g.globalCompositeOperation = 'lighter'; g.lineJoin = 'round'; // light leaking along the seam
+    for (const [lw, a] of [[18, 0.25], [8, 0.55], [3, 0.95]]) { g.strokeStyle = `rgba(${glow},${a * (0.4 + 0.6 * k)})`; g.lineWidth = lw; g.beginPath(); seam(); g.stroke(); } g.restore(); }
+  g.save(); const pv = P[1]; g.translate(pv[0], pv[1] + lidOff * 0.4); g.rotate(lidRot); g.translate(-pv[0], -pv[1]);         // lid: above the seam, hinged at the front-left corner
+  g.beginPath(); seam(); g.lineTo(x0 + w + 20, y0 - 20); g.lineTo(x0 - 20, y0 - 20); g.closePath(); g.clip(); g.drawImage(im, x0, y0, w, h); g.restore();
   CRATE_CLAMPS.forEach(([fx, fy], i) => { if (i >= open || lidOff) return; const x = x0 + w * fx, y = y0 + h * fy; // opened clamps: a burst of light where the clamp was
     g.save(); g.globalCompositeOperation = 'lighter'; const r = 22 + 5 * Math.sin(time * 9 + i); const rg = g.createRadialGradient(x, y, 2, x, y, r); rg.addColorStop(0, 'rgba(255,255,220,.95)'); rg.addColorStop(1, `rgba(${glow},0)`); g.fillStyle = rg; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); g.restore();
   });
