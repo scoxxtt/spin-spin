@@ -69,7 +69,7 @@ def seg_deck3(y, c):    # two side-by-side lanes: 2F/3F/4F tower in one, a plain
 def seg_belt(y, c):
     n = c['no']
     if n < 4: return S([dict(type='belt', x=0, y=y + 170, w=200, l=280, dir=12, power=0.8), dict(type='bumper', x=-0.62, y=y + 170), dict(type='bumper', x=0.62, y=y + 170)], sign=('BELT', '#fcee0a'), used=400)
-    s = R.choice(['L', 'R']); return S([dict(type='belt', x=0, y=y + 160, w=380, l=220, dir=9 if s == 'L' else 3, power=round(min(0.7, 0.4 + 0.02 * n), 2))], [dict(side=s, **{'from': y + 70}, to=y + 260)], ('BELT', '#fcee0a'), 380)
+    s = R.choice(['L', 'R']); return S([dict(type='belt', x=0, y=y + 160, w=380, l=220, dir=9 if s == 'L' else 3, power=round(min(0.5, 0.34 + 0.012 * n), 2))], [dict(side=s, **{'from': y + 110}, to=y + 230)], ('BELT', '#fcee0a'), 380)
 def seg_tube(y, c):     # wormhole tube: skips a laser + spikes section; from chapter 6 the mouth opens and shuts
     n = c['no']; s = sd() * 0.5; t = dict(type='tube', x=s, y=y + 100, ex=round(-s * 0.3, 2), ey=y + 760, bend=0.2)
     if n >= 6: t.update(open=3.2, ph=round(R.uniform(0, 3), 1))
@@ -136,6 +136,7 @@ def track(c, plan, mobs_n, mods, mobLv=None, floor=None, mobs_pool=None):
     pool = mobs_pool or c['mobs']
     for i, (sy, k) in enumerate(sorted(ok[:mobs_n])):
         q = R.choice(pool); typ = 'guard' if i % 2 == 0 else 'rush'
+        if k == 'belt' and c['no'] >= 4: continue  # v0.54.6: no enemy at the end of a side-pushing belt (it knocked you back onto the belt and out of the gap)
         mobs.append(dict(type=typ, x=0 if typ == 'guard' else R.choice([-0.3, 0.3]), y=min(sy, ln - 420), c=q[0], w=q[1], a=q[2]))
     tr = dict(len=ln, mobLv=c['mob'] if mobLv is None else mobLv, floor=floor or c['floor'], signs=signs, gaps=gaps, props=props, mobs=mobs)
     for kk, v in ex.items():

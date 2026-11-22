@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.54.5</title>
+<title>SPIN! SPIN! v0.54.6</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -1016,7 +1016,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.54.5';
+const GAME_VERSION = 'v0.54.6';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -5009,7 +5009,7 @@ function chipGot(P) {
   if (!had) { S.chip[id] = (S.chip[id] || 0) | 1 << P.idx; const no = +id.split('-')[0] || 1, coins = 30 + no * 15; INV.coins += coins; addText(P.x, P.y - 34, `+${coins} 金幣`, '#fcee0a', 18); save(); }
 }
 // v0.53.5: difficulty eased per chapter — enemy gear is capped so a purple / red team can get through the middle chapters
-const EASE_CAP = [0, 0.12, 0.32, 0.42, 0.5, 0.56, 0.6, 0.63, 0.66, 0.68, 0.7, 0.72, 0.74, 0.76, 0.78, 0.8], EASE_HP = [1, 1, 1, 0.95, 0.88, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84];
+const EASE_CAP = [0, 0.12, 0.32, 0.42, 0.5, 0.56, 0.6, 0.63, 0.66, 0.68, 0.7, 0.72, 0.74, 0.76, 0.78, 0.8], EASE_HP = [1, 1, 1, 0.95, 0.86, 0.78, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8];
 const easeLv = (lv, x) => { const c = +String(lv.id).split('-')[0] || 1; return Math.min(x || 0, EASE_CAP[Math.min(15, c)]); };
 const easeHp = lv => EASE_HP[Math.min(15, +String(lv.id).split('-')[0] || 1)];
 function startTrack(lv) {
