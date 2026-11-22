@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.54.2</title>
+<title>SPIN! SPIN! v0.54.3</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -1016,7 +1016,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.54.2';
+const GAME_VERSION = 'v0.54.3';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -1200,7 +1200,7 @@ const PORTRAIT_SRC = Object.assign({}, SPIN_ASSETS.portraits); // starter portra
 // part icon sprites: 4 x 3 grid of 128px tiles, in WEAPONS / ARMORS key order
 const ICON_SRC = SPIN_ASSETS.icons; // sprite sheets embedded in js/assets.js
 
-const FACE = { berserker: [140, 108, 72], guardian: [128, 104, 68], assassin: [128, 112, 66], mage: [106, 104, 70], hunter: [126, 110, 72], undead: [130, 104, 72], mechcat: [128, 136, 80] };
+const FACE = { rex: [141, 126, 65], jack: [113, 99, 64], spam: [94, 162, 94], twins: [138, 141, 94], chrono: [126, 152, 55], cactus: [119, 118, 97], dj: [192, 105, 59], mechcat: [124, 123, 100], rider: [124, 100, 55], octo: [134, 122, 99], tesla: [148, 110, 61], theseus: [111, 135, 52], david: [144, 105, 58], host: [116, 100, 100], berserker: [150, 135, 63], guardian: [127, 84, 57], assassin: [126, 112, 66], mage: [122, 111, 61], hunter: [128, 149, 70], undead: [125, 136, 81], rat: [100, 156, 100], nova: [122, 137, 74], raven: [76, 113, 58], sheep: [108, 156, 100], maiden: [104, 133, 74], proteus: [128, 132, 100], erin: [129, 112, 62] }; // v0.54.3: centred on each portrait's eyes (from the pupil marks), mouth included
 const PORTRAITS = {}; ICONS.w.src = ICON_SRC.w; ICONS.a.src = ICON_SRC.a;
 for (const id of ['rat', 'rex', 'octo', 'rider', 'tesla', 'cactus', 'erin', 'jack', 'dj', 'spam', 'nova', 'raven', 'twins', 'chrono', 'david', 'sheep', 'maiden', 'theseus', 'proteus', 'host']) PORTRAIT_SRC[id] = `art/portraits/${id}.jpg`;
 // BOSS versions of existing characters ("controlled": black forehead, red eyes — art/portraits/boss_*.jpg, made by a script from the normal portrait).
@@ -1271,7 +1271,7 @@ const portraitOk = c => PORTRAITS[c] && PORTRAITS[c].complete && PORTRAITS[c].na
 // draw a class face into a circle of radius r centred on (x, y)
 function drawFace(g, c, x, y, r, rot) {
   if (!portraitOk(c)) return false;
-  const [fx, fy, fr] = FACE[c] || [128, 100, 74]; // new cards use a centred face box
+  const [fx, fy, fr] = FACE[c] || FACE[baseCls(c)] || [128, 100, 74]; // new cards use a centred face box
   g.save(); g.beginPath(); g.arc(x, y, r, 0, TAU); g.clip();
   if (rot) { g.translate(x, y); g.rotate(rot); g.translate(-x, -y); }
   g.drawImage(PORTRAITS[c], fx - fr, fy - fr, fr * 2, fr * 2, x - r, y - r, r * 2, r * 2);
@@ -1980,7 +1980,7 @@ function openTopView(b) {
     cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); TV.pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); TV.drag = { x: e.clientX, y: e.clientY, t: performance.now() }; });
     cv.addEventListener('pointermove', e => { if (!TV.pts.has(e.pointerId)) return; const P = TV.pts.get(e.pointerId);
       if (TV.pts.size >= 2) { const [a, c] = [...TV.pts.values()], d0 = Math.hypot(a.x - c.x, a.y - c.y); P.x = e.clientX; P.y = e.clientY; const [a2, c2] = [...TV.pts.values()], d1 = Math.hypot(a2.x - c2.x, a2.y - c2.y); if (d0 > 10) TV.zoom = clamp(TV.zoom * d1 / d0, 0.6, 2.2); return; }
-      const dx = e.clientX - P.x, dy = e.clientY - P.y; P.x = e.clientX; P.y = e.clientY; TV.ang += dx * 0.012; TV.tilt = clamp(TV.tilt - dy * 0.004, 0.42, 1); });
+      const dx = e.clientX - P.x, dy = e.clientY - P.y; P.x = e.clientX; P.y = e.clientY; TV.ang += dx * 0.012; TV.tilt = clamp(TV.tilt - dy * 0.004, 0.3, 1); });
     const up = e => { TV.pts.delete(e.pointerId); };
     cv.addEventListener('pointerup', e => { const D = TV.drag; up(e); if (D && performance.now() - D.t < 250 && Math.hypot(e.clientX - D.x, e.clientY - D.y) < 8) { if (TV.lastTap && performance.now() - TV.lastTap < 320) { TV.tilt = 0.62; TV.zoom = 1; TV.ang = 0; } TV.lastTap = performance.now(); } });
     cv.addEventListener('pointercancel', up);
@@ -1994,10 +1994,16 @@ function drawTopView(dt) {
   if (cv.width !== Math.round(W2 * dpr) || cv.height !== Math.round(H2 * dpr)) { cv.width = Math.round(W2 * dpr); cv.height = Math.round(H2 * dpr); }
   const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W2, H2);
   if (TV.auto && !TV.pts.size) TV.ang += dt * 1.2;
-  const k = TV.tilt, R = Math.min(W2, H2) * 0.42 * TV.zoom, sc = R / 50, th = Math.min(9, 11 * Math.sqrt(Math.max(0, 1 - k * k)));
+  const k = TV.tilt, R = Math.min(W2, H2) * 0.42 * TV.zoom, sc = R / 50, s2 = Math.sqrt(Math.max(0, 1 - k * k)), th = Math.min(18, 8 * s2 / k);
   const fl = g.createRadialGradient(W2 / 2, H2 * 0.56, 10, W2 / 2, H2 * 0.56, R * 1.6); fl.addColorStop(0, 'rgba(0,240,255,.16)'); fl.addColorStop(1, 'rgba(0,240,255,0)'); g.fillStyle = fl; g.fillRect(0, 0, W2, H2);
   g.save(); g.translate(W2 / 2, H2 * 0.5); g.scale(sc, sc);
-  g.save(); g.scale(1, k); g.fillStyle = 'rgba(0,0,0,.5)'; g.beginPath(); g.ellipse(3, th / k + 8, 44, 44, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(0,240,255,.35)'; g.lineWidth = 1.2; g.beginPath(); g.ellipse(0, th / k + 8, 56, 56, 0, 0, TAU); g.stroke(); g.restore();
+  g.save(); g.scale(1, k); g.fillStyle = 'rgba(0,0,0,.5)'; g.beginPath(); g.ellipse(3, th + 33 * s2 / k + 4, 40, 40, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(0,240,255,.35)'; g.lineWidth = 1.2; g.beginPath(); g.ellipse(0, th + 33 * s2 / k + 4, 56, 56, 0, 0, TAU); g.stroke(); g.restore();
+  { const yb = th * k, h1 = 13 * s2, h2 = 20 * s2, ac = ARMORS[TV.b.a].color, rx = 24, ry = 24 * k; // the driver under the disc: a short armour-coloured body and a steel tip — gives the top real height when seen from the side
+    const bg2 = g.createLinearGradient(-rx, 0, rx, 0); bg2.addColorStop(0, shade(ac, -0.7)); bg2.addColorStop(0.45, shade(ac, -0.1)); bg2.addColorStop(1, shade(ac, -0.75));
+    g.fillStyle = bg2; g.beginPath(); g.ellipse(0, yb + h1, rx, ry, 0, 0, Math.PI); g.lineTo(-rx, yb); g.ellipse(0, yb, rx, ry, 0, Math.PI, 0, true); g.closePath(); g.fill(); g.strokeStyle = '#05060a'; g.lineWidth = 1.5; g.stroke();
+    const tg = g.createLinearGradient(-14, 0, 14, 0); tg.addColorStop(0, '#3a4048'); tg.addColorStop(0.45, '#e6edf5'); tg.addColorStop(1, '#2a2f36');
+    g.fillStyle = tg; g.beginPath(); g.ellipse(0, yb + h1, 15, 15 * k, 0, 0, Math.PI); g.lineTo(0, yb + h1 + h2); g.closePath(); g.fill(); g.stroke();
+    g.save(); g.shadowColor = ac; g.shadowBlur = 18; g.strokeStyle = ac; g.lineWidth = 2; g.beginPath(); g.ellipse(0, yb + h1 * 0.5, rx + 1, ry + 1, 0, 0.1, Math.PI - 0.1); g.stroke(); g.restore(); }
   g.save(); g.scale(1, k); drawTop(g, TV.b, TV.ang * WEAPONS[TV.b.w].dir, { spin: 0.4, thick: th }); g.restore();
   g.restore();
 }
