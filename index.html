@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.53.0</title>
+<title>SPIN! SPIN! v0.53.1</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -695,7 +695,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 .lvCard.boss{box-shadow:0 .2em 0 #05060a,inset 0 2px 0 rgba(255,255,255,.07) !important;border-color:#05060a !important}
 
 /* v0.53: stage result fits one screen — no scrolling; panels share the score panel look, three buttons in one row */
-#final.story{display:grid !important;grid-template-columns:1fr 1fr 1.3fr;column-gap:.45em;grid-template-rows:auto 1fr auto auto;align-content:stretch;justify-items:center;overflow:hidden;padding:2.4em 4% .8em;font-size:min(1em,2.25vh)}
+#final.story{display:none}#final.story.show{display:grid !important}#final.story{grid-template-columns:1fr 1fr 1.3fr;column-gap:.45em;grid-template-rows:auto 1fr auto auto;align-content:stretch;justify-items:center;overflow:hidden;padding:2.4em 4% .8em;font-size:min(1em,2.25vh)}
 #final.story>*{grid-column:1/-1;margin:0}#final.story .big{grid-row:1;align-self:end}#final.story .score{grid-row:2}#final.story #boxBtn{grid-row:3}
 #final.story .big{font-size:3em;margin:0;line-height:1.05}
 #final.story .score{margin:0;width:100%;font-size:1.15em;align-self:center}#final.story .fsRows{font-size:.8em}#final.story .fsR{padding:.18em 0}#final.story .fsRank{font-size:3.6em}
@@ -988,7 +988,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.53.0';
+const GAME_VERSION = 'v0.53.1';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
