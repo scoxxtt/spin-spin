@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.53.4</title>
+<title>SPIN! SPIN! v0.53.5</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -1012,7 +1012,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.53.4';
+const GAME_VERSION = 'v0.53.5';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -4889,6 +4889,7 @@ const trkHalf = (T, sv) => sv <= T.len - TRK.FUN ? TRK.HW : TRK.HW + (T.gw - TRK
 const LOSE_TEXT = { BREAK: '爆甲', SURVIVE: '停轉', '停轉': '停轉', OUT: '出界', TRAP: '掉進陷阱', DEAD: '掉進 DEAD', BLOOD: '掉進 BLOOD', 'RING OUT': 'RING OUT', CAUGHT: '被病毒牆吞掉' };
 
 function makeMob(def, lv, x, y) {
+  if (G && G.level) lv = easeLv(G.level, lv);
   const t = makeTop({ c: def.c, w: def.w, a: def.a, bc: lv, bw: lv, ba: lv }, 1);
   t.mob = def.type || 'guard'; t.s.maxHp *= def.hp || 0.4; t.hp = t.s.maxHp; t.hitCap = 0.6; t.rad = 24;
   t.x = t.hx = x; t.y = t.hy = y; t.cd = rnd(0.5, 1.5); t.ph = rnd(0, TAU); t.range = def.range || 110;
@@ -4930,11 +4931,15 @@ function chipGot(P) {
   comicPop(P.x, P.y - 60, `DATA ${n}/3`, 30, '#ffffff', '#00b8d4', 0.7); comboAdd(1, P.x, P.y);
   if (!had) { S.chip[id] = (S.chip[id] || 0) | 1 << P.idx; const no = +id.split('-')[0] || 1, coins = 30 + no * 15; INV.coins += coins; addText(P.x, P.y - 34, `+${coins} 金幣`, '#fcee0a', 18); save(); }
 }
+// v0.53.5: difficulty eased per chapter — enemy gear is capped so a purple / red team can get through the middle chapters
+const EASE_CAP = [0, 0.12, 0.32, 0.42, 0.5, 0.56, 0.6, 0.63, 0.66, 0.68, 0.7, 0.72, 0.74, 0.76, 0.78, 0.8], EASE_HP = [1, 1, 1, 0.95, 0.88, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84];
+const easeLv = (lv, x) => { const c = +String(lv.id).split('-')[0] || 1; return Math.min(x || 0, EASE_CAP[Math.min(15, c)]); };
+const easeHp = lv => EASE_HP[Math.min(15, +String(lv.id).split('-')[0] || 1)];
 function startTrack(lv) {
   const tr = lv.track, m0 = (tr.mobs || [])[0] || { c: 'rat', w: 'gatling', a: 'hover' };
   const bs = lv.boss || { name: '途中敵人', c: m0.c, w: m0.w, a: m0.a, diff: lv.diff || 'easy', lv: tr.mobLv || 0 }; // no boss: the far end is a goal ring; this stand-in only feeds the HUD
   const D = DIFF[bs.diff || 'normal'];
-  const bb = { c: bs.c, w: bs.w, a: bs.a, bc: bs.lv || 0, bw: bs.lv || 0, ba: bs.lv || 0 };
+  const bl = easeLv(lv, bs.lv), bb = { c: bs.c, w: bs.w, a: bs.a, bc: bl, bw: bl, ba: bl };
   aiName = bs.name; aiLineup = [bb, bb, bb].map(b => ({ ...b }));
   applyStage(Object.assign({}, bs.stage, { exits: [], rails: false, core: 0, ringOut: 0, props: [] }));
   newMatch(collection.map(withBonus), aiLineup);
@@ -4948,7 +4953,7 @@ function startTrack(lv) {
   arenaCache = null;
   T.mobs = (tr.mobs || []).map(m => makeMob(m, tr.mobLv || 0, CX + (m.x || 0) * TRK.HW, T.y0 - m.y));
   tfInit(T, tr);
-  const b = T.boss = makeTop(bb, 1); b.boss = true; b.rad = TR * (bs.size || 1.6); b.s.maxHp *= bs.hp || 3; b.hp = b.s.maxHp; b.s.mass *= 1.5; b.kbOut = 0.5; b.dmgOut = bs.dmg || 0.62; b.s.decay = 0; b.s.accel *= 0.85; // heavy, but its hits push less than its size suggests so one bump is not a ring-out
+  const b = T.boss = makeTop(bb, 1); b.boss = true; b.rad = TR * (bs.size || 1.6); b.s.maxHp *= (bs.hp || 3) * easeHp(lv); b.hp = b.s.maxHp; b.s.mass *= 1.5; b.kbOut = 0.5; b.dmgOut = bs.dmg || 0.62; b.s.decay = 0; b.s.accel *= 0.85; // heavy, but its hits push less than its size suggests so one bump is not a ring-out
   b.x = CX; b.y = CY - 50; b.dead = T.noBoss; b.chargeCD = 4; b.sig = CLASSES[bs.c].sig || null; b.pool = CLASSES[bs.c].pool || null; b.mimic = !!CLASSES[bs.c].mimic; b.undying = b.sig === 'undying'; b.revived = false; b.sigCD = 6; b.chain = 0;
   const gh = T.ghost = makeTop(bb, 1); gh.dead = true; gh.ghost = true; // stand-in "foe" while no enemy is near
   const p = G.tops[0]; p.x = CX; p.y = T.y0 - 110; gh.x = p.x; gh.y = p.y - 150; G.tops[1] = gh;

@@ -374,5 +374,6 @@ def main():
     txt = '\n'.join(out)
     if '--print' in sys.argv: print(txt); return
     f = os.path.join(HERE, '..', 'js', 'chapters.js'); h = open(f, encoding='utf8').read()
+    import re; txt = re.sub(r'建議[^。\']*。', '', txt)  # v0.53.5: no tier recommendations in the stage text (difficulty is now eased per chapter)
     i = h.index("  { id: 'c1'"); j = h.index('\n];\n', i); open(f, 'w', encoding='utf8').write(h[:i] + txt + h[j:]); print('chapters 1-15 written to js/chapters.js')
 main()
