@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>SPIN! SPIN! v0.54.6</title>
+<title>SPIN! SPIN! v0.54.7</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#05050a"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SPIN! SPIN!">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Russo+One&display=swap" rel="stylesheet">
@@ -736,6 +736,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 #topView.show{display:flex}#tvCv{width:min(96vw,calc(100vh - var(--nb,0px) - 9em));height:min(96vw,calc(100vh - var(--nb,0px) - 9em));flex:none;touch-action:none;cursor:grab}#tvCv:active{cursor:grabbing}
 .tvHint{font-size:max(11px,.75em);color:#94a0b6;margin:.2em 0 .6em;text-align:center;padding:0 1em}.tvBtns{display:flex;gap:.6em}.tvBtns .btn{min-width:7.5em}
 .cxZoom{text-align:center;font-size:max(11px,.7em);color:#7fdfff;margin:-.2em 0 .3em;cursor:pointer}#cxPop .cxTop{cursor:zoom-in}
+#team .slot .stop{pointer-events:auto;cursor:zoom-in}
 </style>
 </head>
 <body>
@@ -1016,7 +1017,7 @@ img.ore,.hmPill img{width:1.35em;height:1.35em;object-fit:contain;vertical-align
 */
 (() => {
 'use strict';
-const GAME_VERSION = 'v0.54.6';
+const GAME_VERSION = 'v0.54.7';
 document.getElementById('verFoot').textContent = `SPIN! SPIN! ${GAME_VERSION}`; document.title = `SPIN! SPIN! ${GAME_VERSION}`; // tab title always follows the version
 // hidden GM panel: tap the version text 7 times within 3 seconds
 (() => {
@@ -2205,7 +2206,8 @@ function renderTeam() {
   collection.slice(0, 3).forEach((b, i) => {
     const el = document.createElement('div'); el.className = 'slot' + (teamSel === i ? ' picked' : ''); el.dataset.idx = i;
     el.insertAdjacentHTML('beforeend', `<div class="snum">${i + 1}</div><img class="sface" draggable="false" src="${PORTRAIT_SRC[b.c]}"><div class="sfac">${facBadge(CLASSES[b.c].fac, 1.5)}</div><img class="spad" src="art/ui/pad.png" alt="">`);
-    const pv = previewCanvas(b, 200); pv.className = 'stop'; el.appendChild(pv);
+    const pv = previewCanvas(b, 200); pv.className = 'stop'; pv.title = '點一下放大檢視'; el.appendChild(pv); // v0.54.7: tap the floating top to inspect it full screen
+    pv.addEventListener('pointerdown', e => e.stopPropagation()); pv.addEventListener('click', e => { e.stopPropagation(); openTopView(b); SFX.flip(); });
     el.insertAdjacentHTML('beforeend', `<div class="nm nm2">${nameLines(CLASSES[b.c].name)}</div>`);
     el.appendChild(partChips(b, i));
     el.insertAdjacentHTML('beforeend', `<div class="mini">EX「${CLASSES[b.c].exName}」</div>`);
